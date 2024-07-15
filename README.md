@@ -1,5 +1,5 @@
 # WADAS
-Wild Animals Detection and Alert System (WADAS) is a projet kicked off by me, volunteering for [Salviamo L'Orso](https://www.salviamolorso.it/en/) (SLO) association, and the University of L'Aquila with the intent of creating a research project for the AI-based detection and alert of wildlife in proximity of dangerous areas (e.g., railways tunnels, road crossings).
+*Wild Animals Detection and Alert System (WADAS)* is a projet kicked off by me, volunteering for [Salviamo L'Orso](https://www.salviamolorso.it/en/) (SLO) association, and the University of L'Aquila with the intent of creating a research project for the AI-based detection and alert of wildlife in proximity of dangerous areas (e.g., railways tunnels, road crossings).
 
 The intent is to produce a proof of concept (POC) of a detection and warning system for wildife with the aim of preventing wild animals to perish in car or train accidents. Morover, the project will start to set requirements and implementation basys for system interaction and adoption as final product (e.g. mobile App, integration with maps, backend, etc.).
 
@@ -12,4 +12,3 @@ The SLO association works, toghether with national and regional parks in Abruzzo
 Evolution of this technology will aim to detect and idenify the Marsican brown bear among wildife, to enable ad-hoc monitoring and notifications for the authorities which works everyday to protect this species.
 
 See the project [Wiki](https://github.com/stefanodellosa-personal/WADAS/wiki) for more details.
-
