@@ -1,0 +1,51 @@
+# Python
+*.pyc
+__pycache__/
+venv/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# C++
+*.o
+*.out
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Compiled files
+*.class
+*.jar
+
+# IDE and editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*.bak
+*.tmp
+*.tmp.*
+*.log
+*.cache
+*.sublime-workspace
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+
+
+cache
