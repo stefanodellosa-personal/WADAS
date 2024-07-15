@@ -11,5 +11,5 @@ The SLO association works, toghether with national and regional parks in Abruzzo
 
 Evolution of this technology will aim to detect and idenify the Marsican brown bear among wildife, to enable ad-hoc monitoring and notifications for the authorities which works everyday to protect this species.
 
-See the project Wiki for more details.
+See the project [Wiki](https://github.com/stefanodellosa-personal/WADAS/wiki) for more details.
 
