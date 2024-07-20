@@ -1,0 +1,5 @@
+torch
+torchvision
+torchaudio
+intel-npu-acceleration-library
+PytorchWildlife
