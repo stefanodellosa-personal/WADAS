@@ -14,5 +14,9 @@ Instructions will reflect the above mentioned reference environment, users are f
    2. Create venv enviromnent (See https://code.visualstudio.com/docs/python/environments for detailed info about how to create virtual environment within VScode, we used conda.)
    3. Install dependencies: 
       a. pip install -r requirements.txt .\poc\requirements.txt (or run Python: Create environment from VScode)
+      b. Aditional useful dependencies to tune up jupyter kernels are: ipykernel jupyter
 ## Run
-    1. Run demo.ipynb
+    1. Open demo.ipynb and make sure you have selected your local kernel (python venv) (in VScode run the command "Select Notebook Kernel")
+    2. Run demo.ipynb
+
+NOTE: Depending on the HW you're running the demo on, you could select different kernel to run the model on: npu, cuda or cpu. Make sure you properly configure the environment dependency of your custom kernel first.
