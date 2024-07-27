@@ -24,6 +24,7 @@ Instructions will reflect the above mentioned reference environment, users are f
  1. Download the DeepFauna model "deepfaune-vit_large_patch14_dinov2.lvd142m.pt" from "https://huggingface.co/Addax-Data-Science/Deepfaune_v1.1/resolve/main/deepfaune-vit_large_patch14_dinov2.lvd142m.pt?download=true".
  2. Update DeepFauna model local path in classify_Detections.py, L66.
 
+
     1. Open demo.ipynb and make sure you have selected your local kernel (python venv) (in VScode run the command "Select Notebook Kernel")
     2. Run df_demo.ipynb (animal detection + classification)          
 
