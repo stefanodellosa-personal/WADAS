@@ -17,6 +17,6 @@ Instructions will reflect the above mentioned reference environment, users are f
       b. Aditional useful dependencies to tune up jupyter kernels are: ipykernel jupyter
 ## Run
     1. Open demo.ipynb and make sure you have selected your local kernel (python venv) (in VScode run the command "Select Notebook Kernel")
-    2. Run demo.ipynb
+    2. Run pw_demo.ipynb (animal detection only) OR df_demo.ipynb (animal detection + classification)
 
 NOTE: Depending on the HW you're running the demo on, you could select different kernel to run the model on: npu, cuda or cpu. Make sure you properly configure the environment dependency of your custom kernel first.
