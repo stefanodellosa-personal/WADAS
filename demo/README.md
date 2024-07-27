@@ -15,8 +15,16 @@ Instructions will reflect the above mentioned reference environment, users are f
    3. Install dependencies: 
       a. pip install -r requirements.txt .\poc\requirements.txt (or run Python: Create environment from VScode)
       b. Aditional useful dependencies to tune up jupyter kernels are: ipykernel jupyter
-## Run
+## Run animal detection demo
     1. Open demo.ipynb and make sure you have selected your local kernel (python venv) (in VScode run the command "Select Notebook Kernel")
-    2. Run pw_demo.ipynb (animal detection only) OR df_demo.ipynb (animal detection + classification)
+    2. Run pw_demo.ipynb (animal detection only)
+
+## Run animal detection + classification demo
+### Prerequisites:
+ 1. Download the DeepFauna model "deepfaune-vit_large_patch14_dinov2.lvd142m.pt" from "https://huggingface.co/Addax-Data-Science/Deepfaune_v1.1/resolve/main/deepfaune-vit_large_patch14_dinov2.lvd142m.pt?download=true".
+ 2. Update DeepFauna model local path in classify_Detections.py, L66.
+
+    1. Open demo.ipynb and make sure you have selected your local kernel (python venv) (in VScode run the command "Select Notebook Kernel")
+    2. Run df_demo.ipynb (animal detection + classification)          
 
 NOTE: Depending on the HW you're running the demo on, you could select different kernel to run the model on: npu, cuda or cpu. Make sure you properly configure the environment dependency of your custom kernel first.
