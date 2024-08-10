@@ -3,4 +3,5 @@ torchvision
 torchaudio
 intel-npu-acceleration-library
 PytorchWildlife
-cv2
+ipykernel
+timm
