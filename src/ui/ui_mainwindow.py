@@ -109,6 +109,17 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.label_last_classification)
 
+        self.label_classified_animal_title = QLabel(self.verticalLayoutWidget)
+        self.label_classified_animal_title.setObjectName(u"label_classified_animal_title")
+        self.label_classified_animal_title.setFont(font)
+
+        self.verticalLayout.addWidget(self.label_classified_animal_title)
+
+        self.label_classified_animal = QLabel(self.verticalLayoutWidget)
+        self.label_classified_animal.setObjectName(u"label_classified_animal")
+
+        self.verticalLayout.addWidget(self.label_classified_animal)
+
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout.addItem(self.verticalSpacer)
@@ -155,6 +166,8 @@ class Ui_MainWindow(object):
         self.label_last_detection.setText("")
         self.label_last_classification_title.setText(QCoreApplication.translate("MainWindow", u"Last classification:", None))
         self.label_last_classification.setText("")
+        self.label_classified_animal_title.setText(QCoreApplication.translate("MainWindow", u"Classified animal(s):", None))
+        self.label_classified_animal.setText("")
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
     # retranslateUi
 

@@ -6,7 +6,6 @@
 ##############################################
 ############### MODEL SPECIFIC ###############
 ##############################################
-import os
 import sys
 import numpy as np
 import timm
@@ -20,7 +19,7 @@ from torchvision.transforms import InterpolationMode, transforms
 # Source: https://plmlab.math.cnrs.fr/deepfaune/software/-/blob/master/classifTools.py
 # The code is unaltered, except for two minor adjustments:
 # 1. Accomodate for a non standard location of the model
-# 2. Run on Apple Silicon GPU via MPS Metal GPU
+# 2. Run parametric device
 
 ################################################
 ############## CLASSIFTOOLS START ##############
@@ -61,9 +60,7 @@ from torchvision.transforms import InterpolationMode, transforms
 
 CROP_SIZE = 182
 BACKBONE = "vit_large_patch14_dinov2.lvd142m"
-# weight_path = "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
-weight_path = os.path.join("C:/", "Users/", "stefa/", "Downloads","deepfaune-vit_large_patch14_dinov2.lvd142m.pt") # ADJUSTMENT 1
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# weight_path = "deepfaune-vit_large_patch14_dinov2.lvd142m.pt" # ADJUSTMENT 1
 
 txt_animalclasses = {
     'fr': ["blaireau", "bouquetin", "cerf", "chamois", "chat", "chevre", "chevreuil", "chien", "ecureuil", "equide", "genette",
@@ -82,8 +79,8 @@ txt_animalclasses = {
 }
 
 class Classifier:
-    def __init__(self):
-        self.model = Model()
+    def __init__(self, weight_path, device): # ADJUSTMENT 1, 2
+        self.model = Model(weight_path, device)
         self.model.loadWeights(weight_path)
         self.transforms = transforms.Compose([
             transforms.Resize(size=(CROP_SIZE, CROP_SIZE), interpolation=InterpolationMode.BICUBIC, max_size=None, antialias=None),
@@ -99,7 +96,7 @@ class Classifier:
         return preprocessimage.unsqueeze(dim=0)
 
 class Model(nn.Module):
-    def __init__(self):
+    def __init__(self, weight_path, device): # ADJUSTMENT 1, 2
         """
         Constructor of model classifier
         """
@@ -109,6 +106,7 @@ class Model(nn.Module):
         print(f"Using {BACKBONE} with weights at {weight_path}, in resolution {CROP_SIZE}x{CROP_SIZE}")
         self.backbone = BACKBONE
         self.nbclasses = len(txt_animalclasses['fr'])
+        self.device = device
 
     def forward(self, input):
         x = self.base_model(input)
@@ -121,12 +119,11 @@ class Model(nn.Module):
         :return: numpy array of predictions without soft max
         """
         self.eval()
-        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        # ADJUSTMENT 2
-        self.to(device)
+        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # ADJUSTMENT 1
+        self.to(self.device) # ADJUSTMENT 2
         total_output = []
         with torch.no_grad():
-            x = data.to(device)
+            x = data.to(self.device) # ADJUSTMENT 2
             if withsoftmax:
                 output = self.forward(x).softmax(dim=1)
             else:
@@ -145,7 +142,7 @@ class Model(nn.Module):
         if path[-3:] != ".pt":
             path += ".pt"
         try:
-            params = torch.load(path, map_location=device)
+            params = torch.load(path, map_location=self.device) # ADJUSTMENT
             args = params['args']
             if self.nbclasses != args['num_classes']:
                 raise Exception("You load a model ({}) that does not have the same number of class"
@@ -160,76 +157,3 @@ class Model(nn.Module):
 ##############################################
 ############## CLASSIFTOOLS END ##############
 ##############################################
-
-# This code snipped is created by EcoAssist team.
-# Orignal license is shown below.
-# Source: https://github.com/PetervanLunteren/EcoAssist/blob/main/classification_utils/model_types/deepfaune/classify_detections.py
-# The code is unaltered, except for two minor adjustments:
-# 1- function rename
-
-##############################################
-############## ECOASSIST START ###############
-##############################################
-
-"""Copyright (c) 2022 Peter van Lunteren
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE."""
-
-# It constsist of code that is specific for this kind of model architechture, and 
-# code that is generic for all model architectures that will be run via EcoAssist.
-# Script created by Peter van Lunteren
-
-# load model
-classifier = Classifier()
-
-# read label map
-# not neccesary for yolov8 models to retreive label map exernally, as it is incorporated into the model itself
-
-# predict from cropped image
-# input: cropped PIL image
-# output: unsorted classifications formatted as [['aardwolf', 2.3025326090220233e-09], ['african wild cat', 5.658252888451898e-08], ... ]
-# no need to remove forbidden classes from the predictions, that will happen in infrence_lib.py
-# this is also the place to preprocess the image if that need to happen
-
-# def get_classification(PIL_crop):
-# ADJUSTMENT 1
-
-def get_classifications(PIL_crop):
-    tensor_cropped = classifier.preprocessImage(PIL_crop)
-    confs = classifier.predictOnBatch(tensor_cropped)[0,]
-    lbls = txt_animalclasses['en']
-    classifications = []
-    for i in range(len(confs)):
-        classifications.append([lbls[i], confs[i]])
-    return classifications
-
-##############################################
-############### ECOASSIST END ################
-##############################################
-
-# Get single classification result (higher probability)
-# input: cropped PIL image
-# output: classification formatted as [['aardwolf', 2.3025326090220233e-09]
-def get_classification(PIL_crop):
-    classifications = get_classifications(PIL_crop)
-    classified_animal = ['', 0]
-    for result in classifications:
-        if result[1] > classified_animal[1]:
-            classified_animal = result
-    return classified_animal

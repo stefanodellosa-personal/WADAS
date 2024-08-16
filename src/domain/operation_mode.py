@@ -20,6 +20,7 @@ class OperationMode(QObject):
         self.mode = None
         self.last_detection = ""
         self.last_classification = ""
+        self.last_classified_animals = []
 
     def set_mode(self, mode):
         """Method to specfy selected WADAS operation mode"""
@@ -52,9 +53,19 @@ class OperationMode(QObject):
         # Select image to run test on...
         url = "https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg"
         # Run detection model
-        img_path = self.detector.process_image_from_url(url, "test_model_from_url")
+        det_data = self.detector.process_image_from_url(url, "test_model_from_url")
+        img_path = det_data[0]
+        det_results = det_data[1]
+        self.last_detection = img_path
+        
+        # Trigger image update in WADAS mainwindow
+        self.update_image.emit(img_path)
+
+        logger.info("Runnin classification on detection result(s)...")
+        img_path = self.detector.classify(img_path, det_results)
+        self.last_classification = img_path
 
         # Trigger image update in WADAS mainwindow
         self.update_image.emit(img_path)
-        self.last_detection = img_path
+
         logger.info("Done with processing.")

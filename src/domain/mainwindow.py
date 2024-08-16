@@ -145,3 +145,4 @@ class MainWindow(QMainWindow):
         self.ui.label_op_mode.setText(self.operation_mode.mode)
         self.ui.label_last_detection.setText(self.operation_mode.last_detection)
         self.ui.label_last_classification.setText(self.operation_mode.last_classification)
+        self.ui.label_classified_animal.setText(self.operation_mode.last_classified_animals)
