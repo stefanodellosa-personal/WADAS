@@ -60,7 +60,7 @@ class AiModel():
 
         logger.info("Processing image from url: "+url)
         # Opening the image from url
-        img = Image.open(requests.get(url, stream=True).raw)
+        img = Image.open(requests.get(url, stream=True).raw).convert("RGB")
         # Save image to disk
         img_path = os.path.join("detection_output", "image_"+str(id)+"_"+
                                 str(self.get_timestamp())+".jpg")
