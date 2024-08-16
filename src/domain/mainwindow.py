@@ -9,6 +9,7 @@ from ui.ui_mainwindow import Ui_MainWindow
 from domain.qtextedit_logger import QTextEditLogger
 from domain.operation_mode import OperationMode
 from domain.select_mode import DialogSelectMode
+from domain.insert_url import InsertUrlDialog
 
 logger = logging.getLogger()
 
@@ -82,7 +83,7 @@ class MainWindow(QMainWindow):
 
         dialog = DialogSelectMode()
         if dialog.exec_():
-            logger.debug("Selected mode: %s", dialog.selected_mode)
+            logger.debug("Selected mode from dialog: %s", dialog.selected_mode)
             if dialog.selected_mode == "test_mode":
                 self.operation_mode.set_mode("test_model")
             elif dialog.selected_mode == "tunnel_mode":
@@ -104,6 +105,10 @@ class MainWindow(QMainWindow):
         if self.operation_mode.mode is None:
             logger.error("No operation mode selected.")
         else:
+            # Collect required inputs before running the inference
+            if self.operation_mode.mode == "test_model":
+                self.url_input_dialog()
+
             self.thread = QThread()
             self.operation_mode.moveToThread(self.thread)
 
@@ -145,4 +150,14 @@ class MainWindow(QMainWindow):
         self.ui.label_op_mode.setText(self.operation_mode.mode)
         self.ui.label_last_detection.setText(self.operation_mode.last_detection)
         self.ui.label_last_classification.setText(self.operation_mode.last_classification)
-        self.ui.label_classified_animal.setText(self.operation_mode.last_classified_animals)
+        self.ui.label_classified_animal.setText(str(self.operation_mode.last_classified_animals))
+
+    def url_input_dialog(self):
+            """Method to run dialog for insertion of an URL to fetch image from."""
+
+            insertUrlDialog = InsertUrlDialog()
+            if insertUrlDialog.exec_():
+                self.operation_mode.url = insertUrlDialog.url
+                logger.debug("Provided URL from dialog: %s", insertUrlDialog.url)
+            else:
+                logger.error("Unable to execute URL insertion dialog.")
