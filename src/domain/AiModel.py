@@ -1,31 +1,38 @@
+"""Module containing AI Model based logic (detection & classification)."""
+
+import os
+import logging
+import datetime
+import requests
+import cv2
+from PIL import Image
+import numpy as np
 from PytorchWildlife.models import detection as pw_detection
 from PytorchWildlife.data import transforms as pw_trans
 #import intel_npu_acceleration_library as npu_lib
 from PytorchWildlife import utils as pw_utils
-from PIL import Image
 from domain.classify_detections import Classifier, txt_animalclasses
-import numpy as np
-import requests
-import os
-import logging
-import datetime
-import cv2
 
 logger = logging.getLogger(__name__)
 
 class AiModel():
+    """Class containing AI Model functionalities (detection & classification)"""
+
     # Setting the device to use for computations ('cuda' indicates GPU, "npu" indicates intel NPU)
-    #TODO: uncomment this: DEVICE = "npu" if npu_lib.backend.npu_available() else "cuda" if torch.cuda.is_available() else "cpu"
+    #TODO: uncomment this: DEVICE = "npu" if npu_lib.backend.npu_available() else
+    # "cuda" if torch.cuda.is_available() else "cpu"
     DEVICE = "cpu"
-    CLASSIFICATION_MODEL = os.path.join("C:/", "Users/", "stefa/", "Downloads","deepfaune-vit_large_patch14_dinov2.lvd142m.pt")
+    CLASSIFICATION_MODEL = os.path.join("C:/", "Users/", "stefa/", "Downloads",
+                                        "deepfaune-vit_large_patch14_dinov2.lvd142m.pt")
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
-        logger.info("Initializing MegaDetectorV5 model for image detection to device {ImgDetector.DEVICE}...")
+        logger.info("Initializing MegaDetectorV5 model for image detection to device {%s}...",
+                     AiModel.DEVICE)
         self.detection_model = pw_detection.MegaDetectorV5(
             device=AiModel.DEVICE, pretrained=True)
         self.original_image = ""
-        
+
         # Load classification model
         self.classifier = Classifier(AiModel.CLASSIFICATION_MODEL, AiModel.DEVICE)
         # Create required output folders
@@ -35,6 +42,7 @@ class AiModel():
     def process_image(self, img_path):
         """Method to run detection model on provided image."""
 
+        logger.info("Running detection on image %s ...", img_path)
         # Opening the image from local path, Converting the image to RGB format
         img = Image.open(img_path).convert("RGB")
         img_array = np.array(img)
@@ -46,26 +54,27 @@ class AiModel():
         
         # Performing the detection on the single image
         results = self.detection_model.single_image_detection(transform(img_array), img_array.shape, img_path)
-        #for key in results:
-            #logging.debug(key, str(results[key]))
 
-        # Saving the detection results 
-        logger.info("Saving detection results...")
-        pw_utils.save_detection_images(results, os.path.join(".","detection_output"), overwrite=False)
+        if len(results["detections"].xyxy) > 0:
+            # Saving the detection results
+            logger.info("Saving detection results...")
+            pw_utils.save_detection_images(results, os.path.join(".","detection_output"), overwrite=False)
+        else:
+            logger.info("No detected animals for %s", img_path)
 
         return results
 
     def process_image_from_url(self, url, id):
         """Method to run detection model on image provided by URL"""
 
-        logger.info("Processing image from url: "+url)
+        logger.info("Processing image from url: %s", url)
         # Opening the image from url
         img = Image.open(requests.get(url, stream=True).raw).convert("RGB")
         # Save image to disk
         img_path = os.path.join("detection_output", "image_"+str(id)+"_"+
                                 str(self.get_timestamp())+".jpg")
         img.save(img_path)
-        logger.info("Saved processed image at: "+img_path)
+        logger.info("Saved processed image at: %s", img_path)
 
         results = self.process_image(img_path)
         return [img_path, results]
@@ -73,24 +82,29 @@ class AiModel():
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s)."""
 
+        if not results:
+            logger.warning("No results to classify. Skipping classification.")
+            return ""
+
         logger.info("Running classification on %s image...", img_path)
         img = Image.open(img_path).convert("RGB")
         classification_id = 0
         classified_animals = []
         for xyxy in results["detections"].xyxy:
-                # Cropping detection result(s) from original image leveraging detected boxes
-                cropped_image = img.crop(xyxy)
-                cropped_image_path = os.path.join("classification_output", str(classification_id)+'_cropped_image.jpg')
-                cropped_image.save(cropped_image_path)
-                logger.debug("Saved crop of image at %s.", cropped_image_path)
-                # Performing classification
-                classification_result = self.classify_crop(cropped_image)
-                logger.info("Classification result: %s", classification_result)
+            # Cropping detection result(s) from original image leveraging detected boxes
+            cropped_image = img.crop(xyxy)
+            cropped_image_path = os.path.join("classification_output", 
+                                              str(classification_id)+'_cropped_image.jpg')
+            cropped_image.save(cropped_image_path)
+            logger.debug("Saved crop of image at %s.", cropped_image_path)
+            # Performing classification
+            classification_result = self.classify_crop(cropped_image)
+            logger.info("Classification result: %s", classification_result)
 
-                classified_animals.append({"id": classification_id,
-                                        "classification": classification_result,
-                                        "xyxy": xyxy})
-                classification_id = classification_id+1
+            classified_animals.append({"id": classification_id,
+                                    "classification": classification_result,
+                                    "xyxy": xyxy})
+            classification_id = classification_id+1
 
         img_path = self.build_classification_square(img, classified_animals)
         return img_path
@@ -98,6 +112,7 @@ class AiModel():
     def build_classification_square(self, img, classified_animals):
         """Build square on classified animals."""
 
+        classified_image_path = ""
         # Build classification square
         orig_image = np.array(img)
         for animal in classified_animals:
@@ -108,7 +123,7 @@ class AiModel():
             y2 = int(animal["xyxy"][3])
             color = (255, 0, 0)
             classified_image = cv2.rectangle(orig_image, (x1, y1), (x2, y2), color, 2)
-            text_len = len(str(animal["classification"]))
+
             # Draw black background rectangle to improve text readability
             classified_image = cv2.rectangle(classified_image, (x1, y1), (x2, y1 - 40), color, -1)
             animal["classification"][1] = round(animal["classification"][1], 2)
@@ -116,6 +131,7 @@ class AiModel():
             cv2.putText(classified_image, str(animal["classification"]), (x1, y1-10),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2)
             cimg = Image.fromarray(classified_image)
+            #TODO: define classified image name from original image
             classified_image_path = os.path.join("classification_output",'classified_image.jpg')
             cimg.save(classified_image_path)
         return classified_image_path
@@ -136,7 +152,7 @@ class AiModel():
 
         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         return timestamp
-    
+
     """ This code snipped is created by EcoAssist team. Orignal license is shown below.
      Source: https://github.com/PetervanLunteren/EcoAssist/blob/main/classification_utils/model_types/deepfaune/classify_detections.py
      The code is unaltered, except for three adjustments:
