@@ -35,6 +35,7 @@ class AiModel():
     def process_image(self, img_path):
         """Method to run detection model on provided image."""
 
+        logger.info("Running detection on image %s ...", img_path)
         # Opening the image from local path, Converting the image to RGB format
         img = Image.open(img_path).convert("RGB")
         img_array = np.array(img)
@@ -49,9 +50,12 @@ class AiModel():
         #for key in results:
             #logging.debug(key, str(results[key]))
 
-        # Saving the detection results 
-        logger.info("Saving detection results...")
-        pw_utils.save_detection_images(results, os.path.join(".","detection_output"), overwrite=False)
+        if len(results["detections"].xyxy) > 0:
+            # Saving the detection results
+            logger.info("Saving detection results...")
+            pw_utils.save_detection_images(results, os.path.join(".","detection_output"), overwrite=False)
+        else:
+            logger.info("No detected animals for %s", img_path)
 
         return results
 
@@ -72,6 +76,10 @@ class AiModel():
 
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s)."""
+
+        if not results:
+            logger.warning("No results to classify. Skipping glassification.")
+            return ""
 
         logger.info("Running classification on %s image...", img_path)
         img = Image.open(img_path).convert("RGB")
@@ -98,6 +106,7 @@ class AiModel():
     def build_classification_square(self, img, classified_animals):
         """Build square on classified animals."""
 
+        classified_image_path = ""
         # Build classification square
         orig_image = np.array(img)
         for animal in classified_animals:
