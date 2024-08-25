@@ -12,11 +12,25 @@ class InsertUrlDialog(QDialog, Ui_InsertUrlDialog):
         self.ui.lineEdit_url.textChanged.connect(self.validate_url)
         # TODO: uncomment line below if no URL is provided by default
         #self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.ui.lineEdit_url.textChanged.connect(self.validate_url)
+        # TODO: uncomment line below if no URL is provided by default
+        #self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def accept_and_close(self):
         """When Ok is clicked, save url before closing."""
         self.url = self.ui.lineEdit_url.text()
         self.accept()
+
+    
+    def validate_url(self):
+        """Check if inserted URL is valid."""
+
+        url = self.ui.lineEdit_url.text()
+        if validators.url(url):
+            self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+        else:
+            self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
 
     
     def validate_url(self):

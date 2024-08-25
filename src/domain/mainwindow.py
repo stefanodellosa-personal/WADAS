@@ -11,6 +11,7 @@ from domain.operation_mode import OperationMode
 from domain.select_mode import DialogSelectMode
 from domain.insert_url import InsertUrlDialog
 from domain.test_model_mode import TestModelMode
+from domain.test_model_mode import TestModelMode
 
 logger = logging.getLogger()
 
@@ -27,9 +28,13 @@ class MainWindow(QMainWindow):
         self.operation_mode_name = ""
         self.ai_model = None
         self.operation_mode = None
+        self.operation_mode_name = ""
+        self.ai_model = None
+        self.operation_mode = None
 
         # Connect Actions
         self._connect_actions()
+
 
         # Setup UI logger
         self.setup_logger()
@@ -91,8 +96,11 @@ class MainWindow(QMainWindow):
             logger.debug("Selected mode from dialog: %s", dialog.selected_mode)
             if dialog.selected_mode in OperationMode.operation_modes:
                 self.operation_mode_name = dialog.selected_mode
+            if dialog.selected_mode in OperationMode.operation_modes:
+                self.operation_mode_name = dialog.selected_mode
             else:
                 # Default, we should never be here.
+                logger.error("No valid model selected. Resetting to test model mode.")
                 logger.error("No valid model selected. Resetting to test model mode.")
 
         self.update_toolbar_status()
@@ -112,11 +120,18 @@ class MainWindow(QMainWindow):
             self.connect_mode_ui_slots()
 
             # Initialize thread where to run the inference
+            # Connect slots to update UI from operation mode
+            self.connect_mode_ui_slots()
+
+            # Initialize thread where to run the inference
             self.thread = QThread()
+
+            # Move operation mode in dedicated thread
 
             # Move operation mode in dedicated thread
             self.operation_mode.moveToThread(self.thread)
 
+            # Connect thread related signals and slots
             # Connect thread related signals and slots
             self.thread.started.connect(self.operation_mode.run)
             self.operation_mode.run_finished.connect(self.thread.quit)
@@ -125,6 +140,7 @@ class MainWindow(QMainWindow):
 
             # Start the thread
             self.thread.start()
+
 
             # Enable Stop button in toolbar
             self.ui.actionStop.setEnabled(True)
@@ -141,7 +157,7 @@ class MainWindow(QMainWindow):
     def interrupt_thread(self):
         """Method to interrupt a running thread."""
 
-        self.thread.requestInterruption()
+        self.thread.exit()
 
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
