@@ -43,7 +43,6 @@ class AiModel():
         """Method to run detection model on provided image."""
 
         logger.info("Running detection on image %s ...", img_path)
-        logger.info("Running detection on image %s ...", img_path)
         # Opening the image from local path, Converting the image to RGB format
         img = Image.open(img_path).convert("RGB")
         img_array = np.array(img)
@@ -56,12 +55,6 @@ class AiModel():
         # Performing the detection on the single image
         results = self.detection_model.single_image_detection(transform(img_array), img_array.shape, img_path)
 
-        if len(results["detections"].xyxy) > 0:
-            # Saving the detection results
-            logger.info("Saving detection results...")
-            pw_utils.save_detection_images(results, os.path.join(".","detection_output"), overwrite=False)
-        else:
-            logger.info("No detected animals for %s", img_path)
         if len(results["detections"].xyxy) > 0:
             # Saving the detection results
             logger.info("Saving detection results...")
