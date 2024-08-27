@@ -21,7 +21,7 @@ class OperationMode(QObject):
         self.ai_model = None
         self.last_detection = ""
         self.last_classification = ""
-        self.last_classified_animals = []
+        self.last_classified_animals = ""
         self.url = ""
 
     def init_model(self):

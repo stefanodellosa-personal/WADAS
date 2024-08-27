@@ -39,7 +39,7 @@ class AiModel():
         os.makedirs("detection_output", exist_ok=True)
         os.makedirs("classification_output", exist_ok=True)
 
-    def process_image(self, img_path):
+    def process_image(self, img_path, save_detection_image):
         """Method to run detection model on provided image."""
 
         logger.info("Running detection on image %s ...", img_path)
@@ -54,30 +54,33 @@ class AiModel():
         
         # Performing the detection on the single image
         results = self.detection_model.single_image_detection(transform(img_array), img_array.shape, img_path)
-
-        if len(results["detections"].xyxy) > 0:
+        detected_img_path = ""
+        if len(results["detections"].xyxy) > 0 and save_detection_image:
             # Saving the detection results
             logger.info("Saving detection results...")
             pw_utils.save_detection_images(results, os.path.join(".","detection_output"), overwrite=False)
+            detected_img_path = os.path.join("detection_output",  os.path.basename(img_path))
         else:
             logger.info("No detected animals for %s", img_path)
 
-        return results
+        return results, detected_img_path
 
-    def process_image_from_url(self, url, id):
+    def process_image_from_url(self, url, img_id, save_detection_image):
         """Method to run detection model on image provided by URL"""
 
         logger.info("Processing image from url: %s", url)
         # Opening the image from url
         img = Image.open(requests.get(url, stream=True).raw).convert("RGB")
+
         # Save image to disk
-        img_path = os.path.join("detection_output", "image_"+str(id)+"_"+
+        os.makedirs("url_imgs", exist_ok=True)
+        img_path = os.path.join("url_imgs", "image_"+str(img_id)+"_"+
                                 str(self.get_timestamp())+".jpg")
         img.save(img_path)
         logger.info("Saved processed image at: %s", img_path)
 
-        results = self.process_image(img_path)
-        return [img_path, results]
+        results, detected_img_path = self.process_image(img_path, save_detection_image)
+        return [img_path, results, detected_img_path]
 
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s)."""
@@ -106,13 +109,12 @@ class AiModel():
                                     "xyxy": xyxy})
             classification_id = classification_id+1
 
-        img_path = self.build_classification_square(img, classified_animals)
-        return img_path
+        img_path = self.build_classification_square(img, classified_animals, img_path)
+        return img_path, classified_animals
 
-    def build_classification_square(self, img, classified_animals):
+    def build_classification_square(self, img, classified_animals, img_path):
         """Build square on classified animals."""
 
-        classified_image_path = ""
         classified_image_path = ""
         # Build classification square
         orig_image = np.array(img)
@@ -124,16 +126,40 @@ class AiModel():
             y2 = int(animal["xyxy"][3])
             color = (255, 0, 0)
             classified_image = cv2.rectangle(orig_image, (x1, y1), (x2, y2), color, 2)
-
-            # Draw black background rectangle to improve text readability
-            classified_image = cv2.rectangle(classified_image, (x1, y1), (x2, y1 - 40), color, -1)
+            
+            # Round precision on classification score
             animal["classification"][1] = round(animal["classification"][1], 2)
+
+            # Draw black background rectangle to improve text readability. 
+            # Replicating Megadetector settings whenever possible.
+            text = str(animal["classification"][0])+ " "+str(animal["classification"][1])
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            text_scale = 1.5
+            text_thickness = 2
+            text_padding = 10
+
+            text_x = x1 + text_padding
+            text_y = y1 - text_padding
+            text_width, text_height = cv2.getTextSize(text, font, text_scale, text_thickness,)[0]
+
+            # Text background size is dependent on the size of the text
+            text_background_x1 = x1
+            text_background_y1 = y1 - 2 * text_padding - text_height
+            text_background_x2 = x1 + 2 * text_padding + text_width
+            text_background_y2 = y1
+
+            classified_image = cv2.rectangle(classified_image, (text_background_x1, text_background_y1),
+                                              (text_background_x2, text_background_y2), color, cv2.FILLED)
+
             # Add label to classification rectangle
-            cv2.putText(classified_image, str(animal["classification"]), (x1, y1-10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2)
+            cv2.putText(classified_image, text, (text_x, text_y),
+                        font, text_scale, (0,0,0), text_thickness, cv2.LINE_AA)
             cimg = Image.fromarray(classified_image)
-            #TODO: define classified image name from original image
-            classified_image_path = os.path.join("classification_output",'classified_image.jpg')
+
+            # Save classified image
+            detected_img_name = os.path.basename(img_path)
+            classified_img_name = "classified_"+detected_img_name
+            classified_image_path = os.path.join("classification_output",classified_img_name)
             cimg.save(classified_image_path)
         return classified_image_path
 

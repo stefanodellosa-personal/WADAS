@@ -96,11 +96,8 @@ class MainWindow(QMainWindow):
             logger.debug("Selected mode from dialog: %s", dialog.selected_mode)
             if dialog.selected_mode in OperationMode.operation_modes:
                 self.operation_mode_name = dialog.selected_mode
-            if dialog.selected_mode in OperationMode.operation_modes:
-                self.operation_mode_name = dialog.selected_mode
             else:
                 # Default, we should never be here.
-                logger.error("No valid model selected. Resetting to test model mode.")
                 logger.error("No valid model selected. Resetting to test model mode.")
 
         self.update_toolbar_status()
@@ -127,11 +124,8 @@ class MainWindow(QMainWindow):
             self.thread = QThread()
 
             # Move operation mode in dedicated thread
-
-            # Move operation mode in dedicated thread
             self.operation_mode.moveToThread(self.thread)
 
-            # Connect thread related signals and slots
             # Connect thread related signals and slots
             self.thread.started.connect(self.operation_mode.run)
             self.operation_mode.run_finished.connect(self.thread.quit)
@@ -140,7 +134,6 @@ class MainWindow(QMainWindow):
 
             # Start the thread
             self.thread.start()
-
 
             # Enable Stop button in toolbar
             self.ui.actionStop.setEnabled(True)
@@ -157,7 +150,7 @@ class MainWindow(QMainWindow):
     def interrupt_thread(self):
         """Method to interrupt a running thread."""
 
-        self.thread.exit()
+        self.thread.requestInterruption()
 
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
@@ -173,8 +166,10 @@ class MainWindow(QMainWindow):
 
         self.ui.label_op_mode.setText(self.operation_mode_name)
         if self.operation_mode:
-            self.ui.label_last_detection.setText(self.operation_mode.last_detection)
-            self.ui.label_last_classification.setText(self.operation_mode.last_classification)
+            self.ui.label_last_detection.setText(
+                os.path.basename(self.operation_mode.last_detection))
+            self.ui.label_last_classification.setText(
+                 os.path.basename(self.operation_mode.last_classification))
             self.ui.label_classified_animal.setText(
                 str(self.operation_mode.last_classified_animals))
 
