@@ -39,12 +39,18 @@ build/
 node_modules/
 bower_components/
 
+# Images directories
+classification_output/
+detection_output/
+url_imgs/
+
+
 # Images
 *.png
-*.jpg
-*.jpeg
+#*.jpg
+#*.jpeg
 *.gif
-*.ico
+#*.ico
 *.svg
 
 
