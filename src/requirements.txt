@@ -1,3 +1,4 @@
+keyring
 ipykernel
 timm
 validators

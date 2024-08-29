@@ -2,6 +2,7 @@
 
 import logging
 import os
+import keyring
 from PySide6 import QtGui
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtCore import QThread
@@ -12,6 +13,7 @@ from domain.select_mode import DialogSelectMode
 from domain.insert_url import InsertUrlDialog
 from domain.test_model_mode import TestModelMode
 from domain.test_model_mode import TestModelMode
+from domain.insert_email import DialogInsertEmail
 
 logger = logging.getLogger()
 
@@ -31,10 +33,11 @@ class MainWindow(QMainWindow):
         self.operation_mode_name = ""
         self.ai_model = None
         self.operation_mode = None
+        self.key_ring = None
+        self.email = {}
 
         # Connect Actions
         self._connect_actions()
-
 
         # Setup UI logger
         self.setup_logger()
@@ -47,7 +50,6 @@ class MainWindow(QMainWindow):
 
         # Update mainwindow UI methods
         self.update_toolbar_status()
-
         logger.info('Welcome to WADAS!')
 
     def _connect_actions(self):
@@ -55,6 +57,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSelect_Mode.triggered.connect(self.select_mode)
         self.ui.actionRun.triggered.connect(self.run)
         self.ui.actionStop.triggered.connect(self.interrupt_thread)
+        self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
 
     def connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -196,3 +199,19 @@ class MainWindow(QMainWindow):
                 logger.info("Running test model mode....")
                 self.operation_mode = TestModelMode()
             #TODO: add elif with other operation modes
+
+    def configure_email(self):
+        """Method to run dialog for insertion of email parameters to enable notifications."""
+
+        insert_email_dialog = DialogInsertEmail()
+        if insert_email_dialog.exec_():
+            self.email = {'smtp': insert_email_dialog.smtp_server,
+                           'port': insert_email_dialog.smtp_port}
+            keyring.set_password("email", insert_email_dialog.sender_email,
+                                  insert_email_dialog.password)
+            logger.info("Email configuration added.")
+            credentials = keyring.get_credential("email", "")
+            logger.debug("Loaded credentials for %s", credentials.username)
+        else:
+            logger.warning("Unable to get URL to run detection on. Please run detection again.")
+            return ""
