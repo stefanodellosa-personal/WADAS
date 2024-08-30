@@ -1,5 +1,6 @@
-import validators
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
+import validators
+
 from ui.ui_insert_email import Ui_DialogInsertEmail
 
 class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
@@ -43,7 +44,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
             self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
    
     def validate_smtp_port(self):
-        if self.ui.lineEdit_port.text().isdigit() and 1 <= int(self.ui.lineEdit_port.text()) <= 65535:
+        if (text := self.ui.lineEdit_port.text()).isdigit() and 1 <= int(text) <= 65535:
             self.valid_port = True
             self.validate_email_configurations()
         else:

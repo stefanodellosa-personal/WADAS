@@ -2,18 +2,19 @@
 
 import logging
 import os
+
 import keyring
 from PySide6 import QtGui
-from PySide6.QtWidgets import QMainWindow
 from PySide6.QtCore import QThread
-from ui.ui_mainwindow import Ui_MainWindow
-from domain.qtextedit_logger import QTextEditLogger
-from domain.operation_mode import OperationMode
-from domain.select_mode import DialogSelectMode
-from domain.insert_url import InsertUrlDialog
-from domain.test_model_mode import TestModelMode
-from domain.test_model_mode import TestModelMode
+from PySide6.QtWidgets import QMainWindow, QMessageBox
+
 from domain.insert_email import DialogInsertEmail
+from domain.insert_url import InsertUrlDialog
+from domain.operation_mode import OperationMode
+from domain.qtextedit_logger import QTextEditLogger
+from domain.select_mode import DialogSelectMode
+from domain.test_model_mode import TestModelMode
+from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
 
@@ -120,10 +121,6 @@ class MainWindow(QMainWindow):
             self.connect_mode_ui_slots()
 
             # Initialize thread where to run the inference
-            # Connect slots to update UI from operation mode
-            self.connect_mode_ui_slots()
-
-            # Initialize thread where to run the inference
             self.thread = QThread()
 
             # Move operation mode in dedicated thread
@@ -141,6 +138,7 @@ class MainWindow(QMainWindow):
             # Enable Stop button in toolbar
             self.ui.actionStop.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
+            self.ui.actionActionConfigureEmail.setEnabled(False)
         else:
             logger.error("Unable to run the selected model.")
 
@@ -148,6 +146,7 @@ class MainWindow(QMainWindow):
         """Actions performed after a run is completed."""
         self.ui.actionStop.setEnabled(False)
         self.ui.actionRun.setEnabled(True)
+        self.ui.actionActionConfigureEmail.setEnabled(True)
         self.update_info_widget()
 
     def interrupt_thread(self):
@@ -203,15 +202,36 @@ class MainWindow(QMainWindow):
     def configure_email(self):
         """Method to run dialog for insertion of email parameters to enable notifications."""
 
-        insert_email_dialog = DialogInsertEmail()
-        if insert_email_dialog.exec_():
-            self.email = {'smtp': insert_email_dialog.smtp_server,
-                           'port': insert_email_dialog.smtp_port}
-            keyring.set_password("email", insert_email_dialog.sender_email,
-                                  insert_email_dialog.password)
-            logger.info("Email configuration added.")
-            credentials = keyring.get_credential("email", "")
-            logger.debug("Loaded credentials for %s", credentials.username)
+        insert_email = True
+        credentials = keyring.get_credential("WADAS_email", "")
+        if credentials:
+
+            message_box = QMessageBox
+            message = "Existing credentials have been found for %s. Do you wish to override them?" % credentials.username
+            insert_email = message_box.question(self,'', message, message_box.Yes | message_box.No)
+            
+            if insert_email == message_box.No:
+                insert_email = False
+
+        if insert_email:
+            #TODO: check for existing credentials
+            #TODO: implement email info persistency
+            insert_email_dialog = DialogInsertEmail()
+            if insert_email_dialog.exec_():
+                self.email = {
+                    'email' : insert_email_dialog.sender_email,
+                    'smtp': insert_email_dialog.smtp_server,
+                    'port': insert_email_dialog.smtp_port
+                    }
+                
+                keyring.set_password("WADAS_email", insert_email_dialog.sender_email,
+                                    insert_email_dialog.password)
+                logger.info("Email configuration added.")
+
+                credentials = keyring.get_credential("WADAS_email", "")
+                logger.debug("Loaded credentials for %s", credentials.username)
+            else:
+                logger.debug("Email configuration aborted.")
+                return ""
         else:
-            logger.warning("Unable to get URL to run detection on. Please run detection again.")
-            return ""
+            logging.info("Reusing existing email configuration.")

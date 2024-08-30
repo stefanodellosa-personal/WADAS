@@ -23,7 +23,5 @@ class InsertUrlDialog(QDialog, Ui_InsertUrlDialog):
         """Check if inserted URL is valid."""
 
         url = self.ui.lineEdit_url.text()
-        if validators.url(url):
-            self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
-        else:
-            self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        is_validated = bool(validators.url(url))
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(is_validated)

@@ -75,7 +75,7 @@ class Ui_DialogInsertEmail(object):
 
         self.lineEdit_password = QLineEdit(self.gridLayoutWidget)
         self.lineEdit_password.setObjectName(u"lineEdit_password")
-        self.lineEdit_password.setEchoMode(QLineEdit.EchoMode.PasswordEchoOnEdit)
+        self.lineEdit_password.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.gridLayout.addWidget(self.lineEdit_password, 1, 3, 1, 2)
 
@@ -92,6 +92,10 @@ class Ui_DialogInsertEmail(object):
         self.label_status = QLabel(DialogInsertEmail)
         self.label_status.setObjectName(u"label_status")
         self.label_status.setGeometry(QRect(8, 170, 461, 20))
+        QWidget.setTabOrder(self.lineEdit_senderEmail, self.lineEdit_password)
+        QWidget.setTabOrder(self.lineEdit_password, self.lineEdit_smtpServer)
+        QWidget.setTabOrder(self.lineEdit_smtpServer, self.lineEdit_port)
+        QWidget.setTabOrder(self.lineEdit_port, self.pushButton_testEmail)
 
         self.retranslateUi(DialogInsertEmail)
         self.buttonBox.accepted.connect(DialogInsertEmail.accept)
