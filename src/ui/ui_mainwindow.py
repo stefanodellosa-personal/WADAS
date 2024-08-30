@@ -142,9 +142,9 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
 
         self.toolBar.addAction(self.actionSelect_Mode)
+        self.toolBar.addAction(self.actionActionConfigureEmail)
         self.toolBar.addAction(self.actionRun)
         self.toolBar.addAction(self.actionStop)
-        self.toolBar.addAction(self.actionActionConfigureEmail)
 
         self.retranslateUi(MainWindow)
 

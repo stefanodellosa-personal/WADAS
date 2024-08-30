@@ -35,7 +35,11 @@ class MainWindow(QMainWindow):
         self.ai_model = None
         self.operation_mode = None
         self.key_ring = None
-        self.email = {}
+        self.email_config = dict.fromkeys(
+            ['smtp_hostname',
+             'smtp_port', 
+             'destination_emails']
+             )
 
         # Connect Actions
         self._connect_actions()
@@ -202,36 +206,16 @@ class MainWindow(QMainWindow):
     def configure_email(self):
         """Method to run dialog for insertion of email parameters to enable notifications."""
 
-        insert_email = True
-        credentials = keyring.get_credential("WADAS_email", "")
-        if credentials:
+        #TODO: check for existing credentials
+        #TODO: implement email info persistency
+        insert_email_dialog = DialogInsertEmail(self.email_config)
+        if insert_email_dialog.exec_():
+            self.email_config = insert_email_dialog.email_configuration
 
-            message_box = QMessageBox
-            message = "Existing credentials have been found for %s. Do you wish to override them?" % credentials.username
-            insert_email = message_box.question(self,'', message, message_box.Yes | message_box.No)
-            
-            if insert_email == message_box.No:
-                insert_email = False
+            logger.info("Email configuration added.")
 
-        if insert_email:
-            #TODO: check for existing credentials
-            #TODO: implement email info persistency
-            insert_email_dialog = DialogInsertEmail()
-            if insert_email_dialog.exec_():
-                self.email = {
-                    'email' : insert_email_dialog.sender_email,
-                    'smtp': insert_email_dialog.smtp_server,
-                    'port': insert_email_dialog.smtp_port
-                    }
-                
-                keyring.set_password("WADAS_email", insert_email_dialog.sender_email,
-                                    insert_email_dialog.password)
-                logger.info("Email configuration added.")
-
-                credentials = keyring.get_credential("WADAS_email", "")
-                logger.debug("Loaded credentials for %s", credentials.username)
-            else:
-                logger.debug("Email configuration aborted.")
-                return ""
+            credentials = keyring.get_credential("WADAS_email", "")
+            logger.info("Saved credentials for %s", credentials.username)
         else:
-            logging.info("Reusing existing email configuration.")
+            logger.debug("Email configuration aborted.")
+            return ""

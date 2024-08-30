@@ -194,9 +194,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionSelect_Mode"/>
+   <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionRun"/>
    <addaction name="actionStop"/>
-   <addaction name="actionActionConfigureEmail"/>
   </widget>
   <action name="actionSelect_Mode">
    <property name="icon">
