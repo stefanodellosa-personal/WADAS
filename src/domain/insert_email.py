@@ -27,6 +27,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         self.valid_receiver_emails = False
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.pushButton_testEmail.setEnabled(False)
+        self.ui.label_status.setStyleSheet("color: red")
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
