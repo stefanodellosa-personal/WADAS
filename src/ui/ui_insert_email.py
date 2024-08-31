@@ -17,14 +17,14 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
     QGridLayout, QLabel, QLineEdit, QPushButton,
-    QScrollArea, QSizePolicy, QSpacerItem, QTabWidget,
+    QSizePolicy, QSpacerItem, QTabWidget, QTextEdit,
     QVBoxLayout, QWidget)
 
 class Ui_DialogInsertEmail(object):
     def setupUi(self, DialogInsertEmail):
         if not DialogInsertEmail.objectName():
             DialogInsertEmail.setObjectName(u"DialogInsertEmail")
-        DialogInsertEmail.resize(522, 303)
+        DialogInsertEmail.resize(522, 291)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -99,126 +99,15 @@ class Ui_DialogInsertEmail(object):
         self.tabWidget.addTab(self.tab_3, "")
         self.tab_4 = QWidget()
         self.tab_4.setObjectName(u"tab_4")
-        self.scrollArea = QScrollArea(self.tab_4)
-        self.scrollArea.setObjectName(u"scrollArea")
-        self.scrollArea.setGeometry(QRect(0, 0, 491, 201))
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.scrollArea.sizePolicy().hasHeightForWidth())
-        self.scrollArea.setSizePolicy(sizePolicy1)
-        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollAreaWidgetContents_2 = QWidget()
-        self.scrollAreaWidgetContents_2.setObjectName(u"scrollAreaWidgetContents_2")
-        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 472, 199))
-        self.gridLayoutWidget_2 = QWidget(self.scrollAreaWidgetContents_2)
-        self.gridLayoutWidget_2.setObjectName(u"gridLayoutWidget_2")
-        self.gridLayoutWidget_2.setGeometry(QRect(10, 10, 461, 331))
-        self.gridLayout_2 = QGridLayout(self.gridLayoutWidget_2)
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.lineEdit_rec_email7 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email7.setObjectName(u"lineEdit_rec_email7")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email7, 6, 2, 1, 1)
-
-        self.label_6 = QLabel(self.gridLayoutWidget_2)
-        self.label_6.setObjectName(u"label_6")
-
-        self.gridLayout_2.addWidget(self.label_6, 1, 0, 1, 1)
-
-        self.lineEdit_rec_email9 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email9.setObjectName(u"lineEdit_rec_email9")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email9, 8, 2, 1, 1)
-
-        self.lineEdit_rec_email6 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email6.setObjectName(u"lineEdit_rec_email6")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email6, 5, 2, 1, 1)
-
-        self.label_5 = QLabel(self.gridLayoutWidget_2)
+        self.textEdit_recipient_email = QTextEdit(self.tab_4)
+        self.textEdit_recipient_email.setObjectName(u"textEdit_recipient_email")
+        self.textEdit_recipient_email.setGeometry(QRect(10, 50, 481, 131))
+        self.label_5 = QLabel(self.tab_4)
         self.label_5.setObjectName(u"label_5")
-
-        self.gridLayout_2.addWidget(self.label_5, 0, 0, 1, 1)
-
-        self.label_12 = QLabel(self.gridLayoutWidget_2)
-        self.label_12.setObjectName(u"label_12")
-
-        self.gridLayout_2.addWidget(self.label_12, 7, 0, 1, 1)
-
-        self.lineEdit_rec_email8 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email8.setObjectName(u"lineEdit_rec_email8")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email8, 7, 2, 1, 1)
-
-        self.label_8 = QLabel(self.gridLayoutWidget_2)
-        self.label_8.setObjectName(u"label_8")
-
-        self.gridLayout_2.addWidget(self.label_8, 3, 0, 1, 1)
-
-        self.label_11 = QLabel(self.gridLayoutWidget_2)
-        self.label_11.setObjectName(u"label_11")
-
-        self.gridLayout_2.addWidget(self.label_11, 6, 0, 1, 1)
-
-        self.lineEdit_rec_email5 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email5.setObjectName(u"lineEdit_rec_email5")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email5, 4, 2, 1, 1)
-
-        self.lineEdit_rec_email1 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email1.setObjectName(u"lineEdit_rec_email1")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email1, 0, 2, 1, 1)
-
-        self.lineEdit_rec_email2 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email2.setObjectName(u"lineEdit_rec_email2")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email2, 1, 2, 1, 1)
-
-        self.lineEdit_rec_email4 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email4.setObjectName(u"lineEdit_rec_email4")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email4, 3, 2, 1, 1)
-
-        self.label_10 = QLabel(self.gridLayoutWidget_2)
-        self.label_10.setObjectName(u"label_10")
-
-        self.gridLayout_2.addWidget(self.label_10, 5, 0, 1, 1)
-
-        self.lineEdit_rec_email3 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email3.setObjectName(u"lineEdit_rec_email3")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email3, 2, 2, 1, 1)
-
-        self.label_7 = QLabel(self.gridLayoutWidget_2)
-        self.label_7.setObjectName(u"label_7")
-
-        self.gridLayout_2.addWidget(self.label_7, 2, 0, 1, 1)
-
-        self.label_9 = QLabel(self.gridLayoutWidget_2)
-        self.label_9.setObjectName(u"label_9")
-
-        self.gridLayout_2.addWidget(self.label_9, 4, 0, 1, 1)
-
-        self.lineEdit_rec_email10 = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_rec_email10.setObjectName(u"lineEdit_rec_email10")
-
-        self.gridLayout_2.addWidget(self.lineEdit_rec_email10, 9, 2, 1, 1)
-
-        self.label_13 = QLabel(self.gridLayoutWidget_2)
-        self.label_13.setObjectName(u"label_13")
-
-        self.gridLayout_2.addWidget(self.label_13, 8, 0, 1, 1)
-
-        self.label_14 = QLabel(self.gridLayoutWidget_2)
-        self.label_14.setObjectName(u"label_14")
-
-        self.gridLayout_2.addWidget(self.label_14, 9, 0, 1, 1)
-
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents_2)
+        self.label_5.setGeometry(QRect(10, 10, 471, 16))
+        self.label_6 = QLabel(self.tab_4)
+        self.label_6.setObjectName(u"label_6")
+        self.label_6.setGeometry(QRect(10, 30, 481, 16))
         self.tabWidget.addTab(self.tab_4, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
@@ -258,17 +147,9 @@ class Ui_DialogInsertEmail(object):
         self.pushButton_testEmail.setText(QCoreApplication.translate("DialogInsertEmail", u"Test email", None))
         self.label_2.setText(QCoreApplication.translate("DialogInsertEmail", u"password", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("DialogInsertEmail", u"Sender", None))
-        self.label_6.setText(QCoreApplication.translate("DialogInsertEmail", u"Email2", None))
-        self.label_5.setText(QCoreApplication.translate("DialogInsertEmail", u"Email1", None))
-        self.label_12.setText(QCoreApplication.translate("DialogInsertEmail", u"Email8", None))
-        self.label_8.setText(QCoreApplication.translate("DialogInsertEmail", u"Email4", None))
-        self.label_11.setText(QCoreApplication.translate("DialogInsertEmail", u"Email7", None))
-        self.label_10.setText(QCoreApplication.translate("DialogInsertEmail", u"Email6", None))
-        self.label_7.setText(QCoreApplication.translate("DialogInsertEmail", u"Email3", None))
-        self.label_9.setText(QCoreApplication.translate("DialogInsertEmail", u"Email5", None))
-        self.label_13.setText(QCoreApplication.translate("DialogInsertEmail", u"Email9", None))
-        self.label_14.setText(QCoreApplication.translate("DialogInsertEmail", u"Email10", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("DialogInsertEmail", u"Receivers", None))
+        self.label_5.setText(QCoreApplication.translate("DialogInsertEmail", u"Insert recipients email address(es) separated by comma and space. ", None))
+        self.label_6.setText(QCoreApplication.translate("DialogInsertEmail", u"Example: email1@domail.com, email2@domail.com, email3@domail.com", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("DialogInsertEmail", u"Recipients", None))
         self.label_status.setText("")
     # retranslateUi
 

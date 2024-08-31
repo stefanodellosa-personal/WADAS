@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
         self.email_config = dict.fromkeys(
             ['smtp_hostname',
              'smtp_port', 
-             'destination_emails']
+             'recipients_email']
              )
 
         # Connect Actions
@@ -115,11 +115,18 @@ class MainWindow(QMainWindow):
         """Slot to run selected mode once run button is clicked.
        Since image processing is heavy task, new thread is created."""
 
+        # Check if notifications have been configured
+        proceed = self.check_notification_enablement()
+        if not proceed:
+            return
+
         self.instantiate_selected_model()
         if self.operation_mode:
             # Satisfy preconditions and required inputs for the selected operation mode
             if self.operation_mode_name == "test_model_mode":
                 self.operation_mode.url = self.url_input_dialog()
+
+            self.operation_mode.email_configuration = self.email_config
 
             # Connect slots to update UI from operation mode
             self.connect_mode_ui_slots()
@@ -219,3 +226,20 @@ class MainWindow(QMainWindow):
         else:
             logger.debug("Email configuration aborted.")
             return ""
+
+    def check_notification_enablement(self):
+        """Method to check whether a notification protocol has been set in WADAS."""
+
+        if not self.email_config:
+            logger.warn("No notification protocol set.")
+
+            message_box = QMessageBox
+            message = "No notification protocol set. Do you wish to continue anyway?"
+            answer = message_box.question(self,'', message, message_box.Yes | message_box.No)
+
+            if answer == message_box.No:
+                return False
+            else:
+                return True
+        else:
+            return True

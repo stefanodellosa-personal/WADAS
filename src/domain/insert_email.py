@@ -3,6 +3,12 @@
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 import keyring
 import validators
+import ssl
+import smtplib
+
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 
 from ui.ui_insert_email import Ui_DialogInsertEmail
 
@@ -28,16 +34,8 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         self.ui.lineEdit_smtpServer.textChanged.connect(self.validate_smtp_server)
         self.ui.lineEdit_port.textChanged.connect(self.validate_smtp_port)
         self.ui.lineEdit_password.textChanged.connect(self.validate_password)
-        self.ui.lineEdit_rec_email1.textChanged.connect(self.validate_receivers_email)
-        self.ui.lineEdit_rec_email2.textChanged.connect(self.validate_receivers_email)
-        self.ui.lineEdit_rec_email3.textChanged.connect(self.validate_receivers_email)
-        self.ui.lineEdit_rec_email4.textChanged.connect(self.validate_receivers_email)
-        self.ui.lineEdit_rec_email5.textChanged.connect(self.validate_receivers_email)
-        self.ui.lineEdit_rec_email6.textChanged.connect(self.validate_receivers_email)
-        self.ui.lineEdit_rec_email7.textChanged.connect(self.validate_receivers_email)
-        self.ui.lineEdit_rec_email8.textChanged.connect(self.validate_receivers_email)
-        self.ui.lineEdit_rec_email9.textChanged.connect(self.validate_receivers_email)
-        self.ui.lineEdit_rec_email10.textChanged.connect(self.validate_receivers_email)
+        self.ui.textEdit_recipient_email.textChanged.connect(self.validate_recipients_email)
+        self.ui.pushButton_testEmail.clicked.connect(self.send_email)
 
         self.initialize_form()
 
@@ -55,6 +53,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         """When Ok is clicked, save email config info before closing."""
         self.email_configuration['smtp_server'] = self.ui.lineEdit_smtpServer.text()
         self.email_configuration['smtp_port'] = self.ui.lineEdit_port.text()
+        self.email_configuration['recipients_email'] = self.ui.textEdit_recipient_email.toPlainText().strip()
         keyring.set_password("WADAS_email", self.ui.lineEdit_senderEmail.text(),
                               self.ui.lineEdit_password.text())
         self.accept()
@@ -62,67 +61,94 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     def validate_email_configurations(self):
         """Check if inserted email config is valid."""
 
-        if self.valid_sender_email and self.valid_smtp and self.valid_port and self.valid_password and self.valid_receiver_emails:
+        if (self.valid_sender_email and self.valid_smtp and self.valid_port and
+            self.valid_password and self.valid_receiver_emails):
             self.ui.label_status.setText("")
             self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+            self.ui.pushButton_testEmail.setEnabled(True)
         else:
             self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.ui.pushButton_testEmail.setEnabled(False)
 
     def validate_smtp_port(self):
         """Method to validate smtp port."""
 
         if (text := self.ui.lineEdit_port.text()).isdigit() and 1 <= int(text) <= 65535:
             self.valid_port = True
-            self.validate_email_configurations()
         else:
             self.valid_port = False
             self.ui.label_status.setText("Invalid smtp port provided!")
+        self.validate_email_configurations()
 
     def validate_sender_email(self):
         """Method to validate email format."""
 
         if validators.email(self.ui.lineEdit_senderEmail.text()):
             self.valid_sender_email = True
-            self.validate_email_configurations()
         else:
             self.valid_sender_email = False
             self.ui.label_status.setText("Invalid sender email provided!")
+        self.validate_email_configurations()
 
     def validate_smtp_server(self):
         """Method to validate smtp hostname."""
 
         if self.ui.lineEdit_smtpServer.text():
             self.valid_smtp = True
-            self.validate_email_configurations()
         else:
             self.valid_smtp = False
             self.ui.label_status.setText("Invalid smtp server provided!")
+        self.validate_email_configurations()
 
     def validate_password(self):
         """Method to validate password."""
 
         if self.ui.lineEdit_password.text():
             self.valid_password = True
-            self.validate_email_configurations()
         else:
             self.valid_password = False
             self.ui.label_status.setText("Invalid password provided!")
+        self.validate_email_configurations()
 
-    def validate_receivers_email(self):
+    def validate_recipients_email(self):
         """Method to validate receiver email(s)."""
 
-        if (email1 := self.ui.lineEdit_rec_email1.text()) and validators.email(email1):
-            self.valid_receiver_emails = True
-            self.validate_email_configurations()
+        recipients_email = self.ui.textEdit_recipient_email.toPlainText().strip()
+        if recipients_email:
+            emails = recipients_email.split(", ")
+            for email in emails:
+                if not validators.email(email):
+                    self.valid_receiver_emails = False
+                    self.ui.label_status.setText("Invalid recipients email(s) provided!")
+                else:
+                    self.valid_receiver_emails = True
         else:
             self.valid_receiver_emails = False
-            self.ui.label_status.setText("Invalid receiver email1 provided!")
+            self.ui.label_status.setText("No recipients email provided!")
+        self.validate_email_configurations()
 
-        email2 = self.ui.lineEdit_rec_email2.text()
-        if email2:
-            if validators.email(email2):
-                self.valid_receiver_emails = True
-                self.validate_email_configurations()
-            else:
-                self.valid_receiver_emails = False
-                self.ui.label_status.setText("Invalid receiver email2 provided!")
+    def send_email(self):
+        """Method to test email."""
+
+        credentials = keyring.get_credential("WADAS_email", "")
+        sender = credentials.username
+        recipients = self.ui.textEdit_recipient_email.toPlainText().strip()
+        recipients_to_list = recipients.split(", ")
+
+        text = "WADAS test email."
+        message = MIMEText(text, "plain")
+        # Set email required fields.
+        message['Subject'] = "WADAS test email"
+        message['From'] = sender
+        message['To'] = recipients[0]
+
+        # Connect to Gmail's SMTP server using SSL.
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(self.ui.lineEdit_smtpServer.text(),
+                               self.ui.lineEdit_port.text(),
+                               context=context) as smtp_server:
+            # Login to the SMTP server using the sender's credentials.
+            smtp_server.login(sender, credentials.password)
+            # Send the email.
+            smtp_server.sendmail(sender, recipients_to_list, message.as_string())
+        self.ui.label_status.setText("Emai sent!")

@@ -1,7 +1,18 @@
 """Module containing class to handle WADAS operation modes."""
 
+import os
 import logging
+import smtplib
+import keyring
+import ssl
+
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+
 from PySide6.QtCore import QObject, Signal
+import keyring.credentials
+
 from domain.AiModel import AiModel
 
 logger = logging.getLogger(__name__)
@@ -23,12 +34,72 @@ class OperationMode(QObject):
         self.last_classification = ""
         self.last_classified_animals = ""
         self.url = ""
+        self.email_configuration = {}
 
     def init_model(self):
-            """Method to run the selected WADAS operation mode"""
-            
-            if self.ai_model is None:
-                logger.info("initializing model...")
-                self.ai_model = AiModel()
-            else:
-                logger.debug("Model already initialized, skipping initialization.")
+        """Method to run the selected WADAS operation mode"""
+
+        if self.ai_model is None:
+            logger.info("initializing model...")
+            self.ai_model = AiModel()
+        else:
+            logger.debug("Model already initialized, skipping initialization.")
+
+    def send_notification(self, message, img_path):
+        """Method to send notification through enabled protocols."""
+
+        # Email notification
+        if self.email_configuration:
+            self.send_email(message, img_path)
+        else:
+            logger.warn("No notification protocol set.")
+        #TODO: add other notification protocols.
+
+    def send_email(self, body, img_path):
+        """Method to build email and send it."""
+
+        credentials = keyring.get_credential("WADAS_email", "")
+        sender = credentials.username
+        recipients = self.email_configuration['recipients_email']
+        recipients_to_list = recipients.split(", ")
+
+        message = MIMEMultipart()
+        # Set email required fields.
+        message['Subject'] = "WADAS detection alert"
+        message['From'] = sender
+        message['To'] = recipients
+
+        # HTML content with an image embedded
+        html = """\
+        <html>
+            <body>
+                <p>Hi,<br>
+                Here is the image: <img src="cid:image1">.</p>
+            </body>
+        </html>
+        """
+        # Attach the HTML part
+        message.attach(MIMEText(html, "html")) 
+
+        # Open the image file in binary mode
+        with open(img_path, 'rb') as img:
+            # Attach the image file
+            msg_img = MIMEImage(img.read(), name=os.path.basename(img_path))
+            # Define the Content-ID header to use in the HTML body
+            msg_img.add_header('Content-ID', '<image1>')
+            # Attach the image to the message
+            message.attach(msg_img)
+
+        # Connect to email's SMTP server using SSL.
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(self.email_configuration['smtp_hostname'],
+                              self.email_configuration['smtp_port'],
+                              context=context) as smtp_server:
+            # Login to the SMTP server
+            smtp_server.login(sender, credentials.password)
+            # Send the email to all recipients.
+            for recipient in recipients_to_list:
+                smtp_server.sendmail(sender, recipient, message.as_string())
+                logger.debug("Email notification sent to recipient %s .", recipient)
+            smtp_server.quit()
+        logger.info("Email notification for %s sent!", img_path)

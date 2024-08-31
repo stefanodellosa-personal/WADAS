@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>522</width>
-    <height>303</height>
+    <height>291</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -121,151 +121,43 @@
      </widget>
      <widget class="QWidget" name="tab_4">
       <attribute name="title">
-       <string>Receivers</string>
+       <string>Recipients</string>
       </attribute>
-      <widget class="QScrollArea" name="scrollArea">
+      <widget class="QTextEdit" name="textEdit_recipient_email">
        <property name="geometry">
         <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>491</width>
-         <height>201</height>
+         <x>10</x>
+         <y>50</y>
+         <width>481</width>
+         <height>131</height>
         </rect>
        </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+      </widget>
+      <widget class="QLabel" name="label_5">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>471</width>
+         <height>16</height>
+        </rect>
        </property>
-       <property name="verticalScrollBarPolicy">
-        <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOn</enum>
+       <property name="text">
+        <string>Insert recipients email address(es) separated by comma and space. </string>
        </property>
-       <property name="widgetResizable">
-        <bool>true</bool>
+      </widget>
+      <widget class="QLabel" name="label_6">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>481</width>
+         <height>16</height>
+        </rect>
        </property>
-       <widget class="QWidget" name="scrollAreaWidgetContents_2">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>472</width>
-          <height>199</height>
-         </rect>
-        </property>
-        <widget class="QWidget" name="gridLayoutWidget_2">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>10</y>
-           <width>461</width>
-           <height>331</height>
-          </rect>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="6" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email7"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Email2</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email9"/>
-          </item>
-          <item row="5" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email6"/>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Email1</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_12">
-            <property name="text">
-             <string>Email8</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email8"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>Email4</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_11">
-            <property name="text">
-             <string>Email7</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email5"/>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email1"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email2"/>
-          </item>
-          <item row="3" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email4"/>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Email6</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email3"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>Email3</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Email5</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="2">
-           <widget class="QLineEdit" name="lineEdit_rec_email10"/>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>Email9</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="0">
-           <widget class="QLabel" name="label_14">
-            <property name="text">
-             <string>Email10</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </widget>
+       <property name="text">
+        <string>Example: email1@domail.com, email2@domail.com, email3@domail.com</string>
+       </property>
       </widget>
      </widget>
     </widget>
