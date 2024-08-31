@@ -2,16 +2,19 @@
 
 import logging
 import os
+
+import keyring
 from PySide6 import QtGui
-from PySide6.QtWidgets import QMainWindow
 from PySide6.QtCore import QThread
-from ui.ui_mainwindow import Ui_MainWindow
-from domain.qtextedit_logger import QTextEditLogger
-from domain.operation_mode import OperationMode
-from domain.select_mode import DialogSelectMode
+from PySide6.QtWidgets import QMainWindow, QMessageBox
+
+from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
+from domain.operation_mode import OperationMode
+from domain.qtextedit_logger import QTextEditLogger
+from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
-from domain.test_model_mode import TestModelMode
+from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
 
@@ -31,10 +34,15 @@ class MainWindow(QMainWindow):
         self.operation_mode_name = ""
         self.ai_model = None
         self.operation_mode = None
+        self.key_ring = None
+        self.email_config = dict.fromkeys(
+            ['smtp_hostname',
+             'smtp_port', 
+             'recipients_email']
+             )
 
         # Connect Actions
         self._connect_actions()
-
 
         # Setup UI logger
         self.setup_logger()
@@ -47,7 +55,6 @@ class MainWindow(QMainWindow):
 
         # Update mainwindow UI methods
         self.update_toolbar_status()
-
         logger.info('Welcome to WADAS!')
 
     def _connect_actions(self):
@@ -55,6 +62,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSelect_Mode.triggered.connect(self.select_mode)
         self.ui.actionRun.triggered.connect(self.run)
         self.ui.actionStop.triggered.connect(self.interrupt_thread)
+        self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
 
     def connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -107,16 +115,22 @@ class MainWindow(QMainWindow):
         """Slot to run selected mode once run button is clicked.
        Since image processing is heavy task, new thread is created."""
 
+        # Check if notifications have been configured
+        proceed = self.check_notification_enablement()
+        if not proceed:
+            return
+
         self.instantiate_selected_model()
         if self.operation_mode:
             # Satisfy preconditions and required inputs for the selected operation mode
             if self.operation_mode_name == "test_model_mode":
                 self.operation_mode.url = self.url_input_dialog()
+                if not self.operation_mode.url:
+                    logger.error("Cannot proceed without a valid URL. Please run again.")
+                    return
 
-            # Connect slots to update UI from operation mode
-            self.connect_mode_ui_slots()
+            self.operation_mode.email_configuration = self.email_config
 
-            # Initialize thread where to run the inference
             # Connect slots to update UI from operation mode
             self.connect_mode_ui_slots()
 
@@ -136,15 +150,14 @@ class MainWindow(QMainWindow):
             self.thread.start()
 
             # Enable Stop button in toolbar
-            self.ui.actionStop.setEnabled(True)
-            self.ui.actionRun.setEnabled(False)
+            self.update_toolbar_status_on_run(True)
         else:
             logger.error("Unable to run the selected model.")
 
     def on_run_completion(self):
         """Actions performed after a run is completed."""
-        self.ui.actionStop.setEnabled(False)
-        self.ui.actionRun.setEnabled(True)
+
+        self.update_toolbar_status_on_run(False)
         self.update_info_widget()
 
     def interrupt_thread(self):
@@ -155,11 +168,19 @@ class MainWindow(QMainWindow):
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
 
-        if self.operation_mode_name is None:
+        if not self.operation_mode_name:
             self.ui.actionRun.setEnabled(False)
         else:
             self.ui.actionRun.setEnabled(True)
         self.ui.actionStop.setEnabled(False)
+
+    def update_toolbar_status_on_run(self, running):
+        """Update toolbar status while running model."""
+
+        self.ui.actionStop.setEnabled(running)
+        self.ui.actionRun.setEnabled(not running)
+        self.ui.actionActionConfigureEmail.setEnabled(not running)
+        self.ui.actionSelect_Mode.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -181,7 +202,7 @@ class MainWindow(QMainWindow):
             logger.debug("Provided URL from dialog: %s", inserturl_dialog.url)
             return inserturl_dialog.url
         else:
-            logger.warning("Unable to get URL to run detection on. Please run detection again.")
+            logger.warning("URL insertion aborted.")
             return ""
 
     def instantiate_selected_model(self):
@@ -196,3 +217,37 @@ class MainWindow(QMainWindow):
                 logger.info("Running test model mode....")
                 self.operation_mode = TestModelMode()
             #TODO: add elif with other operation modes
+
+    def configure_email(self):
+        """Method to run dialog for insertion of email parameters to enable notifications."""
+
+        #TODO: implement email info persistency
+        insert_email_dialog = DialogInsertEmail(self.email_config)
+        if insert_email_dialog.exec_():
+            self.email_config = insert_email_dialog.email_configuration
+
+            logger.info("Email configuration added.")
+
+            credentials = keyring.get_credential("WADAS_email", "")
+            logger.info("Saved credentials for %s", credentials.username)
+        else:
+            logger.debug("Email configuration aborted.")
+            return
+
+    def check_notification_enablement(self):
+        """Method to check whether a notification protocol has been set in WADAS."""
+
+        credentials = keyring.get_credential("WADAS_email", "")
+        if not self.email_config['smtp_hostname'] or not credentials.username:
+            logger.warning("No notification protocol set.")
+
+            message_box = QMessageBox
+            message = "No notification protocol set. Do you wish to continue anyway?"
+            answer = message_box.question(self,'', message, message_box.Yes | message_box.No)
+
+            if answer == message_box.No:
+                return False
+            else:
+                return True
+        else:
+            return True

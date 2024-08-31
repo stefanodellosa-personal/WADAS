@@ -194,12 +194,13 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionSelect_Mode"/>
+   <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionRun"/>
    <addaction name="actionStop"/>
   </widget>
   <action name="actionSelect_Mode">
    <property name="icon">
-    <iconset theme="camera-video"/>
+    <iconset theme="camera-web"/>
    </property>
    <property name="text">
     <string>Select Mode</string>
@@ -234,6 +235,20 @@
    </property>
    <property name="toolTip">
     <string>Stop detection</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionActionConfigureEmail">
+   <property name="icon">
+    <iconset theme="emblem-mail"/>
+   </property>
+   <property name="text">
+    <string>ActionConfigureEmail</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure Email notifications</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

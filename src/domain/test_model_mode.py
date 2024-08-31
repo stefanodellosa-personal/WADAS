@@ -1,6 +1,6 @@
+import logging
 
 from domain.operation_mode import OperationMode
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class TestModelMode(OperationMode):
         det_results = det_data[1]
         detected_img_path = det_data[2]
         self.last_detection = detected_img_path
-        
+
         # Trigger image update in WADAS mainwindow
         self.update_image.emit(detected_img_path)
 
@@ -45,7 +45,7 @@ class TestModelMode(OperationMode):
             for animal in classified_animals:
                 last = animal["classification"][0]
                 if not self.last_classified_animals:
-                     self.last_classified_animals = self.last_classified_animals + last
+                    self.last_classified_animals = self.last_classified_animals + last
                 else:
                     self.last_classified_animals = self.last_classified_animals +", "+last
 
@@ -53,6 +53,10 @@ class TestModelMode(OperationMode):
             self.update_image.emit(img_path)
         else:
             logger.debug("No results to classify.")
+
+        # Send notification
+        message = "WADAS has classified %s animal!" % self.last_classified_animals
+        self.send_notification(message, img_path)
 
         self.run_finished.emit()
         logger.info("Done with processing.")

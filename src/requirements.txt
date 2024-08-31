@@ -1,5 +1,6 @@
 ipykernel
 timm
+keyring
 validators
 torch
 torchvision
