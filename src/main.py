@@ -6,6 +6,7 @@ from domain.mainwindow import MainWindow
 
 def main():
     """Main function to lunch mainwindow."""
+
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()

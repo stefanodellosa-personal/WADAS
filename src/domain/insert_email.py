@@ -51,7 +51,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
 
     def accept_and_close(self):
         """When Ok is clicked, save email config info before closing."""
-        self.email_configuration['smtp_server'] = self.ui.lineEdit_smtpServer.text()
+        self.email_configuration['smtp_hostname'] = self.ui.lineEdit_smtpServer.text()
         self.email_configuration['smtp_port'] = self.ui.lineEdit_port.text()
         self.email_configuration['recipients_email'] = self.ui.textEdit_recipient_email.toPlainText().strip()
         keyring.set_password("WADAS_email", self.ui.lineEdit_senderEmail.text(),

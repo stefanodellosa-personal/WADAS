@@ -3,16 +3,15 @@
 import os
 import logging
 import smtplib
-import keyring
-import ssl
 
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
-from PySide6.QtCore import QObject, Signal
-import keyring.credentials
+import keyring
+import ssl
 
+from PySide6.QtCore import QObject, Signal
 from domain.AiModel import AiModel
 
 logger = logging.getLogger(__name__)
@@ -49,10 +48,11 @@ class OperationMode(QObject):
         """Method to send notification through enabled protocols."""
 
         # Email notification
-        if self.email_configuration:
+        credentials = keyring.get_credential("WADAS_email", "")
+        if self.email_configuration['smtp_hostname'] and credentials.username:
             self.send_email(message, img_path)
         else:
-            logger.warn("No notification protocol set.")
+            logger.warning("No notification protocol set. Skipping notification.")
         #TODO: add other notification protocols.
 
     def send_email(self, body, img_path):
@@ -74,12 +74,12 @@ class OperationMode(QObject):
         <html>
             <body>
                 <p>Hi,<br>
-                Here is the image: <img src="cid:image1">.</p>
+                Here is the detection image: <img src="cid:image1">.</p><br>
             </body>
         </html>
         """
         # Attach the HTML part
-        message.attach(MIMEText(html, "html")) 
+        message.attach(MIMEText(html, "html"))
 
         # Open the image file in binary mode
         with open(img_path, 'rb') as img:

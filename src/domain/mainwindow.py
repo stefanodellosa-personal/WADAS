@@ -125,6 +125,9 @@ class MainWindow(QMainWindow):
             # Satisfy preconditions and required inputs for the selected operation mode
             if self.operation_mode_name == "test_model_mode":
                 self.operation_mode.url = self.url_input_dialog()
+                if not self.operation_mode.url:
+                    logger.error("Cannot proceed without a valid URL. Please run again.")
+                    return
 
             self.operation_mode.email_configuration = self.email_config
 
@@ -147,17 +150,14 @@ class MainWindow(QMainWindow):
             self.thread.start()
 
             # Enable Stop button in toolbar
-            self.ui.actionStop.setEnabled(True)
-            self.ui.actionRun.setEnabled(False)
-            self.ui.actionActionConfigureEmail.setEnabled(False)
+            self.update_toolbar_status_on_run(True)
         else:
             logger.error("Unable to run the selected model.")
 
     def on_run_completion(self):
         """Actions performed after a run is completed."""
-        self.ui.actionStop.setEnabled(False)
-        self.ui.actionRun.setEnabled(True)
-        self.ui.actionActionConfigureEmail.setEnabled(True)
+
+        self.update_toolbar_status_on_run(False)
         self.update_info_widget()
 
     def interrupt_thread(self):
@@ -168,11 +168,19 @@ class MainWindow(QMainWindow):
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
 
-        if self.operation_mode_name is None:
+        if not self.operation_mode_name:
             self.ui.actionRun.setEnabled(False)
         else:
             self.ui.actionRun.setEnabled(True)
         self.ui.actionStop.setEnabled(False)
+
+    def update_toolbar_status_on_run(self, running):
+        """Update toolbar status while running model."""
+
+        self.ui.actionStop.setEnabled(running)
+        self.ui.actionRun.setEnabled(not running)
+        self.ui.actionActionConfigureEmail.setEnabled(not running)
+        self.ui.actionSelect_Mode.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -194,7 +202,7 @@ class MainWindow(QMainWindow):
             logger.debug("Provided URL from dialog: %s", inserturl_dialog.url)
             return inserturl_dialog.url
         else:
-            logger.warning("Unable to get URL to run detection on. Please run detection again.")
+            logger.warning("URL insertion aborted.")
             return ""
 
     def instantiate_selected_model(self):
@@ -213,7 +221,6 @@ class MainWindow(QMainWindow):
     def configure_email(self):
         """Method to run dialog for insertion of email parameters to enable notifications."""
 
-        #TODO: check for existing credentials
         #TODO: implement email info persistency
         insert_email_dialog = DialogInsertEmail(self.email_config)
         if insert_email_dialog.exec_():
@@ -225,13 +232,14 @@ class MainWindow(QMainWindow):
             logger.info("Saved credentials for %s", credentials.username)
         else:
             logger.debug("Email configuration aborted.")
-            return ""
+            return
 
     def check_notification_enablement(self):
         """Method to check whether a notification protocol has been set in WADAS."""
 
-        if not self.email_config:
-            logger.warn("No notification protocol set.")
+        credentials = keyring.get_credential("WADAS_email", "")
+        if not self.email_config['smtp_hostname'] or not credentials.username:
+            logger.warning("No notification protocol set.")
 
             message_box = QMessageBox
             message = "No notification protocol set. Do you wish to continue anyway?"

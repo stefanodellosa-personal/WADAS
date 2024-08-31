@@ -55,7 +55,7 @@ class TestModelMode(OperationMode):
             logger.debug("No results to classify.")
 
         # Send notification
-        message = "WADAS has classified %s animal!" % self.last_classified_animals, img_path
+        message = "WADAS has classified %s animal!" % self.last_classified_animals
         self.send_notification(message, img_path)
 
         self.run_finished.emit()
