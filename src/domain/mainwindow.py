@@ -14,6 +14,8 @@ from domain.operation_mode import OperationMode
 from domain.qtextedit_logger import QTextEditLogger
 from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
+from domain.select_local_cameras import DialogSelectLocalCameras
+from domain.camera import Camera
 from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
@@ -40,6 +42,7 @@ class MainWindow(QMainWindow):
              'smtp_port', 
              'recipients_email']
              )
+        self.cameras_list = []
 
         # Connect Actions
         self._connect_actions()
@@ -63,6 +66,7 @@ class MainWindow(QMainWindow):
         self.ui.actionRun.triggered.connect(self.run)
         self.ui.actionStop.triggered.connect(self.interrupt_thread)
         self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
+        self.ui.actionSelectLocalCameras.triggered.connect(self.select_local_cameras)
 
     def connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -251,3 +255,10 @@ class MainWindow(QMainWindow):
                 return True
         else:
             return True
+
+    def select_local_cameras(self):
+        """Method to trigger UI dialog for local cameras configuration."""
+
+        select_local_cameras = DialogSelectLocalCameras(self.cameras_list)
+        if select_local_cameras.exec_():
+            logger.debug("Selecting local camera inputs...")

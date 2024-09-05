@@ -197,6 +197,7 @@
    <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionRun"/>
    <addaction name="actionStop"/>
+   <addaction name="actionSelectLocalCameras"/>
   </widget>
   <action name="actionSelect_Mode">
    <property name="icon">
@@ -249,6 +250,20 @@
    </property>
    <property name="toolTip">
     <string>Configure Email notifications</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionSelectLocalCameras">
+   <property name="icon">
+    <iconset theme="camera-video"/>
+   </property>
+   <property name="text">
+    <string>selectLocalCameras</string>
+   </property>
+   <property name="toolTip">
+    <string>Select local camera(s) as input</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
