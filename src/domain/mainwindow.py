@@ -262,3 +262,4 @@ class MainWindow(QMainWindow):
         select_local_cameras = DialogSelectLocalCameras(self.cameras_list)
         if select_local_cameras.exec_():
             logger.debug("Selecting local camera inputs...")
+            self.cameras_list = select_local_cameras.cameras_list

@@ -2,10 +2,10 @@ import time
 import cv2
 from cv2_enumerate_cameras import enumerate_cameras
 
-TRESHOLD = 180
-MINIMUM_CONTOUR_AREA = 500
-MS_SUBSAMPLE_RATE = 1000
-MAX_DETECTION_PER_S = 1
+TRESHOLD = int(180)
+MINIMUM_CONTOUR_AREA = int(500)
+MS_SUBSAMPLE_RATE = int(1000)
+MAX_DETECTION_PER_S = int(1)
 
 def main():
     """Main function."""
@@ -13,7 +13,7 @@ def main():
     for camera_info in enumerate_cameras(cv2.CAP_MSMF):
         print(f'{camera_info.index}: {camera_info.name}')
 
-    camera_info = enumerate_cameras(cv2.CAP_MSMF)[1]
+    camera_info = enumerate_cameras(cv2.CAP_MSMF)[0]
     process_video_Capture(camera_info.index, camera_info.backend)
 
 def process_video_Capture(index, backend):
@@ -72,7 +72,6 @@ def process_video_Capture(index, backend):
 
                 # Display the resulting frame
                 cv2.imshow("Frame_final", frame_out)
-                #cv2.imwrite(os.path.join("%s_%d.png" % (frame_count)), image)
 
             # Press Q on keyboard to exit
             if cv2.waitKey(30) & 0xFF == ord("q"):
