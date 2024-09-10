@@ -95,8 +95,8 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
         enum_cameras = enumerate_cameras(cv2.CAP_MSMF)
         camera_number = len(enum_cameras)
         for i in range(camera_number):
-            checkbox_obj_name = "checkBox_camera_"+i
-            lnedit_camera_id = "lineEdit_cameraID_"+i
+            checkbox_obj_name = "checkBox_camera_"+str(i)
+            lnedit_camera_id = "lineEdit_cameraID_"+str(i)
             checkbox = self.findChild(QCheckBox, checkbox_obj_name)
             line_edit = self.findChild(QLineEdit, lnedit_camera_id)
             if not checkbox or not line_edit:

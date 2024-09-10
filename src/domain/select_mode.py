@@ -12,16 +12,20 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
         self.ui = Ui_DialogSelectMode()
         self.ui.setupUi(self)
         self.selected_mode = ""
-        self.ui.buttonBox.accepted.connect(self.accept_and_close)
 
+        # Slots
+        self.ui.buttonBox.accepted.connect(self.accept_and_close)
 
     def accept_and_close(self):
         """When Ok is clicked, save radio button selection before closing."""
 
-        if self.ui.radioButton_test_model_mode.isChecked:
+        if self.ui.radioButton_test_model_mode.isChecked():
             self.selected_mode = "test_model_mode"
-        elif self.ui.radioButton_tunnel_mode.isChecked:
+        elif self.ui.radioButton_animal_det_mode.isChecked():
+            self.selected_mode = "animal_detection_mode"
+        elif self.ui.radioButton_tunnel_mode.isChecked():
             self.selected_mode = "tunnel_mode"
-        elif self.ui.radioButton_bear_det_mode.isChecked:
+        elif self.ui.radioButton_bear_det_mode.isChecked():
             self.selected_mode = "bear_det_mode"
         self.accept()
+

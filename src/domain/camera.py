@@ -121,7 +121,7 @@ class Camera():
                             break
                     else:
                         # Adding detected image into the AI queue for animal detection
-                        img_queue.put(frame_out)
+                        img_queue.put({"img": frame_out, "img_id": self.id})
             else:
                 break
 
