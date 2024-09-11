@@ -193,11 +193,11 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionSelect_Mode"/>
+   <addaction name="actionSelectLocalCameras"/>
    <addaction name="actionActionConfigureEmail"/>
+   <addaction name="actionSelect_Mode"/>
    <addaction name="actionRun"/>
    <addaction name="actionStop"/>
-   <addaction name="actionSelectLocalCameras"/>
   </widget>
   <action name="actionSelect_Mode">
    <property name="icon">

@@ -12,11 +12,10 @@ from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
 from domain.operation_mode import OperationMode
 from domain.qtextedit_logger import QTextEditLogger
+from domain.select_local_cameras import DialogSelectLocalCameras
 from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
 from domain.animal_detection_mode import AnimalDetectionMode
-from domain.select_local_cameras import DialogSelectLocalCameras
-from domain.camera import Camera
 from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()

@@ -1,8 +1,8 @@
-opencv-python
 cv2_enumerate_cameras
 ipykernel
-timm
 keyring
+opencv-python
+timm
 validators
 torch
 torchvision

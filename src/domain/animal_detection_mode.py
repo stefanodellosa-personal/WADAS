@@ -1,5 +1,7 @@
+"""Animal Detection and Classification module."""
+
+
 import logging
-from threading import Thread
 
 from domain.operation_mode import OperationMode
 from domain.camera import img_queue
@@ -8,6 +10,8 @@ from domain.camera import Camera
 logger = logging.getLogger(__name__)
 
 class AnimalDetectionMode(OperationMode):
+    """Animal Detection Mode class."""
+
     def __init__(self):
         super(AnimalDetectionMode, self).__init__()
         self.modename = "animal_detection_mode"
@@ -41,19 +45,18 @@ class AnimalDetectionMode(OperationMode):
                 logger.debug("Processing image from motion detection notification...")
                 cur_img = img_queue.get()
                 results, detected_img_path = self.ai_model.process_image(cur_img["img"],
-                                                                         cur_img["img_id"],
                                                                          True)
 
                 self.last_detection = detected_img_path
 
-                # Trigger image update in WADAS mainwindow
-                self.update_image.emit(detected_img_path)
-
                 self.check_for_termination_requests()
+                if results and detected_img_path:
+                    # Trigger image update in WADAS mainwindow
+                    self.update_image.emit(detected_img_path)
 
-                # Send notification
-                message = "WADAS has detected an animal from camera %s!" % id
-                self.send_notification(message, detected_img_path)
+                    # Send notification
+                    message = "WADAS has detected an animal from camera %s!" % id
+                    self.send_notification(message, detected_img_path)
 
         self.run_finished.emit()
         logger.info("Done with processing.")

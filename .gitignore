@@ -44,6 +44,7 @@ classification_output/
 detection_output/
 url_imgs/
 debug/
+wadas_motion_detection/
 
 # Images
 *.png

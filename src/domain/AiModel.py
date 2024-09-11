@@ -44,21 +44,17 @@ class AiModel():
         # Create required output folders
         os.makedirs("detection_output", exist_ok=True)
         os.makedirs("classification_output", exist_ok=True)
+        os.makedirs("wadas_motion_detection", exist_ok=True)
 
-    def process_image_file(self, img_path, save_detection_image):
-        """Method to run detection model on provided file image."""
-
-        logger.info("Running detection on image %s ...", img_path)
-        # Opening the image from local path, Converting the image to RGB format
-        img = Image.open(img_path).convert("RGB")
-
-        return self.process_image(img, img_path, save_detection_image)
-
-    def process_image(self, img: Image, img_id, save_detection_image: bool):
+    def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
 
-        logger.debug("Processing image %s", img_id)
-        img = img.convert("RGB")
+        if not os.path.isfile(img_path):
+            logger.error("%s is not a valid image path. Aborting." % img_path)
+            return
+
+        logger.info("Running detection on image %s ...", img_path)
+        img = Image.open(img_path).convert("RGB")
         img_array = np.array(img)
         img_array.shape, img_array.dtype
 
@@ -68,16 +64,17 @@ class AiModel():
 
         # Performing the detection on the single image
         results = self.detection_model.single_image_detection(transform(img_array),
-                                                              img_array.shape, img_id)
+                                                              img_array.shape, img_path)
         detected_img_path = ""
         if len(results["detections"].xyxy) > 0 and save_detection_image:
             # Saving the detection results
             logger.info("Saving detection results...")
             pw_utils.save_detection_images(results, os.path.join(".","detection_output"),
                                            overwrite=False)
-            detected_img_path = os.path.join("detection_output",  os.path.basename(img_id))
+            detected_img_path = os.path.join("detection_output",  os.path.basename(img_path))
         else:
-            logger.info("No detected animals for %s", img_id)
+            logger.info("No detected animals for %s. Removing image.", img_path)
+            os.remove(img_path)
 
         return results, detected_img_path
 
@@ -95,7 +92,7 @@ class AiModel():
         img.save(img_path)
         logger.info("Saved processed image at: %s", img_path)
 
-        results, detected_img_path = self.process_image_file(img_path, save_detection_image)
+        results, detected_img_path = self.process_image(img_path, save_detection_image)
         return [img_path, results, detected_img_path]
 
     def classify(self, img_path, results):

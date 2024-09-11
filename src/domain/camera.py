@@ -1,19 +1,19 @@
 """Camera module"""
 
-import cv2
-import logging
 import time
 import os
-
-from queue import Queue
+import logging
 import threading
+from queue import Queue
+
+import cv2
+
 from PIL import Image
 from domain.AiModel import get_timestamp
 
 logger = logging.getLogger(__name__)
 img_queue = Queue()
 cameras_list = []
-debug_mode = True
 
 
 class Camera():
@@ -55,7 +55,7 @@ class Camera():
         cap = cv2.VideoCapture(self.index, self.backend)
 
          # Create Background Subtractor MOG2 object
-        backSub = cv2.createBackgroundSubtractorMOG2()
+        background_sub = cv2.createBackgroundSubtractorMOG2()
 
         # Check if camera opened successfully
         if not cap.isOpened():
@@ -79,18 +79,19 @@ class Camera():
 
             if ret:
                 # Apply background subtraction
-                foreground_mask = backSub.apply(frame)
+                foreground_mask = background_sub.apply(frame)
 
                 # apply global threshold to remove shadows
                 retval, mask_thresh = cv2.threshold(foreground_mask,
                                                     Camera.detection_params['treshold'],
-                                                    255, 
+                                                    255,
                                                     cv2.THRESH_BINARY)
 
+                """TODO: check if following interpolation helps refine the motion detection
                 # set the kernal
-                #  kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
                 # Apply erosion
-                # mask_eroded = cv2.morphologyEx(mask_thresh, cv2.MORPH_OPEN, kernel)
+                # mask_eroded = cv2.morphologyEx(mask_thresh, cv2.MORPH_OPEN, kernel)"""
 
                 # Find contours
                 contours, hierarchy = cv2.findContours(mask_thresh,
@@ -108,7 +109,7 @@ class Camera():
                          Camera.detection_params['detection_per_second']):
                         continue
 
-                    logger.debug("Motion detected from camera %s!" % self.id)
+                    logger.debug("Motion detected from camera %s!", self.id)
                     last_detection_time = current_detection_time
 
                     if test_mode:
@@ -127,13 +128,9 @@ class Camera():
                             break
                     else:
                         # Adding detected image into the AI queue for animal detection
-                        image = Image.fromarray(frame)
-                        img_queue.put({"img": image, "img_id": self.id})
-
-                        if debug_mode:
-                            path = os.path.join("debug", "camera_"+self.id+"_"+
-                                str(get_timestamp())+".jpg")
-                            image.save(path)
+                        img_path = os.path.join("wadas_motion_detection", f"camera_{self.id}_{get_timestamp()}.jpg")
+                        cv2.imwrite(img_path, frame_out)
+                        img_queue.put({"img": img_path, "img_id": f"camera_{self.id}_{get_timestamp()}.jpg"})
             else:
                 break
 
