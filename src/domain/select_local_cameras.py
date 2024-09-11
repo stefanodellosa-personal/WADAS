@@ -159,10 +159,6 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                     self.cameras_list[idx].id = line_edit.text()
                 else:
                     # Camera index has changed or camera is new.
-                    self.cameras_list[idx].name
-                    self.cameras_list[idx].pid
-                    self.cameras_list[idx].vid
-                    self.cameras_list[idx].path
                     self.cameras_list[idx].is_enabled = checkbox.isChecked()
                     self.cameras_list[idx].id = line_edit.text()
         else:
@@ -196,4 +192,4 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                         enum_cameras[camera_idx].pid,
                         enum_cameras[camera_idx].vid,
                         enum_cameras[camera_idx].path)
-        camera.detect(True)
+        camera.detect_motion_from_video(True)

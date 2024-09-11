@@ -136,6 +136,9 @@ class MainWindow(QMainWindow):
             elif not self.cameras_list:
                 logger.error("No camera configured. Please configure input cameras and run again.")
                 return
+            else:
+                # Passing cameras list to the selected operation mode
+                self.operation_mode.cameras_list = self.cameras_list
 
             self.operation_mode.email_configuration = self.email_config
 
@@ -268,6 +271,6 @@ class MainWindow(QMainWindow):
 
         select_local_cameras = DialogSelectLocalCameras(self.cameras_list)
         if select_local_cameras.exec_():
-            logger.debug("Selecting local camera inputs...")
+            logger.debug("Selecting cameras...")
             self.cameras_list = select_local_cameras.cameras_list
             self.update_toolbar_status()

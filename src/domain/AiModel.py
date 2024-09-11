@@ -15,6 +15,12 @@ from domain.classify_detections import Classifier, txt_animalclasses
 
 logger = logging.getLogger(__name__)
 
+def get_timestamp():
+    """Method to prepare timestamp string to apply to images naming"""
+
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return timestamp
+
 class AiModel():
     """Class containing AI Model functionalities (detection & classification)"""
 
@@ -48,11 +54,11 @@ class AiModel():
 
         return self.process_image(img, img_path, save_detection_image)
 
-    def process_image(self, img, img_id, save_detection_image):
+    def process_image(self, img: Image, img_id, save_detection_image: bool):
         """Method to run detection model on provided image."""
 
+        logger.debug("Processing image %s", img_id)
         img = img.convert("RGB")
-
         img_array = np.array(img)
         img_array.shape, img_array.dtype
 
@@ -85,7 +91,7 @@ class AiModel():
         # Save image to disk
         os.makedirs("url_imgs", exist_ok=True)
         img_path = os.path.join("url_imgs", "image_"+str(img_id)+"_"+
-                                str(self.get_timestamp())+".jpg")
+                                str(get_timestamp())+".jpg")
         img.save(img_path)
         logger.info("Saved processed image at: %s", img_path)
 
@@ -136,7 +142,7 @@ class AiModel():
             y2 = int(animal["xyxy"][3])
             color = (255, 0, 0)
             classified_image = cv2.rectangle(orig_image, (x1, y1), (x2, y2), color, 2)
-            
+
             # Round precision on classification score
             animal["classification"][1] = round(animal["classification"][1], 2)
 
@@ -158,8 +164,11 @@ class AiModel():
             text_background_x2 = x1 + 2 * text_padding + text_width
             text_background_y2 = y1
 
-            classified_image = cv2.rectangle(classified_image, (text_background_x1, text_background_y1),
-                                              (text_background_x2, text_background_y2), color, cv2.FILLED)
+            classified_image = cv2.rectangle(classified_image,
+                                             (text_background_x1, text_background_y1),
+                                             (text_background_x2, text_background_y2),
+                                              color,
+                                              cv2.FILLED)
 
             # Add label to classification rectangle
             cv2.putText(classified_image, text, (text_x, text_y),
@@ -183,12 +192,6 @@ class AiModel():
                 classified_animal = result
 
         return classified_animal
-
-    def get_timestamp(self):
-        """Method to prepare timestamp string to apply to images naming"""
-
-        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        return timestamp
 
     """ This code snipped is created by EcoAssist team. Orignal license is shown below.
      Source: https://github.com/PetervanLunteren/EcoAssist/blob/main/classification_utils/model_types/deepfaune/classify_detections.py

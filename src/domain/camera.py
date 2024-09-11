@@ -3,11 +3,17 @@
 import cv2
 import logging
 import time
+import os
 
 from queue import Queue
+import threading
+from PIL import Image
+from domain.AiModel import get_timestamp
 
 logger = logging.getLogger(__name__)
 img_queue = Queue()
+cameras_list = []
+debug_mode = True
 
 
 class Camera():
@@ -33,7 +39,7 @@ class Camera():
         self.path = path
         self.img_folder = img_folder
 
-    def detect(self, test_mode = False):
+    def detect_motion_from_video(self, test_mode = False):
         """Method to run motion detection on camera video stream.
            Only for cameras that are note povided with commercial motion detection feature."""
 
@@ -121,7 +127,13 @@ class Camera():
                             break
                     else:
                         # Adding detected image into the AI queue for animal detection
-                        img_queue.put({"img": frame_out, "img_id": self.id})
+                        image = Image.fromarray(frame)
+                        img_queue.put({"img": image, "img_id": self.id})
+
+                        if debug_mode:
+                            path = os.path.join("debug", "camera_"+self.id+"_"+
+                                str(get_timestamp())+".jpg")
+                            image.save(path)
             else:
                 break
 
@@ -137,3 +149,25 @@ class Camera():
            Only for ftp server camera notifications."""
 
         logger.info("Starting filesystem observer for camera %s.", self.id)
+
+    def run(self):
+        """Method to create new thread for Camera class."""
+
+        thread = None
+        if self.en_wadas_motion_detection:
+            logger.debug("Instantiating motion detection thread for camera %s", self.id)
+            thread = threading.Thread(target=self.detect_motion_from_video)
+        elif self.img_folder:
+            logger.debug("Instantiating observer for camera %s", self.id)
+            thread = threading.Thread(target=self.detect_new_image_file)
+        else:
+            logger.error("Misconfigured Camera!")
+            return
+
+        if thread:
+            thread.start()
+            logger.info("Starting thread for camera %s", self.id)
+        else:
+            logger.error("Unable to create new thread for camera %s", self.id)
+
+        return thread
