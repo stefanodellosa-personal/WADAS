@@ -15,6 +15,12 @@ from domain.classify_detections import Classifier, txt_animalclasses
 
 logger = logging.getLogger(__name__)
 
+def get_timestamp():
+    """Method to prepare timestamp string to apply to images naming"""
+
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return timestamp
+
 class AiModel():
     """Class containing AI Model functionalities (detection & classification)"""
 
@@ -38,12 +44,16 @@ class AiModel():
         # Create required output folders
         os.makedirs("detection_output", exist_ok=True)
         os.makedirs("classification_output", exist_ok=True)
+        os.makedirs("wadas_motion_detection", exist_ok=True)
 
-    def process_image(self, img_path, save_detection_image):
+    def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
 
+        if not os.path.isfile(img_path):
+            logger.error("%s is not a valid image path. Aborting." % img_path)
+            return
+
         logger.info("Running detection on image %s ...", img_path)
-        # Opening the image from local path, Converting the image to RGB format
         img = Image.open(img_path).convert("RGB")
         img_array = np.array(img)
         img_array.shape, img_array.dtype
@@ -51,17 +61,20 @@ class AiModel():
         # Initializing the Yolo-specific transform for the image
         transform = pw_trans.MegaDetector_v5_Transform(target_size=self.detection_model.IMAGE_SIZE,
                                                        stride=self.detection_model.STRIDE)
-        
+
         # Performing the detection on the single image
-        results = self.detection_model.single_image_detection(transform(img_array), img_array.shape, img_path)
+        results = self.detection_model.single_image_detection(transform(img_array),
+                                                              img_array.shape, img_path)
         detected_img_path = ""
         if len(results["detections"].xyxy) > 0 and save_detection_image:
             # Saving the detection results
             logger.info("Saving detection results...")
-            pw_utils.save_detection_images(results, os.path.join(".","detection_output"), overwrite=False)
+            pw_utils.save_detection_images(results, os.path.join(".","detection_output"),
+                                           overwrite=False)
             detected_img_path = os.path.join("detection_output",  os.path.basename(img_path))
         else:
-            logger.info("No detected animals for %s", img_path)
+            logger.info("No detected animals for %s. Removing image.", img_path)
+            os.remove(img_path)
 
         return results, detected_img_path
 
@@ -75,7 +88,7 @@ class AiModel():
         # Save image to disk
         os.makedirs("url_imgs", exist_ok=True)
         img_path = os.path.join("url_imgs", "image_"+str(img_id)+"_"+
-                                str(self.get_timestamp())+".jpg")
+                                str(get_timestamp())+".jpg")
         img.save(img_path)
         logger.info("Saved processed image at: %s", img_path)
 
@@ -126,7 +139,7 @@ class AiModel():
             y2 = int(animal["xyxy"][3])
             color = (255, 0, 0)
             classified_image = cv2.rectangle(orig_image, (x1, y1), (x2, y2), color, 2)
-            
+
             # Round precision on classification score
             animal["classification"][1] = round(animal["classification"][1], 2)
 
@@ -148,8 +161,11 @@ class AiModel():
             text_background_x2 = x1 + 2 * text_padding + text_width
             text_background_y2 = y1
 
-            classified_image = cv2.rectangle(classified_image, (text_background_x1, text_background_y1),
-                                              (text_background_x2, text_background_y2), color, cv2.FILLED)
+            classified_image = cv2.rectangle(classified_image,
+                                             (text_background_x1, text_background_y1),
+                                             (text_background_x2, text_background_y2),
+                                              color,
+                                              cv2.FILLED)
 
             # Add label to classification rectangle
             cv2.putText(classified_image, text, (text_x, text_y),
@@ -173,12 +189,6 @@ class AiModel():
                 classified_animal = result
 
         return classified_animal
-
-    def get_timestamp(self):
-        """Method to prepare timestamp string to apply to images naming"""
-
-        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        return timestamp
 
     """ This code snipped is created by EcoAssist team. Orignal license is shown below.
      Source: https://github.com/PetervanLunteren/EcoAssist/blob/main/classification_utils/model_types/deepfaune/classify_detections.py

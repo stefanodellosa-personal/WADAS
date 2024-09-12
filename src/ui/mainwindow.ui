@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>WADAS</string>
+   <string>Wild Animals Detection and Alert System (WADAS)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="label_image">
@@ -193,8 +193,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionSelect_Mode"/>
+   <addaction name="actionSelectLocalCameras"/>
    <addaction name="actionActionConfigureEmail"/>
+   <addaction name="actionSelect_Mode"/>
    <addaction name="actionRun"/>
    <addaction name="actionStop"/>
   </widget>
@@ -249,6 +250,20 @@
    </property>
    <property name="toolTip">
     <string>Configure Email notifications</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionSelectLocalCameras">
+   <property name="icon">
+    <iconset theme="camera-video"/>
+   </property>
+   <property name="text">
+    <string>selectLocalCameras</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure camera(s)</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

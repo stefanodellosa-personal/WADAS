@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
-    QRadioButton, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QButtonGroup, QDialog,
+    QDialogButtonBox, QRadioButton, QSizePolicy, QSpacerItem,
+    QVBoxLayout, QWidget)
 
 class Ui_DialogSelectMode(object):
     def setupUi(self, DialogSelectMode):
@@ -31,27 +31,42 @@ class Ui_DialogSelectMode(object):
         self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
         self.verticalLayoutWidget = QWidget(DialogSelectMode)
         self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
-        self.verticalLayoutWidget.setGeometry(QRect(20, 20, 351, 101))
+        self.verticalLayoutWidget.setGeometry(QRect(20, 20, 351, 106))
         self.verticalLayout = QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.radioButton_test_model_mode = QRadioButton(self.verticalLayoutWidget)
+        self.buttonGroup = QButtonGroup(DialogSelectMode)
+        self.buttonGroup.setObjectName(u"buttonGroup")
+        self.buttonGroup.addButton(self.radioButton_test_model_mode)
         self.radioButton_test_model_mode.setObjectName(u"radioButton_test_model_mode")
         self.radioButton_test_model_mode.setChecked(True)
+        self.radioButton_test_model_mode.setAutoExclusive(True)
 
         self.verticalLayout.addWidget(self.radioButton_test_model_mode)
 
+        self.radioButton_animal_det_mode = QRadioButton(self.verticalLayoutWidget)
+        self.buttonGroup.addButton(self.radioButton_animal_det_mode)
+        self.radioButton_animal_det_mode.setObjectName(u"radioButton_animal_det_mode")
+        self.radioButton_animal_det_mode.setAutoExclusive(True)
+
+        self.verticalLayout.addWidget(self.radioButton_animal_det_mode)
+
         self.radioButton_tunnel_mode = QRadioButton(self.verticalLayoutWidget)
+        self.buttonGroup.addButton(self.radioButton_tunnel_mode)
         self.radioButton_tunnel_mode.setObjectName(u"radioButton_tunnel_mode")
         self.radioButton_tunnel_mode.setEnabled(False)
         self.radioButton_tunnel_mode.setCheckable(False)
+        self.radioButton_tunnel_mode.setAutoExclusive(True)
 
         self.verticalLayout.addWidget(self.radioButton_tunnel_mode)
 
         self.radioButton_bear_det_mode = QRadioButton(self.verticalLayoutWidget)
+        self.buttonGroup.addButton(self.radioButton_bear_det_mode)
         self.radioButton_bear_det_mode.setObjectName(u"radioButton_bear_det_mode")
         self.radioButton_bear_det_mode.setEnabled(False)
         self.radioButton_bear_det_mode.setCheckable(False)
+        self.radioButton_bear_det_mode.setAutoExclusive(True)
 
         self.verticalLayout.addWidget(self.radioButton_bear_det_mode)
 
@@ -68,8 +83,9 @@ class Ui_DialogSelectMode(object):
     # setupUi
 
     def retranslateUi(self, DialogSelectMode):
-        DialogSelectMode.setWindowTitle(QCoreApplication.translate("DialogSelectMode", u"Dialog", None))
+        DialogSelectMode.setWindowTitle(QCoreApplication.translate("DialogSelectMode", u"Select operation mode", None))
         self.radioButton_test_model_mode.setText(QCoreApplication.translate("DialogSelectMode", u"Test Model", None))
+        self.radioButton_animal_det_mode.setText(QCoreApplication.translate("DialogSelectMode", u"Animal detection mode", None))
         self.radioButton_tunnel_mode.setText(QCoreApplication.translate("DialogSelectMode", u"Tunnel mode", None))
         self.radioButton_bear_det_mode.setText(QCoreApplication.translate("DialogSelectMode", u"Bear detection mode", None))
     # retranslateUi

@@ -19,7 +19,10 @@ logger = logging.getLogger(__name__)
 class OperationMode(QObject):
     """Class to handle WADAS operation modes."""
 
-    operation_modes = {"test_model_mode", "tunnel_mode", "bear_detection_mode"}
+    operation_modes = {"test_model_mode",
+                       "animal_detection_mode",
+                       "tunnel_mode",
+                       "bear_detection_mode"}
     # Signals
     update_image = Signal(str)
     run_finished = Signal()

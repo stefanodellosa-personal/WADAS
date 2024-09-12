@@ -50,6 +50,11 @@ class Ui_MainWindow(object):
         icon3 = QIcon(QIcon.fromTheme(u"emblem-mail"))
         self.actionActionConfigureEmail.setIcon(icon3)
         self.actionActionConfigureEmail.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionSelectLocalCameras = QAction(MainWindow)
+        self.actionSelectLocalCameras.setObjectName(u"actionSelectLocalCameras")
+        icon4 = QIcon(QIcon.fromTheme(u"camera-video"))
+        self.actionSelectLocalCameras.setIcon(icon4)
+        self.actionSelectLocalCameras.setMenuRole(QAction.MenuRole.NoRole)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.label_image = QLabel(self.centralwidget)
@@ -141,8 +146,9 @@ class Ui_MainWindow(object):
         self.toolBar.setObjectName(u"toolBar")
         MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
 
-        self.toolBar.addAction(self.actionSelect_Mode)
+        self.toolBar.addAction(self.actionSelectLocalCameras)
         self.toolBar.addAction(self.actionActionConfigureEmail)
+        self.toolBar.addAction(self.actionSelect_Mode)
         self.toolBar.addAction(self.actionRun)
         self.toolBar.addAction(self.actionStop)
 
@@ -152,7 +158,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"WADAS", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Wild Animals Detection and Alert System (WADAS)", None))
         self.actionSelect_Mode.setText(QCoreApplication.translate("MainWindow", u"Select Mode", None))
 #if QT_CONFIG(tooltip)
         self.actionSelect_Mode.setToolTip(QCoreApplication.translate("MainWindow", u"Select operating mode", None))
@@ -168,6 +174,10 @@ class Ui_MainWindow(object):
         self.actionActionConfigureEmail.setText(QCoreApplication.translate("MainWindow", u"ActionConfigureEmail", None))
 #if QT_CONFIG(tooltip)
         self.actionActionConfigureEmail.setToolTip(QCoreApplication.translate("MainWindow", u"Configure Email notifications", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionSelectLocalCameras.setText(QCoreApplication.translate("MainWindow", u"selectLocalCameras", None))
+#if QT_CONFIG(tooltip)
+        self.actionSelectLocalCameras.setToolTip(QCoreApplication.translate("MainWindow", u"Configure camera(s)", None))
 #endif // QT_CONFIG(tooltip)
         self.label_image.setText(QCoreApplication.translate("MainWindow", u"Detecion viewer", None))
         self.label_op_mode_title.setText(QCoreApplication.translate("MainWindow", u"Operation mode:", None))

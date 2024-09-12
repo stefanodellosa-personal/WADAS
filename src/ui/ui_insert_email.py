@@ -140,7 +140,7 @@ class Ui_DialogInsertEmail(object):
     # setupUi
 
     def retranslateUi(self, DialogInsertEmail):
-        DialogInsertEmail.setWindowTitle(QCoreApplication.translate("DialogInsertEmail", u"Insert Email configuration parameters", None))
+        DialogInsertEmail.setWindowTitle(QCoreApplication.translate("DialogInsertEmail", u"Email configuration", None))
         self.label_4.setText(QCoreApplication.translate("DialogInsertEmail", u"Port", None))
         self.label_3.setText(QCoreApplication.translate("DialogInsertEmail", u"SMTP server", None))
         self.label.setText(QCoreApplication.translate("DialogInsertEmail", u"Sender email", None))

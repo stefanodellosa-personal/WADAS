@@ -12,8 +12,10 @@ from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
 from domain.operation_mode import OperationMode
 from domain.qtextedit_logger import QTextEditLogger
+from domain.select_local_cameras import DialogSelectLocalCameras
 from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
+from domain.animal_detection_mode import AnimalDetectionMode
 from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
@@ -40,6 +42,7 @@ class MainWindow(QMainWindow):
              'smtp_port', 
              'recipients_email']
              )
+        self.cameras_list = []
 
         # Connect Actions
         self._connect_actions()
@@ -63,6 +66,7 @@ class MainWindow(QMainWindow):
         self.ui.actionRun.triggered.connect(self.run)
         self.ui.actionStop.triggered.connect(self.interrupt_thread)
         self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
+        self.ui.actionSelectLocalCameras.triggered.connect(self.select_local_cameras)
 
     def connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -128,6 +132,12 @@ class MainWindow(QMainWindow):
                 if not self.operation_mode.url:
                     logger.error("Cannot proceed without a valid URL. Please run again.")
                     return
+            elif not self.cameras_list:
+                logger.error("No camera configured. Please configure input cameras and run again.")
+                return
+            else:
+                # Passing cameras list to the selected operation mode
+                self.operation_mode.cameras_list = self.cameras_list
 
             self.operation_mode.email_configuration = self.email_config
 
@@ -168,7 +178,8 @@ class MainWindow(QMainWindow):
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
 
-        if not self.operation_mode_name:
+        if (not self.operation_mode_name or
+            (self.operation_mode_name == "animal_detection_mode" and not self.cameras_list)):
             self.ui.actionRun.setEnabled(False)
         else:
             self.ui.actionRun.setEnabled(True)
@@ -216,6 +227,8 @@ class MainWindow(QMainWindow):
             if self.operation_mode_name == "test_model_mode":
                 logger.info("Running test model mode....")
                 self.operation_mode = TestModelMode()
+            elif self.operation_mode_name == "animal_detection_mode":
+                self.operation_mode = AnimalDetectionMode()
             #TODO: add elif with other operation modes
 
     def configure_email(self):
@@ -251,3 +264,12 @@ class MainWindow(QMainWindow):
                 return True
         else:
             return True
+
+    def select_local_cameras(self):
+        """Method to trigger UI dialog for local cameras configuration."""
+
+        select_local_cameras = DialogSelectLocalCameras(self.cameras_list)
+        if select_local_cameras.exec_():
+            logger.debug("Selecting cameras...")
+            self.cameras_list = select_local_cameras.cameras_list
+            self.update_toolbar_status()
