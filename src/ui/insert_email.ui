@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Insert Email configuration parameters</string>
+   <string>Email configuration</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

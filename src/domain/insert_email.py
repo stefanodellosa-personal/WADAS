@@ -1,6 +1,7 @@
 """Email configuration module."""
 
-from PySide6.QtWidgets import QDialog, QDialogButtonBox
+
+import os
 import keyring
 import validators
 import ssl
@@ -9,17 +10,22 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
 from ui.ui_insert_email import Ui_DialogInsertEmail
 
 class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     """Class to insert email configuration to enable WADAS for email notifications."""
+
     def __init__(self, email_configuration):
         super(DialogInsertEmail, self).__init__()
         self.ui = Ui_DialogInsertEmail()
         self.ui.setupUi(self)
-        self.email_configuration = email_configuration
+        self.setWindowIcon(QIcon(os.path.join(
+            os.getcwd(), "src", "img","mainwindow_icon.jpg")))
 
+        self.email_configuration = email_configuration
         self.valid_sender_email = False
         self.valid_smtp = False
         self.valid_port = False

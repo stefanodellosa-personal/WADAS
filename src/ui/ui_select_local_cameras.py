@@ -106,7 +106,7 @@ class Ui_DialogSelectLocalCameras(object):
     # setupUi
 
     def retranslateUi(self, DialogSelectLocalCameras):
-        DialogSelectLocalCameras.setWindowTitle(QCoreApplication.translate("DialogSelectLocalCameras", u"Dialog", None))
+        DialogSelectLocalCameras.setWindowTitle(QCoreApplication.translate("DialogSelectLocalCameras", u"Camera(s) configuration", None))
         self.label_errorMessage.setText("")
         self.label_4.setText(QCoreApplication.translate("DialogSelectLocalCameras", u"Select local camera(s) you want to enable and provide unique ID for it.", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_directInputs), QCoreApplication.translate("DialogSelectLocalCameras", u"Local cameras", None))

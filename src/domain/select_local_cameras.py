@@ -1,12 +1,13 @@
 """Local cameras configuration module."""
 
 
+import os
 import functools
 import cv2
 from cv2_enumerate_cameras import enumerate_cameras
 
 from PySide6.QtWidgets import QDialog, QLabel, QCheckBox, QLineEdit, QPushButton, QDialogButtonBox
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Qt
 
 from domain.camera import Camera
@@ -20,6 +21,8 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
         super(DialogSelectLocalCameras, self).__init__()
         self.ui = Ui_DialogSelectLocalCameras()
         self.ui.setupUi(self)
+        self.setWindowIcon(QIcon(os.path.join(
+            os.getcwd(), "src", "img","mainwindow_icon.jpg")))
         self.cameras_list = cameras_list
         self.enumerated_usb_cameras = enumerate_cameras(cv2.CAP_MSMF)
         #TODO: check API preference for linux and implement it OS independent.

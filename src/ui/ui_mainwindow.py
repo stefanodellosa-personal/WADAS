@@ -158,7 +158,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"WADAS", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Wild Animals Detection and Alert System (WADAS)", None))
         self.actionSelect_Mode.setText(QCoreApplication.translate("MainWindow", u"Select Mode", None))
 #if QT_CONFIG(tooltip)
         self.actionSelect_Mode.setToolTip(QCoreApplication.translate("MainWindow", u"Select operating mode", None))
@@ -177,7 +177,7 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.actionSelectLocalCameras.setText(QCoreApplication.translate("MainWindow", u"selectLocalCameras", None))
 #if QT_CONFIG(tooltip)
-        self.actionSelectLocalCameras.setToolTip(QCoreApplication.translate("MainWindow", u"Select local camera(s) as input", None))
+        self.actionSelectLocalCameras.setToolTip(QCoreApplication.translate("MainWindow", u"Configure camera(s)", None))
 #endif // QT_CONFIG(tooltip)
         self.label_image.setText(QCoreApplication.translate("MainWindow", u"Detecion viewer", None))
         self.label_op_mode_title.setText(QCoreApplication.translate("MainWindow", u"Operation mode:", None))

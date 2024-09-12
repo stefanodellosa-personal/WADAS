@@ -83,7 +83,7 @@ class Ui_DialogSelectMode(object):
     # setupUi
 
     def retranslateUi(self, DialogSelectMode):
-        DialogSelectMode.setWindowTitle(QCoreApplication.translate("DialogSelectMode", u"Dialog", None))
+        DialogSelectMode.setWindowTitle(QCoreApplication.translate("DialogSelectMode", u"Select operation mode", None))
         self.radioButton_test_model_mode.setText(QCoreApplication.translate("DialogSelectMode", u"Test Model", None))
         self.radioButton_animal_det_mode.setText(QCoreApplication.translate("DialogSelectMode", u"Animal detection mode", None))
         self.radioButton_tunnel_mode.setText(QCoreApplication.translate("DialogSelectMode", u"Tunnel mode", None))

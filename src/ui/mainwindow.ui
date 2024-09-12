@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>WADAS</string>
+   <string>Wild Animals Detection and Alert System (WADAS)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="label_image">
@@ -263,7 +263,7 @@
     <string>selectLocalCameras</string>
    </property>
    <property name="toolTip">
-    <string>Select local camera(s) as input</string>
+    <string>Configure camera(s)</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
