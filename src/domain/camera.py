@@ -38,6 +38,7 @@ class Camera():
         self.vid = vid
         self.path = path
         self.img_folder = img_folder
+        self.stop_thread = False
 
     def detect_motion_from_video(self, test_mode = False):
         """Method to run motion detection on camera video stream.
@@ -72,7 +73,7 @@ class Camera():
 
         last_detection_time = 0
         # Read until video is completed
-        while cap.isOpened():
+        while cap.isOpened() and not self.stop_thread:
             # Capture frame-by-frame
             ret, frame = cap.read()
             cap.set(cv2.CAP_PROP_POS_MSEC, Camera.detection_params['ms_sample_rate'])
@@ -128,9 +129,11 @@ class Camera():
                             break
                     else:
                         # Adding detected image into the AI queue for animal detection
-                        img_path = os.path.join("wadas_motion_detection", f"camera_{self.id}_{get_timestamp()}.jpg")
+                        img_path = os.path.join("wadas_motion_detection",
+                                                f"camera_{self.id}_{get_timestamp()}.jpg")
                         cv2.imwrite(img_path, frame_out)
-                        img_queue.put({"img": img_path, "img_id": f"camera_{self.id}_{get_timestamp()}.jpg"})
+                        img_queue.put({"img": img_path,
+                                       "img_id": f"camera_{self.id}_{get_timestamp()}.jpg"})
             else:
                 break
 
@@ -146,6 +149,7 @@ class Camera():
            Only for ftp server camera notifications."""
 
         logger.info("Starting filesystem observer for camera %s.", self.id)
+        #TODO: implement logic.
 
     def run(self):
         """Method to create new thread for Camera class."""

@@ -35,9 +35,11 @@ class AnimalDetectionMode(OperationMode):
             else:
                 # Create thread for motion detection
                 logger.debug("Instantiating thread for camera %s", camera.id)
+                camera.stop_thread = False
                 self.camera_thread.append(camera.run())
 
         self.run_progress.emit(10)
+        self.check_for_termination_requests()
         logger.info("Ready for video stream from Camera(s)...")
         # Run detection model
         while self.process_queue:
@@ -48,7 +50,6 @@ class AnimalDetectionMode(OperationMode):
                                                                          True)
 
                 self.last_detection = detected_img_path
-
                 self.check_for_termination_requests()
                 if results and detected_img_path:
                     # Trigger image update in WADAS mainwindow
@@ -65,8 +66,9 @@ class AnimalDetectionMode(OperationMode):
         """Terminate current thread if interrupt request comes from Mainwindow."""
 
         if self.thread().isInterruptionRequested():
-            self.process_queue = False
-            # TODO: add camera threads kill
-            self.run_finished.emit()
             logger.info("Request to stop received. Aborting...")
+            self.process_queue = False
+            for camera in self.cameras_list:
+                camera.stop_thread = True
+            self.run_finished.emit()
             return
