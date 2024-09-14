@@ -47,7 +47,7 @@ debug/
 wadas_motion_detection/
 
 # Images
-*.png
+#*.png
 #*.jpg
 #*.jpeg
 *.gif

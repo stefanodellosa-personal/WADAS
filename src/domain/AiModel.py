@@ -38,6 +38,8 @@ class AiModel():
         self.detection_model = pw_detection.MegaDetectorV5(
             device=AiModel.DEVICE, pretrained=True)
         self.original_image = ""
+        self.classification_treshold = 0.5
+        self.detection_teshold = 0.5
 
         # Load classification model
         self.classifier = Classifier(AiModel.CLASSIFICATION_MODEL, AiModel.DEVICE)

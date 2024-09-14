@@ -196,6 +196,7 @@
    <addaction name="actionSelectLocalCameras"/>
    <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionSelect_Mode"/>
+   <addaction name="actionConfigure_Ai_model"/>
    <addaction name="actionRun"/>
    <addaction name="actionStop"/>
   </widget>
@@ -264,6 +265,18 @@
    </property>
    <property name="toolTip">
     <string>Configure camera(s)</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionConfigure_Ai_model">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/icon-ai-24.png</normaloff>../icons/icon-ai-24.png</iconset>
+   </property>
+   <property name="text">
+    <string>Configure Ai model</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
