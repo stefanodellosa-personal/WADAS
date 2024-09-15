@@ -106,3 +106,7 @@ class OperationMode(QObject):
                 logger.debug("Email notification sent to recipient %s .", recipient)
             smtp_server.quit()
         logger.info("Email notification for %s sent!", img_path)
+
+    def execution_completed(self):
+        self.run_finished.emit()
+        logger.info("Done with processing.")

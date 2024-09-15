@@ -48,7 +48,7 @@ class AiModel():
         os.makedirs("classification_output", exist_ok=True)
         os.makedirs("wadas_motion_detection", exist_ok=True)
 
-        Logger.debug("Detection treshold: %s, Classification treshod: %s.",
+        logger.debug("Detection treshold: %s, Classification treshod: %s.",
                      self.detection_teshold, self.classification_treshold)
 
     def process_image(self, img_path, save_detection_image: bool):
@@ -72,6 +72,13 @@ class AiModel():
                                                               img_array.shape,
                                                               img_path,
                                                               AiModel.detection_teshold)
+
+        # Checks for humans in results
+        if ("person" in results["labels"][0]) and (len(results["labels"]) == 1):
+            logger.warning("%s image contains only person(s), not animals. Skipping it.", img_path)
+            os.remove(img_path)
+            return None, ""
+
         detected_img_path = ""
         if len(results["detections"].xyxy) > 0 and save_detection_image:
             # Saving the detection results
@@ -103,7 +110,8 @@ class AiModel():
         return [img_path, results, detected_img_path]
 
     def classify(self, img_path, results):
-        """Method to perform classification on detection result(s)."""
+        """Method to perform classification on detection result(s).
+           TODO: avoid to classify crops with people classification."""
 
         if not results:
             logger.warning("No results to classify. Skipping classification.")
