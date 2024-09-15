@@ -108,5 +108,6 @@ class OperationMode(QObject):
         logger.info("Email notification for %s sent!", img_path)
 
     def execution_completed(self):
+        """Method to perform end of execution steps."""
         self.run_finished.emit()
         logger.info("Done with processing.")

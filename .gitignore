@@ -35,6 +35,9 @@ build/
 *.cache
 *.sublime-workspace
 
+# Model
+*.pt
+
 # Dependency directories
 node_modules/
 bower_components/

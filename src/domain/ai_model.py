@@ -28,8 +28,10 @@ class AiModel():
     #TODO: uncomment this: DEVICE = "npu" if npu_lib.backend.npu_available() else
     # "cuda" if torch.cuda.is_available() else "cpu"
     DEVICE = "cpu"
-    CLASSIFICATION_MODEL = os.path.join("C:/", "Users/", "stefa/", "Downloads",
+    CLASSIFICATION_MODEL_PATH = os.path.join(os.getcwd(),
                                         "deepfaune-vit_large_patch14_dinov2.lvd142m.pt")
+    CLASSIFICATION_MODEL_URL = "https://pbil.univ-lyon1.fr/software/download/deepfaune/v1.1/deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
+    CLASSIFICATION_MODEL_FILENAME = "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
     classification_treshold = 0.5
     detection_teshold = 0.5
 
@@ -42,7 +44,7 @@ class AiModel():
         self.original_image = ""
 
         # Load classification model
-        self.classifier = Classifier(AiModel.CLASSIFICATION_MODEL, AiModel.DEVICE)
+        self.classifier = Classifier(AiModel.CLASSIFICATION_MODEL_PATH, AiModel.DEVICE)
         # Create required output folders
         os.makedirs("detection_output", exist_ok=True)
         os.makedirs("classification_output", exist_ok=True)

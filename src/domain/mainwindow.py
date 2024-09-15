@@ -18,6 +18,7 @@ from domain.test_model_mode import TestModelMode
 from domain.animal_detection_mode import AnimalDetectionMode
 from domain.configure_ai_model import ConfigureAiModel
 from domain.ai_model import AiModel
+from domain.download_dialog import DownloadDialog
 from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
@@ -127,6 +128,9 @@ class MainWindow(QMainWindow):
         if self.operation_mode:
             # Satisfy preconditions and required inputs for the selected operation mode
             if self.operation_mode_name == "test_model_mode":
+                if not self.check_classification_model():
+                    logger.error("Cannot run this mode without classificatin model. Aborting.")
+                    return
                 self.operation_mode.url = self.url_input_dialog()
                 if not self.operation_mode.url:
                     logger.error("Cannot proceed without a valid URL. Please run again.")
@@ -287,3 +291,25 @@ class MainWindow(QMainWindow):
             logger.info("Ai model configured.")
             logger.debug("Detection treshold: %s. Classification threshold: %s",
                          AiModel.detection_teshold, AiModel.classification_treshold)
+
+    def check_classification_model(self):
+        """Method to initialize classification model."""
+
+        if not os.path.isfile(AiModel.CLASSIFICATION_MODEL_PATH):
+
+            message_box = QMessageBox
+            message = "No classification module found. Do you wish to download it?"
+            answer = message_box.question(self,'', message, message_box.Yes | message_box.No)
+
+            if answer == message_box.No:
+                logger.warning("No Classification module, please download it to enable full features.")
+                return False
+            else:
+                logger.warning("Classification module not found.")
+                download_dialog = DownloadDialog(AiModel.CLASSIFICATION_MODEL_URL,
+                                             AiModel.CLASSIFICATION_MODEL_FILENAME)
+                download_dialog.exec()
+        else:
+            logger.info("Classification model found at %s!", AiModel.CLASSIFICATION_MODEL_PATH)
+
+        return True
