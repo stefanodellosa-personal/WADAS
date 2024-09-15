@@ -30,6 +30,8 @@ class AiModel():
     DEVICE = "cpu"
     CLASSIFICATION_MODEL = os.path.join("C:/", "Users/", "stefa/", "Downloads",
                                         "deepfaune-vit_large_patch14_dinov2.lvd142m.pt")
+    classification_treshold = 0.5
+    detection_teshold = 0.5
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -38,8 +40,6 @@ class AiModel():
         self.detection_model = pw_detection.MegaDetectorV5(
             device=AiModel.DEVICE, pretrained=True)
         self.original_image = ""
-        self.classification_treshold = 0.5
-        self.detection_teshold = 0.5
 
         # Load classification model
         self.classifier = Classifier(AiModel.CLASSIFICATION_MODEL, AiModel.DEVICE)
@@ -48,11 +48,14 @@ class AiModel():
         os.makedirs("classification_output", exist_ok=True)
         os.makedirs("wadas_motion_detection", exist_ok=True)
 
+        Logger.debug("Detection treshold: %s, Classification treshod: %s.",
+                     self.detection_teshold, self.classification_treshold)
+
     def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
 
         if not os.path.isfile(img_path):
-            logger.error("%s is not a valid image path. Aborting." % img_path)
+            logger.error("%s is not a valid image path. Aborting.", img_path)
             return
 
         logger.info("Running detection on image %s ...", img_path)
@@ -66,7 +69,9 @@ class AiModel():
 
         # Performing the detection on the single image
         results = self.detection_model.single_image_detection(transform(img_array),
-                                                              img_array.shape, img_path)
+                                                              img_array.shape,
+                                                              img_path,
+                                                              AiModel.detection_teshold)
         detected_img_path = ""
         if len(results["detections"].xyxy) > 0 and save_detection_image:
             # Saving the detection results
@@ -115,14 +120,16 @@ class AiModel():
                                               str(classification_id)+'_cropped_image.jpg')
             cropped_image.save(cropped_image_path)
             logger.debug("Saved crop of image at %s.", cropped_image_path)
+
             # Performing classification
             classification_result = self.classify_crop(cropped_image)
-            logger.info("Classification result: %s", classification_result)
+            if classification_result[0]:
+                logger.info("Classification result: %s", classification_result)
 
-            classified_animals.append({"id": classification_id,
-                                    "classification": classification_result,
-                                    "xyxy": xyxy})
-            classification_id = classification_id+1
+                classified_animals.append({"id": classification_id,
+                                        "classification": classification_result,
+                                        "xyxy": xyxy})
+                classification_id = classification_id+1
 
         img_path = self.build_classification_square(img, classified_animals, img_path)
         return img_path, classified_animals
@@ -187,7 +194,11 @@ class AiModel():
         classifications = self.get_classifications(PIL_crop)
         classified_animal = ['', 0]
         for result in classifications:
-            if result[1] > classified_animal[1]:
+            if not classified_animal[0] and result[1] >= AiModel.classification_treshold:
+                classified_animal = result
+            elif (classified_animal[0] and
+                  result[1] >= AiModel.classification_treshold and
+                  result[1] > classified_animal[1]):
                 classified_animal = result
 
         return classified_animal

@@ -17,6 +17,7 @@ from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
 from domain.animal_detection_mode import AnimalDetectionMode
 from domain.configure_ai_model import ConfigureAiModel
+from domain.ai_model import AiModel
 from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
@@ -32,10 +33,6 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.operation_mode_name = ""
-        self.ai_model_cfg = {
-            'classification_treshold': 0.5,
-            'detection_treshold': 0.5
-            }
         self.operation_mode = None
         self.key_ring = None
         self.email_config = dict.fromkeys(
@@ -284,14 +281,8 @@ class MainWindow(QMainWindow):
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""
 
-        # Verify that Ai model is initialized.
-        if self.ai_model_cfg is None:
-            # We should never be here
-            logger.error("Ai model not initialized. Aborting.")
-            return
-       
-        configure_ai_model = ConfigureAiModel(self.ai_model_cfg)
+        configure_ai_model = ConfigureAiModel()
         if configure_ai_model.exec():
-            self.ai_model_cfg['classification_treshold'] = configure_ai_model.classification_treshold
-            self.ai_model_cfg['detection_treshold'] = configure_ai_model.detection_teshold
             logger.info("Ai model configured.")
+            logger.debug("Detection treshold: %s. Classification threshold: %s",
+                         AiModel.detection_teshold, AiModel.classification_treshold)

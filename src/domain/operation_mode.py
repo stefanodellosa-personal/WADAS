@@ -12,7 +12,7 @@ import keyring
 import ssl
 
 from PySide6.QtCore import QObject, Signal
-from domain.AiModel import AiModel
+from domain.ai_model import AiModel
 
 logger = logging.getLogger(__name__)
 

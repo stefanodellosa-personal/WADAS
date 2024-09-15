@@ -7,15 +7,14 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox
 from PySide6.QtGui import QIcon
 
 from ui.ui_configure_ai_model import Ui_DialogConfigureAi
+from domain.ai_model import AiModel
 
 class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
     """Class to instantiate UI dialog to configure Ai model parameters."""
 
-    def __init__(self, ai_model_cfg):
+    def __init__(self):
         super(ConfigureAiModel, self).__init__()
         self.ui = Ui_DialogConfigureAi()
-        self.classification_treshold = ai_model_cfg['classification_treshold']
-        self.detection_teshold = ai_model_cfg['detection_treshold']
 
         # UI
         self.ui.setupUi(self)
@@ -23,8 +22,8 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
             os.getcwd(), "src", "img","mainwindow_icon.jpg")))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_errorMEssage.setStyleSheet("color: red")
-        self.ui.lineEdit_classificationTreshold.setText(str(self.classification_treshold))
-        self.ui.lineEdit_detectionTreshold.setText(str(self.detection_teshold))
+        self.ui.lineEdit_classificationTreshold.setText(str(AiModel.classification_treshold))
+        self.ui.lineEdit_detectionTreshold.setText(str(AiModel.detection_teshold))
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
@@ -37,7 +36,8 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         """Method to validate input values."""
 
         valid = True
-        if (ctreshold := float(self.ui.lineEdit_classificationTreshold.text())) > 1 or ctreshold < 0:
+        if ((ctreshold := float(self.ui.lineEdit_classificationTreshold.text())) > 1 or
+             ctreshold < 0):
             self.ui.label_errorMEssage.setText(
                 "Invalid classification treshold. Please insert a value between 0 and 1.")
             valid = False
@@ -52,8 +52,8 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
     def accept_and_close(self):
         """When Ok is clicked, save Ai model config info before closing."""
 
-        self.classification_treshold = float(self.ui.lineEdit_classificationTreshold.text())
-        self.detection_teshold = float(self.ui.lineEdit_detectionTreshold.text())
+        AiModel.classification_treshold = float(self.ui.lineEdit_classificationTreshold.text())
+        AiModel.detection_teshold = float(self.ui.lineEdit_detectionTreshold.text())
 
         self.accept()
 
