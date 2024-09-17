@@ -35,6 +35,9 @@ build/
 *.cache
 *.sublime-workspace
 
+# Model
+*.pt
+
 # Dependency directories
 node_modules/
 bower_components/
@@ -45,9 +48,10 @@ detection_output/
 url_imgs/
 debug/
 wadas_motion_detection/
+demo_output/
 
 # Images
-*.png
+#*.png
 #*.jpg
 #*.jpeg
 *.gif

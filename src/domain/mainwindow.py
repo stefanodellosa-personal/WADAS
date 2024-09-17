@@ -16,6 +16,9 @@ from domain.select_local_cameras import DialogSelectLocalCameras
 from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
 from domain.animal_detection_mode import AnimalDetectionMode
+from domain.configure_ai_model import ConfigureAiModel
+from domain.ai_model import AiModel
+from domain.download_dialog import DownloadDialog
 from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
@@ -31,10 +34,6 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.operation_mode_name = ""
-        self.ai_model = None
-        self.operation_mode = None
-        self.operation_mode_name = ""
-        self.ai_model = None
         self.operation_mode = None
         self.key_ring = None
         self.email_config = dict.fromkeys(
@@ -67,6 +66,7 @@ class MainWindow(QMainWindow):
         self.ui.actionStop.triggered.connect(self.interrupt_thread)
         self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
         self.ui.actionSelectLocalCameras.triggered.connect(self.select_local_cameras)
+        self.ui.actionConfigure_Ai_model.triggered.connect(self.configure_ai_model)
 
     def connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -128,6 +128,9 @@ class MainWindow(QMainWindow):
         if self.operation_mode:
             # Satisfy preconditions and required inputs for the selected operation mode
             if self.operation_mode_name == "test_model_mode":
+                if not self.check_classification_model():
+                    logger.error("Cannot run this mode without classificatin model. Aborting.")
+                    return
                 self.operation_mode.url = self.url_input_dialog()
                 if not self.operation_mode.url:
                     logger.error("Cannot proceed without a valid URL. Please run again.")
@@ -178,10 +181,14 @@ class MainWindow(QMainWindow):
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
 
-        if (not self.operation_mode_name or
-            (self.operation_mode_name == "animal_detection_mode" and not self.cameras_list)):
+        if not self.operation_mode_name:
+            self.ui.actionConfigure_Ai_model.setEnabled(False)
+            self.ui.actionRun.setEnabled(False)
+        elif self.operation_mode_name == "animal_detection_mode" and not self.cameras_list:
+            self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
         else:
+            self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(True)
         self.ui.actionStop.setEnabled(False)
 
@@ -192,6 +199,8 @@ class MainWindow(QMainWindow):
         self.ui.actionRun.setEnabled(not running)
         self.ui.actionActionConfigureEmail.setEnabled(not running)
         self.ui.actionSelect_Mode.setEnabled(not running)
+        self.ui.actionConfigure_Ai_model.setEnabled(not running)
+        self.ui.actionSelectLocalCameras.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -270,6 +279,37 @@ class MainWindow(QMainWindow):
 
         select_local_cameras = DialogSelectLocalCameras(self.cameras_list)
         if select_local_cameras.exec_():
-            logger.debug("Selecting cameras...")
+            logger.info("Camera(s) configured.")
             self.cameras_list = select_local_cameras.cameras_list
             self.update_toolbar_status()
+
+    def configure_ai_model(self):
+        """Method to trigger UI dialog to configure Ai model."""
+
+        configure_ai_model = ConfigureAiModel()
+        if configure_ai_model.exec():
+            logger.info("Ai model configured.")
+            logger.debug("Detection treshold: %s. Classification threshold: %s",
+                         AiModel.detection_teshold, AiModel.classification_treshold)
+
+    def check_classification_model(self):
+        """Method to initialize classification model."""
+
+        if not os.path.isfile(AiModel.CLASSIFICATION_MODEL_PATH):
+
+            message_box = QMessageBox
+            message = "No classification module found. Do you wish to download it?"
+            answer = message_box.question(self,'', message, message_box.Yes | message_box.No)
+
+            if answer == message_box.No:
+                logger.warning("No Classification module, please download it to enable full features.")
+                return False
+            else:
+                logger.warning("Classification module not found.")
+                download_dialog = DownloadDialog(AiModel.CLASSIFICATION_MODEL_URL,
+                                             AiModel.CLASSIFICATION_MODEL_FILENAME)
+                download_dialog.exec()
+        else:
+            logger.info("Classification model found at %s!", AiModel.CLASSIFICATION_MODEL_PATH)
+
+        return True

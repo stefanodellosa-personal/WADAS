@@ -59,8 +59,7 @@ class AnimalDetectionMode(OperationMode):
                     message = "WADAS has detected an animal from camera %s!" % id
                     self.send_notification(message, detected_img_path)
 
-        self.run_finished.emit()
-        logger.info("Done with processing.")
+        self.execution_completed()
 
     def check_for_termination_requests(self):
         """Terminate current thread if interrupt request comes from Mainwindow."""

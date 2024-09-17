@@ -9,7 +9,7 @@ from queue import Queue
 import cv2
 
 from PIL import Image
-from domain.AiModel import get_timestamp
+from domain.ai_model import get_timestamp
 
 logger = logging.getLogger(__name__)
 img_queue = Queue()

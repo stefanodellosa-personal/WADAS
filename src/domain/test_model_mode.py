@@ -9,6 +9,7 @@ class TestModelMode(OperationMode):
         super(TestModelMode, self).__init__()
         self.modename = "test_model_mode"
         self.url = ""
+        self.last_classified_animals = ""
 
     def run(self):
         """WADAS test model operation mode"""
@@ -29,6 +30,11 @@ class TestModelMode(OperationMode):
         det_results = det_data[1]
         detected_img_path = det_data[2]
         self.last_detection = detected_img_path
+
+        # Check if detection has returned results
+        if not detected_img_path or not det_results:
+            self.execution_completed()
+            return
 
         # Trigger image update in WADAS mainwindow
         self.update_image.emit(detected_img_path)
@@ -55,11 +61,9 @@ class TestModelMode(OperationMode):
             logger.debug("No results to classify.")
 
         # Send notification
-        message = "WADAS has classified %s animal!" % self.last_classified_animals
+        message = f"WADAS has classified {self.last_classified_animals} animal!"
         self.send_notification(message, img_path)
-
-        self.run_finished.emit()
-        logger.info("Done with processing.")
+        self.execution_completed()
 
     def check_for_termination_requests(self):
         """Terminate current thread if interrupt request comes from Mainwindow."""
@@ -68,3 +72,4 @@ class TestModelMode(OperationMode):
             self.run_finished.emit()
             logger.info("Request to stop received. Aborting...")
             return
+
