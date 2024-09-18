@@ -18,8 +18,10 @@ from domain.test_model_mode import TestModelMode
 from domain.animal_detection_mode import AnimalDetectionMode
 from domain.configure_ai_model import ConfigureAiModel
 from domain.ai_model import AiModel
+from domain.camera import Camera
 from domain.download_dialog import DownloadDialog
 from ui.ui_mainwindow import Ui_MainWindow
+import yaml
 
 logger = logging.getLogger()
 
@@ -44,10 +46,10 @@ class MainWindow(QMainWindow):
         self.cameras_list = []
 
         # Connect Actions
-        self._connect_actions()
+        self.__connect_actions()
 
         # Setup UI logger
-        self.setup_logger()
+        self.__setup_logger()
 
         # Initialize startup image
         self.set_image(os.path.join(os.getcwd(), "src", "img","WADAS_logo_big.jpg"))
@@ -59,7 +61,7 @@ class MainWindow(QMainWindow):
         self.update_toolbar_status()
         logger.info('Welcome to WADAS!')
 
-    def _connect_actions(self):
+    def __connect_actions(self):
         """List all actions to connect to MainWindow"""
         self.ui.actionSelect_Mode.triggered.connect(self.select_mode)
         self.ui.actionRun.triggered.connect(self.run)
@@ -67,15 +69,19 @@ class MainWindow(QMainWindow):
         self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
         self.ui.actionSelectLocalCameras.triggered.connect(self.select_local_cameras)
         self.ui.actionConfigure_Ai_model.triggered.connect(self.configure_ai_model)
+        self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
+        self.ui.actionSave_configuration_to_file.triggered.connect(self.save_config_to_file)
+        self.ui.actionOpen_configuration_file.triggered.connect(self.load_config_from_file)
+        self.ui.actionOpen_configuration_file_menu.triggered.connect(self.load_config_from_file)
 
-    def connect_mode_ui_slots(self):
+    def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
 
         # Connect Signal to update image in widget.
         self.operation_mode.update_image.connect(self.set_image)
         self.operation_mode.run_finished.connect(self.on_run_completion)
 
-    def setup_logger(self):
+    def __setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_log)
@@ -145,7 +151,7 @@ class MainWindow(QMainWindow):
             self.operation_mode.email_configuration = self.email_config
 
             # Connect slots to update UI from operation mode
-            self.connect_mode_ui_slots()
+            self.__connect_mode_ui_slots()
 
             # Initialize thread where to run the inference
             self.thread = QThread()
@@ -313,3 +319,36 @@ class MainWindow(QMainWindow):
             logger.info("Classification model found at %s!", AiModel.CLASSIFICATION_MODEL_PATH)
 
         return True
+
+    def save_config_to_file(self):
+        """Method to save configuration to file."""
+
+        logger.info("Saving WADAS configuration to file...")
+        data = dict(
+            email = self.email_config,
+            cameras = [camera.serialize() for camera in self.cameras_list],
+            camera_detection_params = Camera.detection_params,
+            ai_model = dict(
+                ai_detect_treshold = AiModel.detection_teshold,
+                ai_class_treshold = AiModel.classification_treshold
+            )
+        )
+
+        with open("wadas_cfg.yaml", 'w') as yamlfile:
+            data = yaml.safe_dump(data, yamlfile)
+        logger.info("WADAS config saved to file.")
+
+    def load_config_from_file(self):
+        """Method to load config from file."""
+
+        with open('wadas_cfg.yaml', 'r') as file:
+
+            logging.info("Loading WADAS config from file...")
+            wadas_config = yaml.safe_load(file)
+
+            self.email_config = wadas_config['email']
+            self.cameras_list = [Camera.deserialize(data) for data in wadas_config['cameras']]
+            Camera.detection_params = wadas_config['camera_detection_params']
+            AiModel.detection_teshold = wadas_config['ai_model']['ai_detect_treshold']
+            AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
+            logging.info("WADA configuration loaded from file.")

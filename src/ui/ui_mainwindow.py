@@ -16,9 +16,9 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QLabel, QMainWindow, QMenuBar,
-    QPlainTextEdit, QSizePolicy, QSpacerItem, QStatusBar,
-    QToolBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QLabel, QMainWindow, QMenu,
+    QMenuBar, QPlainTextEdit, QSizePolicy, QSpacerItem,
+    QStatusBar, QToolBar, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -61,6 +61,28 @@ class Ui_MainWindow(object):
         icon5.addFile(u"../icons/icon-ai-24.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionConfigure_Ai_model.setIcon(icon5)
         self.actionConfigure_Ai_model.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionOpen_configuration_file = QAction(MainWindow)
+        self.actionOpen_configuration_file.setObjectName(u"actionOpen_configuration_file")
+        icon6 = QIcon(QIcon.fromTheme(u"document-open"))
+        self.actionOpen_configuration_file.setIcon(icon6)
+        self.actionOpen_configuration_file.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionSave_configuration = QAction(MainWindow)
+        self.actionSave_configuration.setObjectName(u"actionSave_configuration")
+        icon7 = QIcon(QIcon.fromTheme(u"document-save"))
+        self.actionSave_configuration.setIcon(icon7)
+        self.actionSave_configuration.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionOpen_configuration_file_menu = QAction(MainWindow)
+        self.actionOpen_configuration_file_menu.setObjectName(u"actionOpen_configuration_file_menu")
+        self.actionOpen_configuration_file_menu.setIcon(icon6)
+        self.actionSave_configuration_to_file = QAction(MainWindow)
+        self.actionSave_configuration_to_file.setObjectName(u"actionSave_configuration_to_file")
+        self.actionSave_configuration_to_file.setIcon(icon7)
+        self.actionAbout = QAction(MainWindow)
+        self.actionAbout.setObjectName(u"actionAbout")
+        icon8 = QIcon(QIcon.fromTheme(u"dialog-question"))
+        self.actionAbout.setIcon(icon8)
+        self.actionLicense = QAction(MainWindow)
+        self.actionLicense.setObjectName(u"actionLicense")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.label_image = QLabel(self.centralwidget)
@@ -144,6 +166,10 @@ class Ui_MainWindow(object):
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
         self.menubar.setGeometry(QRect(0, 0, 1149, 22))
+        self.menuFile = QMenu(self.menubar)
+        self.menuFile.setObjectName(u"menuFile")
+        self.menuHelp = QMenu(self.menubar)
+        self.menuHelp.setObjectName(u"menuHelp")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -152,6 +178,14 @@ class Ui_MainWindow(object):
         self.toolBar.setObjectName(u"toolBar")
         MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
 
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuHelp.menuAction())
+        self.menuFile.addAction(self.actionOpen_configuration_file_menu)
+        self.menuFile.addAction(self.actionSave_configuration_to_file)
+        self.menuHelp.addAction(self.actionAbout)
+        self.menuHelp.addAction(self.actionLicense)
+        self.toolBar.addAction(self.actionOpen_configuration_file)
+        self.toolBar.addAction(self.actionSave_configuration)
         self.toolBar.addAction(self.actionSelectLocalCameras)
         self.toolBar.addAction(self.actionActionConfigureEmail)
         self.toolBar.addAction(self.actionSelect_Mode)
@@ -187,6 +221,12 @@ class Ui_MainWindow(object):
         self.actionSelectLocalCameras.setToolTip(QCoreApplication.translate("MainWindow", u"Configure camera(s)", None))
 #endif // QT_CONFIG(tooltip)
         self.actionConfigure_Ai_model.setText(QCoreApplication.translate("MainWindow", u"Configure Ai model", None))
+        self.actionOpen_configuration_file.setText(QCoreApplication.translate("MainWindow", u"Open configuration file", None))
+        self.actionSave_configuration.setText(QCoreApplication.translate("MainWindow", u"Save configuration", None))
+        self.actionOpen_configuration_file_menu.setText(QCoreApplication.translate("MainWindow", u"Open configuration file", None))
+        self.actionSave_configuration_to_file.setText(QCoreApplication.translate("MainWindow", u"Save configuration to file", None))
+        self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"About", None))
+        self.actionLicense.setText(QCoreApplication.translate("MainWindow", u"License", None))
         self.label_image.setText(QCoreApplication.translate("MainWindow", u"Detecion viewer", None))
         self.label_op_mode_title.setText(QCoreApplication.translate("MainWindow", u"Operation mode:", None))
         self.label_op_mode.setText("")
@@ -196,6 +236,8 @@ class Ui_MainWindow(object):
         self.label_last_classification.setText("")
         self.label_classified_animal_title.setText(QCoreApplication.translate("MainWindow", u"Classified animal(s):", None))
         self.label_classified_animal.setText("")
+        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
+        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
     # retranslateUi
 

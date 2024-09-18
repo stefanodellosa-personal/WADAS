@@ -49,4 +49,4 @@ class Downloader(QThread):
 
     def abort(self):
         if os.path.isfile(self.filename):
-            os.remove(self.filename) 
+            os.remove(self.filename)

@@ -7,6 +7,7 @@ import threading
 from queue import Queue
 
 import cv2
+import yaml
 
 from PIL import Image
 from domain.ai_model import get_timestamp
@@ -68,8 +69,8 @@ class Camera():
         width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps    = cap.get(cv2.CAP_PROP_FPS)
-        logger.debug('Length: %.2f | Width: %.2f | Height: %.2f | Fps: %.2f' %
-                      (length, width, height, fps))
+        logger.debug('Length: %.2f | Width: %.2f | Height: %.2f | Fps: %.2f',
+                      length, width, height, fps)
 
         last_detection_time = 0
         # Read until video is completed
@@ -172,3 +173,28 @@ class Camera():
             logger.error("Unable to create new thread for camera %s", self.id)
 
         return thread
+
+    def serialize(self):
+        """Method to serialize Camera object into file."""
+        data = dict(
+            id = self.id,
+            name = self.name,
+            index = self.index,
+            backend = self.backend,
+            enabled = self.is_enabled,
+            enable_mot_det = self.en_wadas_motion_detection,
+            pid = self.pid,
+            vid = self.vid,
+            path = self.path,
+            image_folder = self.img_folder
+        )
+        return data
+
+    @staticmethod
+    def deserialize(data):
+        """Method to deserialize Camera object from file."""
+        camera = Camera(data["id"], data["index"], data["backend"],
+                      data["name"], data["enabled"], data["enable_mot_det"],
+                      data["pid"], data["vid"], data["path"],
+                      data["image_folder"])
+        return camera

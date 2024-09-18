@@ -6,6 +6,7 @@ import keyring
 import validators
 import ssl
 import smtplib
+import re
 
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -54,13 +55,17 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         credentials = keyring.get_credential("WADAS_email", "")
         self.ui.lineEdit_senderEmail.setText(credentials.username)
         self.ui.lineEdit_password.setText(credentials.password)
+        recipients_string = ', '.join(self.email_configuration['recipients_email'])
+        self.ui.textEdit_recipient_email.setText(recipients_string)
         self.validate_email_configurations()
 
     def accept_and_close(self):
         """When Ok is clicked, save email config info before closing."""
         self.email_configuration['smtp_hostname'] = self.ui.lineEdit_smtpServer.text()
         self.email_configuration['smtp_port'] = self.ui.lineEdit_port.text()
-        self.email_configuration['recipients_email'] = self.ui.textEdit_recipient_email.toPlainText().strip()
+        self.email_configuration['recipients_email'] = list()
+        for recipient in self.ui.textEdit_recipient_email.toPlainText().strip().split(", "):
+            self.email_configuration['recipients_email'].append(recipient)
         keyring.set_password("WADAS_email", self.ui.lineEdit_senderEmail.text(),
                               self.ui.lineEdit_password.text())
         self.accept()
@@ -139,15 +144,16 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
 
         credentials = keyring.get_credential("WADAS_email", "")
         sender = credentials.username
-        recipients = self.ui.textEdit_recipient_email.toPlainText().strip()
-        recipients_to_list = recipients.split(", ")
+        recipients_to_list = list() 
+        for recipient in self.ui.textEdit_recipient_email.toPlainText().strip().split(", "):
+            recipients_to_list.append(recipient)
 
         text = "WADAS test email."
         message = MIMEText(text, "plain")
         # Set email required fields.
         message['Subject'] = "WADAS test email"
         message['From'] = sender
-        message['To'] = recipients[0]
+        message['To'] = self.ui.textEdit_recipient_email.toPlainText().strip()
 
         # Connect to Gmail's SMTP server using SSL.
         context = ssl.create_default_context()
@@ -157,5 +163,6 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
             # Login to the SMTP server using the sender's credentials.
             smtp_server.login(sender, credentials.password)
             # Send the email.
-            smtp_server.sendmail(sender, recipients_to_list, message.as_string())
-        self.ui.label_status.setText("Emai sent!")
+            for recipient in recipients_to_list:
+                smtp_server.sendmail(sender, recipient, message.as_string())
+        self.ui.label_status.setText("Test email(s) sent!")
