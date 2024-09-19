@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.configuration_file_name = ""
         self.operation_mode_name = ""
         self.operation_mode = None
         self.key_ring = None
@@ -69,10 +70,12 @@ class MainWindow(QMainWindow):
         self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
         self.ui.actionSelectLocalCameras.triggered.connect(self.select_local_cameras)
         self.ui.actionConfigure_Ai_model.triggered.connect(self.configure_ai_model)
-        self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
-        self.ui.actionSave_configuration_to_file_menu.triggered.connect(self.save_config_to_file)
+        self.ui.actionSave_configuration_as.triggered.connect(self.save_config_to_file)
+        self.ui.actionSave_configuration_as_menu.triggered.connect(self.save_config_to_file)
         self.ui.actionOpen_configuration_file.triggered.connect(self.load_config_from_file)
         self.ui.actionOpen_configuration_file_menu.triggered.connect(self.load_config_from_file)
+        self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
+        self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
 
     def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -198,8 +201,12 @@ class MainWindow(QMainWindow):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(True)
         self.ui.actionStop.setEnabled(False)
-        self.ui.actionSave_configuration.setEnabled(self.isWindowModified())
-        self.ui.actionSave_configuration_to_file_menu.setEnabled(self.isWindowModified())
+        self.ui.actionSave_configuration_as.setEnabled(self.isWindowModified())
+        self.ui.actionSave_configuration_as_menu.setEnabled(self.isWindowModified())
+        self.ui.actionSave_configuration.setEnabled(self.isWindowModified() and
+                                                    bool(self.configuration_file_name))
+        self.ui.actionSave_configuration_menu.setEnabled(self.isWindowModified() and
+                                                         bool(self.configuration_file_name))
 
     def update_toolbar_status_on_run(self, running):
         """Update toolbar status while running model."""
@@ -329,7 +336,7 @@ class MainWindow(QMainWindow):
     def save_config_to_file(self):
         """Method to save configuration to file."""
 
-        logger.info("Saving WADAS configuration to file...")
+        logger.info("Saving configuration to file...")
         data = dict(
             email = self.email_config,
             cameras = [camera.serialize() for camera in self.cameras],
@@ -341,16 +348,22 @@ class MainWindow(QMainWindow):
             operation_mode = self.operation_mode_name
         )
 
-        file_name = QFileDialog.getSaveFileName(self, "Select WADAS configuration file to save",
-                                                os.getcwd(), "YAML File (*.yaml)")
+        if not self.configuration_file_name:
+            file_name = QFileDialog.getSaveFileName(self, "Select WADAS configuration file to save",
+                                                    os.getcwd(), "YAML File (*.yaml)")
 
-        if file_name[0]:
-            with open(str(file_name[0]), 'w') as yamlfile:
-                data = yaml.safe_dump(data, yamlfile)
+            if file_name[0]:
+                self.configuration_file_name = str(file_name[0])
+            else:
+                # Empty file name (or dialog Cancel button)
+                return
 
-            logger.info("WADAS config saved to file %s.", file_name[0])
-            self.setWindowModified(False)
-            self.update_toolbar_status()
+        with open(self.configuration_file_name, 'w') as yamlfile:
+            data = yaml.safe_dump(data, yamlfile)
+
+        logger.info("Configuration saved to file %s.", self.configuration_file_name)
+        self.setWindowModified(False)
+        self.update_toolbar_status()
 
     def load_config_from_file(self):
         """Method to load config from file."""
@@ -361,7 +374,7 @@ class MainWindow(QMainWindow):
         if file_name[0]:
             with open(str(file_name[0]), 'r') as file:
 
-                logging.info("Loading WADAS config from file...")
+                logging.info("Loading configuration from file...")
                 wadas_config = yaml.safe_load(file)
 
                 # Applying configuration to WADAS from config file values
@@ -372,6 +385,7 @@ class MainWindow(QMainWindow):
                 AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
                 self.operation_mode_name = wadas_config['operation_mode']
 
-                logging.info("WADA configuration loaded from file %s.", file_name[0])
+                logging.info("Configuration loaded from file %s.", file_name[0])
+                self.configuration_file_name = file_name[0]
                 self.setWindowModified(False)
                 self.update_toolbar_status()
