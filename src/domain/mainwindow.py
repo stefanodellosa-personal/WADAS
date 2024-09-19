@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSelectLocalCameras.triggered.connect(self.select_local_cameras)
         self.ui.actionConfigure_Ai_model.triggered.connect(self.configure_ai_model)
         self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
-        self.ui.actionSave_configuration_to_file.triggered.connect(self.save_config_to_file)
+        self.ui.actionSave_configuration_to_file_menu.triggered.connect(self.save_config_to_file)
         self.ui.actionOpen_configuration_file.triggered.connect(self.load_config_from_file)
         self.ui.actionOpen_configuration_file_menu.triggered.connect(self.load_config_from_file)
 
@@ -114,6 +114,7 @@ class MainWindow(QMainWindow):
             logger.debug("Selected mode from dialog: %s", dialog.selected_mode)
             if dialog.selected_mode in OperationMode.operation_modes:
                 self.operation_mode_name = dialog.selected_mode
+                self.setWindowModified(True)
             else:
                 # Default, we should never be here.
                 logger.error("No valid model selected. Resetting to test model mode.")
@@ -197,6 +198,8 @@ class MainWindow(QMainWindow):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(True)
         self.ui.actionStop.setEnabled(False)
+        self.ui.actionSave_configuration.setEnabled(self.isWindowModified())
+        self.ui.actionSave_configuration_to_file_menu.setEnabled(self.isWindowModified())
 
     def update_toolbar_status_on_run(self, running):
         """Update toolbar status while running model."""
@@ -258,6 +261,7 @@ class MainWindow(QMainWindow):
 
             credentials = keyring.get_credential("WADAS_email", "")
             logger.info("Saved credentials for %s", credentials.username)
+            self.setWindowModified(True)
         else:
             logger.debug("Email configuration aborted.")
             return
@@ -287,6 +291,7 @@ class MainWindow(QMainWindow):
         if select_local_cameras.exec_():
             logger.info("Camera(s) configured.")
             self.cameras = select_local_cameras.cameras_list
+            self.setWindowModified(True)
             self.update_toolbar_status()
 
     def configure_ai_model(self):
@@ -297,6 +302,7 @@ class MainWindow(QMainWindow):
             logger.info("Ai model configured.")
             logger.debug("Detection treshold: %s. Classification threshold: %s",
                          AiModel.detection_teshold, AiModel.classification_treshold)
+            self.setWindowModified(True)
 
     def check_classification_model(self):
         """Method to initialize classification model."""
@@ -335,28 +341,37 @@ class MainWindow(QMainWindow):
             operation_mode = self.operation_mode_name
         )
 
-        fileName = QFileDialog.getSaveFileName(self, "Select WADAS configuration file to save",
+        file_name = QFileDialog.getSaveFileName(self, "Select WADAS configuration file to save",
                                                 os.getcwd(), "YAML File (*.yaml)")
 
-        with open(str(fileName[0]), 'w') as yamlfile:
-            data = yaml.safe_dump(data, yamlfile)
-        logger.info("WADAS config saved to file %s.", fileName[0])
+        if file_name[0]:
+            with open(str(file_name[0]), 'w') as yamlfile:
+                data = yaml.safe_dump(data, yamlfile)
+
+            logger.info("WADAS config saved to file %s.", file_name[0])
+            self.setWindowModified(False)
+            self.update_toolbar_status()
 
     def load_config_from_file(self):
         """Method to load config from file."""
 
-        fileName = QFileDialog.getOpenFileName(self, "Open WADAS configuration file",
+        file_name = QFileDialog.getOpenFileName(self, "Open WADAS configuration file",
                                                 os.getcwd(), "YAML File (*.yaml)")
 
-        with open(str(fileName[0]), 'r') as file:
+        if file_name[0]:
+            with open(str(file_name[0]), 'r') as file:
 
-            logging.info("Loading WADAS config from file...")
-            wadas_config = yaml.safe_load(file)
+                logging.info("Loading WADAS config from file...")
+                wadas_config = yaml.safe_load(file)
 
-            self.email_config = wadas_config['email']
-            self.cameras = [Camera.deserialize(data) for data in wadas_config['cameras']]
-            Camera.detection_params = wadas_config['camera_detection_params']
-            AiModel.detection_teshold = wadas_config['ai_model']['ai_detect_treshold']
-            AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
-            self.operation_mode_name = wadas_config['operation_mode']
-            logging.info("WADA configuration loaded from file %s.", fileName[0])
+                # Applying configuration to WADAS from config file values
+                self.email_config = wadas_config['email']
+                self.cameras = [Camera.deserialize(data) for data in wadas_config['cameras']]
+                Camera.detection_params = wadas_config['camera_detection_params']
+                AiModel.detection_teshold = wadas_config['ai_model']['ai_detect_treshold']
+                AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
+                self.operation_mode_name = wadas_config['operation_mode']
+
+                logging.info("WADA configuration loaded from file %s.", file_name[0])
+                self.setWindowModified(False)
+                self.update_toolbar_status()

@@ -186,7 +186,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen_configuration_file_menu"/>
-    <addaction name="actionSave_configuration_to_file"/>
+    <addaction name="actionSave_configuration_to_file_menu"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -330,7 +330,7 @@
     <string>Open configuration file</string>
    </property>
   </action>
-  <action name="actionSave_configuration_to_file">
+  <action name="actionSave_configuration_to_file_menu">
    <property name="icon">
     <iconset theme="document-save"/>
    </property>
