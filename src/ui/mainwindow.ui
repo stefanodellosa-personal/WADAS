@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Wild Animals Detection and Alert System (WADAS)</string>
+   <string>Wild Animals Detection and Alert System (WADAS) [*]</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="label_image">

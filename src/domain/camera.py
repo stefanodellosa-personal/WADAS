@@ -68,7 +68,7 @@ class Camera():
         width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps    = cap.get(cv2.CAP_PROP_FPS)
-        logger.debug('Length: %.2f | Width: %.2f | Height: %.2f | Fps: %.2f',
+        logger.debug("Length: %.2f | Width: %.2f | Height: %.2f | Fps: %.2f",
                       length, width, height, fps)
 
         last_detection_time = 0
@@ -119,7 +119,7 @@ class Camera():
                             frame_out = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 200), 3)
 
                         # Display the resulting frame
-                        cv2.putText(frame_out,'Press Q on keyboard to exit',
+                        cv2.putText(frame_out, "Press Q on keyboard to exit",
                             (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1,
                             (255,255,255), 1, 2)
                         cv2.imshow("Frame_final", frame_out)

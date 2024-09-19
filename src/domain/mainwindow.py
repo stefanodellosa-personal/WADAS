@@ -7,7 +7,13 @@ import keyring
 from PySide6 import QtGui
 from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
+import yaml
 
+from domain.ai_model import AiModel
+from domain.animal_detection_mode import AnimalDetectionMode
+from domain.camera import Camera
+from domain.configure_ai_model import ConfigureAiModel
+from domain.download_dialog import DownloadDialog
 from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
 from domain.operation_mode import OperationMode
@@ -15,13 +21,7 @@ from domain.qtextedit_logger import QTextEditLogger
 from domain.select_local_cameras import DialogSelectLocalCameras
 from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
-from domain.animal_detection_mode import AnimalDetectionMode
-from domain.configure_ai_model import ConfigureAiModel
-from domain.ai_model import AiModel
-from domain.camera import Camera
-from domain.download_dialog import DownloadDialog
 from ui.ui_mainwindow import Ui_MainWindow
-import yaml
 
 logger = logging.getLogger()
 

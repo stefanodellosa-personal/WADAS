@@ -144,13 +144,11 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
 
         credentials = keyring.get_credential("WADAS_email", "")
         sender = credentials.username
-        recipients_to_list = list() 
-        for recipient in self.ui.textEdit_recipient_email.toPlainText().strip().split(", "):
-            recipients_to_list.append(recipient)
+        recipients = [recipient for recipient in self.ui.textEdit_recipient_email.toPlainText().strip().split(", ")]
 
         text = "WADAS test email."
         message = MIMEText(text, "plain")
-        # Set email required fields.
+
         message['Subject'] = "WADAS test email"
         message['From'] = sender
         message['To'] = self.ui.textEdit_recipient_email.toPlainText().strip()
@@ -160,9 +158,9 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         with smtplib.SMTP_SSL(self.ui.lineEdit_smtpServer.text(),
                                self.ui.lineEdit_port.text(),
                                context=context) as smtp_server:
-            # Login to the SMTP server using the sender's credentials.
+
             smtp_server.login(sender, credentials.password)
-            # Send the email.
-            for recipient in recipients_to_list:
+
+            for recipient in recipients:
                 smtp_server.sendmail(sender, recipient, message.as_string())
         self.ui.label_status.setText("Test email(s) sent!")
