@@ -10,16 +10,30 @@ from ui.ui_select_mode import Ui_DialogSelectMode
 class DialogSelectMode(QDialog, Ui_DialogSelectMode):
     """Dialog to select WADAS operating mode."""
 
-    def __init__(self):
+    def __init__(self, selected_mode):
         super(DialogSelectMode, self).__init__()
         self.ui = Ui_DialogSelectMode()
         self.ui.setupUi(self)
         self.setWindowIcon(QIcon(os.path.join(
             os.getcwd(), "src", "img","mainwindow_icon.jpg")))
-        self.selected_mode = ""
+        self.selected_mode = selected_mode
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
+
+        self.initialize_radiobutton_selection()
+
+    def initialize_radiobutton_selection(self):
+        """Method to initialize radiobuttons according to previous selection (if any)."""
+
+        if self.selected_mode == "animal_detection_mode":
+            self.ui.radioButton_animal_det_mode.setChecked(True)
+        elif self.selected_mode == "tunnel_mode":
+            self.ui.radioButton_tunnel_mode.setChecked(True)
+        elif self.selected_mode == "bear_det_mode":
+            self.ui.radioButton_bear_det_mode.setChecked(True)
+        else:
+            self.ui.radioButton_test_model_mode.setChecked(True)
 
     def accept_and_close(self):
         """When Ok is clicked, save radio button selection before closing."""

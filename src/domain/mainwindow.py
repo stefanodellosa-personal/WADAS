@@ -6,8 +6,14 @@ import os
 import keyring
 from PySide6 import QtGui
 from PySide6.QtCore import QThread
-from PySide6.QtWidgets import QMainWindow, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
+import yaml
 
+from domain.ai_model import AiModel
+from domain.animal_detection_mode import AnimalDetectionMode
+from domain.camera import Camera
+from domain.configure_ai_model import ConfigureAiModel
+from domain.download_dialog import DownloadDialog
 from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
 from domain.operation_mode import OperationMode
@@ -15,10 +21,6 @@ from domain.qtextedit_logger import QTextEditLogger
 from domain.select_local_cameras import DialogSelectLocalCameras
 from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
-from domain.animal_detection_mode import AnimalDetectionMode
-from domain.configure_ai_model import ConfigureAiModel
-from domain.ai_model import AiModel
-from domain.download_dialog import DownloadDialog
 from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
@@ -33,6 +35,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.configuration_file_name = ""
         self.operation_mode_name = ""
         self.operation_mode = None
         self.key_ring = None
@@ -41,13 +44,13 @@ class MainWindow(QMainWindow):
              'smtp_port', 
              'recipients_email']
              )
-        self.cameras_list = []
+        self.cameras = []
 
         # Connect Actions
-        self._connect_actions()
+        self.__connect_actions()
 
         # Setup UI logger
-        self.setup_logger()
+        self.__setup_logger()
 
         # Initialize startup image
         self.set_image(os.path.join(os.getcwd(), "src", "img","WADAS_logo_big.jpg"))
@@ -59,7 +62,7 @@ class MainWindow(QMainWindow):
         self.update_toolbar_status()
         logger.info('Welcome to WADAS!')
 
-    def _connect_actions(self):
+    def __connect_actions(self):
         """List all actions to connect to MainWindow"""
         self.ui.actionSelect_Mode.triggered.connect(self.select_mode)
         self.ui.actionRun.triggered.connect(self.run)
@@ -67,15 +70,21 @@ class MainWindow(QMainWindow):
         self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
         self.ui.actionSelectLocalCameras.triggered.connect(self.select_local_cameras)
         self.ui.actionConfigure_Ai_model.triggered.connect(self.configure_ai_model)
+        self.ui.actionSave_configuration_as.triggered.connect(self.save_config_to_file)
+        self.ui.actionSave_configuration_as_menu.triggered.connect(self.save_config_to_file)
+        self.ui.actionOpen_configuration_file.triggered.connect(self.load_config_from_file)
+        self.ui.actionOpen_configuration_file_menu.triggered.connect(self.load_config_from_file)
+        self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
+        self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
 
-    def connect_mode_ui_slots(self):
+    def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
 
         # Connect Signal to update image in widget.
         self.operation_mode.update_image.connect(self.set_image)
         self.operation_mode.run_finished.connect(self.on_run_completion)
 
-    def setup_logger(self):
+    def __setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_log)
@@ -103,11 +112,12 @@ class MainWindow(QMainWindow):
     def select_mode(self):
         """Slot for mode selection (toolbar button)"""
 
-        dialog = DialogSelectMode()
+        dialog = DialogSelectMode(self.operation_mode_name)
         if dialog.exec_():
             logger.debug("Selected mode from dialog: %s", dialog.selected_mode)
             if dialog.selected_mode in OperationMode.operation_modes:
                 self.operation_mode_name = dialog.selected_mode
+                self.setWindowModified(True)
             else:
                 # Default, we should never be here.
                 logger.error("No valid model selected. Resetting to test model mode.")
@@ -135,17 +145,17 @@ class MainWindow(QMainWindow):
                 if not self.operation_mode.url:
                     logger.error("Cannot proceed without a valid URL. Please run again.")
                     return
-            elif not self.cameras_list:
+            elif not self.cameras:
                 logger.error("No camera configured. Please configure input cameras and run again.")
                 return
             else:
                 # Passing cameras list to the selected operation mode
-                self.operation_mode.cameras_list = self.cameras_list
+                self.operation_mode.cameras_list = self.cameras
 
             self.operation_mode.email_configuration = self.email_config
 
             # Connect slots to update UI from operation mode
-            self.connect_mode_ui_slots()
+            self.__connect_mode_ui_slots()
 
             # Initialize thread where to run the inference
             self.thread = QThread()
@@ -184,13 +194,19 @@ class MainWindow(QMainWindow):
         if not self.operation_mode_name:
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
-        elif self.operation_mode_name == "animal_detection_mode" and not self.cameras_list:
+        elif self.operation_mode_name == "animal_detection_mode" and not self.cameras:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(True)
         self.ui.actionStop.setEnabled(False)
+        self.ui.actionSave_configuration_as.setEnabled(self.isWindowModified())
+        self.ui.actionSave_configuration_as_menu.setEnabled(self.isWindowModified())
+        self.ui.actionSave_configuration.setEnabled(self.isWindowModified() and
+                                                    bool(self.configuration_file_name))
+        self.ui.actionSave_configuration_menu.setEnabled(self.isWindowModified() and
+                                                         bool(self.configuration_file_name))
 
     def update_toolbar_status_on_run(self, running):
         """Update toolbar status while running model."""
@@ -252,6 +268,7 @@ class MainWindow(QMainWindow):
 
             credentials = keyring.get_credential("WADAS_email", "")
             logger.info("Saved credentials for %s", credentials.username)
+            self.setWindowModified(True)
         else:
             logger.debug("Email configuration aborted.")
             return
@@ -277,10 +294,11 @@ class MainWindow(QMainWindow):
     def select_local_cameras(self):
         """Method to trigger UI dialog for local cameras configuration."""
 
-        select_local_cameras = DialogSelectLocalCameras(self.cameras_list)
+        select_local_cameras = DialogSelectLocalCameras(self.cameras)
         if select_local_cameras.exec_():
             logger.info("Camera(s) configured.")
-            self.cameras_list = select_local_cameras.cameras_list
+            self.cameras = select_local_cameras.cameras_list
+            self.setWindowModified(True)
             self.update_toolbar_status()
 
     def configure_ai_model(self):
@@ -291,6 +309,7 @@ class MainWindow(QMainWindow):
             logger.info("Ai model configured.")
             logger.debug("Detection treshold: %s. Classification threshold: %s",
                          AiModel.detection_teshold, AiModel.classification_treshold)
+            self.setWindowModified(True)
 
     def check_classification_model(self):
         """Method to initialize classification model."""
@@ -313,3 +332,60 @@ class MainWindow(QMainWindow):
             logger.info("Classification model found at %s!", AiModel.CLASSIFICATION_MODEL_PATH)
 
         return True
+
+    def save_config_to_file(self):
+        """Method to save configuration to file."""
+
+        logger.info("Saving configuration to file...")
+        data = dict(
+            email = self.email_config,
+            cameras = [camera.serialize() for camera in self.cameras],
+            camera_detection_params = Camera.detection_params,
+            ai_model = dict(
+                ai_detect_treshold = AiModel.detection_teshold,
+                ai_class_treshold = AiModel.classification_treshold
+            ),
+            operation_mode = self.operation_mode_name
+        )
+
+        if not self.configuration_file_name:
+            file_name = QFileDialog.getSaveFileName(self, "Select WADAS configuration file to save",
+                                                    os.getcwd(), "YAML File (*.yaml)")
+
+            if file_name[0]:
+                self.configuration_file_name = str(file_name[0])
+            else:
+                # Empty file name (or dialog Cancel button)
+                return
+
+        with open(self.configuration_file_name, 'w') as yamlfile:
+            data = yaml.safe_dump(data, yamlfile)
+
+        logger.info("Configuration saved to file %s.", self.configuration_file_name)
+        self.setWindowModified(False)
+        self.update_toolbar_status()
+
+    def load_config_from_file(self):
+        """Method to load config from file."""
+
+        file_name = QFileDialog.getOpenFileName(self, "Open WADAS configuration file",
+                                                os.getcwd(), "YAML File (*.yaml)")
+
+        if file_name[0]:
+            with open(str(file_name[0]), 'r') as file:
+
+                logging.info("Loading configuration from file...")
+                wadas_config = yaml.safe_load(file)
+
+                # Applying configuration to WADAS from config file values
+                self.email_config = wadas_config['email']
+                self.cameras = [Camera.deserialize(data) for data in wadas_config['cameras']]
+                Camera.detection_params = wadas_config['camera_detection_params']
+                AiModel.detection_teshold = wadas_config['ai_model']['ai_detect_treshold']
+                AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
+                self.operation_mode_name = wadas_config['operation_mode']
+
+                logging.info("Configuration loaded from file %s.", file_name[0])
+                self.configuration_file_name = file_name[0]
+                self.setWindowModified(False)
+                self.update_toolbar_status()

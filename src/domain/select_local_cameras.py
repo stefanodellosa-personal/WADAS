@@ -199,7 +199,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
     def test_camera_stream(self, camera_idx):
         """Method to test camera video stream and motion detection"""
 
-        camera = Camera(f"test camera {self.enumerated_usb_cameras[camera_idx].name}",
+        camera = Camera(f"Test md for {self.enumerated_usb_cameras[camera_idx].name}",
                         self.enumerated_usb_cameras[camera_idx].index,
                         self.enumerated_usb_cameras[camera_idx].backend,
                         self.enumerated_usb_cameras[camera_idx].name,

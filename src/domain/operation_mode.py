@@ -64,13 +64,12 @@ class OperationMode(QObject):
         credentials = keyring.get_credential("WADAS_email", "")
         sender = credentials.username
         recipients = self.email_configuration['recipients_email']
-        recipients_to_list = recipients.split(", ")
 
         message = MIMEMultipart()
         # Set email required fields.
         message['Subject'] = "WADAS detection alert"
         message['From'] = sender
-        message['To'] = recipients
+        message['To'] = ', '.join(recipients)
 
         # HTML content with an image embedded
         html = """\
@@ -101,7 +100,7 @@ class OperationMode(QObject):
             # Login to the SMTP server
             smtp_server.login(sender, credentials.password)
             # Send the email to all recipients.
-            for recipient in recipients_to_list:
+            for recipient in recipients:
                 smtp_server.sendmail(sender, recipient, message.as_string())
                 logger.debug("Email notification sent to recipient %s .", recipient)
             smtp_server.quit()
