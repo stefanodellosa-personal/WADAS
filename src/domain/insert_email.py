@@ -3,13 +3,13 @@
 
 import os
 import keyring
-import validators
+from email.mime.image import MIMEImage
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import ssl
 import smtplib
 
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
+import validators
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
@@ -54,8 +54,9 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         credentials = keyring.get_credential("WADAS_email", "")
         self.ui.lineEdit_senderEmail.setText(credentials.username)
         self.ui.lineEdit_password.setText(credentials.password)
-        recipients_string = ', '.join(self.email_configuration['recipients_email'])
-        self.ui.textEdit_recipient_email.setText(recipients_string)
+        if recipients_email := self.email_configuration['recipients_email']:
+            recipients = ', '.join(recipients_email)
+            self.ui.textEdit_recipient_email.setText(recipients)
         self.validate_email_configurations()
 
     def accept_and_close(self):

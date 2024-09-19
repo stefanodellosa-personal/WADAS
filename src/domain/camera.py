@@ -7,8 +7,8 @@ import threading
 from queue import Queue
 
 import cv2
-
 from PIL import Image
+
 from domain.ai_model import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -175,7 +175,7 @@ class Camera():
 
     def serialize(self):
         """Method to serialize Camera object into file."""
-        data = dict(
+        return dict(
             id = self.id,
             name = self.name,
             index = self.index,
@@ -187,13 +187,11 @@ class Camera():
             path = self.path,
             image_folder = self.img_folder
         )
-        return data
 
     @staticmethod
     def deserialize(data):
         """Method to deserialize Camera object from file."""
-        camera = Camera(data["id"], data["index"], data["backend"],
+        return Camera(data["id"], data["index"], data["backend"],
                       data["name"], data["enabled"], data["enable_mot_det"],
                       data["pid"], data["vid"], data["path"],
                       data["image_folder"])
-        return camera
