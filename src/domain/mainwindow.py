@@ -6,7 +6,7 @@ import os
 import keyring
 from PySide6 import QtGui
 from PySide6.QtCore import QThread
-from PySide6.QtWidgets import QMainWindow, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 
 from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
@@ -334,14 +334,20 @@ class MainWindow(QMainWindow):
             )
         )
 
-        with open("wadas_cfg.yaml", 'w') as yamlfile:
+        fileName = QFileDialog.getSaveFileName(self, "Select WADAS configuration file to save",
+                                                os.getcwd(), "YAML File (*.yaml)")
+        
+        with open(str(fileName[0]), 'w') as yamlfile:
             data = yaml.safe_dump(data, yamlfile)
-        logger.info("WADAS config saved to file.")
+        logger.info("WADAS config saved to file %s.", fileName[0])
 
     def load_config_from_file(self):
         """Method to load config from file."""
 
-        with open('wadas_cfg.yaml', 'r') as file:
+        fileName = QFileDialog.getOpenFileName(self, "Open WADAS configuration file",
+                                                os.getcwd(), "YAML File (*.yaml)")
+
+        with open(str(fileName[0]), 'r') as file:
 
             logging.info("Loading WADAS config from file...")
             wadas_config = yaml.safe_load(file)
@@ -351,4 +357,4 @@ class MainWindow(QMainWindow):
             Camera.detection_params = wadas_config['camera_detection_params']
             AiModel.detection_teshold = wadas_config['ai_model']['ai_detect_treshold']
             AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
-            logging.info("WADA configuration loaded from file.")
+            logging.info("WADA configuration loaded from file %s.", fileName[0])

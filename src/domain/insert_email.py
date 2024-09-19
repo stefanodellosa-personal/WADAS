@@ -6,7 +6,6 @@ import keyring
 import validators
 import ssl
 import smtplib
-import re
 
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage

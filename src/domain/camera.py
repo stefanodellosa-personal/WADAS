@@ -7,7 +7,6 @@ import threading
 from queue import Queue
 
 import cv2
-import yaml
 
 from PIL import Image
 from domain.ai_model import get_timestamp
