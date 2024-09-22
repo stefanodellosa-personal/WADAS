@@ -214,6 +214,7 @@
    <addaction name="actionSave_configuration_as"/>
    <addaction name="actionSave_configuration"/>
    <addaction name="actionSelectLocalCameras"/>
+   <addaction name="actionConfigure_FTP_Cameras"/>
    <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionSelect_Mode"/>
    <addaction name="actionConfigure_Ai_model"/>
@@ -382,6 +383,21 @@
    </property>
    <property name="toolTip">
     <string>Save configuration</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionConfigure_FTP_Cameras">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/video-camera_ftp.png</normaloff>../icons/video-camera_ftp.png</iconset>
+   </property>
+   <property name="text">
+    <string>Configure FTP Cameras</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure FTP cameras and server</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

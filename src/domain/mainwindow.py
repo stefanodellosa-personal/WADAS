@@ -9,19 +9,20 @@ from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 import yaml
 
-from domain.ai_model import AiModel
-from domain.animal_detection_mode import AnimalDetectionMode
-from domain.camera import Camera
-from domain.configure_ai_model import ConfigureAiModel
-from domain.download_dialog import DownloadDialog
-from domain.insert_email import DialogInsertEmail
-from domain.insert_url import InsertUrlDialog
-from domain.operation_mode import OperationMode
-from domain.qtextedit_logger import QTextEditLogger
-from domain.select_local_cameras import DialogSelectLocalCameras
-from domain.select_mode import DialogSelectMode
-from domain.test_model_mode import TestModelMode
-from ui.ui_mainwindow import Ui_MainWindow
+from src.domain.ai_model import AiModel
+from src.domain.animal_detection_mode import AnimalDetectionMode
+from src.domain.camera import Camera
+from src.domain.configure_ai_model import ConfigureAiModel
+from src.domain.configure_ftp_cameras import DialogFTPCameras
+from src.domain.download_dialog import DownloadDialog
+from src.domain.insert_email import DialogInsertEmail
+from src.domain.insert_url import InsertUrlDialog
+from src.domain.operation_mode import OperationMode
+from src.domain.qtextedit_logger import QTextEditLogger
+from src.domain.select_local_cameras import DialogSelectLocalCameras
+from src.domain.select_mode import DialogSelectMode
+from src.domain.test_model_mode import TestModelMode
+from src.ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
 
@@ -45,12 +46,13 @@ class MainWindow(QMainWindow):
              'recipients_email']
              )
         self.cameras = []
+        self.ftp_server = None
 
         # Connect Actions
-        self.__connect_actions()
+        self._connect_actions()
 
         # Setup UI logger
-        self.__setup_logger()
+        self._setup_logger()
 
         # Initialize startup image
         self.set_image(os.path.join(os.getcwd(), "src", "img","WADAS_logo_big.jpg"))
@@ -62,7 +64,7 @@ class MainWindow(QMainWindow):
         self.update_toolbar_status()
         logger.info('Welcome to WADAS!')
 
-    def __connect_actions(self):
+    def _connect_actions(self):
         """List all actions to connect to MainWindow"""
         self.ui.actionSelect_Mode.triggered.connect(self.select_mode)
         self.ui.actionRun.triggered.connect(self.run)
@@ -76,6 +78,7 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen_configuration_file_menu.triggered.connect(self.load_config_from_file)
         self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
         self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
+        self.ui.actionConfigure_FTP_Cameras.triggered.connect(self.configure_ftp_cameras)
 
     def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -84,7 +87,7 @@ class MainWindow(QMainWindow):
         self.operation_mode.update_image.connect(self.set_image)
         self.operation_mode.run_finished.connect(self.on_run_completion)
 
-    def __setup_logger(self):
+    def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_log)
@@ -389,3 +392,10 @@ class MainWindow(QMainWindow):
                 self.configuration_file_name = file_name[0]
                 self.setWindowModified(False)
                 self.update_toolbar_status()
+
+    def configure_ftp_cameras(self):
+        """Method to trigger ftp cameras configuration dialog"""
+
+        configure_ftp_cameras_dlg = DialogFTPCameras(self.ftp_server, self.cameras)
+        if configure_ftp_cameras_dlg.exec():
+            logger.info("FTP Server and Cameras configured.")
