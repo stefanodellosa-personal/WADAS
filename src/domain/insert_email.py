@@ -13,7 +13,7 @@ import validators
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
-from ui.ui_insert_email import Ui_DialogInsertEmail
+from src.ui.ui_insert_email import Ui_DialogInsertEmail
 
 class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     """Class to insert email configuration to enable WADAS for email notifications."""

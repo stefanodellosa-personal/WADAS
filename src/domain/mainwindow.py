@@ -22,6 +22,7 @@ from src.domain.qtextedit_logger import QTextEditLogger
 from src.domain.select_local_cameras import DialogSelectLocalCameras
 from src.domain.select_mode import DialogSelectMode
 from src.domain.test_model_mode import TestModelMode
+from src.domain.usb_camera import USBCamera
 from src.ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
@@ -311,7 +312,7 @@ class MainWindow(QMainWindow):
         if configure_ai_model.exec():
             logger.info("Ai model configured.")
             logger.debug("Detection treshold: %s. Classification threshold: %s",
-                         AiModel.detection_teshold, AiModel.classification_treshold)
+                         AiModel.detection_treshold, AiModel.classification_treshold)
             self.setWindowModified(True)
 
     def check_classification_model(self):
@@ -340,12 +341,18 @@ class MainWindow(QMainWindow):
         """Method to save configuration to file."""
 
         logger.info("Saving configuration to file...")
+        # Serializing cameras per class type
+        cameras_to_dict = []
+        for camera in self.cameras:
+            if camera.type == Camera.CameraTypes.USBCamera:
+                cameras_to_dict.append(camera.serialize())
+
         data = dict(
             email = self.email_config,
-            cameras = [camera.serialize() for camera in self.cameras],
+            cameras = cameras_to_dict,
             camera_detection_params = Camera.detection_params,
             ai_model = dict(
-                ai_detect_treshold = AiModel.detection_teshold,
+                ai_detect_treshold = AiModel.detection_treshold,
                 ai_class_treshold = AiModel.classification_treshold
             ),
             operation_mode = self.operation_mode_name
@@ -382,9 +389,13 @@ class MainWindow(QMainWindow):
 
                 # Applying configuration to WADAS from config file values
                 self.email_config = wadas_config['email']
-                self.cameras = [Camera.deserialize(data) for data in wadas_config['cameras']]
+                self.cameras = []
+                for data in wadas_config['cameras']:
+                    if data["type"] == Camera.CameraTypes.USBCamera.value:
+                        usb_camera = USBCamera.deserialize(data)
+                        self.cameras.append(usb_camera)
                 Camera.detection_params = wadas_config['camera_detection_params']
-                AiModel.detection_teshold = wadas_config['ai_model']['ai_detect_treshold']
+                AiModel.detection_treshold = wadas_config['ai_model']['ai_detect_treshold']
                 AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
                 self.operation_mode_name = wadas_config['operation_mode']
 

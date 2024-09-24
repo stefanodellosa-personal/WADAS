@@ -390,8 +390,7 @@
   </action>
   <action name="actionConfigure_FTP_Cameras">
    <property name="icon">
-    <iconset>
-     <normaloff>../icons/video-camera_ftp.png</normaloff>../icons/video-camera_ftp.png</iconset>
+    <iconset theme="system-file-manager"/>
    </property>
    <property name="text">
     <string>Configure FTP Cameras</string>

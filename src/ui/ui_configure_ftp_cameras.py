@@ -24,7 +24,7 @@ class Ui_DialogFTPCameras(object):
     def setupUi(self, DialogFTPCameras):
         if not DialogFTPCameras.objectName():
             DialogFTPCameras.setObjectName(u"DialogFTPCameras")
-        DialogFTPCameras.resize(640, 533)
+        DialogFTPCameras.resize(639, 533)
         self.buttonBox = QDialogButtonBox(DialogFTPCameras)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setGeometry(QRect(10, 490, 621, 32))
@@ -45,10 +45,48 @@ class Ui_DialogFTPCameras(object):
         self.tab_FTPcameras.setObjectName(u"tab_FTPcameras")
         self.gridLayoutWidget = QWidget(self.tab_FTPcameras)
         self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(-1, 9, 621, 401))
+        self.gridLayoutWidget.setGeometry(QRect(9, 39, 611, 381))
         self.gridLayout_cameras = QGridLayout(self.gridLayoutWidget)
         self.gridLayout_cameras.setObjectName(u"gridLayout_cameras")
         self.gridLayout_cameras.setContentsMargins(0, 0, 0, 0)
+        self.label_9 = QLabel(self.gridLayoutWidget)
+        self.label_9.setObjectName(u"label_9")
+
+        self.gridLayout_cameras.addWidget(self.label_9, 0, 4, 1, 1)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_cameras.addItem(self.verticalSpacer_2, 1, 0, 1, 1)
+
+        self.lineEdit_username_1 = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_username_1.setObjectName(u"lineEdit_username_1")
+
+        self.gridLayout_cameras.addWidget(self.lineEdit_username_1, 0, 3, 1, 1)
+
+        self.lineEdit_camera_id_1 = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_camera_id_1.setObjectName(u"lineEdit_camera_id_1")
+
+        self.gridLayout_cameras.addWidget(self.lineEdit_camera_id_1, 0, 1, 1, 1)
+
+        self.label_8 = QLabel(self.gridLayoutWidget)
+        self.label_8.setObjectName(u"label_8")
+
+        self.gridLayout_cameras.addWidget(self.label_8, 0, 2, 1, 1)
+
+        self.label_7 = QLabel(self.gridLayoutWidget)
+        self.label_7.setObjectName(u"label_7")
+
+        self.gridLayout_cameras.addWidget(self.label_7, 0, 0, 1, 1)
+
+        self.lineEdit_password_1 = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_password_1.setObjectName(u"lineEdit_password_1")
+        self.lineEdit_password_1.setEchoMode(QLineEdit.EchoMode.Password)
+
+        self.gridLayout_cameras.addWidget(self.lineEdit_password_1, 0, 5, 1, 1)
+
+        self.pushButton = QPushButton(self.tab_FTPcameras)
+        self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setGeometry(QRect(10, 10, 131, 24))
         self.tabWidget.addTab(self.tab_FTPcameras, "")
         self.tab_FTPServer = QWidget()
         self.tab_FTPServer.setObjectName(u"tab_FTPServer")
@@ -222,7 +260,7 @@ class Ui_DialogFTPCameras(object):
         self.buttonBox.accepted.connect(DialogFTPCameras.accept)
         self.buttonBox.rejected.connect(DialogFTPCameras.reject)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(DialogFTPCameras)
@@ -234,6 +272,10 @@ class Ui_DialogFTPCameras(object):
 #if QT_CONFIG(accessibility)
         self.tabWidget.setAccessibleName(QCoreApplication.translate("DialogFTPCameras", u"FTP Server", None))
 #endif // QT_CONFIG(accessibility)
+        self.label_9.setText(QCoreApplication.translate("DialogFTPCameras", u"password:", None))
+        self.label_8.setText(QCoreApplication.translate("DialogFTPCameras", u"username:", None))
+        self.label_7.setText(QCoreApplication.translate("DialogFTPCameras", u"Camera ID:", None))
+        self.pushButton.setText(QCoreApplication.translate("DialogFTPCameras", u"Add FTP Camera", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_FTPcameras), QCoreApplication.translate("DialogFTPCameras", u"FTP Cameras", None))
         self.groupBox_FTPServer.setTitle(QCoreApplication.translate("DialogFTPCameras", u"FTP Server", None))
         self.label_5.setText(QCoreApplication.translate("DialogFTPCameras", u"Max connections:", None))

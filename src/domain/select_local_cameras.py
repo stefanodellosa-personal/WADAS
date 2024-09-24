@@ -10,8 +10,9 @@ from PySide6.QtWidgets import QDialog, QLabel, QCheckBox, QLineEdit, QPushButton
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Qt
 
-from domain.camera import Camera
-from ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
+from src.domain.camera import Camera
+from src.domain.usb_camera import USBCamera
+from src.ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
 
 
 class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
@@ -113,12 +114,14 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                 continue
 
             cur_enum_cam = self.enumerated_usb_cameras[i]
-            camera: Camera
+            camera: USBCamera
             for camera in self.cameras_list:
-                if (camera.path == cur_enum_cam.path and
-                    camera.pid == cur_enum_cam.pid and camera.vid == cur_enum_cam.vid):
-                    checkbox.setChecked(camera.is_enabled)
-                    line_edit.setText(camera.id)
+                if camera.type == Camera.CameraTypes.USBCamera:
+                    # Iterate only USB Camera type
+                    if (camera.path == cur_enum_cam.path and
+                        camera.pid == cur_enum_cam.pid and camera.vid == cur_enum_cam.vid):
+                        checkbox.setChecked(camera.is_enabled)
+                        line_edit.setText(camera.id)
 
     def initialize_detection_params(self):
         """Method to initialize detection parameters in UI."""
@@ -184,10 +187,10 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                 line_edit_camera_id = f"lineEdit_cameraID_{idx}"
                 checkbox = self.findChild(QCheckBox, checkbox_obj_name)
                 line_edit = self.findChild(QLineEdit, line_edit_camera_id)
-                camera = Camera(line_edit.text(),
+                camera = USBCamera(line_edit.text(),
                                 idx,
-                                self.enumerated_usb_cameras[idx].backend,
                                 self.enumerated_usb_cameras[idx].name,
+                                self.enumerated_usb_cameras[idx].backend,
                                 checkbox.isChecked(),
                                 True,
                                 self.enumerated_usb_cameras[idx].pid,
@@ -199,7 +202,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
     def test_camera_stream(self, camera_idx):
         """Method to test camera video stream and motion detection"""
 
-        camera = Camera(f"Test md for {self.enumerated_usb_cameras[camera_idx].name}",
+        camera = USBCamera(f"Test md for {self.enumerated_usb_cameras[camera_idx].name}",
                         self.enumerated_usb_cameras[camera_idx].index,
                         self.enumerated_usb_cameras[camera_idx].backend,
                         self.enumerated_usb_cameras[camera_idx].name,
