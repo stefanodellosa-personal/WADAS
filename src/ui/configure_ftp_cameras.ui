@@ -58,7 +58,7 @@
        <string>FTP Server</string>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_FTPcameras">
        <attribute name="title">
@@ -81,12 +81,22 @@
            </property>
           </widget>
          </item>
+         <item row="0" column="3">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>username:</string>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="6">
           <widget class="QLineEdit" name="lineEdit_password_1">
            <property name="echoMode">
             <enum>QLineEdit::EchoMode::Password</enum>
            </property>
           </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLineEdit" name="lineEdit_camera_id_1"/>
          </item>
          <item row="0" column="5">
           <widget class="QLabel" name="label_9">
@@ -102,9 +112,6 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="4">
-          <widget class="QLineEdit" name="lineEdit_username_1"/>
-         </item>
          <item row="1" column="1">
           <spacer name="verticalSpacer_2">
            <property name="orientation">
@@ -118,25 +125,8 @@
            </property>
           </spacer>
          </item>
-         <item row="0" column="3">
-          <widget class="QLabel" name="label_8">
-           <property name="text">
-            <string>username:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="7">
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>folder:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QLineEdit" name="lineEdit_camera_id_1"/>
-         </item>
-         <item row="0" column="8">
-          <widget class="QLineEdit" name="lineEdit_folder_1"/>
+         <item row="0" column="4">
+          <widget class="QLineEdit" name="lineEdit_username_1"/>
          </item>
         </layout>
        </widget>
@@ -211,19 +201,23 @@
              <item row="2" column="1">
               <widget class="QLineEdit" name="lineEdit_max_conn"/>
              </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="lineEdit_ip"/>
+             <item row="0" column="3">
+              <widget class="QLineEdit" name="lineEdit_port"/>
              </item>
              <item row="2" column="3">
               <widget class="QLineEdit" name="lineEdit_max_conn_ip"/>
              </item>
-             <item row="0" column="3">
-              <widget class="QLineEdit" name="lineEdit_port"/>
-             </item>
-             <item row="0" column="2">
-              <widget class="QLabel" name="label_4">
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_5">
                <property name="text">
-                <string>Port:</string>
+                <string>Max connections:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="3">
+              <widget class="QPushButton" name="pushButton_select_FTPserver_folder">
+               <property name="text">
+                <string>Select FTP folder</string>
                </property>
               </widget>
              </item>
@@ -234,6 +228,23 @@
                </property>
               </widget>
              </item>
+             <item row="0" column="2">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Port:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="lineEdit_ip"/>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_10">
+               <property name="text">
+                <string>FTP folder:</string>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="0">
               <widget class="QLabel" name="label_3">
                <property name="text">
@@ -241,10 +252,10 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_5">
+             <item row="3" column="1" colspan="2">
+              <widget class="QLabel" name="label_FTPServer_path">
                <property name="text">
-                <string>Max connections:</string>
+                <string/>
                </property>
               </widget>
              </item>
@@ -407,8 +418,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>98</width>
-                  <height>28</height>
+                  <width>747</width>
+                  <height>77</height>
                  </rect>
                 </property>
                </widget>
@@ -432,7 +443,6 @@
   <tabstop>lineEdit_camera_id_1</tabstop>
   <tabstop>lineEdit_username_1</tabstop>
   <tabstop>lineEdit_password_1</tabstop>
-  <tabstop>lineEdit_folder_1</tabstop>
   <tabstop>pushButton_addFTPCamera</tabstop>
   <tabstop>pushButton_removeFTPCamera</tabstop>
   <tabstop>lineEdit_max_conn</tabstop>

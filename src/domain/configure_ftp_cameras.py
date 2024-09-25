@@ -45,8 +45,9 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         self.ui.lineEdit_camera_id_1.textChanged.connect(self.validate)
         self.ui.lineEdit_username_1.textChanged.connect(self.validate)
         self.ui.lineEdit_password_1.textChanged.connect(self.validate)
-        self.ui.lineEdit_folder_1.textChanged.connect(self.validate)
         self.ui.pushButton_addFTPCamera.clicked.connect(self.add_ftp_camera)
+        self.ui.pushButton_testFTPServer.clicked.connect(self.test_ftp_server)
+        self.ui.pushButton_select_FTPserver_folder.clicked.connect(self.select_ftp_folder)
 
         # Init dialog
         self.initialize_dialog()
@@ -92,6 +93,13 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         self.ui.label_certificate_file_path.setText(str(file_name[0]))
         self.validate()
 
+    def select_ftp_folder(self):
+        """Method to select FTP Server folder."""
+
+        dir = QFileDialog.getExistingDirectory(self, "Select FTP Server folder", os.getcwd())
+        self.ui.label_FTPServer_path.setText(dir)
+        self.validate()
+
     def validate(self):
         """Method to validate data prior to accept and close dialog."""
 
@@ -113,6 +121,9 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if not os.path.isfile(self.ui.label_certificate_file_path.text()):
             self.ui.label_errorMessage.setText("Invalid SSL key file provided!")
             valid = False
+        if not os.path.isdir(self.ui.label_FTPServer_path.text()):
+            self.ui.label_errorMessage.setText("Invalid FTP server directory provided!")
+            valid = False
         max_conn = self.ui.lineEdit_max_conn.text()
         if not max_conn or int(max_conn) < 0:
             self.ui.label_errorMessage.setText("No or Invalid maximum connection value provided!")
@@ -126,19 +137,15 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         while i <= self.num_of_cameras:
             camera_id_ui = f"lineEdit_camera_id_{i}"
             camera_id_ln = self.findChild(QLineEdit, camera_id_ui)
-            folder_ui = f"lineEdit_folder_{i}"
-            folder_ln = self.findChild(QLineEdit, folder_ui)
             if camera_id_ln and not camera_id_ln.text():
                 self.ui.label_errorMessage.setText("No Camera ID provided!")
-                valid = False
-            if folder_ln and not folder_ln.text():
-                self.ui.label_errorMessage.setText("No Camera folder provided!")
                 valid = False
             i = i+1
 
         if valid:
             self.ui.label_errorMessage.setText("")
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(valid)
+        self.ui.pushButton_testFTPServer.setEnabled(valid)
 
     def accept_and_close(self):
         """When Ok is clicked, save FTP config info before closing."""
@@ -168,9 +175,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             for i in range(self.num_of_cameras):
                 camera_id_ui = f"lineEdit_camera_id_{i}"
                 camera_id_ln = self.findChild(QLineEdit, camera_id_ui)
-                folder_ui = f"lineEdit_folder_{i}"
-                folder_ln = self.findChild(QLineEdit, folder_ui)
-                camera = FTPCamera(camera_id_ln.text(), True, folder_ln.text())
+                camera = FTPCamera(camera_id_ln.text(), True, camera_id_ln.text())
                 cameras.append(camera)
                 # Store credentials in keyring
                 camera_user_ui = f"lineEdit_username_{i}"
@@ -223,15 +228,20 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         pass_line_edit.setEchoMode(QLineEdit.EchoMode.Password)
         pass_line_edit.textChanged.connect(self.validate)
         self.ui.gridLayout_cameras.addWidget(pass_line_edit, row, 6)
-        # Camera folder
-        label = QLabel("folder:")
-        label.setObjectName(f"label_cameraFolder_{row}")
-        self.ui.gridLayout_cameras.addWidget(label, row, 7)
-        dir_line_edit = QLineEdit()
-        lnedit_obj_name = f"lineEdit_folder_{row}"
-        dir_line_edit.setObjectName(lnedit_obj_name)
-        dir_line_edit.textChanged.connect(self.validate)
-        self.ui.gridLayout_cameras.addWidget(dir_line_edit, row, 8)
 
         self.ui.gridLayout_cameras.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.num_of_cameras = self.num_of_cameras+1
+
+    def test_ftp_server(self):
+        """Method to test out FTP server configuration options by running a FTP server instance."""
+
+        ftps_server = FTPsServer(self.ui.lineEdit_ip.text(),
+                                         int(self.ui.lineEdit_port.text()),
+                                         int(self.ui.lineEdit_max_conn.text()),
+                                         int(self.ui.lineEdit_max_conn_ip.text()),
+                                         self.ui.label_certificate_file_path.text(),
+                                         self.ui.label_key_file_path.text())
+        ftps_server.add_user(self.ui.lineEdit_username_1.text(),
+                             self.ui.lineEdit_password_1.text(),
+                             self.ui.label_FTPServer_path.text())
+        ftps_server.run()

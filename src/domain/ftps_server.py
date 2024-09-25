@@ -1,7 +1,6 @@
 """FTPS server module"""
 
 from pyftpdlib.authorizers import DummyAuthorizer
-from pyftpdlib.authorizers import WindowsAuthorizer
 from pyftpdlib.servers import FTPServer
 from pyftpdlib.handlers import TLS_FTPHandler
 
@@ -18,7 +17,7 @@ class FTPsServer():
         self.handler.banner = "WADAS FTPS server!"
 
         # Authorizer
-        self.authorizer = WindowsAuthorizer() #TODO: implement os independent init
+        self.authorizer = DummyAuthorizer()
         self.handler.authorizer = self.authorizer
 
         #TODO: check if ThrottledDTPHandler is needed
@@ -28,6 +27,12 @@ class FTPsServer():
         self.server = FTPServer(address, self.handler)
         self.server.max_cons = max_conn
         self.server.max_cons_per_ip = max_conn_per_ip
+
+    def add_user(self, username, password, directory):
+        """Method to add user(s) to the authorizer."""
+
+        self.authorizer.add_user(username, password, directory, perm='elradfmwMT')
+
 
     def run(self):
         """Method to run FTPS server"""

@@ -54,11 +54,21 @@ class Ui_DialogFTPCameras(object):
 
         self.gridLayout_cameras.addWidget(self.radioButton, 0, 0, 1, 1)
 
+        self.label_8 = QLabel(self.gridLayoutWidget)
+        self.label_8.setObjectName(u"label_8")
+
+        self.gridLayout_cameras.addWidget(self.label_8, 0, 3, 1, 1)
+
         self.lineEdit_password_1 = QLineEdit(self.gridLayoutWidget)
         self.lineEdit_password_1.setObjectName(u"lineEdit_password_1")
         self.lineEdit_password_1.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.gridLayout_cameras.addWidget(self.lineEdit_password_1, 0, 6, 1, 1)
+
+        self.lineEdit_camera_id_1 = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_camera_id_1.setObjectName(u"lineEdit_camera_id_1")
+
+        self.gridLayout_cameras.addWidget(self.lineEdit_camera_id_1, 0, 2, 1, 1)
 
         self.label_9 = QLabel(self.gridLayoutWidget)
         self.label_9.setObjectName(u"label_9")
@@ -70,34 +80,14 @@ class Ui_DialogFTPCameras(object):
 
         self.gridLayout_cameras.addWidget(self.label_7, 0, 1, 1, 1)
 
-        self.lineEdit_username_1 = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_username_1.setObjectName(u"lineEdit_username_1")
-
-        self.gridLayout_cameras.addWidget(self.lineEdit_username_1, 0, 4, 1, 1)
-
         self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_cameras.addItem(self.verticalSpacer_2, 1, 1, 1, 1)
 
-        self.label_8 = QLabel(self.gridLayoutWidget)
-        self.label_8.setObjectName(u"label_8")
+        self.lineEdit_username_1 = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_username_1.setObjectName(u"lineEdit_username_1")
 
-        self.gridLayout_cameras.addWidget(self.label_8, 0, 3, 1, 1)
-
-        self.label_10 = QLabel(self.gridLayoutWidget)
-        self.label_10.setObjectName(u"label_10")
-
-        self.gridLayout_cameras.addWidget(self.label_10, 0, 7, 1, 1)
-
-        self.lineEdit_camera_id_1 = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_camera_id_1.setObjectName(u"lineEdit_camera_id_1")
-
-        self.gridLayout_cameras.addWidget(self.lineEdit_camera_id_1, 0, 2, 1, 1)
-
-        self.lineEdit_folder_1 = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_folder_1.setObjectName(u"lineEdit_folder_1")
-
-        self.gridLayout_cameras.addWidget(self.lineEdit_folder_1, 0, 8, 1, 1)
+        self.gridLayout_cameras.addWidget(self.lineEdit_username_1, 0, 4, 1, 1)
 
         self.pushButton_addFTPCamera = QPushButton(self.tab_FTPcameras)
         self.pushButton_addFTPCamera.setObjectName(u"pushButton_addFTPCamera")
@@ -133,40 +123,55 @@ class Ui_DialogFTPCameras(object):
 
         self.gridLayout_3.addWidget(self.lineEdit_max_conn, 2, 1, 1, 1)
 
-        self.lineEdit_ip = QLineEdit(self.gridLayoutWidget_4)
-        self.lineEdit_ip.setObjectName(u"lineEdit_ip")
+        self.lineEdit_port = QLineEdit(self.gridLayoutWidget_4)
+        self.lineEdit_port.setObjectName(u"lineEdit_port")
 
-        self.gridLayout_3.addWidget(self.lineEdit_ip, 0, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.lineEdit_port, 0, 3, 1, 1)
 
         self.lineEdit_max_conn_ip = QLineEdit(self.gridLayoutWidget_4)
         self.lineEdit_max_conn_ip.setObjectName(u"lineEdit_max_conn_ip")
 
         self.gridLayout_3.addWidget(self.lineEdit_max_conn_ip, 2, 3, 1, 1)
 
-        self.lineEdit_port = QLineEdit(self.gridLayoutWidget_4)
-        self.lineEdit_port.setObjectName(u"lineEdit_port")
+        self.label_5 = QLabel(self.gridLayoutWidget_4)
+        self.label_5.setObjectName(u"label_5")
 
-        self.gridLayout_3.addWidget(self.lineEdit_port, 0, 3, 1, 1)
+        self.gridLayout_3.addWidget(self.label_5, 2, 0, 1, 1)
 
-        self.label_4 = QLabel(self.gridLayoutWidget_4)
-        self.label_4.setObjectName(u"label_4")
+        self.pushButton_select_FTPserver_folder = QPushButton(self.gridLayoutWidget_4)
+        self.pushButton_select_FTPserver_folder.setObjectName(u"pushButton_select_FTPserver_folder")
 
-        self.gridLayout_3.addWidget(self.label_4, 0, 2, 1, 1)
+        self.gridLayout_3.addWidget(self.pushButton_select_FTPserver_folder, 3, 3, 1, 1)
 
         self.label_6 = QLabel(self.gridLayoutWidget_4)
         self.label_6.setObjectName(u"label_6")
 
         self.gridLayout_3.addWidget(self.label_6, 2, 2, 1, 1)
 
+        self.label_4 = QLabel(self.gridLayoutWidget_4)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout_3.addWidget(self.label_4, 0, 2, 1, 1)
+
+        self.lineEdit_ip = QLineEdit(self.gridLayoutWidget_4)
+        self.lineEdit_ip.setObjectName(u"lineEdit_ip")
+
+        self.gridLayout_3.addWidget(self.lineEdit_ip, 0, 1, 1, 1)
+
+        self.label_10 = QLabel(self.gridLayoutWidget_4)
+        self.label_10.setObjectName(u"label_10")
+
+        self.gridLayout_3.addWidget(self.label_10, 3, 0, 1, 1)
+
         self.label_3 = QLabel(self.gridLayoutWidget_4)
         self.label_3.setObjectName(u"label_3")
 
         self.gridLayout_3.addWidget(self.label_3, 0, 0, 1, 1)
 
-        self.label_5 = QLabel(self.gridLayoutWidget_4)
-        self.label_5.setObjectName(u"label_5")
+        self.label_FTPServer_path = QLabel(self.gridLayoutWidget_4)
+        self.label_FTPServer_path.setObjectName(u"label_FTPServer_path")
 
-        self.gridLayout_3.addWidget(self.label_5, 2, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.label_FTPServer_path, 3, 1, 1, 2)
 
 
         self.gridLayout.addWidget(self.groupBox_FTPServer, 0, 0, 1, 1)
@@ -262,7 +267,7 @@ class Ui_DialogFTPCameras(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 98, 28))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 747, 77))
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
         self.gridLayout_4.addWidget(self.scrollArea, 1, 0, 1, 2)
@@ -278,8 +283,7 @@ class Ui_DialogFTPCameras(object):
         QWidget.setTabOrder(self.radioButton, self.lineEdit_camera_id_1)
         QWidget.setTabOrder(self.lineEdit_camera_id_1, self.lineEdit_username_1)
         QWidget.setTabOrder(self.lineEdit_username_1, self.lineEdit_password_1)
-        QWidget.setTabOrder(self.lineEdit_password_1, self.lineEdit_folder_1)
-        QWidget.setTabOrder(self.lineEdit_folder_1, self.pushButton_addFTPCamera)
+        QWidget.setTabOrder(self.lineEdit_password_1, self.pushButton_addFTPCamera)
         QWidget.setTabOrder(self.pushButton_addFTPCamera, self.pushButton_removeFTPCamera)
         QWidget.setTabOrder(self.pushButton_removeFTPCamera, self.lineEdit_max_conn)
         QWidget.setTabOrder(self.lineEdit_max_conn, self.lineEdit_ip)
@@ -295,7 +299,7 @@ class Ui_DialogFTPCameras(object):
         self.buttonBox.accepted.connect(DialogFTPCameras.accept)
         self.buttonBox.rejected.connect(DialogFTPCameras.reject)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(DialogFTPCameras)
@@ -308,18 +312,20 @@ class Ui_DialogFTPCameras(object):
         self.tabWidget.setAccessibleName(QCoreApplication.translate("DialogFTPCameras", u"FTP Server", None))
 #endif // QT_CONFIG(accessibility)
         self.radioButton.setText("")
+        self.label_8.setText(QCoreApplication.translate("DialogFTPCameras", u"username:", None))
         self.label_9.setText(QCoreApplication.translate("DialogFTPCameras", u"password:", None))
         self.label_7.setText(QCoreApplication.translate("DialogFTPCameras", u"Camera ID:", None))
-        self.label_8.setText(QCoreApplication.translate("DialogFTPCameras", u"username:", None))
-        self.label_10.setText(QCoreApplication.translate("DialogFTPCameras", u"folder:", None))
         self.pushButton_addFTPCamera.setText(QCoreApplication.translate("DialogFTPCameras", u"Add FTP Camera", None))
         self.pushButton_removeFTPCamera.setText(QCoreApplication.translate("DialogFTPCameras", u"Remove FTP Camera", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_FTPcameras), QCoreApplication.translate("DialogFTPCameras", u"FTP Cameras", None))
         self.groupBox_FTPServer.setTitle(QCoreApplication.translate("DialogFTPCameras", u"FTP Server", None))
-        self.label_4.setText(QCoreApplication.translate("DialogFTPCameras", u"Port:", None))
-        self.label_6.setText(QCoreApplication.translate("DialogFTPCameras", u"Max connections per IP", None))
-        self.label_3.setText(QCoreApplication.translate("DialogFTPCameras", u"IP:", None))
         self.label_5.setText(QCoreApplication.translate("DialogFTPCameras", u"Max connections:", None))
+        self.pushButton_select_FTPserver_folder.setText(QCoreApplication.translate("DialogFTPCameras", u"Select FTP folder", None))
+        self.label_6.setText(QCoreApplication.translate("DialogFTPCameras", u"Max connections per IP", None))
+        self.label_4.setText(QCoreApplication.translate("DialogFTPCameras", u"Port:", None))
+        self.label_10.setText(QCoreApplication.translate("DialogFTPCameras", u"FTP folder:", None))
+        self.label_3.setText(QCoreApplication.translate("DialogFTPCameras", u"IP:", None))
+        self.label_FTPServer_path.setText("")
         self.groupBox_SSL.setTitle(QCoreApplication.translate("DialogFTPCameras", u"SSL", None))
         self.pushButton_sekectCertificateKey.setText(QCoreApplication.translate("DialogFTPCameras", u"Select certificate file", None))
         self.label_key_file_path.setText("")
