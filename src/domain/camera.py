@@ -6,8 +6,10 @@ from enum import Enum
 from queue import Queue
 
 logger = logging.getLogger(__name__)
+# Queue containing all the images received by Cameras to be processed by AiModel
 img_queue = Queue()
-cameras_list = []
+# List of Cameras selected by user for image processing
+cameras = []
 
 
 class Camera():
@@ -23,17 +25,11 @@ class Camera():
         USBCamera = "USB Camera"
         FTPCamera = "FTP Camera"
 
-    def __init__(self, id):
+    def __init__(self, id, enabled = False):
         self.type = None
         self.id = id
+        self.enabled = enabled
         self.stop_thread = False
-
-    def detect_new_image_file(self):
-        """Method implement filesystem observer to detect new images in selected folder tree.
-           Only for ftp server camera notifications."""
-
-        logger.info("Starting filesystem observer for camera %s.", self.id)
-        #TODO: implement logic.
 
     @abstractmethod
     def serialize(self):

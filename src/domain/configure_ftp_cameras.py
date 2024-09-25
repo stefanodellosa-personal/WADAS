@@ -7,13 +7,15 @@ from validators import ipv4
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog
 from PySide6.QtGui import QIcon
 
+from src.domain.camera import Camera
+from src.domain.camera import cameras
 from src.ui.ui_configure_ftp_cameras import Ui_DialogFTPCameras
 from src.domain.ftps_server import FTPsServer
 
 
 class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     """Class to configure FTP server and cameras"""
-    def __init__(self, ftp_server: FTPsServer, cameras):
+    def __init__(self, ftp_server: FTPsServer):
         super(DialogFTPCameras, self).__init__()
         self.ui = Ui_DialogFTPCameras()
 
@@ -27,7 +29,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
 
         # FTP Server and Cameras
         self.ftp_server = ftp_server
-        self.cameras = cameras
 
         # Slots
         self.ui.pushButton_selectKeyFile.clicked.connect(self.select_key_file)
@@ -57,10 +58,12 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             self.ui.lineEdit_max_conn_ip.setText("5")
 
             #TODO: add cameras init
-            for camera in self.cameras:
-                credentials = keyring.get_credential(r"WADAS_FTP_Cam_{camera.id}", "")
-                self.ui.lineEdit_username_1.setText(credentials.username)
-                self.ui.lineEdit_password_1.setText(credentials.password)
+        if cameras:
+            for camera in cameras:
+                if camera.type == Camera.CameraTypes.FTPCamera:
+                    credentials = keyring.get_credential(r"WADAS_FTP_Cam_{camera.id}", "")
+                    self.ui.lineEdit_username_1.setText(credentials.username)
+                    self.ui.lineEdit_password_1.setText(credentials.password)
 
     def select_key_file(self):
         """Method to select SSL key file"""
@@ -68,6 +71,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         file_name = QFileDialog.getOpenFileName(self, "Open SSL key file",
                                                 os.getcwd(), "Pem File (*.pem)")
         self.ui.label_key_file_path.setText(str(file_name[0]))
+        self.validate()
 
     def select_certificate_file(self):
         """Method to select SSL certificate file"""
@@ -75,6 +79,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         file_name = QFileDialog.getOpenFileName(self, "Open SSL certificate file",
                                                 os.getcwd(), "Pem File (*.pem)")
         self.ui.label_certificate_file_path.setText(str(file_name[0]))
+        self.validate()
 
     def validate(self):
         """Method to validate data prior to accept and close dialog."""
@@ -84,8 +89,12 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if not ipv4(self.ui.lineEdit_ip.text()):
             self.ui.label_errorMessage.setText("Invalid server IP address provided!")
             valid = False
-        if port := int(self.ui.lineEdit_port.text()) < 1 or port > 65535:
-            self.ui.label_errorMessage.setText("Invalid server port provided!")
+        if port := self.ui.lineEdit_port.text():
+            if int(port) < 1 or int(port) > 65535:
+                self.ui.label_errorMessage.setText("Invalid server port provided!")
+                valid = False
+        else:
+            self.ui.label_errorMessage.setText("No server port provided!")
             valid = False
         if not os.path.isfile(self.ui.label_key_file_path.text()):
             self.ui.label_errorMessage.setText("Invalid SSL key file provided!")
@@ -93,11 +102,13 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if not os.path.isfile(self.ui.label_certificate_file_path.text()):
             self.ui.label_errorMessage.setText("Invalid SSL key file provided!")
             valid = False
-        if not self.ui.lineEdit_max_conn > 0:
-            self.ui.label_errorMessage.setText("Invalid maximum connection value provided!")
+        max_conn = self.ui.lineEdit_max_conn.text()
+        if not max_conn or int(max_conn) < 0:
+            self.ui.label_errorMessage.setText("No or Invalid maximum connection value provided!")
             valid = False
-        if not self.ui.lineEdit_max_conn_ip > 0:
-            self.ui.label_errorMessage.setText("Invalid maximum connection per IP value provided!")
+        max_conn_per_ip = self.ui.lineEdit_max_conn_ip.text()
+        if not max_conn_per_ip or int(max_conn_per_ip) < 0:
+            self.ui.label_errorMessage.setText("No or Invalid maximum connection per IP value provided!")
             valid = False
 
         if valid:

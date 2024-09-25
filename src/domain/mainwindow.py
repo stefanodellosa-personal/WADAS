@@ -12,6 +12,7 @@ import yaml
 from src.domain.ai_model import AiModel
 from src.domain.animal_detection_mode import AnimalDetectionMode
 from src.domain.camera import Camera
+from src.domain.camera import cameras
 from src.domain.configure_ai_model import ConfigureAiModel
 from src.domain.configure_ftp_cameras import DialogFTPCameras
 from src.domain.download_dialog import DownloadDialog
@@ -46,7 +47,6 @@ class MainWindow(QMainWindow):
              'smtp_port', 
              'recipients_email']
              )
-        self.cameras = []
         self.ftp_server = None
 
         # Connect Actions
@@ -149,12 +149,12 @@ class MainWindow(QMainWindow):
                 if not self.operation_mode.url:
                     logger.error("Cannot proceed without a valid URL. Please run again.")
                     return
-            elif not self.cameras:
+            elif not cameras:
                 logger.error("No camera configured. Please configure input cameras and run again.")
                 return
             else:
                 # Passing cameras list to the selected operation mode
-                self.operation_mode.cameras_list = self.cameras
+                self.operation_mode.cameras = cameras #TODO: pass list throug module
 
             self.operation_mode.email_configuration = self.email_config
 
@@ -198,7 +198,7 @@ class MainWindow(QMainWindow):
         if not self.operation_mode_name:
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
-        elif self.operation_mode_name == "animal_detection_mode" and not self.cameras:
+        elif self.operation_mode_name == "animal_detection_mode" and not cameras:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
         else:
@@ -263,7 +263,6 @@ class MainWindow(QMainWindow):
     def configure_email(self):
         """Method to run dialog for insertion of email parameters to enable notifications."""
 
-        #TODO: implement email info persistency
         insert_email_dialog = DialogInsertEmail(self.email_config)
         if insert_email_dialog.exec_():
             self.email_config = insert_email_dialog.email_configuration
@@ -273,6 +272,7 @@ class MainWindow(QMainWindow):
             credentials = keyring.get_credential("WADAS_email", "")
             logger.info("Saved credentials for %s", credentials.username)
             self.setWindowModified(True)
+            self.update_toolbar_status()
         else:
             logger.debug("Email configuration aborted.")
             return
@@ -298,10 +298,9 @@ class MainWindow(QMainWindow):
     def select_local_cameras(self):
         """Method to trigger UI dialog for local cameras configuration."""
 
-        select_local_cameras = DialogSelectLocalCameras(self.cameras)
+        select_local_cameras = DialogSelectLocalCameras()
         if select_local_cameras.exec_():
             logger.info("Camera(s) configured.")
-            self.cameras = select_local_cameras.cameras_list
             self.setWindowModified(True)
             self.update_toolbar_status()
 
@@ -343,7 +342,7 @@ class MainWindow(QMainWindow):
         logger.info("Saving configuration to file...")
         # Serializing cameras per class type
         cameras_to_dict = []
-        for camera in self.cameras:
+        for camera in cameras:
             if camera.type == Camera.CameraTypes.USBCamera:
                 cameras_to_dict.append(camera.serialize())
 
@@ -389,11 +388,11 @@ class MainWindow(QMainWindow):
 
                 # Applying configuration to WADAS from config file values
                 self.email_config = wadas_config['email']
-                self.cameras = []
+                cameras.clear()
                 for data in wadas_config['cameras']:
                     if data["type"] == Camera.CameraTypes.USBCamera.value:
                         usb_camera = USBCamera.deserialize(data)
-                        self.cameras.append(usb_camera)
+                        cameras.append(usb_camera)
                 Camera.detection_params = wadas_config['camera_detection_params']
                 AiModel.detection_treshold = wadas_config['ai_model']['ai_detect_treshold']
                 AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
@@ -407,6 +406,6 @@ class MainWindow(QMainWindow):
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
 
-        configure_ftp_cameras_dlg = DialogFTPCameras(self.ftp_server, self.cameras)
+        configure_ftp_cameras_dlg = DialogFTPCameras(self.ftp_server)
         if configure_ftp_cameras_dlg.exec():
             logger.info("FTP Server and Cameras configured.")

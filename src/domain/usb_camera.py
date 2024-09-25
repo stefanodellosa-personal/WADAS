@@ -1,4 +1,4 @@
-"""Camera module"""
+"""USB Camera module"""
 
 import time
 import os
@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 class USBCamera(Camera):
     """USB Camera class, specialization of Camera class."""
 
-    def __init__(self, id, index = None, name = "", backend = None, enabled = False,
+    def __init__(self, id, name = "", enabled = False,  index = None, backend = None,
                  en_mot_det = False, pid = "", vid = "", path = ""):
         super().__init__(id)
         self.type = Camera.CameraTypes.USBCamera
-        self.index = int(index)
         self.name = name
+        self.enabled = enabled
+        self.index = int(index)
         self.backend = int(backend)
-        self.is_enabled = enabled
         self.en_wadas_motion_detection = en_mot_det
         self.pid = pid
         self.vid = vid
@@ -140,9 +140,6 @@ class USBCamera(Camera):
         if self.en_wadas_motion_detection:
             logger.debug("Instantiating motion detection thread for camera %s", self.id)
             thread = threading.Thread(target=self.detect_motion_from_video)
-        elif self.img_folder:
-            logger.debug("Instantiating observer for camera %s", self.id)
-            thread = threading.Thread(target=self.detect_new_image_file)
         else:
             logger.error("Misconfigured Camera!")
             return
@@ -156,14 +153,14 @@ class USBCamera(Camera):
         return thread
 
     def serialize(self):
-        """Method to serialize Camera object into file."""
+        """Method to serialize USB Camera object into file."""
         return dict(
             type = self.type.value,
             id = self.id,
-            index=self.index,
             name = self.name,
+            enabled=self.enabled,
+            index=self.index,
             backend = self.backend,
-            enabled = self.is_enabled,
             enable_mot_det = self.en_wadas_motion_detection,
             pid = self.pid,
             vid = self.vid,
@@ -172,7 +169,7 @@ class USBCamera(Camera):
 
     @staticmethod
     def deserialize(data):
-        """Method to deserialize Camera object from file."""
-        return USBCamera(data["id"], data["index"], data["name"],
-                         data["backend"], data["enabled"], data["enable_mot_det"],
+        """Method to deserialize USB Camera object from file."""
+        return USBCamera(data["id"], data["name"], data["enabled"], data["index"],
+                         data["backend"],  data["enable_mot_det"],
                          data["pid"], data["vid"], data["path"])

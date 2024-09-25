@@ -11,6 +11,7 @@ from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Qt
 
 from src.domain.camera import Camera
+from src.domain.camera import cameras
 from src.domain.usb_camera import USBCamera
 from src.ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
 
@@ -18,13 +19,12 @@ from src.ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
 class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
     """Class to select and configure local cameras (i.e., directly plugged to the WADAS node)."""
 
-    def __init__(self, cameras_list):
+    def __init__(self):
         super(DialogSelectLocalCameras, self).__init__()
         self.ui = Ui_DialogSelectLocalCameras()
         self.ui.setupUi(self)
         self.setWindowIcon(QIcon(os.path.join(
             os.getcwd(), "src", "img","mainwindow_icon.jpg")))
-        self.cameras_list = cameras_list
         self.enumerated_usb_cameras = enumerate_cameras(cv2.CAP_MSMF)
         #TODO: check API preference for linux and implement it OS independent.
 
@@ -61,6 +61,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
             check_box = QCheckBox()
             checkbox_obj_name = f"checkBox_camera_{camera_index}"
             check_box.setObjectName(checkbox_obj_name)
+            check_box.setChecked(False)
             check_box.checkStateChanged.connect(self.validate_cameras_selection)
             self.ui.gridLayout_localCameras.addWidget(check_box, row, 0)
              # Camera index
@@ -100,7 +101,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
 
     def initialize_usb_cameras(self):
         """Method to initialize attributes from existing camera configuration (if any)."""
-        if not self.cameras_list:
+        if not cameras:
             return
 
         # Initialize camera checkboxes (if any was selected before) and IDs
@@ -115,12 +116,12 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
 
             cur_enum_cam = self.enumerated_usb_cameras[i]
             camera: USBCamera
-            for camera in self.cameras_list:
+            for camera in cameras:
                 if camera.type == Camera.CameraTypes.USBCamera:
                     # Iterate only USB Camera type
-                    if (camera.path == cur_enum_cam.path and
+                    if (camera.path == cur_enum_cam.path and camera.name == cur_enum_cam.name and
                         camera.pid == cur_enum_cam.pid and camera.vid == cur_enum_cam.vid):
-                        checkbox.setChecked(camera.is_enabled)
+                        checkbox.setChecked(camera.enabled)
                         line_edit.setText(camera.id)
 
     def initialize_detection_params(self):
@@ -154,7 +155,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
 
         # USB Cameras
         camera_number = len(self.enumerated_usb_cameras)
-        if self.cameras_list:
+        if cameras:
             # We need to update values of existing enabled cameras.
             # The rest we will ignore unless they have an ID assigned.
             for idx in range(camera_number):
@@ -162,24 +163,28 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                 line_edit_camera_id = f"lineEdit_cameraID_{idx}"
                 checkbox = self.findChild(QCheckBox, checkbox_obj_name)
                 line_edit = self.findChild(QLineEdit, line_edit_camera_id)
-                if (self.enumerated_usb_cameras[idx].index == self.cameras_list[idx].index and
-                    self.enumerated_usb_cameras[idx].name == self.cameras_list[idx].name and
-                    self.enumerated_usb_cameras[idx].pid == self.cameras_list[idx].pid and
-                    self.enumerated_usb_cameras[idx].vid == self.cameras_list[idx].vid and
-                    self.enumerated_usb_cameras[idx].path == self.cameras_list[idx].path):
+                for camera in cameras:
+                    if camera.type == Camera.CameraTypes.USBCamera:
+                        if (self.enumerated_usb_cameras[idx].index == camera.index and
+                            self.enumerated_usb_cameras[idx].name == camera.name and
+                            self.enumerated_usb_cameras[idx].pid == camera.pid and
+                            self.enumerated_usb_cameras[idx].vid == camera.vid and
+                            self.enumerated_usb_cameras[idx].path == camera.path):
 
-                    # Camera index has not changed, let's save ID and enablement status if changed.
-                    self.cameras_list[idx].is_enabled = checkbox.isChecked()
-                    self.cameras_list[idx].id = line_edit.text()
+                            # Camera index has not changed, let's save ID and enablement status if changed.
+                            camera.enabled = checkbox.isChecked()
+                            camera.id = line_edit.text()
+                            break
                 else:
                     # Camera index has changed or camera is new.
-                    self.cameras_list[idx].idx = idx
-                    self.cameras_list[idx].name = self.enumerated_usb_cameras[idx].name
-                    self.cameras_list[idx].pid = self.enumerated_usb_cameras[idx].pid
-                    self.cameras_list[idx].vid = self.enumerated_usb_cameras[idx].vid
-                    self.cameras_list[idx].path = self.enumerated_usb_cameras[idx].path
-                    self.cameras_list[idx].is_enabled = checkbox.isChecked()
-                    self.cameras_list[idx].id = line_edit.text()
+                    camera.idx = idx
+                    camera.name = self.enumerated_usb_cameras[idx].name
+                    camera.pid = self.enumerated_usb_cameras[idx].pid
+                    camera.vid = self.enumerated_usb_cameras[idx].vid
+                    camera.path = self.enumerated_usb_cameras[idx].path
+                    camera.enabled = checkbox.isChecked()
+                    camera.id = line_edit.text()
+                    break
         else:
             # Save cameras
             for idx in range(camera_number):
@@ -188,27 +193,27 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                 checkbox = self.findChild(QCheckBox, checkbox_obj_name)
                 line_edit = self.findChild(QLineEdit, line_edit_camera_id)
                 camera = USBCamera(line_edit.text(),
-                                idx,
                                 self.enumerated_usb_cameras[idx].name,
-                                self.enumerated_usb_cameras[idx].backend,
                                 checkbox.isChecked(),
+                                idx,
+                                self.enumerated_usb_cameras[idx].backend,
                                 True,
                                 self.enumerated_usb_cameras[idx].pid,
                                 self.enumerated_usb_cameras[idx].vid,
                                 self.enumerated_usb_cameras[idx].path)
-                self.cameras_list.append(camera)
+                cameras.append(camera)
         self.accept()
 
     def test_camera_stream(self, camera_idx):
         """Method to test camera video stream and motion detection"""
 
         camera = USBCamera(f"Test md for {self.enumerated_usb_cameras[camera_idx].name}",
-                        self.enumerated_usb_cameras[camera_idx].index,
-                        self.enumerated_usb_cameras[camera_idx].backend,
-                        self.enumerated_usb_cameras[camera_idx].name,
-                        True,
-                        True,
-                        self.enumerated_usb_cameras[camera_idx].pid,
-                        self.enumerated_usb_cameras[camera_idx].vid,
-                        self.enumerated_usb_cameras[camera_idx].path)
+                            self.enumerated_usb_cameras[camera_idx].name,
+                            True,
+                            self.enumerated_usb_cameras[camera_idx].index,
+                            self.enumerated_usb_cameras[camera_idx].backend,
+                            True,
+                            self.enumerated_usb_cameras[camera_idx].pid,
+                            self.enumerated_usb_cameras[camera_idx].vid,
+                            self.enumerated_usb_cameras[camera_idx].path)
         camera.detect_motion_from_video(True)
