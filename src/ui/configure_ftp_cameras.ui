@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>639</width>
+    <width>834</width>
     <height>533</height>
    </rect>
   </property>
@@ -16,9 +16,9 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>490</y>
-     <width>621</width>
+     <x>430</x>
+     <y>480</y>
+     <width>371</width>
      <height>32</height>
     </rect>
    </property>
@@ -34,7 +34,7 @@
     <rect>
      <x>10</x>
      <y>470</y>
-     <width>611</width>
+     <width>801</width>
      <height>16</height>
     </rect>
    </property>
@@ -45,9 +45,9 @@
   <widget class="QWidget" name="gridLayoutWidget_5">
    <property name="geometry">
     <rect>
-     <x>0</x>
+     <x>20</x>
      <y>10</y>
-     <width>631</width>
+     <width>791</width>
      <height>451</height>
     </rect>
    </property>
@@ -68,20 +68,44 @@
         <property name="geometry">
          <rect>
           <x>9</x>
-          <y>39</y>
-          <width>611</width>
-          <height>381</height>
+          <y>9</y>
+          <width>771</width>
+          <height>371</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_cameras">
-         <item row="0" column="4">
+         <item row="0" column="0">
+          <widget class="QRadioButton" name="radioButton">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="6">
+          <widget class="QLineEdit" name="lineEdit_password_1">
+           <property name="echoMode">
+            <enum>QLineEdit::EchoMode::Password</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="5">
           <widget class="QLabel" name="label_9">
            <property name="text">
             <string>password:</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="0" column="1">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Camera ID:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4">
+          <widget class="QLineEdit" name="lineEdit_username_1"/>
+         </item>
+         <item row="1" column="1">
           <spacer name="verticalSpacer_2">
            <property name="orientation">
             <enum>Qt::Orientation::Vertical</enum>
@@ -95,45 +119,51 @@
           </spacer>
          </item>
          <item row="0" column="3">
-          <widget class="QLineEdit" name="lineEdit_username_1"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="lineEdit_camera_id_1"/>
-         </item>
-         <item row="0" column="2">
           <widget class="QLabel" name="label_8">
            <property name="text">
             <string>username:</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_7">
+         <item row="0" column="7">
+          <widget class="QLabel" name="label_10">
            <property name="text">
-            <string>Camera ID:</string>
+            <string>folder:</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="5">
-          <widget class="QLineEdit" name="lineEdit_password_1">
-           <property name="echoMode">
-            <enum>QLineEdit::EchoMode::Password</enum>
-           </property>
-          </widget>
+         <item row="0" column="2">
+          <widget class="QLineEdit" name="lineEdit_camera_id_1"/>
+         </item>
+         <item row="0" column="8">
+          <widget class="QLineEdit" name="lineEdit_folder_1"/>
          </item>
         </layout>
        </widget>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="pushButton_addFTPCamera">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>10</y>
+          <y>390</y>
           <width>131</width>
           <height>24</height>
          </rect>
         </property>
         <property name="text">
          <string>Add FTP Camera</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_removeFTPCamera">
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>390</y>
+          <width>131</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Remove FTP Camera</string>
         </property>
        </widget>
       </widget>
@@ -146,15 +176,15 @@
          <rect>
           <x>10</x>
           <y>10</y>
-          <width>611</width>
-          <height>476</height>
+          <width>771</width>
+          <height>463</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="0">
           <widget class="QGroupBox" name="groupBox_FTPServer">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -162,7 +192,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>167</height>
+             <height>127</height>
             </size>
            </property>
            <property name="title">
@@ -173,43 +203,36 @@
              <rect>
               <x>10</x>
               <y>20</y>
-              <width>561</width>
-              <height>141</height>
+              <width>751</width>
+              <height>91</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_3">
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Max connections:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="lineEdit_port"/>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_6">
-               <property name="text">
-                <string>Max connections per IP</string>
-               </property>
-              </widget>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="lineEdit_max_conn"/>
              </item>
              <item row="0" column="1">
               <widget class="QLineEdit" name="lineEdit_ip"/>
              </item>
-             <item row="1" column="0">
+             <item row="2" column="3">
+              <widget class="QLineEdit" name="lineEdit_max_conn_ip"/>
+             </item>
+             <item row="0" column="3">
+              <widget class="QLineEdit" name="lineEdit_port"/>
+             </item>
+             <item row="0" column="2">
               <widget class="QLabel" name="label_4">
                <property name="text">
                 <string>Port:</string>
                </property>
               </widget>
              </item>
-             <item row="2" column="1">
-              <widget class="QLineEdit" name="lineEdit_max_conn"/>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLineEdit" name="lineEdit_max_conn_ip"/>
+             <item row="2" column="2">
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>Max connections per IP</string>
+               </property>
+              </widget>
              </item>
              <item row="0" column="0">
               <widget class="QLabel" name="label_3">
@@ -218,18 +241,12 @@
                </property>
               </widget>
              </item>
-             <item row="3" column="2">
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Max connections:</string>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -238,7 +255,7 @@
          <item row="1" column="0">
           <widget class="QGroupBox" name="groupBox_SSL">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -246,7 +263,13 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>92</height>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777213</height>
             </size>
            </property>
            <property name="title">
@@ -257,8 +280,8 @@
              <rect>
               <x>9</x>
               <y>29</y>
-              <width>561</width>
-              <height>84</height>
+              <width>741</width>
+              <height>62</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_2">
@@ -350,31 +373,32 @@
            <property name="title">
             <string>Test FTP Server</string>
            </property>
-           <widget class="QWidget" name="verticalLayoutWidget">
+           <widget class="QWidget" name="gridLayoutWidget_6">
             <property name="geometry">
              <rect>
               <x>10</x>
               <y>20</y>
-              <width>591</width>
-              <height>151</height>
+              <width>751</width>
+              <height>111</height>
              </rect>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout">
-             <item>
+            <layout class="QGridLayout" name="gridLayout_4">
+             <item row="0" column="0">
               <widget class="QPushButton" name="pushButton_testFTPServer">
                <property name="text">
-                <string>Test FTP Server</string>
+                <string>test FTP Server</string>
                </property>
               </widget>
              </item>
-             <item alignment="Qt::AlignmentFlag::AlignTop">
-              <widget class="QScrollArea" name="scrollArea">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>71</height>
-                </size>
+             <item row="0" column="1">
+              <widget class="QPushButton" name="pushButton_stopFTPServer">
+               <property name="text">
+                <string>Stop FTP server</string>
                </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="2">
+              <widget class="QScrollArea" name="scrollArea">
                <property name="widgetResizable">
                 <bool>true</bool>
                </property>
@@ -383,8 +407,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>587</width>
-                  <height>69</height>
+                  <width>98</width>
+                  <height>28</height>
                  </rect>
                 </property>
                </widget>
@@ -402,6 +426,25 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>radioButton</tabstop>
+  <tabstop>lineEdit_camera_id_1</tabstop>
+  <tabstop>lineEdit_username_1</tabstop>
+  <tabstop>lineEdit_password_1</tabstop>
+  <tabstop>lineEdit_folder_1</tabstop>
+  <tabstop>pushButton_addFTPCamera</tabstop>
+  <tabstop>pushButton_removeFTPCamera</tabstop>
+  <tabstop>lineEdit_max_conn</tabstop>
+  <tabstop>lineEdit_ip</tabstop>
+  <tabstop>lineEdit_max_conn_ip</tabstop>
+  <tabstop>lineEdit_port</tabstop>
+  <tabstop>pushButton_sekectCertificateKey</tabstop>
+  <tabstop>pushButton_selectKeyFile</tabstop>
+  <tabstop>pushButton_testFTPServer</tabstop>
+  <tabstop>pushButton_stopFTPServer</tabstop>
+  <tabstop>scrollArea</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

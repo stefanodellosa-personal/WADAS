@@ -4,11 +4,13 @@ import os
 import keyring
 from validators import ipv4
 
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QLineEdit, QRadioButton, QLabel
 from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt
 
 from src.domain.camera import Camera
 from src.domain.camera import cameras
+from src.domain.ftp_camera import FTPCamera
 from src.ui.ui_configure_ftp_cameras import Ui_DialogFTPCameras
 from src.domain.ftps_server import FTPsServer
 
@@ -18,6 +20,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def __init__(self, ftp_server: FTPsServer):
         super(DialogFTPCameras, self).__init__()
         self.ui = Ui_DialogFTPCameras()
+        self.num_of_cameras = 1
 
         # UI
         self.ui.setupUi(self)
@@ -25,6 +28,8 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             os.getcwd(), "src", "img","mainwindow_icon.jpg")))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.pushButton_testFTPServer.setEnabled(False)
+        self.ui.pushButton_stopFTPServer.setEnabled(False)
+        self.ui.pushButton_removeFTPCamera.setEnabled(False)
         self.ui.label_errorMessage.setStyleSheet("color: red")
 
         # FTP Server and Cameras
@@ -37,6 +42,11 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         self.ui.lineEdit_ip.textChanged.connect(self.validate)
         self.ui.lineEdit_max_conn.textChanged.connect(self.validate)
         self.ui.lineEdit_max_conn_ip.textChanged.connect(self.validate)
+        self.ui.lineEdit_camera_id_1.textChanged.connect(self.validate)
+        self.ui.lineEdit_username_1.textChanged.connect(self.validate)
+        self.ui.lineEdit_password_1.textChanged.connect(self.validate)
+        self.ui.lineEdit_folder_1.textChanged.connect(self.validate)
+        self.ui.pushButton_addFTPCamera.clicked.connect(self.add_ftp_camera)
 
         # Init dialog
         self.initialize_dialog()
@@ -61,9 +71,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if cameras:
             for camera in cameras:
                 if camera.type == Camera.CameraTypes.FTPCamera:
-                    credentials = keyring.get_credential(r"WADAS_FTP_Cam_{camera.id}", "")
-                    self.ui.lineEdit_username_1.setText(credentials.username)
-                    self.ui.lineEdit_password_1.setText(credentials.password)
+                    credentials = keyring.get_credential(r"WADAS_FTPCamera_{camera.id}", "")
+                    if credentials:
+                        self.ui.lineEdit_username_1.setText(credentials.username)
+                        self.ui.lineEdit_password_1.setText(credentials.password)
 
     def select_key_file(self):
         """Method to select SSL key file"""
@@ -111,6 +122,20 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             self.ui.label_errorMessage.setText("No or Invalid maximum connection per IP value provided!")
             valid = False
 
+        i = 1
+        while i <= self.num_of_cameras:
+            camera_id_ui = f"lineEdit_camera_id_{i}"
+            camera_id_ln = self.findChild(QLineEdit, camera_id_ui)
+            folder_ui = f"lineEdit_folder_{i}"
+            folder_ln = self.findChild(QLineEdit, folder_ui)
+            if camera_id_ln and not camera_id_ln.text():
+                self.ui.label_errorMessage.setText("No Camera ID provided!")
+                valid = False
+            if folder_ln and not folder_ln.text():
+                self.ui.label_errorMessage.setText("No Camera folder provided!")
+                valid = False
+            i = i+1
+
         if valid:
             self.ui.label_errorMessage.setText("")
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(valid)
@@ -133,5 +158,80 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                          self.ui.label_certificate_file_path.text(),
                                          self.ui.label_key_file_path.text())
 
-            #TODO: add cameras save
+        if cameras:
+            for camera in cameras:
+                if camera.type == Camera.CameraTypes.FTPCamera:
+                    #TODO: check for previously configured FTP camera to update
+                    pass
+        else:
+            # Insert brand new Camera in list
+            for i in range(self.num_of_cameras):
+                camera_id_ui = f"lineEdit_camera_id_{i}"
+                camera_id_ln = self.findChild(QLineEdit, camera_id_ui)
+                folder_ui = f"lineEdit_folder_{i}"
+                folder_ln = self.findChild(QLineEdit, folder_ui)
+                camera = FTPCamera(camera_id_ln.text(), True, folder_ln.text())
+                cameras.append(camera)
+                # Store credentials in keyring
+                camera_user_ui = f"lineEdit_username_{i}"
+                camera_user_ln = self.findChild(QLineEdit, camera_user_ui)
+                camera_pass_ui = f"lineEdit_password_{i}"
+                camera_pass_ln = self.findChild(QLineEdit, camera_pass_ui)
+                keyring.set_password(f"WADAS_FTPCamera_{camera_id_ln.text()}",
+                                     camera_user_ln.text(),
+                                     camera_pass_ln.text())
+
         self.accept()
+
+    def add_ftp_camera(self):
+        """Method to add new FTP camera line edits."""
+
+        row = self.num_of_cameras+1
+        # Camera selection check box
+        radio_button = QRadioButton()
+        radiob_obj_name = f"checkBox_camera_{row}"
+        radio_button.setObjectName(radiob_obj_name)
+        radio_button.setChecked(False)
+        self.ui.gridLayout_cameras.addWidget(radio_button, row, 0)
+
+        # Camera id
+        label = QLabel("ID:")
+        label.setObjectName(f"label_cameraId_{row}")
+        self.ui.gridLayout_cameras.addWidget(label, row, 1)
+        id_line_edit = QLineEdit()
+        lnedit_obj_name = f"lineEdit_camera_id_{row}"
+        id_line_edit.setObjectName(lnedit_obj_name)
+        id_line_edit.textChanged.connect(self.validate)
+        self.ui.gridLayout_cameras.addWidget(id_line_edit, row, 2)
+        # Camera FTP user
+        label = QLabel("user:")
+        label.setObjectName(f"label_cameraUser_{row}")
+        label.setToolTip("FTP user name")
+        self.ui.gridLayout_cameras.addWidget(label, row, 3)
+        user_line_edit = QLineEdit()
+        lnedit_obj_name = f"lineEdit_username_{row}"
+        user_line_edit.setObjectName(lnedit_obj_name)
+        user_line_edit.textChanged.connect(self.validate)
+        self.ui.gridLayout_cameras.addWidget(user_line_edit, row, 4)
+        # Camera password
+        label = QLabel("password:")
+        label.setObjectName(f"label_cameraPass_{row}")
+        self.ui.gridLayout_cameras.addWidget(label, row, 5)
+        pass_line_edit = QLineEdit()
+        lnedit_obj_name = f"lineEdit_password_{row}"
+        pass_line_edit.setObjectName(lnedit_obj_name)
+        pass_line_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        pass_line_edit.textChanged.connect(self.validate)
+        self.ui.gridLayout_cameras.addWidget(pass_line_edit, row, 6)
+        # Camera folder
+        label = QLabel("folder:")
+        label.setObjectName(f"label_cameraFolder_{row}")
+        self.ui.gridLayout_cameras.addWidget(label, row, 7)
+        dir_line_edit = QLineEdit()
+        lnedit_obj_name = f"lineEdit_folder_{row}"
+        dir_line_edit.setObjectName(lnedit_obj_name)
+        dir_line_edit.textChanged.connect(self.validate)
+        self.ui.gridLayout_cameras.addWidget(dir_line_edit, row, 8)
+
+        self.ui.gridLayout_cameras.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.num_of_cameras = self.num_of_cameras+1
