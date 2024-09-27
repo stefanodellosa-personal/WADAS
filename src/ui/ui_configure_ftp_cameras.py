@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
     QGridLayout, QGroupBox, QLabel, QLineEdit,
-    QPushButton, QRadioButton, QScrollArea, QSizePolicy,
+    QPlainTextEdit, QPushButton, QRadioButton, QSizePolicy,
     QSpacerItem, QTabWidget, QWidget)
 
 class Ui_DialogFTPCameras(object):
@@ -262,15 +262,10 @@ class Ui_DialogFTPCameras(object):
 
         self.gridLayout_4.addWidget(self.pushButton_stopFTPServer, 0, 1, 1, 1)
 
-        self.scrollArea = QScrollArea(self.gridLayoutWidget_6)
-        self.scrollArea.setObjectName(u"scrollArea")
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollAreaWidgetContents = QWidget()
-        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 747, 77))
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.plainTextEdit_FTPserver_log = QPlainTextEdit(self.gridLayoutWidget_6)
+        self.plainTextEdit_FTPserver_log.setObjectName(u"plainTextEdit_FTPserver_log")
 
-        self.gridLayout_4.addWidget(self.scrollArea, 1, 0, 1, 2)
+        self.gridLayout_4.addWidget(self.plainTextEdit_FTPserver_log, 1, 0, 1, 2)
 
 
         self.gridLayout.addWidget(self.groupBox_TestFTPServer, 2, 0, 1, 1)
@@ -293,7 +288,6 @@ class Ui_DialogFTPCameras(object):
         QWidget.setTabOrder(self.pushButton_sekectCertificateKey, self.pushButton_selectKeyFile)
         QWidget.setTabOrder(self.pushButton_selectKeyFile, self.pushButton_testFTPServer)
         QWidget.setTabOrder(self.pushButton_testFTPServer, self.pushButton_stopFTPServer)
-        QWidget.setTabOrder(self.pushButton_stopFTPServer, self.scrollArea)
 
         self.retranslateUi(DialogFTPCameras)
         self.buttonBox.accepted.connect(DialogFTPCameras.accept)

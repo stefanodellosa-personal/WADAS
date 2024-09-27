@@ -17,6 +17,7 @@ from src.domain.configure_ai_model import ConfigureAiModel
 from src.domain.configure_ftp_cameras import DialogFTPCameras
 from src.domain.download_dialog import DownloadDialog
 from src.domain.insert_email import DialogInsertEmail
+from src.domain.ftps_server import ftps_server
 from src.domain.insert_url import InsertUrlDialog
 from src.domain.operation_mode import OperationMode
 from src.domain.qtextedit_logger import QTextEditLogger
@@ -354,7 +355,8 @@ class MainWindow(QMainWindow):
                 ai_detect_treshold = AiModel.detection_treshold,
                 ai_class_treshold = AiModel.classification_treshold
             ),
-            operation_mode = self.operation_mode_name
+            operation_mode = self.operation_mode_name,
+            ftps_server = ftps_server.serialize()
         )
 
         if not self.configuration_file_name:
@@ -397,6 +399,7 @@ class MainWindow(QMainWindow):
                 AiModel.detection_treshold = wadas_config['ai_model']['ai_detect_treshold']
                 AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
                 self.operation_mode_name = wadas_config['operation_mode']
+                ftps_server = wadas_config['ftps_server'] if wadas_config['ftps_server'] else None
 
                 logging.info("Configuration loaded from file %s.", file_name[0])
                 self.configuration_file_name = file_name[0]
@@ -406,6 +409,8 @@ class MainWindow(QMainWindow):
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
 
-        configure_ftp_cameras_dlg = DialogFTPCameras(self.ftp_server)
+        configure_ftp_cameras_dlg = DialogFTPCameras()
         if configure_ftp_cameras_dlg.exec():
             logger.info("FTP Server and Cameras configured.")
+            self.setWindowModified(True)
+            self.update_toolbar_status()

@@ -409,21 +409,7 @@
               </widget>
              </item>
              <item row="1" column="0" colspan="2">
-              <widget class="QScrollArea" name="scrollArea">
-               <property name="widgetResizable">
-                <bool>true</bool>
-               </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>747</width>
-                  <height>77</height>
-                 </rect>
-                </property>
-               </widget>
-              </widget>
+              <widget class="QPlainTextEdit" name="plainTextEdit_FTPserver_log"/>
              </item>
             </layout>
            </widget>
@@ -453,7 +439,6 @@
   <tabstop>pushButton_selectKeyFile</tabstop>
   <tabstop>pushButton_testFTPServer</tabstop>
   <tabstop>pushButton_stopFTPServer</tabstop>
-  <tabstop>scrollArea</tabstop>
  </tabstops>
  <resources/>
  <connections>
