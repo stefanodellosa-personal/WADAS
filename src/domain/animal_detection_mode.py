@@ -3,9 +3,10 @@
 
 import logging
 
-from domain.operation_mode import OperationMode
-from domain.camera import img_queue
-from domain.camera import Camera
+from src.domain.operation_mode import OperationMode
+from src.domain.camera import img_queue
+from src.domain.camera import Camera
+from src.domain.camera import cameras
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,6 @@ class AnimalDetectionMode(OperationMode):
     def __init__(self):
         super(AnimalDetectionMode, self).__init__()
         self.modename = "animal_detection_mode"
-        self.cameras_list = []
         self.camera_thread = []
         self.process_queue = True
 
@@ -28,9 +28,8 @@ class AnimalDetectionMode(OperationMode):
 
         logger.info("Instantiating cameras...")
         camera: Camera
-        for camera in self.cameras_list:
-            if not camera.is_enabled:
-                # We should never be here
+        for camera in cameras:
+            if not camera.enabled or camera.type != Camera.CameraTypes.USBCamera:
                 continue
             else:
                 # Create thread for motion detection
@@ -67,7 +66,8 @@ class AnimalDetectionMode(OperationMode):
         if self.thread().isInterruptionRequested():
             logger.info("Request to stop received. Aborting...")
             self.process_queue = False
-            for camera in self.cameras_list:
-                camera.stop_thread = True
+            for camera in cameras:
+                if camera.type == Camera.CameraTypes.USBCamera:
+                    camera.stop_thread = True
             self.run_finished.emit()
             return
