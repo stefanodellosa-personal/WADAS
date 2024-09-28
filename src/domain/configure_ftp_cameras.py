@@ -56,7 +56,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
 
         # Init dialog
         self.initialize_dialog()
-        self._setup_logger()
 
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
@@ -284,7 +283,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         """Method to stop FTP server thread"""
 
         if self.ftp_thread and FTPsServer.ftps_server:
-            FTPsServer.ftps_server.close_all()
+            FTPsServer.ftps_server.server.close_all()
             self.ui.pushButton_stopFTPServer.setEnabled(False)
 
     def _setup_logger(self):
