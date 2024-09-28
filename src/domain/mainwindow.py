@@ -16,8 +16,9 @@ from src.domain.camera import cameras
 from src.domain.configure_ai_model import ConfigureAiModel
 from src.domain.configure_ftp_cameras import DialogFTPCameras
 from src.domain.download_dialog import DownloadDialog
+from src.domain.ftp_camera import FTPCamera
 from src.domain.insert_email import DialogInsertEmail
-from src.domain.ftps_server import ftps_server
+from src.domain.ftps_server import FTPsServer
 from src.domain.insert_url import InsertUrlDialog
 from src.domain.operation_mode import OperationMode
 from src.domain.qtextedit_logger import QTextEditLogger
@@ -98,7 +99,7 @@ class MainWindow(QMainWindow):
                 "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"))
         logger.setLevel(logging.DEBUG)
         logger.addHandler(log_textbox)
-        logger.propagate = False
+        #logger.propagate = False
 
 
     def set_image(self, img):
@@ -344,7 +345,7 @@ class MainWindow(QMainWindow):
         # Serializing cameras per class type
         cameras_to_dict = []
         for camera in cameras:
-            if camera.type == Camera.CameraTypes.USBCamera:
+            if camera.type == Camera.CameraTypes.USBCamera or camera.type == Camera.CameraTypes.FTPCamera:
                 cameras_to_dict.append(camera.serialize())
 
         data = dict(
@@ -356,7 +357,7 @@ class MainWindow(QMainWindow):
                 ai_class_treshold = AiModel.classification_treshold
             ),
             operation_mode = self.operation_mode_name,
-            ftps_server = ftps_server.serialize()
+            ftps_server = FTPsServer.ftps_server.serialize()
         )
 
         if not self.configuration_file_name:
@@ -383,7 +384,7 @@ class MainWindow(QMainWindow):
                                                 os.getcwd(), "YAML File (*.yaml)")
 
         if file_name[0]:
-            with open(str(file_name[0]), 'r') as file:
+            with (open(str(file_name[0]), 'r') as file):
 
                 logging.info("Loading configuration from file...")
                 wadas_config = yaml.safe_load(file)
@@ -395,11 +396,14 @@ class MainWindow(QMainWindow):
                     if data["type"] == Camera.CameraTypes.USBCamera.value:
                         usb_camera = USBCamera.deserialize(data)
                         cameras.append(usb_camera)
+                    elif data["type"] == Camera.CameraTypes.FTPCamera.value:
+                        ftp_camera = FTPCamera.deserialize(data)
+                        cameras.append(ftp_camera)
                 Camera.detection_params = wadas_config['camera_detection_params']
                 AiModel.detection_treshold = wadas_config['ai_model']['ai_detect_treshold']
                 AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
                 self.operation_mode_name = wadas_config['operation_mode']
-                ftps_server = wadas_config['ftps_server'] if wadas_config['ftps_server'] else None
+                FTPsServer.ftps_server = FTPsServer.deserialize(wadas_config['ftps_server'])
 
                 logging.info("Configuration loaded from file %s.", file_name[0])
                 self.configuration_file_name = file_name[0]

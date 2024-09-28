@@ -31,4 +31,4 @@ class FTPCamera(Camera):
     @staticmethod
     def deserialize(data):
         """Method to deserialize FTP Camera object from file."""
-        return FTPCamera(data["id"], data["enabled"], data["ftp_folder"])
+        return FTPCamera(data["id"], data["ftp_folder"], data["enabled"])

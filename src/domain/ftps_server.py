@@ -2,17 +2,18 @@
 
 import logging
 from pyftpdlib.authorizers import DummyAuthorizer
-from pyftpdlib.servers import FTPServer
+from pyftpdlib.servers import ThreadedFTPServer
 from pyftpdlib.handlers import TLS_FTPHandler
 
 from PySide6.QtCore import QObject, Signal
 
 logger = logging.getLogger(__name__)
-ftps_server = None
 
 
 class FTPsServer(QObject):
     """FTP server class"""
+
+    ftps_server = None
 
     # Signals
     update_image = Signal(str)
@@ -23,12 +24,12 @@ class FTPsServer(QObject):
                  certificate, key, ftp_dir):
         super(FTPsServer, self).__init__()
         # Store params to allow serialization
-        self.certificate = certificate
-        self.key = key
         self.ip = ip_address
         self.port = port
         self.max_conn = max_conn
         self.max_conn_per_ip = max_conn_per_ip
+        self.certificate = certificate
+        self.key = key
         self.ftp_dir = ftp_dir
 
         # SSL handler
@@ -46,7 +47,7 @@ class FTPsServer(QObject):
 
         # Server
         address = (ip_address, port)
-        self.server = FTPServer(address, self.handler)
+        self.server = ThreadedFTPServer(address, self.handler)
         self.server.max_cons = max_conn
         self.server.max_cons_per_ip = max_conn_per_ip
 
@@ -66,16 +67,17 @@ class FTPsServer(QObject):
         """Method to serialize FTPS Server object"""
 
         return dict(
-            certificate = self.certificate,
-            key = self.key,
+            ssl_certificate = self.certificate,
+            ssl_key = self.key,
             ip = self.ip,
             port = self.port,
             max_conn = self.max_conn,
-            max_conn_per_ip = self.max_conn_per_ip
+            max_conn_per_ip = self.max_conn_per_ip,
+            ftp_dir = self.ftp_dir
         )
 
     @staticmethod
     def deserialize(data):
         """Method to deserialize FTPS Server object from file."""
-        return FTPsServer(data["certificate"], data["key"], data["ip"], data["port"],
-                         data["max_conn"], data["max_conn_per_ip"])
+        return FTPsServer(data["ip"], data["port"],  data["max_conn"], data["max_conn_per_ip"],
+                          data["ssl_certificate"], data["ssl_key"], data["ftp_dir"])
