@@ -56,12 +56,25 @@ class FTPsServer(QObject):
 
         self.authorizer.add_user(username, password, directory, perm='elradfmwMT')
 
+    def has_user(self, username):
+        """Wrapper method of authorizer to check if an user already exists"""
+        return self.authorizer.has_user(username)
 
     def run(self):
         """Method to run FTPS server"""
 
+        self.check_for_termination_requests()
         if self.server:
             self.server.serve_forever()
+        self.run_finished.emit()
+
+    def check_for_termination_requests(self):
+        """Terminate current thread if interrupt request comes from Dialog."""
+
+        if self.thread().isInterruptionRequested():
+            self.run_finished.emit()
+            logger.info("Request to stop received. Aborting...")
+            return
 
     def serialize(self):
         """Method to serialize FTPS Server object"""

@@ -17,8 +17,6 @@ from src.ui.ui_configure_ftp_cameras import Ui_DialogFTPCameras
 from src.domain.ftps_server import FTPsServer
 from src.domain.qtextedit_logger import QTextEditLogger
 
-logger = logging.getLogger(__name__)
-
 
 class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     """Class to configure FTP server and cameras"""
@@ -56,6 +54,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
 
         # Init dialog
         self.initialize_dialog()
+        self._setup_logger()
 
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
@@ -87,13 +86,23 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def accept_and_close(self):
         """When Ok is clicked, save FTP config info before closing."""
 
-        FTPsServer.ftps_server = FTPsServer(self.ui.lineEdit_ip.text(),
-                                 int(self.ui.lineEdit_port.text()),
-                                 int(self.ui.lineEdit_max_conn.text()),
-                                 int(self.ui.lineEdit_max_conn_ip.text()),
-                                 self.ui.label_certificate_file_path.text(),
-                                 self.ui.label_key_file_path.text(),
-                                 self.ui.label_FTPServer_path.text())
+        if FTPsServer.ftps_server:
+            FTPsServer.ftps_server.handler.certfile = self.ui.label_certificate_file_path.text()
+            FTPsServer.ftps_server.handler.keyfile = self.ui.label_key_file_path.text()
+            FTPsServer.ftps_server.ftp_dir = self.ui.label_FTPServer_path.text()
+            #TODO: fix server address value update
+            #FTPsServer.ftps_server.server.address()[0] = self.ui.lineEdit_ip.text()
+            #FTPsServer.ftps_server.server.address()[1] = self.ui.lineEdit_port.text()
+            FTPsServer.ftps_server.server.max_cons = self.ui.lineEdit_max_conn.text()
+            FTPsServer.ftps_server.server.max_cons_per_ip = self.ui.lineEdit_max_conn_ip.text()
+        else:
+            FTPsServer.ftps_server = FTPsServer(self.ui.lineEdit_ip.text(),
+                                     int(self.ui.lineEdit_port.text()),
+                                     int(self.ui.lineEdit_max_conn.text()),
+                                     int(self.ui.lineEdit_max_conn_ip.text()),
+                                     self.ui.label_certificate_file_path.text(),
+                                     self.ui.label_key_file_path.text(),
+                                     self.ui.label_FTPServer_path.text())
         if cameras:
             i = 1
             ui_camera_id = []
@@ -107,6 +116,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                             credentials = keyring.get_credential(f"WADAS_FTPcamera_{camera.id}", "")
                             if credentials and (credentials.username != self.ui.lineEdit_username_1 or
                             credentials.password != self.ui.lineEdit_password_1):
+                                camera_user_ui = f"lineEdit_username_{i}"
+                                camera_user_ln = self.findChild(QLineEdit, camera_user_ui)
+                                camera_pass_ui = f"lineEdit_password_{i}"
+                                camera_pass_ln = self.findChild(QLineEdit, camera_pass_ui)
                                 keyring.set_password(f"WADAS_FTPcamera_{camera_id_ln.text()}",
                                                      camera_user_ln.text(),
                                                      camera_pass_ln.text())
@@ -252,17 +265,11 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def test_ftp_server(self):
         """Method to test out FTP server configuration options by running a FTP server instance."""
 
-        logger.info("Starting test FTP server...")
-        FTPsServer.ftps_server = FTPsServer(self.ui.lineEdit_ip.text(),
-                                           int(self.ui.lineEdit_port.text()),
-                                           int(self.ui.lineEdit_max_conn.text()),
-                                           int(self.ui.lineEdit_max_conn_ip.text()),
-                                           self.ui.label_certificate_file_path.text(),
-                                           self.ui.label_key_file_path.text(),
+        # TODO: iterate over all users on UI
+        if not FTPsServer.ftps_server.has_user(self.ui.lineEdit_username_1.text()):
+            FTPsServer.ftps_server.add_user(self.ui.lineEdit_username_1.text(),
+                                           self.ui.lineEdit_password_1.text(),
                                            self.ui.label_FTPServer_path.text())
-        FTPsServer.ftps_server.add_user(self.ui.lineEdit_username_1.text(),
-                                       self.ui.lineEdit_password_1.text(),
-                                       self.ui.label_FTPServer_path.text())
 
         self.ui.pushButton_stopFTPServer.setEnabled(True)
 
@@ -284,15 +291,15 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
 
         if self.ftp_thread and FTPsServer.ftps_server:
             FTPsServer.ftps_server.server.close_all()
+            FTPsServer.ftps_server.server.close()
+            self.ftp_thread.requestInterruption()
             self.ui.pushButton_stopFTPServer.setEnabled(False)
 
     def _setup_logger(self):
         """Initialize logger for UI logging."""
 
+        logger = logging.getLogger("pyftpdlib")
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_FTPserver_log)
-        log_textbox.setFormatter(
-            logging.Formatter(
-                "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"))
         logger.setLevel(logging.DEBUG)
         logger.addHandler(log_textbox)
         #logger.propagate = False
