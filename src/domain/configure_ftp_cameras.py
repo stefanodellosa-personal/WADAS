@@ -57,6 +57,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         self.ui.lineEdit_max_conn.textChanged.connect(self.validate)
         self.ui.lineEdit_max_conn_ip.textChanged.connect(self.validate)
         self.ui.pushButton_addFTPCamera.clicked.connect(self.add_ftp_camera)
+        self.ui.pushButton_removeFTPCamera.clicked.connect(self.remove_ftp_camera)
         self.ui.pushButton_testFTPServer.clicked.connect(self.test_ftp_server)
         self.ui.pushButton_select_FTPserver_folder.clicked.connect(self.select_ftp_folder)
         self.ui.pushButton_stopFTPServer.clicked.connect(self.stop_ftp_server)
@@ -82,9 +83,13 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             self.ui.lineEdit_max_conn.setText("50")
             self.ui.lineEdit_max_conn_ip.setText("5")
 
+        self.list_ftp_cameras_in_tab()
+
+    def list_ftp_cameras_in_tab(self):
+        """Method to list cameras in FTPCameras tab."""
         if cameras:
+            i = 1
             for camera in cameras:
-                i = 1
                 if camera.type == Camera.CameraTypes.FTPCamera:
                     if i > 1:
                         self.add_ftp_camera()
@@ -99,6 +104,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         camera_pass_ui = f"lineEdit_password_{i}"
                         camera_pass_ln = self.findChild(QLineEdit, camera_pass_ui)
                         camera_pass_ln.setText(credentials.password)
+                    i += 1
 
     def accept_and_close(self):
         """When Ok is clicked, save FTP config info before closing."""
@@ -127,22 +133,25 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             while i <= self.num_of_cameras:
                 cur_ui_id = self.get_camera_id(i)
                 ui_camera_id.append(cur_ui_id)
+                found = False
                 for camera in cameras:
                     if camera.type == Camera.CameraTypes.FTPCamera:
                         if cur_ui_id == camera.id:
+                            found = True
                             cur_user = self.get_camera_user(i)
                             cur_pass = self.get_camera_pass(i)
                             credentials = keyring.get_credential(f"WADAS_FTPcamera_{camera.id}", "")
                             if credentials and (credentials.username != cur_user or credentials.password != cur_pass):
                                 keyring.set_password(f"WADAS_FTPcamera_{cur_ui_id}", cur_user, cur_pass)
                                 break
-                # If camera id is not in cameras list, then is new or modified
-                camera = FTPCamera(cur_ui_id, os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id))
-                cameras.append(camera)
-                # Store credentials in keyring
-                keyring.set_password(f"WADAS_FTPcamera_{cur_ui_id}", self.get_camera_user(i),
-                                     self.get_camera_pass(i))
-                i = i + 1
+                if not found:
+                    # If camera id is not in cameras list, then is new or modified
+                    camera = FTPCamera(cur_ui_id, os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id))
+                    cameras.append(camera)
+                    # Store credentials in keyring
+                    keyring.set_password(f"WADAS_FTPcamera_{cur_ui_id}", self.get_camera_user(i),
+                                         self.get_camera_pass(i))
+                i += 1
 
             # Check for cameras old id (prior to modification) and remove them
             orphan_cameras = [camera for camera in cameras if camera.id not in ui_camera_id]
@@ -158,7 +167,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 # Store credentials in keyring
                 keyring.set_password(f"WADAS_FTPcamera_{cur_camera_id}", self.get_camera_user(i),
                                      self.get_camera_pass(i))
-                i = i+1
+                i += 1
         self.accept()
 
     def get_camera_id(self, row):
@@ -240,7 +249,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             if not self.get_camera_id(i):
                 self.ui.label_errorMessage.setText("No Camera ID provided!")
                 valid = False
-            i = i+1
+            i += 1
 
         if valid:
             self.ui.label_errorMessage.setText("")
@@ -255,9 +264,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             row = self.num_of_cameras+1
             # Camera selection check box
             radio_button = QRadioButton()
-            radiob_obj_name = f"checkBox_camera_{row}"
+            radiob_obj_name = f"radioButton_camera_{row}"
             radio_button.setObjectName(radiob_obj_name)
             radio_button.setChecked(False)
+            radio_button.clicked.connect(self.update_remove_ftp_camera_btn)
             grid_layout_cameras.addWidget(radio_button, row, 0)
 
             # Camera id
@@ -291,7 +301,37 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             grid_layout_cameras.addWidget(pass_line_edit, row, 6)
 
             grid_layout_cameras.setAlignment(Qt.AlignmentFlag.AlignTop)
-            self.num_of_cameras = self.num_of_cameras+1
+            self.num_of_cameras += 1
+
+    def remove_ftp_camera(self):
+        """Method to remove FTP camera from list."""
+
+        i = 1
+        camera_id = []
+        while i <= self.num_of_cameras:
+            radiobtn_name = f"radioButton_camera_{i}"
+            radiobtn : QRadioButton
+            radiobtn = self.findChild(QRadioButton, radiobtn_name)
+            camera_id_ui = f"lineEdit_camera_id_{i}"
+            camera_id_ln = self.findChild(QLineEdit, camera_id_ui)
+            if radiobtn.isChecked():
+                camera_id.append(camera_id_ln.text())
+            i += 1
+
+        # Clear FTPCamera tab
+        if camera_id:
+            grid_layout_cameras : QGridLayout
+            grid_layout_cameras = self.findChild(QGridLayout, "gridLayout_cameras")
+            if grid_layout_cameras:
+                for i in reversed(range(grid_layout_cameras.count())):
+                    grid_layout_cameras.itemAt(i).widget().setParent(None)
+
+        # List Cameras again
+        self.add_ftp_camera()
+        self.list_ftp_cameras_in_tab() # TODO fix list of cameras
+
+    def update_remove_ftp_camera_btn(self):
+        self.ui.pushButton_removeFTPCamera.setEnabled(True)
 
     def test_ftp_server(self):
         """Method to test out FTP server configuration options by running a FTP server instance."""

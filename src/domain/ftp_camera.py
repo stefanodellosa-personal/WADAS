@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class FTPCamera(Camera):
     """FTP Camera class, specialization of Camera class."""
 
-    def __init__(self, id, ftp_folder, enabled = False):
+    def __init__(self, id, ftp_folder, enabled = True):
         super().__init__(id, enabled)
         self.type = Camera.CameraTypes.FTPCamera
         self.ftp_folder = ftp_folder
