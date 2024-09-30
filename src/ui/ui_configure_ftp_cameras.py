@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
     QGridLayout, QGroupBox, QLabel, QLineEdit,
-    QPlainTextEdit, QPushButton, QRadioButton, QSizePolicy,
-    QSpacerItem, QTabWidget, QWidget)
+    QPlainTextEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QTabWidget, QVBoxLayout, QWidget)
 
 class Ui_DialogFTPCameras(object):
     def setupUi(self, DialogFTPCameras):
@@ -43,58 +43,18 @@ class Ui_DialogFTPCameras(object):
         self.tabWidget.setObjectName(u"tabWidget")
         self.tab_FTPcameras = QWidget()
         self.tab_FTPcameras.setObjectName(u"tab_FTPcameras")
-        self.gridLayoutWidget = QWidget(self.tab_FTPcameras)
-        self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(9, 9, 771, 371))
-        self.gridLayout_cameras = QGridLayout(self.gridLayoutWidget)
-        self.gridLayout_cameras.setObjectName(u"gridLayout_cameras")
-        self.gridLayout_cameras.setContentsMargins(0, 0, 0, 0)
-        self.radioButton = QRadioButton(self.gridLayoutWidget)
-        self.radioButton.setObjectName(u"radioButton")
-
-        self.gridLayout_cameras.addWidget(self.radioButton, 0, 0, 1, 1)
-
-        self.label_8 = QLabel(self.gridLayoutWidget)
-        self.label_8.setObjectName(u"label_8")
-
-        self.gridLayout_cameras.addWidget(self.label_8, 0, 3, 1, 1)
-
-        self.lineEdit_password_1 = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_password_1.setObjectName(u"lineEdit_password_1")
-        self.lineEdit_password_1.setEchoMode(QLineEdit.EchoMode.Password)
-
-        self.gridLayout_cameras.addWidget(self.lineEdit_password_1, 0, 6, 1, 1)
-
-        self.lineEdit_camera_id_1 = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_camera_id_1.setObjectName(u"lineEdit_camera_id_1")
-
-        self.gridLayout_cameras.addWidget(self.lineEdit_camera_id_1, 0, 2, 1, 1)
-
-        self.label_9 = QLabel(self.gridLayoutWidget)
-        self.label_9.setObjectName(u"label_9")
-
-        self.gridLayout_cameras.addWidget(self.label_9, 0, 5, 1, 1)
-
-        self.label_7 = QLabel(self.gridLayoutWidget)
-        self.label_7.setObjectName(u"label_7")
-
-        self.gridLayout_cameras.addWidget(self.label_7, 0, 1, 1, 1)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_cameras.addItem(self.verticalSpacer_2, 1, 1, 1, 1)
-
-        self.lineEdit_username_1 = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_username_1.setObjectName(u"lineEdit_username_1")
-
-        self.gridLayout_cameras.addWidget(self.lineEdit_username_1, 0, 4, 1, 1)
-
         self.pushButton_addFTPCamera = QPushButton(self.tab_FTPcameras)
         self.pushButton_addFTPCamera.setObjectName(u"pushButton_addFTPCamera")
         self.pushButton_addFTPCamera.setGeometry(QRect(10, 390, 131, 24))
         self.pushButton_removeFTPCamera = QPushButton(self.tab_FTPcameras)
         self.pushButton_removeFTPCamera.setObjectName(u"pushButton_removeFTPCamera")
         self.pushButton_removeFTPCamera.setGeometry(QRect(150, 390, 131, 24))
+        self.verticalLayoutWidget = QWidget(self.tab_FTPcameras)
+        self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
+        self.verticalLayoutWidget.setGeometry(QRect(0, 0, 781, 381))
+        self.verticalLayout_FTPCameraTab = QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout_FTPCameraTab.setObjectName(u"verticalLayout_FTPCameraTab")
+        self.verticalLayout_FTPCameraTab.setContentsMargins(0, 0, 0, 0)
         self.tabWidget.addTab(self.tab_FTPcameras, "")
         self.tab_FTPServer = QWidget()
         self.tab_FTPServer.setObjectName(u"tab_FTPServer")
@@ -274,11 +234,7 @@ class Ui_DialogFTPCameras(object):
 
         self.gridLayout_main.addWidget(self.tabWidget, 1, 0, 1, 1)
 
-        QWidget.setTabOrder(self.tabWidget, self.radioButton)
-        QWidget.setTabOrder(self.radioButton, self.lineEdit_camera_id_1)
-        QWidget.setTabOrder(self.lineEdit_camera_id_1, self.lineEdit_username_1)
-        QWidget.setTabOrder(self.lineEdit_username_1, self.lineEdit_password_1)
-        QWidget.setTabOrder(self.lineEdit_password_1, self.pushButton_addFTPCamera)
+        QWidget.setTabOrder(self.tabWidget, self.pushButton_addFTPCamera)
         QWidget.setTabOrder(self.pushButton_addFTPCamera, self.pushButton_removeFTPCamera)
         QWidget.setTabOrder(self.pushButton_removeFTPCamera, self.lineEdit_max_conn)
         QWidget.setTabOrder(self.lineEdit_max_conn, self.lineEdit_ip)
@@ -293,7 +249,7 @@ class Ui_DialogFTPCameras(object):
         self.buttonBox.accepted.connect(DialogFTPCameras.accept)
         self.buttonBox.rejected.connect(DialogFTPCameras.reject)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(DialogFTPCameras)
@@ -305,10 +261,6 @@ class Ui_DialogFTPCameras(object):
 #if QT_CONFIG(accessibility)
         self.tabWidget.setAccessibleName(QCoreApplication.translate("DialogFTPCameras", u"FTP Server", None))
 #endif // QT_CONFIG(accessibility)
-        self.radioButton.setText("")
-        self.label_8.setText(QCoreApplication.translate("DialogFTPCameras", u"username:", None))
-        self.label_9.setText(QCoreApplication.translate("DialogFTPCameras", u"password:", None))
-        self.label_7.setText(QCoreApplication.translate("DialogFTPCameras", u"Camera ID:", None))
         self.pushButton_addFTPCamera.setText(QCoreApplication.translate("DialogFTPCameras", u"Add FTP Camera", None))
         self.pushButton_removeFTPCamera.setText(QCoreApplication.translate("DialogFTPCameras", u"Remove FTP Camera", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_FTPcameras), QCoreApplication.translate("DialogFTPCameras", u"FTP Cameras", None))
