@@ -33,7 +33,7 @@ class AiModel():
     CLASSIFICATION_MODEL_URL = "https://pbil.univ-lyon1.fr/software/download/deepfaune/v1.1/deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
     CLASSIFICATION_MODEL_FILENAME = "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
     classification_treshold = 0.5
-    detection_teshold = 0.5
+    detection_treshold = 0.5
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -51,7 +51,7 @@ class AiModel():
         os.makedirs("wadas_motion_detection", exist_ok=True)
 
         logger.debug("Detection treshold: %s, Classification treshod: %s.",
-                     self.detection_teshold, self.classification_treshold)
+                     self.detection_treshold, self.classification_treshold)
 
     def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
@@ -73,7 +73,7 @@ class AiModel():
         results = self.detection_model.single_image_detection(transform(img_array),
                                                               img_array.shape,
                                                               img_path,
-                                                              AiModel.detection_teshold)
+                                                              AiModel.detection_treshold)
 
         # Checks for humans in results
         if ("person" in results["labels"][0]) and (len(results["labels"]) == 1):

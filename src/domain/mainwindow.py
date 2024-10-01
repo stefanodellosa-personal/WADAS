@@ -9,19 +9,24 @@ from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 import yaml
 
-from domain.ai_model import AiModel
-from domain.animal_detection_mode import AnimalDetectionMode
-from domain.camera import Camera
-from domain.configure_ai_model import ConfigureAiModel
-from domain.download_dialog import DownloadDialog
-from domain.insert_email import DialogInsertEmail
-from domain.insert_url import InsertUrlDialog
-from domain.operation_mode import OperationMode
-from domain.qtextedit_logger import QTextEditLogger
-from domain.select_local_cameras import DialogSelectLocalCameras
-from domain.select_mode import DialogSelectMode
-from domain.test_model_mode import TestModelMode
-from ui.ui_mainwindow import Ui_MainWindow
+from src.domain.ai_model import AiModel
+from src.domain.animal_detection_mode import AnimalDetectionMode
+from src.domain.camera import Camera
+from src.domain.camera import cameras
+from src.domain.configure_ai_model import ConfigureAiModel
+from src.domain.configure_ftp_cameras import DialogFTPCameras
+from src.domain.download_dialog import DownloadDialog
+from src.domain.ftp_camera import FTPCamera
+from src.domain.insert_email import DialogInsertEmail
+from src.domain.ftps_server import FTPsServer
+from src.domain.insert_url import InsertUrlDialog
+from src.domain.operation_mode import OperationMode
+from src.domain.qtextedit_logger import QTextEditLogger
+from src.domain.select_local_cameras import DialogSelectLocalCameras
+from src.domain.select_mode import DialogSelectMode
+from src.domain.test_model_mode import TestModelMode
+from src.domain.usb_camera import USBCamera
+from src.ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
 
@@ -44,13 +49,13 @@ class MainWindow(QMainWindow):
              'smtp_port', 
              'recipients_email']
              )
-        self.cameras = []
+        self.ftp_server = None
 
         # Connect Actions
-        self.__connect_actions()
+        self._connect_actions()
 
         # Setup UI logger
-        self.__setup_logger()
+        self._setup_logger()
 
         # Initialize startup image
         self.set_image(os.path.join(os.getcwd(), "src", "img","WADAS_logo_big.jpg"))
@@ -62,7 +67,7 @@ class MainWindow(QMainWindow):
         self.update_toolbar_status()
         logger.info('Welcome to WADAS!')
 
-    def __connect_actions(self):
+    def _connect_actions(self):
         """List all actions to connect to MainWindow"""
         self.ui.actionSelect_Mode.triggered.connect(self.select_mode)
         self.ui.actionRun.triggered.connect(self.run)
@@ -76,6 +81,7 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen_configuration_file_menu.triggered.connect(self.load_config_from_file)
         self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
         self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
+        self.ui.actionConfigure_FTP_Cameras.triggered.connect(self.configure_ftp_cameras)
 
     def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -84,7 +90,7 @@ class MainWindow(QMainWindow):
         self.operation_mode.update_image.connect(self.set_image)
         self.operation_mode.run_finished.connect(self.on_run_completion)
 
-    def __setup_logger(self):
+    def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_log)
@@ -93,7 +99,7 @@ class MainWindow(QMainWindow):
                 "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"))
         logger.setLevel(logging.DEBUG)
         logger.addHandler(log_textbox)
-        logger.propagate = False
+        #logger.propagate = False
 
 
     def set_image(self, img):
@@ -145,12 +151,12 @@ class MainWindow(QMainWindow):
                 if not self.operation_mode.url:
                     logger.error("Cannot proceed without a valid URL. Please run again.")
                     return
-            elif not self.cameras:
+            elif not cameras:
                 logger.error("No camera configured. Please configure input cameras and run again.")
                 return
             else:
                 # Passing cameras list to the selected operation mode
-                self.operation_mode.cameras_list = self.cameras
+                self.operation_mode.cameras = cameras #TODO: pass list throug module
 
             self.operation_mode.email_configuration = self.email_config
 
@@ -194,7 +200,7 @@ class MainWindow(QMainWindow):
         if not self.operation_mode_name:
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
-        elif self.operation_mode_name == "animal_detection_mode" and not self.cameras:
+        elif self.operation_mode_name == "animal_detection_mode" and not cameras:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
         else:
@@ -259,7 +265,6 @@ class MainWindow(QMainWindow):
     def configure_email(self):
         """Method to run dialog for insertion of email parameters to enable notifications."""
 
-        #TODO: implement email info persistency
         insert_email_dialog = DialogInsertEmail(self.email_config)
         if insert_email_dialog.exec_():
             self.email_config = insert_email_dialog.email_configuration
@@ -269,6 +274,7 @@ class MainWindow(QMainWindow):
             credentials = keyring.get_credential("WADAS_email", "")
             logger.info("Saved credentials for %s", credentials.username)
             self.setWindowModified(True)
+            self.update_toolbar_status()
         else:
             logger.debug("Email configuration aborted.")
             return
@@ -294,10 +300,9 @@ class MainWindow(QMainWindow):
     def select_local_cameras(self):
         """Method to trigger UI dialog for local cameras configuration."""
 
-        select_local_cameras = DialogSelectLocalCameras(self.cameras)
+        select_local_cameras = DialogSelectLocalCameras()
         if select_local_cameras.exec_():
             logger.info("Camera(s) configured.")
-            self.cameras = select_local_cameras.cameras_list
             self.setWindowModified(True)
             self.update_toolbar_status()
 
@@ -308,7 +313,7 @@ class MainWindow(QMainWindow):
         if configure_ai_model.exec():
             logger.info("Ai model configured.")
             logger.debug("Detection treshold: %s. Classification threshold: %s",
-                         AiModel.detection_teshold, AiModel.classification_treshold)
+                         AiModel.detection_treshold, AiModel.classification_treshold)
             self.setWindowModified(True)
 
     def check_classification_model(self):
@@ -337,15 +342,22 @@ class MainWindow(QMainWindow):
         """Method to save configuration to file."""
 
         logger.info("Saving configuration to file...")
+        # Serializing cameras per class type
+        cameras_to_dict = []
+        for camera in cameras:
+            if camera.type == Camera.CameraTypes.USBCamera or camera.type == Camera.CameraTypes.FTPCamera:
+                cameras_to_dict.append(camera.serialize())
+
         data = dict(
             email = self.email_config,
-            cameras = [camera.serialize() for camera in self.cameras],
+            cameras = cameras_to_dict,
             camera_detection_params = Camera.detection_params,
             ai_model = dict(
-                ai_detect_treshold = AiModel.detection_teshold,
+                ai_detect_treshold = AiModel.detection_treshold,
                 ai_class_treshold = AiModel.classification_treshold
             ),
-            operation_mode = self.operation_mode_name
+            operation_mode = self.operation_mode_name,
+            ftps_server = FTPsServer.ftps_server.serialize()
         )
 
         if not self.configuration_file_name:
@@ -372,20 +384,37 @@ class MainWindow(QMainWindow):
                                                 os.getcwd(), "YAML File (*.yaml)")
 
         if file_name[0]:
-            with open(str(file_name[0]), 'r') as file:
+            with (open(str(file_name[0]), 'r') as file):
 
                 logging.info("Loading configuration from file...")
                 wadas_config = yaml.safe_load(file)
 
                 # Applying configuration to WADAS from config file values
                 self.email_config = wadas_config['email']
-                self.cameras = [Camera.deserialize(data) for data in wadas_config['cameras']]
+                cameras.clear()
+                for data in wadas_config['cameras']:
+                    if data["type"] == Camera.CameraTypes.USBCamera.value:
+                        usb_camera = USBCamera.deserialize(data)
+                        cameras.append(usb_camera)
+                    elif data["type"] == Camera.CameraTypes.FTPCamera.value:
+                        ftp_camera = FTPCamera.deserialize(data)
+                        cameras.append(ftp_camera)
                 Camera.detection_params = wadas_config['camera_detection_params']
-                AiModel.detection_teshold = wadas_config['ai_model']['ai_detect_treshold']
+                AiModel.detection_treshold = wadas_config['ai_model']['ai_detect_treshold']
                 AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
                 self.operation_mode_name = wadas_config['operation_mode']
+                FTPsServer.ftps_server = FTPsServer.deserialize(wadas_config['ftps_server'])
 
                 logging.info("Configuration loaded from file %s.", file_name[0])
                 self.configuration_file_name = file_name[0]
                 self.setWindowModified(False)
                 self.update_toolbar_status()
+
+    def configure_ftp_cameras(self):
+        """Method to trigger ftp cameras configuration dialog"""
+
+        configure_ftp_cameras_dlg = DialogFTPCameras()
+        if configure_ftp_cameras_dlg.exec():
+            logger.info("FTP Server and Cameras configured.")
+            self.setWindowModified(True)
+            self.update_toolbar_status()

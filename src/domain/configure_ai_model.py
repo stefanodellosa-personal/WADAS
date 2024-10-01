@@ -23,7 +23,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_errorMEssage.setStyleSheet("color: red")
         self.ui.lineEdit_classificationTreshold.setText(str(AiModel.classification_treshold))
-        self.ui.lineEdit_detectionTreshold.setText(str(AiModel.detection_teshold))
+        self.ui.lineEdit_detectionTreshold.setText(str(AiModel.detection_treshold))
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
@@ -53,7 +53,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         """When Ok is clicked, save Ai model config info before closing."""
 
         AiModel.classification_treshold = float(self.ui.lineEdit_classificationTreshold.text())
-        AiModel.detection_teshold = float(self.ui.lineEdit_detectionTreshold.text())
+        AiModel.detection_treshold = float(self.ui.lineEdit_detectionTreshold.text())
 
         self.accept()
 

@@ -1,4 +1,5 @@
 cv2_enumerate_cameras
+enum
 ipykernel
 keyring
 opencv-python
