@@ -269,7 +269,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             radio_button = QRadioButton()
             radio_button.setObjectName(f"radioButton_camera_{row}")
             radio_button.setChecked(False)
-            radio_button.setAutoExclusive()
             radio_button.clicked.connect(self.update_remove_ftp_camera_btn)
             grid_layout_cameras.addWidget(radio_button, row, 0)
             # Camera id

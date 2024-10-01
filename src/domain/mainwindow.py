@@ -357,7 +357,7 @@ class MainWindow(QMainWindow):
                 ai_class_treshold = AiModel.classification_treshold
             ),
             operation_mode = self.operation_mode_name,
-            ftps_server = FTPsServer.ftps_server.serialize()
+            ftps_server = (FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else "")
         )
 
         if not self.configuration_file_name:

@@ -53,14 +53,12 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
             col += 1
 
         row = 1
-        tab_order = 2
         for camera_info in self.enumerated_usb_cameras:
             camera_index = str(camera_info.index)
 
             # Camera selection check box
             check_box = QCheckBox()
-            checkbox_obj_name = f"checkBox_camera_{camera_index}"
-            check_box.setObjectName(checkbox_obj_name)
+            check_box.setObjectName(f"checkBox_camera_{camera_index}")
             check_box.setChecked(False)
             check_box.checkStateChanged.connect(self.validate_cameras_selection)
             self.ui.gridLayout_localCameras.addWidget(check_box, row, 0)
@@ -83,15 +81,13 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
             self.ui.gridLayout_localCameras.addWidget(label, row, 4)
             # Camera ID
             id_line_edit = QLineEdit()
-            lnedit_obj_name = f"lineEdit_cameraID_{camera_index}"
-            id_line_edit.setObjectName(lnedit_obj_name)
+            id_line_edit.setObjectName(f"lineEdit_cameraID_{camera_index}")
             id_line_edit.textChanged.connect(self.validate_cameras_selection)
             self.ui.gridLayout_localCameras.addWidget(id_line_edit, row, 5)
             # Test button to preview video (and detection if enabled)
             test_button = QPushButton('Test video')
             test_button.setObjectName(f"button_camera_{camera_index}")
             self.ui.gridLayout_localCameras.addWidget(test_button, row, 6)
-            #TODO: connect slot test_button.clicked.connect()
             test_button.clicked.connect(functools.partial(self.test_camera_stream,
                                                           camera_info.index))
             self.ui.tab_camerasList.setTabOrder(check_box, id_line_edit)
@@ -107,10 +103,8 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
         # Initialize camera checkboxes (if any was selected before) and IDs
         camera_number = len(self.enumerated_usb_cameras)
         for i in range(camera_number):
-            checkbox_obj_name = f"checkBox_camera_{i}"
-            lnedit_camera_id = f"lineEdit_cameraID_{i}"
-            checkbox = self.findChild(QCheckBox, checkbox_obj_name)
-            line_edit = self.findChild(QLineEdit, lnedit_camera_id)
+            checkbox = self.findChild(QCheckBox, f"checkBox_camera_{i}")
+            line_edit = self.findChild(QLineEdit, f"lineEdit_cameraID_{i}")
             if not checkbox or not line_edit:
                 continue
 
@@ -138,10 +132,8 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
         valid = True
         for camera_info in self.enumerated_usb_cameras:
             camera_index = str(camera_info.index)
-            checkbox_obj_name = f"checkBox_camera_{camera_index}"
-            line_edit_camera_id = f"lineEdit_cameraID_{camera_index}"
-            checkbox = self.findChild(QCheckBox, checkbox_obj_name)
-            line_edit = self.findChild(QLineEdit, line_edit_camera_id)
+            checkbox = self.findChild(QCheckBox, f"checkBox_camera_{camera_index}")
+            line_edit = self.findChild(QLineEdit, f"lineEdit_cameraID_{camera_index}")
             if checkbox and checkbox.isChecked() and not line_edit.text():
                 self.ui.label_errorMessage.setText(f"Please add ID for Camera {camera_index}")
                 valid = False
@@ -159,49 +151,47 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
             # We need to update values of existing enabled cameras.
             # The rest we will ignore unless they have an ID assigned.
             for idx in range(camera_number):
-                checkbox_obj_name = f"checkBox_camera_{idx}"
-                line_edit_camera_id = f"lineEdit_cameraID_{idx}"
-                checkbox = self.findChild(QCheckBox, checkbox_obj_name)
-                line_edit = self.findChild(QLineEdit, line_edit_camera_id)
-                for camera in cameras:
-                    if camera.type == Camera.CameraTypes.USBCamera:
-                        if (self.enumerated_usb_cameras[idx].index == camera.index and
-                            self.enumerated_usb_cameras[idx].name == camera.name and
-                            self.enumerated_usb_cameras[idx].pid == camera.pid and
-                            self.enumerated_usb_cameras[idx].vid == camera.vid and
-                            self.enumerated_usb_cameras[idx].path == camera.path):
+                checkbox = self.findChild(QCheckBox, f"checkBox_camera_{idx}")
+                line_edit = self.findChild(QLineEdit, f"lineEdit_cameraID_{idx}")
+                if checkbox and line_edit:
+                    for camera in cameras:
+                        if camera.type == Camera.CameraTypes.USBCamera:
+                            if (self.enumerated_usb_cameras[idx].index == camera.index and
+                                self.enumerated_usb_cameras[idx].name == camera.name and
+                                self.enumerated_usb_cameras[idx].pid == camera.pid and
+                                self.enumerated_usb_cameras[idx].vid == camera.vid and
+                                self.enumerated_usb_cameras[idx].path == camera.path):
 
-                            # Camera index has not changed, let's save ID and enablement status if changed.
-                            camera.enabled = checkbox.isChecked()
-                            camera.id = line_edit.text()
-                            break
-                else:
-                    # Camera index has changed or camera is new.
-                    camera.idx = idx
-                    camera.name = self.enumerated_usb_cameras[idx].name
-                    camera.pid = self.enumerated_usb_cameras[idx].pid
-                    camera.vid = self.enumerated_usb_cameras[idx].vid
-                    camera.path = self.enumerated_usb_cameras[idx].path
-                    camera.enabled = checkbox.isChecked()
-                    camera.id = line_edit.text()
-                    break
+                                # Camera index has not changed, let's save ID and enablement status if changed.
+                                camera.enabled = checkbox.isChecked()
+                                camera.id = line_edit.text()
+                                break
+                            else:
+                                # Camera index has changed or camera is new.
+                                camera.idx = idx
+                                camera.name = self.enumerated_usb_cameras[idx].name
+                                camera.pid = self.enumerated_usb_cameras[idx].pid
+                                camera.vid = self.enumerated_usb_cameras[idx].vid
+                                camera.path = self.enumerated_usb_cameras[idx].path
+                                camera.enabled = checkbox.isChecked()
+                                camera.id = line_edit.text()
+                                break
         else:
             # Save cameras
             for idx in range(camera_number):
-                checkbox_obj_name = f"checkBox_camera_{idx}"
-                line_edit_camera_id = f"lineEdit_cameraID_{idx}"
-                checkbox = self.findChild(QCheckBox, checkbox_obj_name)
-                line_edit = self.findChild(QLineEdit, line_edit_camera_id)
-                camera = USBCamera(line_edit.text(),
-                                self.enumerated_usb_cameras[idx].name,
-                                checkbox.isChecked(),
-                                idx,
-                                self.enumerated_usb_cameras[idx].backend,
-                                True,
-                                self.enumerated_usb_cameras[idx].pid,
-                                self.enumerated_usb_cameras[idx].vid,
-                                self.enumerated_usb_cameras[idx].path)
-                cameras.append(camera)
+                checkbox = self.findChild(QCheckBox, f"checkBox_camera_{idx}")
+                line_edit = self.findChild(QLineEdit, f"lineEdit_cameraID_{idx}")
+                if checkbox and line_edit:
+                    camera = USBCamera(line_edit.text(),
+                                    self.enumerated_usb_cameras[idx].name,
+                                    checkbox.isChecked(),
+                                    idx,
+                                    self.enumerated_usb_cameras[idx].backend,
+                                    True,
+                                    self.enumerated_usb_cameras[idx].pid,
+                                    self.enumerated_usb_cameras[idx].vid,
+                                    self.enumerated_usb_cameras[idx].path)
+                    cameras.append(camera)
         self.accept()
 
     def test_camera_stream(self, camera_idx):
