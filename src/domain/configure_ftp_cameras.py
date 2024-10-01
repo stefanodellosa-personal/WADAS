@@ -24,8 +24,9 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def __init__(self):
         super(DialogFTPCameras, self).__init__()
         self.ui = Ui_DialogFTPCameras()
-        self.num_of_cameras = 0
+        self.ui_camera_idx = 0
         self.ftp_thread = None
+        self.removed_cameras = []
 
         # UI
         self.ui.setupUi(self)
@@ -93,16 +94,13 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 if camera.type == Camera.CameraTypes.FTPCamera:
                     if i > 1:
                         self.add_ftp_camera()
-                    camera_id_ui = f"lineEdit_camera_id_{i}"
-                    camera_id_ln = self.findChild(QLineEdit, camera_id_ui)
+                    camera_id_ln = self.findChild(QLineEdit, f"lineEdit_camera_id_{i}")
                     camera_id_ln.setText(camera.id)
                     credentials = keyring.get_credential(f"WADAS_FTPcamera_{camera.id}", "")
                     if credentials:
-                        camera_user_ui = f"lineEdit_username_{i}"
-                        camera_user_ln = self.findChild(QLineEdit, camera_user_ui)
+                        camera_user_ln = self.findChild(QLineEdit, f"lineEdit_username_{i}")
                         camera_user_ln.setText(credentials.username)
-                        camera_pass_ui = f"lineEdit_password_{i}"
-                        camera_pass_ln = self.findChild(QLineEdit, camera_pass_ui)
+                        camera_pass_ln = self.findChild(QLineEdit, f"lineEdit_password_{i}")
                         camera_pass_ln.setText(credentials.password)
                     i += 1
 
@@ -130,63 +128,69 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             # Check for need of updating cameras credentials. If camera ID changes it is seen as new camera.
             i = 1
             ui_camera_id = []
-            while i <= self.num_of_cameras:
+            while i <= self.ui_camera_idx:
                 cur_ui_id = self.get_camera_id(i)
-                ui_camera_id.append(cur_ui_id)
-                found = False
-                for camera in cameras:
-                    if camera.type == Camera.CameraTypes.FTPCamera:
-                        if cur_ui_id == camera.id:
-                            found = True
-                            cur_user = self.get_camera_user(i)
-                            cur_pass = self.get_camera_pass(i)
-                            credentials = keyring.get_credential(f"WADAS_FTPcamera_{camera.id}", "")
-                            if credentials and (credentials.username != cur_user or credentials.password != cur_pass):
-                                keyring.set_password(f"WADAS_FTPcamera_{cur_ui_id}", cur_user, cur_pass)
-                                break
-                if not found:
-                    # If camera id is not in cameras list, then is new or modified
-                    camera = FTPCamera(cur_ui_id, os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id))
-                    cameras.append(camera)
-                    # Store credentials in keyring
-                    keyring.set_password(f"WADAS_FTPcamera_{cur_ui_id}", self.get_camera_user(i),
-                                         self.get_camera_pass(i))
+                if cur_ui_id:
+                    ui_camera_id.append(cur_ui_id)
+                    found = False
+                    for camera in cameras:
+                        if camera.type == Camera.CameraTypes.FTPCamera:
+                            if cur_ui_id == camera.id:
+                                found = True
+                                cur_user = self.get_camera_user(i)
+                                cur_pass = self.get_camera_pass(i)
+                                if cur_user and cur_pass:
+                                    credentials = keyring.get_credential(f"WADAS_FTPcamera_{camera.id}",
+                                                                         "")
+                                    if credentials and (credentials.username != cur_user or
+                                                        credentials.password != cur_pass):
+                                        keyring.set_password(f"WADAS_FTPcamera_{cur_ui_id}", cur_user,
+                                                             cur_pass)
+                                        break
+                    if not found:
+                        # If camera id is not in cameras list, then is new or modified
+                        camera = FTPCamera(cur_ui_id, os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id))
+                        cameras.append(camera)
+                        # Store credentials in keyring
+                        keyring.set_password(f"WADAS_FTPcamera_{cur_ui_id}", self.get_camera_user(i),
+                                             self.get_camera_pass(i))
                 i += 1
 
             # Check for cameras old id (prior to modification) and remove them
             orphan_cameras = [camera for camera in cameras if camera.id not in ui_camera_id]
             for camera in orphan_cameras:
                 cameras.remove(camera)
+            for camera in cameras:
+                if camera.id in self.removed_cameras:
+                    cameras.remove(camera)
         else:
             # Insert new camera(s) in list (including the ones with modified id)
             i=1
-            while i <= self.num_of_cameras:
+            while i <= self.ui_camera_idx:
                 cur_camera_id = self.get_camera_id(i)
-                camera = FTPCamera(cur_camera_id, os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id))
-                cameras.append(camera)
-                # Store credentials in keyring
-                keyring.set_password(f"WADAS_FTPcamera_{cur_camera_id}", self.get_camera_user(i),
-                                     self.get_camera_pass(i))
+                if cur_camera_id:
+                    camera = FTPCamera(cur_camera_id, os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id))
+                    cameras.append(camera)
+                    # Store credentials in keyring
+                    keyring.set_password(f"WADAS_FTPcamera_{cur_camera_id}", self.get_camera_user(i),
+                                         self.get_camera_pass(i))
                 i += 1
         self.accept()
 
     def get_camera_id(self, row):
         """Method to get camera id text from UI programmatically by row number"""
-        camera_id_ui = f"lineEdit_camera_id_{row}"
-        camera_id_ln = self.findChild(QLineEdit, camera_id_ui)
-        return camera_id_ln.text()
+        camera_id_ln = self.findChild(QLineEdit, f"lineEdit_camera_id_{row}")
+        return camera_id_ln.text() if camera_id_ln else None
 
     def get_camera_user(self, row):
         """Method to get camera username text from UI programmatically by row number"""
-        camera_user_ui = f"lineEdit_username_{row}"
-        camera_user_ln = self.findChild(QLineEdit, camera_user_ui)
-        return camera_user_ln.text()
+        camera_user_ln = self.findChild(QLineEdit, f"lineEdit_username_{row}")
+        return camera_user_ln.text() if camera_user_ln else None
 
     def get_camera_pass(self, row):
         """Method to get camera password text from UI programmatically by row number"""
-        camera_pass_ui = f"lineEdit_password_{row}"
-        camera_pass_ln = self.findChild(QLineEdit, camera_pass_ui)
-        return camera_pass_ln.text()
+        camera_pass_ln = self.findChild(QLineEdit, f"lineEdit_password_{row}")
+        return camera_pass_ln.text() if camera_pass_ln else None
 
     def select_key_file(self):
         """Method to select SSL key file"""
@@ -214,7 +218,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def validate(self):
         """Method to validate data prior to accept and close dialog."""
 
-        #TODO: add cameras list validation
         valid = True
         if not ipv4(self.ui.lineEdit_ip.text()):
             self.ui.label_errorMessage.setText("Invalid server IP address provided!")
@@ -245,7 +248,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             valid = False
 
         i = 1
-        while i <= self.num_of_cameras:
+        while i <= self.ui_camera_idx:
             if not self.get_camera_id(i):
                 self.ui.label_errorMessage.setText("No Camera ID provided!")
                 valid = False
@@ -261,22 +264,20 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
 
         grid_layout_cameras = self.findChild(QGridLayout, "gridLayout_cameras")
         if grid_layout_cameras:
-            row = self.num_of_cameras+1
+            row = self.ui_camera_idx + 1
             # Camera selection check box
             radio_button = QRadioButton()
-            radiob_obj_name = f"radioButton_camera_{row}"
-            radio_button.setObjectName(radiob_obj_name)
+            radio_button.setObjectName(f"radioButton_camera_{row}")
             radio_button.setChecked(False)
+            radio_button.setAutoExclusive()
             radio_button.clicked.connect(self.update_remove_ftp_camera_btn)
             grid_layout_cameras.addWidget(radio_button, row, 0)
-
             # Camera id
             label = QLabel("ID:")
             label.setObjectName(f"label_cameraId_{row}")
             grid_layout_cameras.addWidget(label, row, 1)
             id_line_edit = QLineEdit()
-            lnedit_obj_name = f"lineEdit_camera_id_{row}"
-            id_line_edit.setObjectName(lnedit_obj_name)
+            id_line_edit.setObjectName(f"lineEdit_camera_id_{row}")
             id_line_edit.textChanged.connect(self.validate)
             grid_layout_cameras.addWidget(id_line_edit, row, 2)
             # Camera FTP user
@@ -285,8 +286,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             label.setToolTip("FTP user name")
             grid_layout_cameras.addWidget(label, row, 3)
             user_line_edit = QLineEdit()
-            lnedit_obj_name = f"lineEdit_username_{row}"
-            user_line_edit.setObjectName(lnedit_obj_name)
+            user_line_edit.setObjectName(f"lineEdit_username_{row}")
             user_line_edit.textChanged.connect(self.validate)
             grid_layout_cameras.addWidget(user_line_edit, row, 4)
             # Camera password
@@ -294,43 +294,38 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             label.setObjectName(f"label_cameraPass_{row}")
             grid_layout_cameras.addWidget(label, row, 5)
             pass_line_edit = QLineEdit()
-            lnedit_obj_name = f"lineEdit_password_{row}"
-            pass_line_edit.setObjectName(lnedit_obj_name)
+            pass_line_edit.setObjectName(f"lineEdit_password_{row}")
             pass_line_edit.setEchoMode(QLineEdit.EchoMode.Password)
             pass_line_edit.textChanged.connect(self.validate)
             grid_layout_cameras.addWidget(pass_line_edit, row, 6)
 
             grid_layout_cameras.setAlignment(Qt.AlignmentFlag.AlignTop)
-            self.num_of_cameras += 1
+            self.ui_camera_idx += 1
+
+            self.validate()
 
     def remove_ftp_camera(self):
         """Method to remove FTP camera from list."""
 
         i = 1
-        camera_id = []
-        while i <= self.num_of_cameras:
-            radiobtn_name = f"radioButton_camera_{i}"
-            radiobtn : QRadioButton
-            radiobtn = self.findChild(QRadioButton, radiobtn_name)
-            camera_id_ui = f"lineEdit_camera_id_{i}"
-            camera_id_ln = self.findChild(QLineEdit, camera_id_ui)
-            if radiobtn.isChecked():
-                camera_id.append(camera_id_ln.text())
+        while i <= self.ui_camera_idx:
+            radiobtn = self.findChild(QRadioButton, f"radioButton_camera_{i}")
+            if radiobtn:
+                camera_id_ln = self.findChild(QLineEdit, f"lineEdit_camera_id_{i}")
+                if radiobtn.isChecked() and camera_id_ln:
+                    self.removed_cameras.append(camera_id_ln.text())
+                    grid_layout_cameras = self.findChild(QGridLayout, "gridLayout_cameras")
+                    if grid_layout_cameras:
+                        j = 0
+                        while j <= 6:
+                            grid_layout_cameras.itemAtPosition(i, j).widget().setParent(None)
+                            j += 1
             i += 1
-
-        # Clear FTPCamera tab
-        if camera_id:
-            grid_layout_cameras : QGridLayout
-            grid_layout_cameras = self.findChild(QGridLayout, "gridLayout_cameras")
-            if grid_layout_cameras:
-                for i in reversed(range(grid_layout_cameras.count())):
-                    grid_layout_cameras.itemAt(i).widget().setParent(None)
-
-        # List Cameras again
-        self.add_ftp_camera()
-        self.list_ftp_cameras_in_tab() # TODO fix list of cameras
+        self.ui.pushButton_removeFTPCamera.setEnabled(False)
 
     def update_remove_ftp_camera_btn(self):
+        """Method to update remove FTP Camera button enablement logic."""
+
         self.ui.pushButton_removeFTPCamera.setEnabled(True)
 
     def test_ftp_server(self):
@@ -344,12 +339,12 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                                 self.ui.label_certificate_file_path.text(),
                                                 self.ui.label_key_file_path.text())
         i = 1
-        while i <= self.num_of_cameras:
+        while i <= self.ui_camera_idx:
             if not FTPsServer.ftps_server.has_user(self.get_camera_id(i)):
                 FTPsServer.ftps_server.add_user(self.get_camera_user(i),
                                                self.get_camera_pass(i),
                                                self.ui.label_FTPServer_path.text())
-            i = i+1
+            i +=1
 
         self.ftp_thread = QThread()
         # Move operation mode in dedicated thread
