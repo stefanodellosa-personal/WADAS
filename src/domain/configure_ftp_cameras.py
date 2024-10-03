@@ -157,12 +157,14 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 i += 1
 
             # Check for cameras old id (prior to modification) and remove them
-            orphan_cameras = [camera for camera in cameras if camera.id not in ui_camera_id]
+            orphan_cameras = (camera for camera in cameras if camera.id not in ui_camera_id and
+                              camera.type == Camera.CameraTypes.FTPCamera)
             for camera in orphan_cameras:
                 cameras.remove(camera)
             for camera in cameras:
                 if camera.id in self.removed_cameras:
-                    cameras.remove(camera)
+                    if camera.type == Camera.CameraTypes.FTPCamera:
+                        cameras.remove(camera)
         else:
             # Insert new camera(s) in list (including the ones with modified id)
             i=1
