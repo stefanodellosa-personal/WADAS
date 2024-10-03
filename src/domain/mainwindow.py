@@ -6,7 +6,7 @@ import os
 import keyring
 from PySide6 import QtGui
 from PySide6.QtCore import QThread
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QErrorMessage
 import yaml
 
 from src.domain.ai_model import AiModel
@@ -75,8 +75,8 @@ class MainWindow(QMainWindow):
         self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
         self.ui.actionSelectLocalCameras.triggered.connect(self.select_local_cameras)
         self.ui.actionConfigure_Ai_model.triggered.connect(self.configure_ai_model)
-        self.ui.actionSave_configuration_as.triggered.connect(self.save_config_to_file)
-        self.ui.actionSave_configuration_as_menu.triggered.connect(self.save_config_to_file)
+        self.ui.actionSave_configuration_as.triggered.connect(self.save_as_to_config_file)
+        self.ui.actionSave_configuration_as_menu.triggered.connect(self.save_as_to_config_file)
         self.ui.actionOpen_configuration_file.triggered.connect(self.load_config_from_file)
         self.ui.actionOpen_configuration_file_menu.triggered.connect(self.load_config_from_file)
         self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
@@ -357,18 +357,14 @@ class MainWindow(QMainWindow):
                 ai_class_treshold = AiModel.classification_treshold
             ),
             operation_mode = self.operation_mode_name,
-            ftps_server = FTPsServer.ftps_server.serialize()
+            ftps_server = (FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else "")
         )
 
         if not self.configuration_file_name:
-            file_name = QFileDialog.getSaveFileName(self, "Select WADAS configuration file to save",
-                                                    os.getcwd(), "YAML File (*.yaml)")
-
-            if file_name[0]:
-                self.configuration_file_name = str(file_name[0])
-            else:
-                # Empty file name (or dialog Cancel button)
-                return
+            error_dialog = QErrorMessage()
+            error_dialog.showMessage("No configuration file provided. Please specify file name and path.")
+            logger.error("No configuration file provided. Aborting save.")
+            return
 
         with open(self.configuration_file_name, 'w') as yamlfile:
             data = yaml.safe_dump(data, yamlfile)
@@ -376,6 +372,19 @@ class MainWindow(QMainWindow):
         logger.info("Configuration saved to file %s.", self.configuration_file_name)
         self.setWindowModified(False)
         self.update_toolbar_status()
+
+    def save_as_to_config_file(self):
+        """Method to save configuration file as"""
+
+        file_name = QFileDialog.getSaveFileName(self, "Select WADAS configuration file to save",
+                                                os.getcwd(), "YAML File (*.yaml)")
+        if file_name[0]:
+            self.configuration_file_name = str(file_name[0])
+        else:
+            # Empty file name (or dialog Cancel button)
+            return
+
+        self.save_config_to_file()
 
     def load_config_from_file(self):
         """Method to load config from file."""
