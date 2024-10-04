@@ -223,6 +223,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSelect_Mode.setEnabled(not running)
         self.ui.actionConfigure_Ai_model.setEnabled(not running)
         self.ui.actionSelectLocalCameras.setEnabled(not running)
+        self.ui.actionConfigure_FTP_Cameras.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""

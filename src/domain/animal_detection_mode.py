@@ -7,6 +7,9 @@ from src.domain.operation_mode import OperationMode
 from src.domain.camera import img_queue
 from src.domain.camera import Camera
 from src.domain.camera import cameras
+from src.domain.ftps_server import FTPsServer
+
+from PySide6.QtCore import QThread
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +19,6 @@ class AnimalDetectionMode(OperationMode):
     def __init__(self):
         super(AnimalDetectionMode, self).__init__()
         self.modename = "animal_detection_mode"
-        self.camera_thread = []
         self.process_queue = True
 
     def run(self):
@@ -29,13 +31,16 @@ class AnimalDetectionMode(OperationMode):
         logger.info("Instantiating cameras...")
         camera: Camera
         for camera in cameras:
-            if not camera.enabled or camera.type != Camera.CameraTypes.USBCamera:
-                continue
-            else:
+            if camera.enabled and camera.type == Camera.CameraTypes.USBCamera:
                 # Create thread for motion detection
                 logger.debug("Instantiating thread for camera %s", camera.id)
                 camera.stop_thread = False
                 self.camera_thread.append(camera.run())
+            elif camera.enabled and camera.type == Camera.CameraTypes.FTPCamera and FTPsServer.ftps_server:
+                logger.info("Instantiating FTPS server...")
+                self.init_ftp_server()
+            else:
+                continue
 
         self.run_progress.emit(10)
         self.check_for_termination_requests()
@@ -71,3 +76,30 @@ class AnimalDetectionMode(OperationMode):
                     camera.stop_thread = True
             self.run_finished.emit()
             return
+
+    def ftp_camera_exist(self):
+        for camera in cameras:
+            if camera.type == Camera.CameraTypes.FTPCamera:
+                return True
+        return False
+
+    def init_ftp_server(self):
+        """Method to instantiate FTPS server thread"""
+
+        # If no FTP camera is configured skip FTPS Server instantiation
+        if not self.ftp_camera_exist():
+            return
+
+        self.ftp_thread = QThread()
+
+        # Move operation mode in dedicated thread
+        FTPsServer.ftps_server.moveToThread(self.ftp_thread)
+
+        # Connect thread related signals and slots
+        self.ftp_thread.started.connect(FTPsServer.ftps_server.run)
+        FTPsServer.ftps_server.run_finished.connect(self.ftp_thread.quit)
+        FTPsServer.ftps_server.run_finished.connect(FTPsServer.ftps_server.deleteLater)
+        self.ftp_thread.finished.connect(self.ftp_thread.deleteLater)
+
+        # Start the thread
+        self.ftp_thread.start()

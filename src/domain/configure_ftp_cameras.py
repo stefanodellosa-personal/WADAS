@@ -338,13 +338,14 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                                 int(self.ui.lineEdit_max_conn.text()),
                                                 int(self.ui.lineEdit_max_conn_ip.text()),
                                                 self.ui.label_certificate_file_path.text(),
-                                                self.ui.label_key_file_path.text())
+                                                self.ui.label_key_file_path.text(),
+                                                self.ui.label_FTPServer_path.text())
         i = 1
         while i <= self.ui_camera_idx:
             if not FTPsServer.ftps_server.has_user(self.get_camera_id(i)):
                 FTPsServer.ftps_server.add_user(self.get_camera_user(i),
-                                               self.get_camera_pass(i),
-                                               self.ui.label_FTPServer_path.text())
+                                                self.get_camera_pass(i),
+                                                self.ui.label_FTPServer_path.text())
             i +=1
 
         self.ftp_thread = QThread()

@@ -13,6 +13,7 @@ import ssl
 
 from PySide6.QtCore import QObject, Signal
 from src.domain.ai_model import AiModel
+from src.domain.ftps_server import FTPsServer
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,8 @@ class OperationMode(QObject):
         self.last_classified_animals = ""
         self.url = ""
         self.email_configuration = {}
+        self.camera_thread = []
+        self.ftp_thread = None
 
     def init_model(self):
         """Method to run the selected WADAS operation mode"""
@@ -109,4 +112,13 @@ class OperationMode(QObject):
     def execution_completed(self):
         """Method to perform end of execution steps."""
         self.run_finished.emit()
+        self.stop_ftp_server()
         logger.info("Done with processing.")
+
+    def stop_ftp_server(self):
+        """Method to stop FTP server thread"""
+
+        if self.ftp_thread and FTPsServer.ftps_server:
+            FTPsServer.ftps_server.server.close_all()
+            FTPsServer.ftps_server.server.close()
+            self.ftp_thread.requestInterruption()
