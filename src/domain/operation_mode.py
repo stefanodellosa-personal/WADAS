@@ -1,17 +1,16 @@
 """Module containing class to handle WADAS operation modes."""
 
-import os
-import logging
-import smtplib
-
-from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import logging
+import os
+import smtplib
 
 import keyring
+from PySide6.QtCore import QObject, Signal
 import ssl
 
-from PySide6.QtCore import QObject, Signal
 from src.domain.ai_model import AiModel
 from src.domain.ftps_server import FTPsServer
 

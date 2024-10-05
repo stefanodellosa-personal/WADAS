@@ -2,17 +2,27 @@
 
 import logging
 from pyftpdlib.authorizers import DummyAuthorizer
-from pyftpdlib.servers import ThreadedFTPServer
 from pyftpdlib.handlers import TLS_FTPHandler
+from pyftpdlib.servers import ThreadedFTPServer
 from PySide6.QtCore import QObject, Signal
+
 from src.domain.camera import img_queue
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("mainwindow")
 
 class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
 
     def on_connect(self):
-        logger.info(f"Connected remote camera from {self.remote_ip}:{self.remote_port}")
+        logger.info("Connected remote camera from %s:%s", self.remote_ip, self.remote_port)
+
+    def on_disconnect(self):
+        logger.info("Disconnected remote camera from %s:%s", self.remote_ip, self.remote_port)
+
+    def on_login(self, username):
+        logger.info("%s user logged in.", username)
+
+    def on_logout(self, username):
+        logger.info("%s user logged out.", username)
 
     def on_file_received(self, file):
         img_queue.put({"img": file, "img_id": f"ftp_camera_id"}) #TODO: fix camera id
@@ -61,7 +71,7 @@ class FTPsServer(QObject):
     def add_user(self, username, password, directory):
         """Method to add user(s) to the authorizer."""
 
-        self.authorizer.add_user(username, password, directory, perm='elradfmwMT')
+        self.authorizer.add_user(username, password, directory, perm='lmwMT')
 
     def has_user(self, username):
         """Wrapper method of authorizer to check if a user already exists"""

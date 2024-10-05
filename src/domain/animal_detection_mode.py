@@ -3,13 +3,15 @@
 
 import logging
 
-from src.domain.operation_mode import OperationMode
-from src.domain.camera import img_queue
+from PySide6.QtCore import QThread
+
 from src.domain.camera import Camera
 from src.domain.camera import cameras
+from src.domain.camera import img_queue
 from src.domain.ftps_server import FTPsServer
+from src.domain.operation_mode import OperationMode
 
-from PySide6.QtCore import QThread
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,16 +33,15 @@ class AnimalDetectionMode(OperationMode):
         logger.info("Instantiating cameras...")
         camera: Camera
         for camera in cameras:
-            if camera.enabled and camera.type == Camera.CameraTypes.USBCamera:
-                # Create thread for motion detection
-                logger.debug("Instantiating thread for camera %s", camera.id)
-                camera.stop_thread = False
-                self.camera_thread.append(camera.run())
-            elif camera.enabled and camera.type == Camera.CameraTypes.FTPCamera and FTPsServer.ftps_server:
-                logger.info("Instantiating FTPS server...")
-                self.init_ftp_server()
-            else:
-                continue
+            if camera.enabled:
+                if camera.type == Camera.CameraTypes.USBCamera:
+                    # Create thread for motion detection
+                    logger.info("Instantiating thread for camera %s", camera.id)
+                    camera.stop_thread = False
+                    self.camera_thread.append(camera.run())
+                elif camera.type == Camera.CameraTypes.FTPCamera and FTPsServer.ftps_server:
+                    logger.info("Instantiating FTPS server...")
+                    self.init_ftp_server()
 
         self.run_progress.emit(10)
         self.check_for_termination_requests()
