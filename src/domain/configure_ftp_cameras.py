@@ -171,11 +171,19 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             while i <= self.ui_camera_idx:
                 cur_camera_id = self.get_camera_id(i)
                 if cur_camera_id:
-                    camera = FTPCamera(cur_camera_id, os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id))
+                    cur_cam_ftp_dir = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id)
+                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir)
                     cameras.append(camera)
                     # Store credentials in keyring
                     keyring.set_password(f"WADAS_FTPcamera_{cur_camera_id}", self.get_camera_user(i),
                                          self.get_camera_pass(i))
+                    # Add camera user to FTPS server
+                    if not FTPsServer.ftps_server.has_user(cur_camera_id):
+                        if not os.path.isdir(cur_cam_ftp_dir):
+                            os.makedirs(cur_cam_ftp_dir, exist_ok=True)
+                        FTPsServer.ftps_server.add_user(self.get_camera_user(i),
+                                                        self.get_camera_pass(i),
+                                                        cur_cam_ftp_dir)
                 i += 1
         self.accept()
 

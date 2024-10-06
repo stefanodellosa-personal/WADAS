@@ -99,8 +99,6 @@ class MainWindow(QMainWindow):
                 "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"))
         logger.setLevel(logging.DEBUG)
         logger.addHandler(log_textbox)
-        #logger.propagate = False
-
 
     def set_image(self, img):
         """Set image to show in WADAS. This is used for startup, detected and
@@ -402,6 +400,8 @@ class MainWindow(QMainWindow):
 
                 # Applying configuration to WADAS from config file values
                 self.email_config = wadas_config['email']
+                FTPsServer.ftps_server = (FTPsServer.deserialize(wadas_config['ftps_server']) if
+                                          wadas_config['ftps_server'] else None)
                 cameras.clear()
                 for data in wadas_config['cameras']:
                     if data["type"] == Camera.CameraTypes.USBCamera.value:
@@ -410,11 +410,18 @@ class MainWindow(QMainWindow):
                     elif data["type"] == Camera.CameraTypes.FTPCamera.value:
                         ftp_camera = FTPCamera.deserialize(data)
                         cameras.append(ftp_camera)
+                        if FTPsServer.ftps_server and not FTPsServer.ftps_server.has_user(ftp_camera.id):
+                            if not os.path.isdir(ftp_camera.ftp_folder):
+                                os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
+                            credentials = keyring.get_credential(f"WADAS_FTPcamera_{ftp_camera.id}","")
+                            if credentials:
+                                FTPsServer.ftps_server.add_user(credentials.username,
+                                                                credentials.password, ftp_camera.ftp_folder)
                 Camera.detection_params = wadas_config['camera_detection_params']
                 AiModel.detection_treshold = wadas_config['ai_model']['ai_detect_treshold']
                 AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
                 self.operation_mode_name = wadas_config['operation_mode']
-                FTPsServer.ftps_server = FTPsServer.deserialize(wadas_config['ftps_server'])
+
 
                 logging.info("Configuration loaded from file %s.", file_name[0])
                 self.configuration_file_name = file_name[0]

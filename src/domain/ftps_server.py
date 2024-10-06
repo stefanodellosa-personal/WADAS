@@ -1,6 +1,7 @@
 """FTPS server module"""
 
 import logging
+import threading
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import TLS_FTPHandler
 from pyftpdlib.servers import ThreadedFTPServer
@@ -8,7 +9,7 @@ from PySide6.QtCore import QObject, Signal
 
 from src.domain.camera import img_queue
 
-logger = logging.getLogger("mainwindow")
+logger = logging.getLogger(__name__)
 
 class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
 
@@ -71,7 +72,7 @@ class FTPsServer(QObject):
     def add_user(self, username, password, directory):
         """Method to add user(s) to the authorizer."""
 
-        self.authorizer.add_user(username, password, directory, perm='lmwMT')
+        self.authorizer.add_user(username, password, directory, perm='elmwMT')
 
     def has_user(self, username):
         """Wrapper method of authorizer to check if a user already exists"""
@@ -84,6 +85,23 @@ class FTPsServer(QObject):
         if self.server:
             self.server.serve_forever()
         self.run_finished.emit()
+
+    #TODO: remove once test is completed
+    def run_op_mode(self):
+        """ TEST Method to create new thread for FTPS Server class."""
+
+        if self.server:
+            thread = threading.Thread(target=self.server.serve_forever())
+
+            if thread:
+                thread.start()
+                logger.info("Starting thread for FTPs Server...")
+            else:
+                logger.error("Unable to create new thread for FTPs Server.")
+
+            return thread
+        else:
+            return None
 
     def check_for_termination_requests(self):
         """Terminate current thread if interrupt request comes from Dialog."""

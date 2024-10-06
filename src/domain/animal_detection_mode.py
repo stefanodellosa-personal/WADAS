@@ -39,20 +39,21 @@ class AnimalDetectionMode(OperationMode):
                     logger.info("Instantiating thread for camera %s", camera.id)
                     camera.stop_thread = False
                     self.camera_thread.append(camera.run())
-                elif camera.type == Camera.CameraTypes.FTPCamera and FTPsServer.ftps_server:
+                elif camera.type == Camera.CameraTypes.FTPCamera and FTPsServer.ftps_server and not self.ftp_thread:
                     logger.info("Instantiating FTPS server...")
-                    self.init_ftp_server()
+                    self.init_ftp_server() #TODO: fix thread reentrance
+                    #FTPsServer.ftps_server.run_op_mode() TODO: remove once test is complete
 
         self.run_progress.emit(10)
         self.check_for_termination_requests()
         logger.info("Ready for video stream from Camera(s)...")
         # Run detection model
         while self.process_queue:
-            if img_queue.not_empty:
+            self.check_for_termination_requests()
+            if not img_queue.empty():
                 logger.debug("Processing image from motion detection notification...")
                 cur_img = img_queue.get()
-                results, detected_img_path = self.ai_model.process_image(cur_img["img"],
-                                                                         True)
+                results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
 
                 self.last_detection = detected_img_path
                 self.check_for_termination_requests()
@@ -71,6 +72,8 @@ class AnimalDetectionMode(OperationMode):
 
         if self.thread().isInterruptionRequested():
             logger.info("Request to stop received. Aborting...")
+            if self.ftp_camera_exist():
+                self.ftp_thread.requestInterruption()
             self.process_queue = False
             for camera in cameras:
                 if camera.type == Camera.CameraTypes.USBCamera:
@@ -91,6 +94,7 @@ class AnimalDetectionMode(OperationMode):
         if not self.ftp_camera_exist():
             return
 
+        logger.debug("Creating new thread for FTP Server..")
         self.ftp_thread = QThread()
 
         # Move operation mode in dedicated thread
@@ -102,5 +106,6 @@ class AnimalDetectionMode(OperationMode):
         FTPsServer.ftps_server.run_finished.connect(FTPsServer.ftps_server.deleteLater)
         self.ftp_thread.finished.connect(self.ftp_thread.deleteLater)
 
+        logger.debug("Starting FTP Server thread...")
         # Start the thread
         self.ftp_thread.start()
