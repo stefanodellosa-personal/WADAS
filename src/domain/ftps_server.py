@@ -10,6 +10,8 @@ from PySide6.QtCore import QObject, Signal
 from src.domain.camera import img_queue
 
 logger = logging.getLogger(__name__)
+pyftpdlib_logger = logging.getLogger("pyftpdlib")
+pyftpdlib_logger.propagate = False
 
 class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
 
@@ -26,17 +28,13 @@ class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
         logger.info("%s user logged out.", username)
 
     def on_file_received(self, file):
+        logger.info("Received %s file from FTPS Camera.", file)
         img_queue.put({"img": file, "img_id": f"ftp_camera_id"}) #TODO: fix camera id
 
-class FTPsServer(QObject):
+class FTPsServer():
     """FTP server class"""
 
     ftps_server = None
-
-    # Signals
-    run_finished = Signal()
-    run_progress = Signal(int)
-    ftp_user_connected = Signal(str)
 
     def __init__(self, ip_address, port, max_conn, max_conn_per_ip,
                  certificate, key, ftp_dir):
@@ -71,27 +69,20 @@ class FTPsServer(QObject):
 
     def add_user(self, username, password, directory):
         """Method to add user(s) to the authorizer."""
-
-        self.authorizer.add_user(username, password, directory, perm='elmwMT')
+        if not self.has_user(username):
+            self.authorizer.add_user(username, password, directory, perm='elmwMT')
+        else:
+            logger.debug("%s user already exists. Skipping user addition...")
 
     def has_user(self, username):
         """Wrapper method of authorizer to check if a user already exists"""
         return self.authorizer.has_user(username)
 
     def run(self):
-        """Method to run FTPS server"""
-
-        self.check_for_termination_requests()
-        if self.server:
-            self.server.serve_forever()
-        self.run_finished.emit()
-
-    #TODO: remove once test is completed
-    def run_op_mode(self):
-        """ TEST Method to create new thread for FTPS Server class."""
+        """ Method to create new thread and run a FTPS server."""
 
         if self.server:
-            thread = threading.Thread(target=self.server.serve_forever())
+            thread = threading.Thread(target=self.server.serve_forever)
 
             if thread:
                 thread.start()
@@ -102,14 +93,6 @@ class FTPsServer(QObject):
             return thread
         else:
             return None
-
-    def check_for_termination_requests(self):
-        """Terminate current thread if interrupt request comes from Dialog."""
-
-        if self.thread().isInterruptionRequested():
-            self.run_finished.emit()
-            logger.info("Request to stop received. Aborting...")
-            return
 
     def serialize(self):
         """Method to serialize FTPS Server object"""

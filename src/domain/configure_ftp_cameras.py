@@ -350,25 +350,14 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                                 self.ui.label_FTPServer_path.text())
         i = 1
         while i <= self.ui_camera_idx:
-            if not FTPsServer.ftps_server.has_user(self.get_camera_id(i)):
-                FTPsServer.ftps_server.add_user(self.get_camera_user(i),
-                                                self.get_camera_pass(i),
-                                                self.ui.label_FTPServer_path.text())
+            FTPsServer.ftps_server.add_user(self.get_camera_user(i),
+                                            self.get_camera_pass(i),
+                                            self.ui.label_FTPServer_path.text())
             i +=1
-
-        self.ftp_thread = QThread()
-        # Move operation mode in dedicated thread
-        FTPsServer.ftps_server.moveToThread(self.ftp_thread)
-
-        # Connect thread related signals and slots
-        self.ftp_thread.started.connect(FTPsServer.ftps_server.run)
-        FTPsServer.ftps_server.run_finished.connect(self.ftp_thread.quit)
-        FTPsServer.ftps_server.run_finished.connect(FTPsServer.ftps_server.deleteLater)
-        self.ftp_thread.finished.connect(self.ftp_thread.deleteLater)
 
         self.ui.pushButton_stopFTPServer.setEnabled(True)
         # Start the thread
-        self.ftp_thread.start()
+        FTPsServer.ftps_server.run()
 
     def stop_ftp_server(self):
         """Method to stop FTP server thread"""
@@ -376,7 +365,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if self.ftp_thread and FTPsServer.ftps_server:
             FTPsServer.ftps_server.server.close_all()
             FTPsServer.ftps_server.server.close()
-            self.ftp_thread.requestInterruption()
             self.ui.pushButton_stopFTPServer.setEnabled(False)
 
     def _setup_logger(self):

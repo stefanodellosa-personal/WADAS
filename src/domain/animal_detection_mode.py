@@ -41,10 +41,8 @@ class AnimalDetectionMode(OperationMode):
                     self.camera_thread.append(camera.run())
                 elif camera.type == Camera.CameraTypes.FTPCamera and FTPsServer.ftps_server and not self.ftp_thread:
                     logger.info("Instantiating FTPS server...")
-                    self.init_ftp_server() #TODO: fix thread reentrance
-                    #FTPsServer.ftps_server.run_op_mode() TODO: remove once test is complete
+                    FTPsServer.ftps_server.run()
 
-        self.run_progress.emit(10)
         self.check_for_termination_requests()
         logger.info("Ready for video stream from Camera(s)...")
         # Run detection model
@@ -72,8 +70,11 @@ class AnimalDetectionMode(OperationMode):
 
         if self.thread().isInterruptionRequested():
             logger.info("Request to stop received. Aborting...")
-            if self.ftp_camera_exist():
-                self.ftp_thread.requestInterruption()
+            # Stop FTPS Server (if running)
+            if self.ftp_camera_exist() and self.ftp_thread and FTPsServer.ftps_server:
+                    FTPsServer.ftps_server.server.close_all()
+                    FTPsServer.ftps_server.server.close()
+            # Stop USB Cameras thread(s), if any.
             self.process_queue = False
             for camera in cameras:
                 if camera.type == Camera.CameraTypes.USBCamera:
@@ -86,26 +87,3 @@ class AnimalDetectionMode(OperationMode):
             if camera.type == Camera.CameraTypes.FTPCamera:
                 return True
         return False
-
-    def init_ftp_server(self):
-        """Method to instantiate FTPS server thread"""
-
-        # If no FTP camera is configured skip FTPS Server instantiation
-        if not self.ftp_camera_exist():
-            return
-
-        logger.debug("Creating new thread for FTP Server..")
-        self.ftp_thread = QThread()
-
-        # Move operation mode in dedicated thread
-        FTPsServer.ftps_server.moveToThread(self.ftp_thread)
-
-        # Connect thread related signals and slots
-        self.ftp_thread.started.connect(FTPsServer.ftps_server.run)
-        FTPsServer.ftps_server.run_finished.connect(self.ftp_thread.quit)
-        FTPsServer.ftps_server.run_finished.connect(FTPsServer.ftps_server.deleteLater)
-        self.ftp_thread.finished.connect(self.ftp_thread.deleteLater)
-
-        logger.debug("Starting FTP Server thread...")
-        # Start the thread
-        self.ftp_thread.start()

@@ -410,7 +410,7 @@ class MainWindow(QMainWindow):
                     elif data["type"] == Camera.CameraTypes.FTPCamera.value:
                         ftp_camera = FTPCamera.deserialize(data)
                         cameras.append(ftp_camera)
-                        if FTPsServer.ftps_server and not FTPsServer.ftps_server.has_user(ftp_camera.id):
+                        if FTPsServer.ftps_server:
                             if not os.path.isdir(ftp_camera.ftp_folder):
                                 os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
                             credentials = keyring.get_credential(f"WADAS_FTPcamera_{ftp_camera.id}","")
