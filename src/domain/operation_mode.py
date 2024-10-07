@@ -25,6 +25,7 @@ class OperationMode(QObject):
                        "bear_detection_mode"}
     # Signals
     update_image = Signal(str)
+    update_info = Signal()
     run_finished = Signal()
     run_progress = Signal(int)
 

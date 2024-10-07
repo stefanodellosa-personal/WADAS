@@ -58,6 +58,7 @@ class AnimalDetectionMode(OperationMode):
                 if results and detected_img_path:
                     # Trigger image update in WADAS mainwindow
                     self.update_image.emit(detected_img_path)
+                    self.update_info.emit()
 
                     # Send notification
                     message = "WADAS has detected an animal from camera %s!" % id

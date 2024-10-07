@@ -89,6 +89,7 @@ class MainWindow(QMainWindow):
         # Connect Signal to update image in widget.
         self.operation_mode.update_image.connect(self.set_image)
         self.operation_mode.run_finished.connect(self.on_run_completion)
+        self.operation_mode.update_image.connect(self.update_info_widget)
 
     def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
