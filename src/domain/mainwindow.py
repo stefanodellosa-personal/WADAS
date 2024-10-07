@@ -67,6 +67,9 @@ class MainWindow(QMainWindow):
         self.update_toolbar_status()
         logger.info('Welcome to WADAS!')
 
+        # Create log folder
+        os.makedirs("log", exist_ok=True)
+
     def _connect_actions(self):
         """List all actions to connect to MainWindow"""
         self.ui.actionSelect_Mode.triggered.connect(self.select_mode)

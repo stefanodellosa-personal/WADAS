@@ -1,6 +1,8 @@
 """FTPS server module"""
 
+import os
 import logging
+from logging.handlers import RotatingFileHandler
 
 import threading
 
@@ -11,7 +13,10 @@ from pyftpdlib.servers import ThreadedFTPServer
 from src.domain.camera import img_queue
 
 logger = logging.getLogger(__name__)
+
 pyftpdlib_logger = logging.getLogger("pyftpdlib")
+handler = RotatingFileHandler(os.path.join(os.getcwd(),'log', 'ftps_Server.log'), maxBytes=100000, backupCount=3)
+pyftpdlib_logger.addHandler(handler)
 pyftpdlib_logger.propagate = False
 
 class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
