@@ -1,24 +1,41 @@
 """FTPS server module"""
 
 import logging
-from pyftpdlib.authorizers import DummyAuthorizer
-from pyftpdlib.servers import ThreadedFTPServer
-from pyftpdlib.handlers import TLS_FTPHandler
 
-from PySide6.QtCore import QObject, Signal
+import threading
+
+from pyftpdlib.authorizers import DummyAuthorizer
+from pyftpdlib.handlers import TLS_FTPHandler
+from pyftpdlib.servers import ThreadedFTPServer
+
+from src.domain.camera import img_queue
 
 logger = logging.getLogger(__name__)
+pyftpdlib_logger = logging.getLogger("pyftpdlib")
+pyftpdlib_logger.propagate = False
 
+class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
 
-class FTPsServer(QObject):
+    def on_connect(self):
+        logger.info("Connected remote camera from %s:%s", self.remote_ip, self.remote_port)
+
+    def on_disconnect(self):
+        logger.info("Disconnected remote camera from %s:%s", self.remote_ip, self.remote_port)
+
+    def on_login(self, username):
+        logger.info("%s user logged in.", username)
+
+    def on_logout(self, username):
+        logger.info("%s user logged out.", username)
+
+    def on_file_received(self, file):
+        logger.info("Received %s file from FTPS Camera.", file)
+        img_queue.put({"img": file, "img_id": f"ftp_camera_id"}) #TODO: fix camera id
+
+class FTPsServer():
     """FTP server class"""
 
     ftps_server = None
-
-    # Signals
-    update_image = Signal(str)
-    run_finished = Signal()
-    run_progress = Signal(int)
 
     def __init__(self, ip_address, port, max_conn, max_conn_per_ip,
                  certificate, key, ftp_dir):
@@ -33,7 +50,7 @@ class FTPsServer(QObject):
         self.ftp_dir = ftp_dir
 
         # SSL handler
-        self.handler = TLS_FTPHandler
+        self.handler = TLS_FTP_WADAS_Handler
         self.handler.certfile = self.certificate
         self.handler.keyfile = self.key
         # welcome banner
@@ -53,28 +70,30 @@ class FTPsServer(QObject):
 
     def add_user(self, username, password, directory):
         """Method to add user(s) to the authorizer."""
-
-        self.authorizer.add_user(username, password, directory, perm='elradfmwMT')
+        if not self.has_user(username):
+            self.authorizer.add_user(username, password, directory, perm='elmwMT')
+        else:
+            logger.debug("%s user already exists. Skipping user addition...")
 
     def has_user(self, username):
-        """Wrapper method of authorizer to check if an user already exists"""
+        """Wrapper method of authorizer to check if a user already exists"""
         return self.authorizer.has_user(username)
 
     def run(self):
-        """Method to run FTPS server"""
+        """ Method to create new thread and run a FTPS server."""
 
-        self.check_for_termination_requests()
         if self.server:
-            self.server.serve_forever()
-        self.run_finished.emit()
+            thread = threading.Thread(target=self.server.serve_forever)
 
-    def check_for_termination_requests(self):
-        """Terminate current thread if interrupt request comes from Dialog."""
+            if thread:
+                thread.start()
+                logger.info("Starting thread for FTPs Server...")
+            else:
+                logger.error("Unable to create new thread for FTPs Server.")
 
-        if self.thread().isInterruptionRequested():
-            self.run_finished.emit()
-            logger.info("Request to stop received. Aborting...")
-            return
+            return thread
+        else:
+            return None
 
     def serialize(self):
         """Method to serialize FTPS Server object"""

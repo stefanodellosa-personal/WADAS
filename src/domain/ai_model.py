@@ -76,7 +76,7 @@ class AiModel():
                                                               AiModel.detection_treshold)
 
         # Checks for humans in results
-        if ("person" in results["labels"][0]) and (len(results["labels"]) == 1):
+        if results and results["labels"] and "person" in results["labels"][0] and len(results["labels"]) == 1:
             logger.warning("%s image contains only person(s), not animals. Skipping it.", img_path)
             os.remove(img_path)
             return None, ""

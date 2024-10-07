@@ -171,11 +171,19 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             while i <= self.ui_camera_idx:
                 cur_camera_id = self.get_camera_id(i)
                 if cur_camera_id:
-                    camera = FTPCamera(cur_camera_id, os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id))
+                    cur_cam_ftp_dir = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id)
+                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir)
                     cameras.append(camera)
                     # Store credentials in keyring
                     keyring.set_password(f"WADAS_FTPcamera_{cur_camera_id}", self.get_camera_user(i),
                                          self.get_camera_pass(i))
+                    # Add camera user to FTPS server
+                    if not FTPsServer.ftps_server.has_user(cur_camera_id):
+                        if not os.path.isdir(cur_cam_ftp_dir):
+                            os.makedirs(cur_cam_ftp_dir, exist_ok=True)
+                        FTPsServer.ftps_server.add_user(self.get_camera_user(i),
+                                                        self.get_camera_pass(i),
+                                                        cur_cam_ftp_dir)
                 i += 1
         self.accept()
 
@@ -338,28 +346,18 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                                 int(self.ui.lineEdit_max_conn.text()),
                                                 int(self.ui.lineEdit_max_conn_ip.text()),
                                                 self.ui.label_certificate_file_path.text(),
-                                                self.ui.label_key_file_path.text())
+                                                self.ui.label_key_file_path.text(),
+                                                self.ui.label_FTPServer_path.text())
         i = 1
         while i <= self.ui_camera_idx:
-            if not FTPsServer.ftps_server.has_user(self.get_camera_id(i)):
-                FTPsServer.ftps_server.add_user(self.get_camera_user(i),
-                                               self.get_camera_pass(i),
-                                               self.ui.label_FTPServer_path.text())
+            FTPsServer.ftps_server.add_user(self.get_camera_user(i),
+                                            self.get_camera_pass(i),
+                                            self.ui.label_FTPServer_path.text())
             i +=1
-
-        self.ftp_thread = QThread()
-        # Move operation mode in dedicated thread
-        FTPsServer.ftps_server.moveToThread(self.ftp_thread)
-
-        # Connect thread related signals and slots
-        self.ftp_thread.started.connect(FTPsServer.ftps_server.run)
-        FTPsServer.ftps_server.run_finished.connect(self.ftp_thread.quit)
-        FTPsServer.ftps_server.run_finished.connect(FTPsServer.ftps_server.deleteLater)
-        self.ftp_thread.finished.connect(self.ftp_thread.deleteLater)
 
         self.ui.pushButton_stopFTPServer.setEnabled(True)
         # Start the thread
-        self.ftp_thread.start()
+        FTPsServer.ftps_server.run()
 
     def stop_ftp_server(self):
         """Method to stop FTP server thread"""
@@ -367,7 +365,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if self.ftp_thread and FTPsServer.ftps_server:
             FTPsServer.ftps_server.server.close_all()
             FTPsServer.ftps_server.server.close()
-            self.ftp_thread.requestInterruption()
             self.ui.pushButton_stopFTPServer.setEnabled(False)
 
     def _setup_logger(self):

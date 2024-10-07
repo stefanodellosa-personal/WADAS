@@ -57,6 +57,7 @@ class TestModelMode(OperationMode):
 
             # Trigger image update in WADAS mainwindow
             self.update_image.emit(img_path)
+            self.update_info.emit()
         else:
             logger.debug("No results to classify.")
 
