@@ -8,6 +8,7 @@ import os
 import smtplib
 
 import keyring
+from enum import Enum
 from PySide6.QtCore import QObject, Signal
 import ssl
 
@@ -19,10 +20,13 @@ logger = logging.getLogger(__name__)
 class OperationMode(QObject):
     """Class to handle WADAS operation modes."""
 
-    operation_modes = {"test_model_mode",
-                       "animal_detection_mode",
-                       "tunnel_mode",
-                       "bear_detection_mode"}
+    class OperationModeTypes(Enum):
+        TestModelMode = "Test Model Mode"
+        AnimalDetectionMode = "Animal Detection Mode"
+        AnimalDetectionAndClassificationMode = "Animal Detection and Classification Mode"
+        TunnelMode = "Tunnel Mode"
+        BearDetectionMode = "Bear Detection Mode"
+
     # Signals
     update_image = Signal(str)
     update_info = Signal()
@@ -31,7 +35,7 @@ class OperationMode(QObject):
 
     def __init__(self):
         super(OperationMode, self).__init__()
-        self.modename = ""
+        self.type = None
         self.ai_model = None
         self.last_detection = ""
         self.last_classification = ""
