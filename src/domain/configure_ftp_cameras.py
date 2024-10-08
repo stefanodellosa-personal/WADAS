@@ -260,7 +260,16 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         i = 1
         while i <= self.ui_camera_idx:
             if not self.get_camera_id(i):
-                self.ui.label_errorMessage.setText("No Camera ID provided!")
+                self.ui.label_errorMessage.setText("Missing Camera ID!")
+                valid = False
+            elif self.is_duplicated_id(i):
+                self.ui.label_errorMessage.setText(f"Duplicated Camera ID {self.get_camera_id(i)}!")
+                valid = False
+            if not self.get_camera_pass(i):
+                self.ui.label_errorMessage.setText(f"Missing Camera password!")
+                valid = False
+            if not self.get_camera_user(i):
+                self.ui.label_errorMessage.setText(f"Missing Camera user!")
                 valid = False
             i += 1
 
@@ -268,6 +277,20 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             self.ui.label_errorMessage.setText("")
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(valid)
         self.ui.pushButton_testFTPServer.setEnabled(valid)
+
+    def is_duplicated_id(self, idx):
+        """Method to check whether cameras have unique id."""
+
+        cameras_id = []
+        i = 1
+        while i <= self.ui_camera_idx:
+            cur_id = self.get_camera_id(i)
+            if cur_id not in cameras_id:
+                cameras_id.append(cur_id)
+            elif i == idx:
+                return True
+            i += 1
+        return False
 
     def add_ftp_camera(self):
         """Method to add new FTP camera line edits."""
