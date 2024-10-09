@@ -38,7 +38,7 @@ class TestModelMode(OperationMode):
 
         # Trigger image update in WADAS mainwindow
         self.update_image.emit(detected_img_path)
-
+        message = f"WADAS has detected an animal!"
         self.check_for_termination_requests()
 
         # Classify if detection has identified animals
@@ -58,11 +58,11 @@ class TestModelMode(OperationMode):
             # Trigger image update in WADAS mainwindow
             self.update_image.emit(img_path)
             self.update_info.emit()
+            message = f"WADAS has classified {self.last_classified_animals} animal(s)!"
         else:
             logger.debug("No results to classify.")
 
         # Send notification
-        message = f"WADAS has classified {self.last_classified_animals} animal!"
         self.send_notification(message, img_path)
         self.execution_completed()
 

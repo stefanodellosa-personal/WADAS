@@ -173,6 +173,12 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.label_classified_animal)
 
+        self.label = QLabel(self.verticalLayoutWidget)
+        self.label.setObjectName(u"label")
+        self.label.setFont(font)
+
+        self.verticalLayout.addWidget(self.label)
+
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout.addItem(self.verticalSpacer)
@@ -272,6 +278,7 @@ class Ui_MainWindow(object):
         self.label_last_classification.setText("")
         self.label_classified_animal_title.setText(QCoreApplication.translate("MainWindow", u"Classified animal(s):", None))
         self.label_classified_animal.setText("")
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Enabled Camera(s):", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))

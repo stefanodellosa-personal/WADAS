@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QErrorMessa
 import yaml
 
 from src.domain.ai_model import AiModel
-from src.domain.animal_detection_mode import AnimalDetectionMode
+from src.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from src.domain.camera import Camera
 from src.domain.camera import cameras
 from src.domain.configure_ai_model import ConfigureAiModel
@@ -263,7 +263,9 @@ class MainWindow(QMainWindow):
                 logger.info("Running test model mode....")
                 self.operation_mode = TestModelMode()
             elif self.selected_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode:
-                self.operation_mode = AnimalDetectionMode()
+                self.operation_mode = AnimalDetectionAndClassificationMode(classification=False)
+            elif self.selected_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode:
+                self.operation_mode = AnimalDetectionAndClassificationMode()
             #TODO: add elif with other operation modes
 
     def configure_email(self):

@@ -30,6 +30,8 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
 
         if self.selected_mode == OperationMode.OperationModeTypes.AnimalDetectionMode:
             self.ui.radioButton_animal_det_mode.setChecked(True)
+        elif self.selected_mode == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode:
+            self.ui.radioButton_animal_det_and_class_mode.setChecked(True)
         elif self.selected_mode == OperationMode.OperationModeTypes.TunnelMode:
             self.ui.radioButton_tunnel_mode.setChecked(True)
         elif self.selected_mode == OperationMode.OperationModeTypes.BearDetectionMode:
@@ -44,6 +46,8 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
             self.selected_mode = OperationMode.OperationModeTypes.TestModelMode
         elif self.ui.radioButton_animal_det_mode.isChecked():
             self.selected_mode = OperationMode.OperationModeTypes.AnimalDetectionMode
+        elif self.ui.radioButton_animal_det_and_class_mode.isChecked():
+            self.selected_mode = OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
         elif self.ui.radioButton_tunnel_mode.isChecked():
             self.selected_mode = OperationMode.OperationModeTypes.TunnelMode
         elif self.ui.radioButton_bear_det_mode.isChecked():
