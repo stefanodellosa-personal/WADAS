@@ -6,10 +6,9 @@ import logging
 from validators import ipv4
 
 from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog, QLineEdit, QRadioButton, QLabel, QGridLayout,
-                               QScrollArea, QWidget, QVBoxLayout, QGridLayout)
+                               QScrollArea, QWidget, QGridLayout)
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt
-from PySide6.QtCore import QThread
 
 from src.domain.camera import Camera
 from src.domain.camera import cameras

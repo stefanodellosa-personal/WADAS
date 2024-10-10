@@ -1,6 +1,7 @@
 """Module containing MainWindows class and methods."""
 
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 
 import keyring
@@ -97,12 +98,20 @@ class MainWindow(QMainWindow):
     def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
+        formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
+        logging_level = logging.DEBUG
+        # Line edit logging in mainwindow
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_log)
-        log_textbox.setFormatter(
-            logging.Formatter(
-                "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"))
-        logger.setLevel(logging.DEBUG)
+        log_textbox.setFormatter(formatter)
+        logger.setLevel(logging_level)
         logger.addHandler(log_textbox)
+
+        # WADAS log file
+        file_handler = RotatingFileHandler(os.path.join(os.getcwd(), 'log', 'WADAS.log'), maxBytes=10 * 1024 * 1024,
+                                           backupCount=3)
+        file_handler.setLevel(logging_level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
     def set_image(self, img):
         """Set image to show in WADAS. This is used for startup, detected and
