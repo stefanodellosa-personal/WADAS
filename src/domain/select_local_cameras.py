@@ -137,10 +137,28 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
             if checkbox and checkbox.isChecked() and not line_edit.text():
                 self.ui.label_errorMessage.setText(f"Please add ID for Camera {camera_index}")
                 valid = False
+            elif self.is_duplicated_id(camera_index):
+                self.ui.label_errorMessage.setText(f"Duplicated Camera ID {line_edit.text()}")
+                valid = False
             else:
                 self.ui.label_errorMessage.setText("")
 
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(valid)
+
+    def is_duplicated_id(self, idx):
+        """Method that checks for duplicated camera ids."""
+
+        camera_ids = []
+        for camera_info in self.enumerated_usb_cameras:
+            camera_index = str(camera_info.index)
+            checkbox = self.findChild(QCheckBox, f"checkBox_camera_{camera_index}")
+            camera_id = self.findChild(QLineEdit, f"lineEdit_cameraID_{camera_index}").text()
+            if checkbox and checkbox.isChecked() and camera_id:
+                if camera_id not in camera_ids:
+                    camera_ids.append(camera_id)
+                elif idx == str(camera_info.index):
+                    return True
+        return False
 
     def accept_and_close(self):
         """When Ok is clicked, save camera config info before closing."""

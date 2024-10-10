@@ -1,7 +1,8 @@
 """FTPS server module"""
 
+import os
 import logging
-
+from logging.handlers import RotatingFileHandler
 import threading
 
 from pyftpdlib.authorizers import DummyAuthorizer
@@ -11,7 +12,13 @@ from pyftpdlib.servers import ThreadedFTPServer
 from src.domain.camera import img_queue
 
 logger = logging.getLogger(__name__)
+
 pyftpdlib_logger = logging.getLogger("pyftpdlib")
+logger.setLevel(logging.DEBUG)
+handler = RotatingFileHandler(os.path.join(os.getcwd(),'log', 'ftps_server.log'), maxBytes=100000, backupCount=3)
+formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
+handler.setFormatter(formatter)
+pyftpdlib_logger.addHandler(handler)
 pyftpdlib_logger.propagate = False
 
 class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
@@ -73,7 +80,7 @@ class FTPsServer():
         if not self.has_user(username):
             self.authorizer.add_user(username, password, directory, perm='elmwMT')
         else:
-            logger.debug("%s user already exists. Skipping user addition...")
+            logger.debug("%s user already exists. Skipping user addition...", username)
 
     def has_user(self, username):
         """Wrapper method of authorizer to check if a user already exists"""

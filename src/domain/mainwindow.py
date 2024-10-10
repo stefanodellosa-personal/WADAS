@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QErrorMessa
 import yaml
 
 from src.domain.ai_model import AiModel
-from src.domain.animal_detection_mode import AnimalDetectionMode
+from src.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from src.domain.camera import Camera
 from src.domain.camera import cameras
 from src.domain.configure_ai_model import ConfigureAiModel
@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.configuration_file_name = ""
-        self.operation_mode_name = ""
+        self.selected_operation_mode = ""
         self.operation_mode = None
         self.key_ring = None
         self.email_config = dict.fromkeys(
@@ -66,6 +66,9 @@ class MainWindow(QMainWindow):
         # Update mainwindow UI methods
         self.update_toolbar_status()
         logger.info('Welcome to WADAS!')
+
+        # Create required folders
+        os.makedirs("log", exist_ok=True)
 
     def _connect_actions(self):
         """List all actions to connect to MainWindow"""
@@ -117,11 +120,11 @@ class MainWindow(QMainWindow):
     def select_mode(self):
         """Slot for mode selection (toolbar button)"""
 
-        dialog = DialogSelectMode(self.operation_mode_name)
+        dialog = DialogSelectMode(self.selected_operation_mode)
         if dialog.exec_():
-            logger.debug("Selected mode from dialog: %s", dialog.selected_mode)
-            if dialog.selected_mode in OperationMode.operation_modes:
-                self.operation_mode_name = dialog.selected_mode
+            logger.debug("Selected mode from dialog: %s", dialog.selected_mode.value)
+            if dialog.selected_mode in OperationMode.OperationModeTypes:
+                self.selected_operation_mode = dialog.selected_mode
                 self.setWindowModified(True)
             else:
                 # Default, we should never be here.
@@ -142,9 +145,9 @@ class MainWindow(QMainWindow):
         self.instantiate_selected_model()
         if self.operation_mode:
             # Satisfy preconditions and required inputs for the selected operation mode
-            if self.operation_mode_name == "test_model_mode":
+            if self.selected_operation_mode == OperationMode.OperationModeTypes.TestModelMode:
                 if not self.check_classification_model():
-                    logger.error("Cannot run this mode without classificatin model. Aborting.")
+                    logger.error("Cannot run this mode without classification model. Aborting.")
                     return
                 self.operation_mode.url = self.url_input_dialog()
                 if not self.operation_mode.url:
@@ -155,7 +158,7 @@ class MainWindow(QMainWindow):
                 return
             else:
                 # Passing cameras list to the selected operation mode
-                self.operation_mode.cameras = cameras #TODO: pass list throug module
+                self.operation_mode.cameras = cameras
 
             self.operation_mode.email_configuration = self.email_config
 
@@ -196,10 +199,10 @@ class MainWindow(QMainWindow):
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
 
-        if not self.operation_mode_name:
+        if not self.selected_operation_mode:
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
-        elif self.operation_mode_name == "animal_detection_mode" and not cameras:
+        elif self.selected_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode and not cameras:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
         else:
@@ -228,7 +231,7 @@ class MainWindow(QMainWindow):
     def update_info_widget(self):
         """Update information widget."""
 
-        self.ui.label_op_mode.setText(self.operation_mode_name)
+        self.ui.label_op_mode.setText(self.selected_operation_mode.value)
         if self.operation_mode:
             self.ui.label_last_detection.setText(
                 os.path.basename(self.operation_mode.last_detection))
@@ -252,15 +255,17 @@ class MainWindow(QMainWindow):
         """Given the selected model from dedicated UI Dialog, instantiate
         the corresponding object."""
 
-        if self.operation_mode_name is None:
+        if not self.selected_operation_mode:
             logger.error("No operation mode selected.")
             return
         else:
-            if self.operation_mode_name == "test_model_mode":
+            if self.selected_operation_mode == OperationMode.OperationModeTypes.TestModelMode:
                 logger.info("Running test model mode....")
                 self.operation_mode = TestModelMode()
-            elif self.operation_mode_name == "animal_detection_mode":
-                self.operation_mode = AnimalDetectionMode()
+            elif self.selected_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode:
+                self.operation_mode = AnimalDetectionAndClassificationMode(classification=False)
+            elif self.selected_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode:
+                self.operation_mode = AnimalDetectionAndClassificationMode()
             #TODO: add elif with other operation modes
 
     def configure_email(self):
@@ -306,6 +311,7 @@ class MainWindow(QMainWindow):
             logger.info("Camera(s) configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_en_camera_list()
 
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""
@@ -357,7 +363,7 @@ class MainWindow(QMainWindow):
                 ai_detect_treshold = AiModel.detection_treshold,
                 ai_class_treshold = AiModel.classification_treshold
             ),
-            operation_mode = self.operation_mode_name,
+            operation_mode = self.selected_operation_mode.value,
             ftps_server = (FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else "")
         )
 
@@ -421,13 +427,15 @@ class MainWindow(QMainWindow):
                 Camera.detection_params = wadas_config['camera_detection_params']
                 AiModel.detection_treshold = wadas_config['ai_model']['ai_detect_treshold']
                 AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
-                self.operation_mode_name = wadas_config['operation_mode']
+                self.selected_operation_mode = (OperationMode.OperationModeTypes(wadas_config['operation_mode']) if
+                                                wadas_config['operation_mode'] else "")
 
 
                 logging.info("Configuration loaded from file %s.", file_name[0])
                 self.configuration_file_name = file_name[0]
                 self.setWindowModified(False)
                 self.update_toolbar_status()
+                self.update_en_camera_list()
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
@@ -437,3 +445,13 @@ class MainWindow(QMainWindow):
             logger.info("FTP Server and Cameras configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_en_camera_list()
+
+    def update_en_camera_list(self):
+        """Method to list enabled camera(s) in UI"""
+
+        self.ui.listWidget_en_cameras.clear()
+        for camera in cameras:
+            if camera.enabled:
+                text = f"({camera.type.value}) {camera.id}"
+                self.ui.listWidget_en_cameras.addItem(text)

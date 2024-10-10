@@ -16,20 +16,22 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QLabel, QMainWindow, QMenu,
-    QMenuBar, QPlainTextEdit, QSizePolicy, QSpacerItem,
-    QStatusBar, QToolBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QLabel, QListWidget, QListWidgetItem,
+    QMainWindow, QMenu, QMenuBar, QPlainTextEdit,
+    QSizePolicy, QStatusBar, QToolBar, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1149, 815)
+        MainWindow.resize(1150, 815)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
+        MainWindow.setMinimumSize(QSize(1150, 815))
         self.actionSelect_Mode = QAction(MainWindow)
         self.actionSelect_Mode.setObjectName(u"actionSelect_Mode")
         icon = QIcon(QIcon.fromTheme(u"camera-web"))
@@ -105,7 +107,7 @@ class Ui_MainWindow(object):
         self.label_image.setGeometry(QRect(10, 10, 800, 600))
         self.plainTextEdit_log = QPlainTextEdit(self.centralwidget)
         self.plainTextEdit_log.setObjectName(u"plainTextEdit_log")
-        self.plainTextEdit_log.setGeometry(QRect(10, 650, 1071, 81))
+        self.plainTextEdit_log.setGeometry(QRect(10, 620, 1121, 109))
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
@@ -113,7 +115,7 @@ class Ui_MainWindow(object):
         self.plainTextEdit_log.setSizePolicy(sizePolicy1)
         self.verticalLayoutWidget = QWidget(self.centralwidget)
         self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
-        self.verticalLayoutWidget.setGeometry(QRect(830, 10, 301, 631))
+        self.verticalLayoutWidget.setGeometry(QRect(830, 10, 301, 601))
         self.verticalLayout = QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -172,14 +174,21 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.label_classified_animal)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.label = QLabel(self.verticalLayoutWidget)
+        self.label.setObjectName(u"label")
+        self.label.setFont(font)
 
-        self.verticalLayout.addItem(self.verticalSpacer)
+        self.verticalLayout.addWidget(self.label)
+
+        self.listWidget_en_cameras = QListWidget(self.verticalLayoutWidget)
+        self.listWidget_en_cameras.setObjectName(u"listWidget_en_cameras")
+
+        self.verticalLayout.addWidget(self.listWidget_en_cameras)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1149, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1150, 22))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuHelp = QMenu(self.menubar)
@@ -271,6 +280,7 @@ class Ui_MainWindow(object):
         self.label_last_classification.setText("")
         self.label_classified_animal_title.setText(QCoreApplication.translate("MainWindow", u"Classified animal(s):", None))
         self.label_classified_animal.setText("")
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Enabled Camera(s):", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
