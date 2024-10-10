@@ -41,7 +41,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                     self.camera_thread.append(camera.run())
                 elif camera.type == Camera.CameraTypes.FTPCamera and FTPsServer.ftps_server and not self.ftp_thread:
                     logger.info("Instantiating FTPS server...")
-                    FTPsServer.ftps_server.run()
+                    self.ftp_thread = FTPsServer.ftps_server.run()
 
         self.check_for_termination_requests()
         logger.info("Ready for video stream from Camera(s)...")
@@ -101,6 +101,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
             if self.ftp_camera_exist() and self.ftp_thread and FTPsServer.ftps_server:
                     FTPsServer.ftps_server.server.close_all()
                     FTPsServer.ftps_server.server.close()
+                    self.ftp_thread.join()
             # Stop USB Cameras thread(s), if any.
             self.process_queue = False
             for camera in cameras:

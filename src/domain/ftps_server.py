@@ -37,7 +37,12 @@ class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
 
     def on_file_received(self, file):
         logger.info("Received %s file from FTPS Camera.", file)
-        img_queue.put({"img": file, "img_id": f"ftp_camera_id"}) #TODO: fix camera id
+        img_queue.put({"img": file, "img_id": os.path.basename(os.path.dirname(file))})
+
+    def on_incomplete_file_received(self, file):
+        # remove partially uploaded files
+        logger.info("Partial file received. Removing %s", file)
+        os.remove(file)
 
 class FTPsServer():
     """FTP server class"""

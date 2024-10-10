@@ -241,7 +241,7 @@ class MainWindow(QMainWindow):
                 str(self.operation_mode.last_classified_animals))
 
     def url_input_dialog(self):
-        """Method to run dialog for insertion of an URL to fetch image from."""
+        """Method to run dialog for insertion of a URL to fetch image from."""
 
         inserturl_dialog = InsertUrlDialog()
         if inserturl_dialog.exec_():
@@ -374,7 +374,7 @@ class MainWindow(QMainWindow):
             return
 
         with open(self.configuration_file_name, 'w') as yamlfile:
-            data = yaml.safe_dump(data, yamlfile)
+            yaml.safe_dump(data, yamlfile)
 
         logger.info("Configuration saved to file %s.", self.configuration_file_name)
         self.setWindowModified(False)
@@ -407,6 +407,8 @@ class MainWindow(QMainWindow):
 
                 # Applying configuration to WADAS from config file values
                 self.email_config = wadas_config['email']
+                if FTPsServer.ftps_server:
+                    FTPsServer.ftps_server.server.close_all()
                 FTPsServer.ftps_server = (FTPsServer.deserialize(wadas_config['ftps_server']) if
                                           wadas_config['ftps_server'] else None)
                 cameras.clear()

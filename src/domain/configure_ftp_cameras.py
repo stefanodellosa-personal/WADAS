@@ -107,23 +107,17 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def accept_and_close(self):
         """When Ok is clicked, save FTP config info before closing."""
 
+        # If server object exists needs to be closed in oder to be edited (otherwise socket editing fails)
         if FTPsServer.ftps_server:
-            FTPsServer.ftps_server.handler.certfile = self.ui.label_certificate_file_path.text()
-            FTPsServer.ftps_server.handler.keyfile = self.ui.label_key_file_path.text()
-            FTPsServer.ftps_server.ftp_dir = self.ui.label_FTPServer_path.text()
-            #TODO: fix server address value update
-            #FTPsServer.ftps_server.server.address()[0] = self.ui.lineEdit_ip.text()
-            #FTPsServer.ftps_server.server.address()[1] = self.ui.lineEdit_port.text()
-            FTPsServer.ftps_server.server.max_cons = self.ui.lineEdit_max_conn.text()
-            FTPsServer.ftps_server.server.max_cons_per_ip = self.ui.lineEdit_max_conn_ip.text()
-        else:
-            FTPsServer.ftps_server = FTPsServer(self.ui.lineEdit_ip.text(),
-                                     int(self.ui.lineEdit_port.text()),
-                                     int(self.ui.lineEdit_max_conn.text()),
-                                     int(self.ui.lineEdit_max_conn_ip.text()),
-                                     self.ui.label_certificate_file_path.text(),
-                                     self.ui.label_key_file_path.text(),
-                                     self.ui.label_FTPServer_path.text())
+            FTPsServer.ftps_server.server.close_all()
+
+        FTPsServer.ftps_server = FTPsServer(self.ui.lineEdit_ip.text(),
+                                 int(self.ui.lineEdit_port.text()),
+                                 int(self.ui.lineEdit_max_conn.text()),
+                                 int(self.ui.lineEdit_max_conn_ip.text()),
+                                 self.ui.label_certificate_file_path.text(),
+                                 self.ui.label_key_file_path.text(),
+                                 self.ui.label_FTPServer_path.text())
         if cameras:
             # Check for need of updating cameras credentials. If camera ID changes it is seen as new camera.
             i = 1
@@ -380,7 +374,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
 
         self.ui.pushButton_stopFTPServer.setEnabled(True)
         # Start the thread
-        FTPsServer.ftps_server.run()
+        self.ftp_thread = FTPsServer.ftps_server.run()
 
     def stop_ftp_server(self):
         """Method to stop FTP server thread"""
@@ -388,6 +382,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if self.ftp_thread and FTPsServer.ftps_server:
             FTPsServer.ftps_server.server.close_all()
             FTPsServer.ftps_server.server.close()
+            self.ftp_thread.join()
             self.ui.pushButton_stopFTPServer.setEnabled(False)
 
     def _setup_logger(self):
