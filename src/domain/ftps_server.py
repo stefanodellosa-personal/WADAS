@@ -3,7 +3,6 @@
 import os
 import logging
 from logging.handlers import RotatingFileHandler
-
 import threading
 
 from pyftpdlib.authorizers import DummyAuthorizer

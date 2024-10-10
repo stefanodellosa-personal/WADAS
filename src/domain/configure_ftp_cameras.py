@@ -161,7 +161,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                               camera.type == Camera.CameraTypes.FTPCamera)
             for camera in orphan_cameras:
                 cameras.remove(camera)
-            for camera in cameras[:]:
+            for camera in tuple(cameras):
                 if camera.id in self.removed_cameras:
                     if camera.type == Camera.CameraTypes.FTPCamera:
                         cameras.remove(camera)

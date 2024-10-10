@@ -5,8 +5,8 @@ import os
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
 
-from src.ui.ui_select_mode import Ui_DialogSelectMode
 from src.domain.operation_mode import OperationMode
+from src.ui.ui_select_mode import Ui_DialogSelectMode
 
 
 class DialogSelectMode(QDialog, Ui_DialogSelectMode):

@@ -5,10 +5,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import logging
 import os
+
+from enum import Enum
 import smtplib
 
 import keyring
-from enum import Enum
 from PySide6.QtCore import QObject, Signal
 import ssl
 
