@@ -80,7 +80,7 @@ class FTPsServer():
         if not self.has_user(username):
             self.authorizer.add_user(username, password, directory, perm='elmwMT')
         else:
-            logger.debug("%s user already exists. Skipping user addition...")
+            logger.debug("%s user already exists. Skipping user addition...", username)
 
     def has_user(self, username):
         """Wrapper method of authorizer to check if a user already exists"""

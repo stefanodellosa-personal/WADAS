@@ -311,6 +311,7 @@ class MainWindow(QMainWindow):
             logger.info("Camera(s) configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_en_camera_list()
 
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""
@@ -426,13 +427,15 @@ class MainWindow(QMainWindow):
                 Camera.detection_params = wadas_config['camera_detection_params']
                 AiModel.detection_treshold = wadas_config['ai_model']['ai_detect_treshold']
                 AiModel.classification_treshold = wadas_config['ai_model']['ai_class_treshold']
-                self.selected_operation_mode = OperationMode.OperationModeTypes(wadas_config['operation_mode'])
+                self.selected_operation_mode = (OperationMode.OperationModeTypes(wadas_config['operation_mode']) if
+                                                wadas_config['operation_mode'] else "")
 
 
                 logging.info("Configuration loaded from file %s.", file_name[0])
                 self.configuration_file_name = file_name[0]
                 self.setWindowModified(False)
                 self.update_toolbar_status()
+                self.update_en_camera_list()
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
@@ -442,3 +445,13 @@ class MainWindow(QMainWindow):
             logger.info("FTP Server and Cameras configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_en_camera_list()
+
+    def update_en_camera_list(self):
+        """Method to list enabled camera(s) in UI"""
+
+        self.ui.listWidget_en_cameras.clear()
+        for camera in cameras:
+            if camera.enabled:
+                text = f"({camera.type.value}) {camera.id}"
+                self.ui.listWidget_en_cameras.addItem(text)

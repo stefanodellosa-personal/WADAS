@@ -16,9 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QLabel, QMainWindow, QMenu,
-    QMenuBar, QPlainTextEdit, QSizePolicy, QSpacerItem,
-    QStatusBar, QToolBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QLabel, QListWidget, QListWidgetItem,
+    QMainWindow, QMenu, QMenuBar, QPlainTextEdit,
+    QSizePolicy, QStatusBar, QToolBar, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -179,9 +180,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.label)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.listWidget_en_cameras = QListWidget(self.verticalLayoutWidget)
+        self.listWidget_en_cameras.setObjectName(u"listWidget_en_cameras")
 
-        self.verticalLayout.addItem(self.verticalSpacer)
+        self.verticalLayout.addWidget(self.listWidget_en_cameras)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
