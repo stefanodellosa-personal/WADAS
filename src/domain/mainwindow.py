@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
         self.update_toolbar_status()
         logger.info('Welcome to WADAS!')
 
-        # Create log folder
+        # Create required folders
         os.makedirs("log", exist_ok=True)
 
     def _connect_actions(self):
