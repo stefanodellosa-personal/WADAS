@@ -6,7 +6,7 @@ import torch
 
 core = ov.Core()
 core.set_property({props.cache_dir: "cache"})
-#TODO: Ann NPU specific properties
+#TODO: Add NPU specific properties
 
 class DetectionModel():
     def __init__(self, device="cpu") -> None:

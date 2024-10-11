@@ -1,11 +1,5 @@
-
-import sys
-import os
-
-sys.path.append("../src")
 from domain.ai_model import AiModel
 import gradio as gr
-
 
 ai_model = AiModel()
 
@@ -19,7 +13,7 @@ def classification_from_path(img_path, det_results):
     if len(det_results["detections"].xyxy) > 0:
         print("Running classification on detection result(s)...")
         img_path, classified_animals = ai_model.classify(img_path, det_results)
-        str = f"Found {len(classified_animals)} animals:\n"
+        str = f"Found {len(classified_animals)} animal{'s' if len(classified_animals) > 1 else ''}:\n"
         for animals in classified_animals:
             animal, confidence = animals['classification']
             str += f"\t - Class: {animal}, confidence: {confidence*100:.2f}%\n"
@@ -38,7 +32,6 @@ def process_url(url):
 url = "https://www.provincia.bz.it/agricoltura-foreste/fauna-caccia-pesca/images/braunbaer_6016_L.jpg"
 
 
-# Configurazione dell'interfaccia Gradio
 demo = gr.Interface(
     fn=process_url,
     inputs=gr.Textbox(label="Image URL"),
@@ -50,5 +43,4 @@ demo = gr.Interface(
     description="Enter a URL to get the detection and classification"
 )
 
-# Esegui l'interfaccia
 demo.launch()
