@@ -1,6 +1,7 @@
 """Module containing MainWindows class and methods."""
 
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 
 import keyring
@@ -97,12 +98,20 @@ class MainWindow(QMainWindow):
     def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
+        formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
+        logging_level = logging.DEBUG
+        # Line edit logging in mainwindow
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_log)
-        log_textbox.setFormatter(
-            logging.Formatter(
-                "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"))
-        logger.setLevel(logging.DEBUG)
+        log_textbox.setFormatter(formatter)
+        logger.setLevel(logging_level)
         logger.addHandler(log_textbox)
+
+        # WADAS log file
+        file_handler = RotatingFileHandler(os.path.join(os.getcwd(), 'log', 'WADAS.log'), maxBytes=10 * 1024 * 1024,
+                                           backupCount=3)
+        file_handler.setLevel(logging_level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
     def set_image(self, img):
         """Set image to show in WADAS. This is used for startup, detected and
@@ -241,7 +250,7 @@ class MainWindow(QMainWindow):
                 str(self.operation_mode.last_classified_animals))
 
     def url_input_dialog(self):
-        """Method to run dialog for insertion of an URL to fetch image from."""
+        """Method to run dialog for insertion of a URL to fetch image from."""
 
         inserturl_dialog = InsertUrlDialog()
         if inserturl_dialog.exec_():
@@ -374,7 +383,7 @@ class MainWindow(QMainWindow):
             return
 
         with open(self.configuration_file_name, 'w') as yamlfile:
-            data = yaml.safe_dump(data, yamlfile)
+            yaml.safe_dump(data, yamlfile)
 
         logger.info("Configuration saved to file %s.", self.configuration_file_name)
         self.setWindowModified(False)
@@ -407,6 +416,8 @@ class MainWindow(QMainWindow):
 
                 # Applying configuration to WADAS from config file values
                 self.email_config = wadas_config['email']
+                if FTPsServer.ftps_server:
+                    FTPsServer.ftps_server.server.close_all()
                 FTPsServer.ftps_server = (FTPsServer.deserialize(wadas_config['ftps_server']) if
                                           wadas_config['ftps_server'] else None)
                 cameras.clear()
