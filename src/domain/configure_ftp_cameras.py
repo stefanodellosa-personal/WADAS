@@ -1,21 +1,21 @@
 """FTP server and cameras UI Module"""
 
-import os
-import keyring
 import logging
+import os
+
+import keyring
 from validators import ipv4
 
-from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog, QLineEdit, QRadioButton, QLabel, QGridLayout,
-                               QScrollArea, QWidget, QGridLayout)
-from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog, QLineEdit, QRadioButton, QLabel,
+                               QScrollArea, QWidget, QGridLayout)
 
-from src.domain.camera import Camera
-from src.domain.camera import cameras
+from src.domain.camera import Camera, cameras
 from src.domain.ftp_camera import FTPCamera
-from src.ui.ui_configure_ftp_cameras import Ui_DialogFTPCameras
 from src.domain.ftps_server import FTPsServer
 from src.domain.qtextedit_logger import QTextEditLogger
+from src.ui.ui_configure_ftp_cameras import Ui_DialogFTPCameras
 
 
 class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
