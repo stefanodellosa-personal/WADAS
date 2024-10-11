@@ -126,4 +126,4 @@ class OperationMode(QObject):
         if self.ftp_thread and FTPsServer.ftps_server:
             FTPsServer.ftps_server.server.close_all()
             FTPsServer.ftps_server.server.close()
-            self.ftp_thread.requestInterruption()
+            self.ftp_thread.join()
