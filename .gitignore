@@ -37,6 +37,9 @@ build/
 
 # Model
 *.pt
+*.onnx
+*.bin
+*.xml
 
 # configuration file
 *.yaml
