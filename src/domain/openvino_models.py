@@ -1,13 +1,17 @@
 from PytorchWildlife.models import detection as pw_detection
+import openvino.properties as props
 import openvino as ov
 import numpy as np
 import torch
 
+core = ov.Core()
+core.set_property({props.cache_dir: "cache"})
+#TODO: Ann NPU specific properties
 
 class DetectionModel():
     def __init__(self, device="cpu") -> None:
         print("Loading Openvino model")
-        core = ov.Core()
+        
         ov_model = core.read_model("detection_model.onnx")
         self.model = ov.compile_model(ov_model, device_name=device.upper())
 
@@ -24,7 +28,6 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
 
 class OVClassificationModel():
     def __init__(self, weight_path, device):
-        core = ov.Core()
 
         ov_model = core.read_model("classification_model.xml")
         self.model = ov.compile_model(ov_model, device_name=device.upper())
