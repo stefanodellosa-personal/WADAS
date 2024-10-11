@@ -7,9 +7,9 @@ import requests
 import cv2
 from PIL import Image
 import numpy as np
-from PytorchWildlife.models import detection as pw_detection
 from PytorchWildlife.data import transforms as pw_trans
 #import intel_npu_acceleration_library as npu_lib
+from domain.openvino_models import OVMegaDetectorV5
 from PytorchWildlife import utils as pw_utils
 from domain.classify_detections import Classifier, txt_animalclasses
 
@@ -39,8 +39,7 @@ class AiModel():
         # Initializing the MegaDetectorV5 model for image detection
         logger.info("Initializing MegaDetectorV5 model for image detection to device {%s}...",
                      AiModel.DEVICE)
-        self.detection_model = pw_detection.MegaDetectorV5(
-            device=AiModel.DEVICE, pretrained=True)
+        self.detection_model = OVMegaDetectorV5(device=AiModel.DEVICE)
         self.original_image = ""
 
         # Load classification model
