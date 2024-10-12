@@ -5,13 +5,13 @@ import logging
 import datetime
 import requests
 import cv2
-from PIL import Image
 import numpy as np
-from PytorchWildlife.data import transforms as pw_trans
-#import intel_npu_acceleration_library as npu_lib
-from domain.openvino_models import OVMegaDetectorV5
+from PIL import Image
 from PytorchWildlife import utils as pw_utils
-from domain.classify_detections import Classifier, txt_animalclasses
+from PytorchWildlife.data import transforms as pw_trans
+
+from src.domain.classify_detections import Classifier, txt_animalclasses
+from src.domain.openvino_models import OVMegaDetectorV5
 
 logger = logging.getLogger(__name__)
 

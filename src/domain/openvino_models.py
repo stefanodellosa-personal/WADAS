@@ -1,7 +1,9 @@
-from PytorchWildlife.models import detection as pw_detection
-import openvino.properties as props
-import openvino as ov
+"""This module implements OpenVINO related classes and functionalities."""
+
 import numpy as np
+import openvino as ov
+import openvino.properties as props
+from PytorchWildlife.models import detection as pw_detection
 import torch
 
 core = ov.Core()
@@ -57,4 +59,5 @@ class OVClassificationModel():
         return np.array(total_output)
 
     def loadWeights(self, path):
+        #TODO: implement this method
         pass

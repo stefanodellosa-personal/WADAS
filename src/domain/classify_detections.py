@@ -7,13 +7,15 @@
 ############### MODEL SPECIFIC ###############
 ##############################################
 import sys
+
 import numpy as np
 import timm
 import torch
 from torch import tensor
 import torch.nn as nn
 from torchvision.transforms import InterpolationMode, transforms
-from domain.openvino_models import OVClassificationModel
+
+from src.domain.openvino_models import OVClassificationModel
 
 # The following ClassifTools code snippet is created by the DeepFaune team.
 # Orignal license is shown below.
@@ -76,8 +78,8 @@ txt_animalclasses = {
     'de': ["Dachs", "Steinbock", "Rothirsch", "Gämse", "Katze", "Ziege", "Rehwild", "Hund", "Eichhörnchen", "Equiden", "Ginsterkatze",
            "Igel", "Lagomorpha", "Wolf", "Luchs", "Murmeltier", "Kleinsäuger", "Mufflon",
            "Schaf", "Mustelide", "Vogen", "Bär", "Nutria", "Fuchs", "Wildschwein", "Kuh"],
-    
 }
+
 
 class Classifier:
     def __init__(self, weight_path, device): # ADJUSTMENT 1, 2
