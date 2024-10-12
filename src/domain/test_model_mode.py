@@ -60,7 +60,7 @@ class TestModelMode(OperationMode):
             self.update_info.emit()
             message = f"WADAS has classified {self.last_classified_animals} animal(s)!"
         else:
-            logger.debug("No results to classify.")
+            logger.info("No results to classify.")
 
         # Send notification
         self.send_notification(message, img_path)

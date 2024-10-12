@@ -7,7 +7,7 @@ import os
 import keyring
 from PySide6 import QtGui
 from PySide6.QtCore import QThread
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QErrorMessage
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QErrorMessage, QComboBox, QLabel
 import yaml
 
 from src.domain.ai_model import AiModel
@@ -65,6 +65,7 @@ class MainWindow(QMainWindow):
             os.getcwd(), "src", "img","mainwindow_icon.jpg")))
 
         # Update mainwindow UI methods
+        self._init_logging_dropdown()
         self.update_toolbar_status()
         logger.info('Welcome to WADAS!')
 
@@ -99,17 +100,16 @@ class MainWindow(QMainWindow):
         """Initialize MainWindow logger for UI logging."""
 
         formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
-        logging_level = logging.DEBUG
         # Line edit logging in mainwindow
-        log_textbox = QTextEditLogger(self.ui.plainTextEdit_log)
-        log_textbox.setFormatter(formatter)
-        logger.setLevel(logging_level)
-        logger.addHandler(log_textbox)
+        self.log_txtedt_handler = QTextEditLogger(self.ui.plainTextEdit_log)
+        self.log_txtedt_handler.setFormatter(formatter)
+        logger.setLevel(logging.INFO)
+        logger.addHandler(self.log_txtedt_handler)
 
         # WADAS log file
         file_handler = RotatingFileHandler(os.path.join(os.getcwd(), 'log', 'WADAS.log'), maxBytes=10 * 1024 * 1024,
                                            backupCount=3)
-        file_handler.setLevel(logging_level)
+        file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
@@ -236,6 +236,8 @@ class MainWindow(QMainWindow):
         self.ui.actionSelectLocalCameras.setEnabled(not running)
         self.ui.actionConfigure_FTP_Cameras.setEnabled(not running)
         self.ui.actionOpen_configuration_file.setEnabled(not running)
+        self.ui.actionSave_configuration_as.setEnabled(not running)
+        self.ui.actionSave_configuration.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -466,3 +468,35 @@ class MainWindow(QMainWindow):
             if camera.enabled:
                 text = f"({camera.type.value}) {camera.id}"
                 self.ui.listWidget_en_cameras.addItem(text)
+
+    def _init_logging_dropdown(self):
+        """Method to initialize logging levels in tooldbar dropdown"""
+
+        label = QLabel("Log level: ")
+        self.ui.toolBar.addWidget(label)
+
+        comboBox = QComboBox(self)
+        comboBox.setObjectName("logLevelComboBox")
+        levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        comboBox.addItems(levels)
+        comboBox.setToolTip("Select logging level")
+        comboBox.setCurrentText("INFO")
+        comboBox.currentIndexChanged.connect(self.change_logging_level)
+        self.ui.toolBar.addWidget(comboBox)
+
+    def change_logging_level(self, index):
+        """Method to modify UI logging level"""
+
+        level_mapping = {
+            0: logging.DEBUG,
+            1: logging.INFO,
+            2: logging.WARNING,
+            3: logging.ERROR,
+            4: logging.CRITICAL
+        }
+
+        new_level = level_mapping.get(index, logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
+        self.log_txtedt_handler.setLevel(logging.DEBUG)
+        logger.log(new_level, f"Logging level changed to: {logging.getLevelName(new_level)}")
+        self.log_txtedt_handler.setLevel(new_level)

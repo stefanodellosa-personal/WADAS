@@ -16,10 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QLabel, QListWidget, QListWidgetItem,
-    QMainWindow, QMenu, QMenuBar, QPlainTextEdit,
-    QSizePolicy, QStatusBar, QToolBar, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QFrame, QLabel, QListWidget,
+    QListWidgetItem, QMainWindow, QMenu, QMenuBar,
+    QPlainTextEdit, QSizePolicy, QStatusBar, QToolBar,
+    QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -105,6 +105,8 @@ class Ui_MainWindow(object):
         self.label_image.setObjectName(u"label_image")
         self.label_image.setEnabled(True)
         self.label_image.setGeometry(QRect(10, 10, 800, 600))
+        sizePolicy.setHeightForWidth(self.label_image.sizePolicy().hasHeightForWidth())
+        self.label_image.setSizePolicy(sizePolicy)
         self.plainTextEdit_log = QPlainTextEdit(self.centralwidget)
         self.plainTextEdit_log.setObjectName(u"plainTextEdit_log")
         self.plainTextEdit_log.setGeometry(QRect(10, 620, 1121, 109))
@@ -185,6 +187,11 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.listWidget_en_cameras)
 
+        self.line = QFrame(self.centralwidget)
+        self.line.setObjectName(u"line")
+        self.line.setGeometry(QRect(803, 10, 20, 601))
+        self.line.setFrameShape(QFrame.Shape.VLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -211,13 +218,16 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionOpen_configuration_file)
         self.toolBar.addAction(self.actionSave_configuration_as)
         self.toolBar.addAction(self.actionSave_configuration)
+        self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionSelectLocalCameras)
         self.toolBar.addAction(self.actionConfigure_FTP_Cameras)
         self.toolBar.addAction(self.actionActionConfigureEmail)
         self.toolBar.addAction(self.actionSelect_Mode)
         self.toolBar.addAction(self.actionConfigure_Ai_model)
+        self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionRun)
         self.toolBar.addAction(self.actionStop)
+        self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
 
