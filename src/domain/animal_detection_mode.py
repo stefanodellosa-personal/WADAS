@@ -12,13 +12,13 @@ from src.domain.ftps_server import FTPsServer
 from src.domain.operation_mode import OperationMode
 
 
-
 logger = logging.getLogger(__name__)
+
 
 class AnimalDetectionAndClassificationMode(OperationMode):
     """Animal Detection and Classification Mode class."""
 
-    def __init__(self, classification = True):
+    def __init__(self, classification=True):
         super(AnimalDetectionAndClassificationMode, self).__init__()
         self.process_queue = True
         self.en_classification = classification
@@ -39,7 +39,11 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                     logger.info("Instantiating thread for camera %s", camera.id)
                     camera.stop_thread = False
                     self.camera_thread.append(camera.run())
-                elif camera.type == Camera.CameraTypes.FTPCamera and FTPsServer.ftps_server and not self.ftp_thread:
+                elif (
+                    camera.type == Camera.CameraTypes.FTPCamera
+                    and FTPsServer.ftps_server
+                    and not self.ftp_thread
+                ):
                     logger.info("Instantiating FTPS server...")
                     self.ftp_thread = FTPsServer.ftps_server.run()
 
@@ -51,7 +55,9 @@ class AnimalDetectionAndClassificationMode(OperationMode):
             if not img_queue.empty():
                 logger.debug("Processing image from motion detection notification...")
                 cur_img = img_queue.get()
-                results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
+                results, detected_img_path = self.ai_model.process_image(
+                    cur_img["img"], True
+                )
 
                 self.last_detection = detected_img_path
                 self.check_for_termination_requests()
@@ -63,17 +69,26 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                     if self.en_classification:
                         # Classify if detection has identified animals
                         if len(results["detections"].xyxy) > 0:
-                            logger.info("Running classification on detection result(s)...")
-                            classified_img_path, classified_animals = self.ai_model.classify(cur_img["img"], results)
+                            logger.info(
+                                "Running classification on detection result(s)..."
+                            )
+                            (
+                                classified_img_path,
+                                classified_animals,
+                            ) = self.ai_model.classify(cur_img["img"], results)
                             self.last_classification = classified_img_path
 
                             # Prepare a list of classified animals to print in UI
                             for animal in classified_animals:
                                 last = animal["classification"][0]
                                 if not self.last_classified_animals:
-                                    self.last_classified_animals = self.last_classified_animals + last
+                                    self.last_classified_animals = (
+                                        self.last_classified_animals + last
+                                    )
                                 else:
-                                    self.last_classified_animals = self.last_classified_animals + ", " + last
+                                    self.last_classified_animals = (
+                                        self.last_classified_animals + ", " + last
+                                    )
 
                             # Trigger image update in WADAS mainwindow
                             self.update_image.emit(classified_img_path)
@@ -99,9 +114,9 @@ class AnimalDetectionAndClassificationMode(OperationMode):
             logger.info("Request to stop received. Aborting...")
             # Stop FTPS Server (if running)
             if self.ftp_camera_exist() and self.ftp_thread and FTPsServer.ftps_server:
-                    FTPsServer.ftps_server.server.close_all()
-                    FTPsServer.ftps_server.server.close()
-                    self.ftp_thread.join()
+                FTPsServer.ftps_server.server.close_all()
+                FTPsServer.ftps_server.server.close()
+                self.ftp_thread.join()
             # Stop USB Cameras thread(s), if any.
             self.process_queue = False
             for camera in cameras:

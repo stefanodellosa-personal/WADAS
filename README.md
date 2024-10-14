@@ -3,7 +3,7 @@
 
 The intent is to produce a proof of concept (POC) of a detection and warning system for wildlife with the aim of preventing wild animals to perish in car or train accidents. Moreover, the project will start to set requirements and implementation basis for system interaction and adoption as final product (e.g. mobile App, integration with maps, backend, etc.).
 
-The project is to be intended as a non-profitable and open-source one. This to facilitate contribution and reusage to anyone that may want to help, improve and implement same technology all over the world. 
+The project is to be intended as a non-profitable and open-source one. This to facilitate contribution and reusage to anyone that may want to help, improve and implement same technology all over the world.
 
 The project might leverage AI and other (open source or free to use) technologies.
 
