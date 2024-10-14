@@ -11,13 +11,13 @@ from ui.ui_download_file import Ui_DialogDownloadFile
 
 
 class DownloadDialog(QDialog, Ui_DialogDownloadFile):
-
     def __init__(self, url, filename):
         super().__init__()
         self.ui = Ui_DialogDownloadFile()
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(os.path.join(
-            os.getcwd(), "src", "img","mainwindow_icon.jpg")))
+        self.setWindowIcon(
+            QIcon(os.path.join(os.getcwd(), "src", "img", "mainwindow_icon.jpg"))
+        )
         self.ui.pushButton_cancel.setEnabled(False)
         # Slots
         self.ui.pushButton_download.pressed.connect(self.initDownload)

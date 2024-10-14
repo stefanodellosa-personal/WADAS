@@ -16,8 +16,9 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
         super(DialogSelectMode, self).__init__()
         self.ui = Ui_DialogSelectMode()
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(os.path.join(
-            os.getcwd(), "src", "img","mainwindow_icon.jpg")))
+        self.setWindowIcon(
+            QIcon(os.path.join(os.getcwd(), "src", "img", "mainwindow_icon.jpg"))
+        )
         self.selected_mode = selected_mode
 
         # Slots
@@ -30,7 +31,10 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
 
         if self.selected_mode == OperationMode.OperationModeTypes.AnimalDetectionMode:
             self.ui.radioButton_animal_det_mode.setChecked(True)
-        elif self.selected_mode == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode:
+        elif (
+            self.selected_mode
+            == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
+        ):
             self.ui.radioButton_animal_det_and_class_mode.setChecked(True)
         elif self.selected_mode == OperationMode.OperationModeTypes.TunnelMode:
             self.ui.radioButton_tunnel_mode.setChecked(True)
@@ -47,10 +51,11 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
         elif self.ui.radioButton_animal_det_mode.isChecked():
             self.selected_mode = OperationMode.OperationModeTypes.AnimalDetectionMode
         elif self.ui.radioButton_animal_det_and_class_mode.isChecked():
-            self.selected_mode = OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
+            self.selected_mode = (
+                OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
+            )
         elif self.ui.radioButton_tunnel_mode.isChecked():
             self.selected_mode = OperationMode.OperationModeTypes.TunnelMode
         elif self.ui.radioButton_bear_det_mode.isChecked():
             self.selected_mode = OperationMode.OperationModeTypes.BearDetectionMode
         self.accept()
-
