@@ -8,12 +8,12 @@ import keyring
 from PySide6 import QtGui
 from PySide6.QtCore import QThread
 from PySide6.QtWidgets import (
+    QComboBox,
+    QErrorMessage,
+    QFileDialog,
+    QLabel,
     QMainWindow,
     QMessageBox,
-    QFileDialog,
-    QErrorMessage,
-    QComboBox,
-    QLabel,
 )
 import yaml
 
@@ -37,6 +37,14 @@ from src.domain.usb_camera import USBCamera
 from src.ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
+
+level_mapping = {
+    0: logging.DEBUG,
+    1: logging.INFO,
+    2: logging.WARNING,
+    3: logging.ERROR,
+    4: logging.CRITICAL,
+}
 
 
 class MainWindow(QMainWindow):
@@ -580,18 +588,10 @@ class MainWindow(QMainWindow):
     def change_logging_level(self, index):
         """Method to modify UI logging level"""
 
-        level_mapping = {
-            0: logging.DEBUG,
-            1: logging.INFO,
-            2: logging.WARNING,
-            3: logging.ERROR,
-            4: logging.CRITICAL,
-        }
-
         new_level = level_mapping.get(index, logging.DEBUG)
         logger.setLevel(logging.DEBUG)
         self.log_txtedt_handler.setLevel(logging.DEBUG)
         logger.log(
-            new_level, f"Logging level changed to: {logging.getLevelName(new_level)}"
+            new_level, "Logging level changed to %s:", logging.getLevelName(new_level)
         )
         self.log_txtedt_handler.setLevel(new_level)
