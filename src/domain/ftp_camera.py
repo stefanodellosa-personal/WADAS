@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class FTPCamera(Camera):
     """FTP Camera class, specialization of Camera class."""
 
-    def __init__(self, id, ftp_folder, enabled = True):
+    def __init__(self, id, ftp_folder, enabled=True):
         super().__init__(id, enabled)
         self.type = Camera.CameraTypes.FTPCamera
         self.ftp_folder = ftp_folder
@@ -22,10 +22,10 @@ class FTPCamera(Camera):
     def serialize(self):
         """Method to serialize FTP Camera object into file."""
         return dict(
-            type = self.type.value,
-            id = self.id,
-            enabled = self.enabled,
-            ftp_folder = self.ftp_folder
+            type=self.type.value,
+            id=self.id,
+            enabled=self.enabled,
+            ftp_folder=self.ftp_folder,
         )
 
     @staticmethod

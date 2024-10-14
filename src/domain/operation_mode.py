@@ -18,13 +18,16 @@ from src.domain.ftps_server import FTPsServer
 
 logger = logging.getLogger(__name__)
 
+
 class OperationMode(QObject):
     """Class to handle WADAS operation modes."""
 
     class OperationModeTypes(Enum):
         TestModelMode = "Test Model Mode"
         AnimalDetectionMode = "Animal Detection Mode"
-        AnimalDetectionAndClassificationMode = "Animal Detection and Classification Mode"
+        AnimalDetectionAndClassificationMode = (
+            "Animal Detection and Classification Mode"
+        )
         TunnelMode = "Tunnel Mode"
         BearDetectionMode = "Bear Detection Mode"
 
@@ -60,24 +63,24 @@ class OperationMode(QObject):
 
         # Email notification
         credentials = keyring.get_credential("WADAS_email", "")
-        if self.email_configuration['smtp_hostname'] and credentials.username:
+        if self.email_configuration["smtp_hostname"] and credentials.username:
             self.send_email(message, img_path)
         else:
             logger.warning("No notification protocol set. Skipping notification.")
-        #TODO: add other notification protocols.
+        # TODO: add other notification protocols.
 
     def send_email(self, body, img_path):
         """Method to build email and send it."""
 
         credentials = keyring.get_credential("WADAS_email", "")
         sender = credentials.username
-        recipients = self.email_configuration['recipients_email']
+        recipients = self.email_configuration["recipients_email"]
 
         message = MIMEMultipart()
         # Set email required fields.
-        message['Subject'] = "WADAS detection alert"
-        message['From'] = sender
-        message['To'] = ', '.join(recipients)
+        message["Subject"] = "WADAS detection alert"
+        message["From"] = sender
+        message["To"] = ", ".join(recipients)
 
         # HTML content with an image embedded
         html = """\
@@ -92,19 +95,21 @@ class OperationMode(QObject):
         message.attach(MIMEText(html, "html"))
 
         # Open the image file in binary mode
-        with open(img_path, 'rb') as img:
+        with open(img_path, "rb") as img:
             # Attach the image file
             msg_img = MIMEImage(img.read(), name=os.path.basename(img_path))
             # Define the Content-ID header to use in the HTML body
-            msg_img.add_header('Content-ID', '<image1>')
+            msg_img.add_header("Content-ID", "<image1>")
             # Attach the image to the message
             message.attach(msg_img)
 
         # Connect to email's SMTP server using SSL.
         context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(self.email_configuration['smtp_hostname'],
-                              self.email_configuration['smtp_port'],
-                              context=context) as smtp_server:
+        with smtplib.SMTP_SSL(
+            self.email_configuration["smtp_hostname"],
+            self.email_configuration["smtp_port"],
+            context=context,
+        ) as smtp_server:
             # Login to the SMTP server
             smtp_server.login(sender, credentials.password)
             # Send the email to all recipients.

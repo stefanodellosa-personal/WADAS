@@ -10,3 +10,4 @@ torchvision
 torchaudio
 intel-npu-acceleration-library
 PytorchWildlife
+pre-commit
