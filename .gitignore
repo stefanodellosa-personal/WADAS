@@ -41,9 +41,6 @@ build/
 *.bin
 *.xml
 
-# configuration file
-*.yaml
-
 # Dependency directories
 node_modules/
 bower_components/
@@ -66,3 +63,4 @@ demo_output/
 
 
 cache
+

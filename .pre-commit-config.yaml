@@ -1,0 +1,22 @@
+#
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache 2.0
+#
+
+default_install_hook_types: [pre-commit, commit-msg]
+repos:
+- repo: https://github.com/psf/black
+  rev: 22.6.0
+  hooks:
+    - id: black
+      exclude: ^src/ui/
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.1.0
+  hooks:
+    - id: check-merge-conflict
+    - id: check-json
+    - id: check-symlinks
+    - id: debug-statements
+    - id: mixed-line-ending
+    - id: trailing-whitespace
+

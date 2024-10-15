@@ -4,6 +4,7 @@ import logging
 from PySide6.QtCore import QObject, Signal
 from PySide6 import QtGui
 
+
 class QTextEditLogger(logging.Handler):
     """Class to enable logging in QTextEdit widget within mainwindow"""
 

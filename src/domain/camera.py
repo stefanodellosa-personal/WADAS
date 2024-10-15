@@ -12,20 +12,21 @@ img_queue = Queue()
 cameras = []
 
 
-class Camera():
+class Camera:
     """Base class of a camera."""
 
     detection_params = {
-            'treshold': 180,
-            'min_contour_area': 300,
-            'detection_per_second': 1,
-            'ms_sample_rate': 1000
-        }
+        "treshold": 180,
+        "min_contour_area": 300,
+        "detection_per_second": 1,
+        "ms_sample_rate": 1000,
+    }
+
     class CameraTypes(Enum):
         USBCamera = "USB Camera"
         FTPCamera = "FTP Camera"
 
-    def __init__(self, id, enabled = False):
+    def __init__(self, id, enabled=False):
         self.type = None
         self.id = id
         self.enabled = enabled

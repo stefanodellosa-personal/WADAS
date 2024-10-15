@@ -9,6 +9,7 @@ from PySide6.QtCore import Signal, QThread
 
 class Downloader(QThread):
     """Class to handle file download in dedicated QThread"""
+
     # Signal for to establish the maximum value of the progress bar.
     setTotalProgress = Signal(int)
     # Signal to increase the progress.

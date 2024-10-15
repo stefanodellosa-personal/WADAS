@@ -15,21 +15,24 @@ from src.domain.openvino_models import OVMegaDetectorV5
 
 logger = logging.getLogger(__name__)
 
+
 def get_timestamp():
     """Method to prepare timestamp string to apply to images naming"""
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     return timestamp
 
-class AiModel():
+
+class AiModel:
     """Class containing AI Model functionalities (detection & classification)"""
 
     # Setting the device to use for computations ('cuda' indicates GPU, "npu" indicates intel NPU)
-    #TODO: uncomment this: DEVICE = "npu" if npu_lib.backend.npu_available() else
+    # TODO: uncomment this: DEVICE = "npu" if npu_lib.backend.npu_available() else
     # "cuda" if torch.cuda.is_available() else "cpu"
     DEVICE = "cpu"
-    CLASSIFICATION_MODEL_PATH = os.path.join(os.getcwd(),
-                                        "deepfaune-vit_large_patch14_dinov2.lvd142m.pt")
+    CLASSIFICATION_MODEL_PATH = os.path.join(
+        os.getcwd(), "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
+    )
     CLASSIFICATION_MODEL_URL = "https://pbil.univ-lyon1.fr/software/download/deepfaune/v1.1/deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
     CLASSIFICATION_MODEL_FILENAME = "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
     classification_treshold = 0.5
@@ -40,6 +43,7 @@ class AiModel():
         logger.info("Initializing MegaDetectorV5 model for image detection to device {%s}...",
                      AiModel.DEVICE)
         self.detection_model = OVMegaDetectorV5(device=AiModel.DEVICE)
+
         self.original_image = ""
 
         # Load classification model
@@ -49,8 +53,11 @@ class AiModel():
         os.makedirs("classification_output", exist_ok=True)
         os.makedirs("wadas_motion_detection", exist_ok=True)
 
-        logger.debug("Detection treshold: %s, Classification treshod: %s.",
-                     self.detection_treshold, self.classification_treshold)
+        logger.debug(
+            "Detection treshold: %s, Classification treshod: %s.",
+            self.detection_treshold,
+            self.classification_treshold,
+        )
 
     def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
@@ -65,18 +72,26 @@ class AiModel():
         img_array.shape, img_array.dtype
 
         # Initializing the Yolo-specific transform for the image
-        transform = pw_trans.MegaDetector_v5_Transform(target_size=self.detection_model.IMAGE_SIZE,
-                                                       stride=self.detection_model.STRIDE)
+        transform = pw_trans.MegaDetector_v5_Transform(
+            target_size=self.detection_model.IMAGE_SIZE,
+            stride=self.detection_model.STRIDE,
+        )
 
         # Performing the detection on the single image
-        results = self.detection_model.single_image_detection(transform(img_array),
-                                                              img_array.shape,
-                                                              img_path,
-                                                              AiModel.detection_treshold)
+        results = self.detection_model.single_image_detection(
+            transform(img_array), img_array.shape, img_path, AiModel.detection_treshold
+        )
 
         # Checks for humans in results
-        if results and results["labels"] and "person" in results["labels"][0] and len(results["labels"]) == 1:
-            logger.warning("%s image contains only person(s), not animals. Skipping it.", img_path)
+        if (
+            results
+            and results["labels"]
+            and "person" in results["labels"][0]
+            and len(results["labels"]) == 1
+        ):
+            logger.warning(
+                "%s image contains only person(s), not animals. Skipping it.", img_path
+            )
             os.remove(img_path)
             return None, ""
 
@@ -84,9 +99,12 @@ class AiModel():
         if len(results["detections"].xyxy) > 0 and save_detection_image:
             # Saving the detection results
             logger.info("Saving detection results...")
-            pw_utils.save_detection_images(results, os.path.join(".","detection_output"),
-                                           overwrite=False)
-            detected_img_path = os.path.join("detection_output",  os.path.basename(img_path))
+            pw_utils.save_detection_images(
+                results, os.path.join(".", "detection_output"), overwrite=False
+            )
+            detected_img_path = os.path.join(
+                "detection_output", os.path.basename(img_path)
+            )
         else:
             logger.info("No detected animals for %s. Removing image.", img_path)
             os.remove(img_path)
@@ -102,8 +120,9 @@ class AiModel():
 
         # Save image to disk
         os.makedirs("url_imgs", exist_ok=True)
-        img_path = os.path.join("url_imgs", "image_"+str(img_id)+"_"+
-                                str(get_timestamp())+".jpg")
+        img_path = os.path.join(
+            "url_imgs", "image_" + str(img_id) + "_" + str(get_timestamp()) + ".jpg"
+        )
         img.save(img_path)
         logger.info("Saved processed image at: %s", img_path)
 
@@ -112,7 +131,7 @@ class AiModel():
 
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s).
-           TODO: avoid to classify crops with people classification."""
+        TODO: avoid to classify crops with people classification."""
 
         if not results:
             logger.warning("No results to classify. Skipping classification.")
@@ -125,8 +144,9 @@ class AiModel():
         for xyxy in results["detections"].xyxy:
             # Cropping detection result(s) from original image leveraging detected boxes
             cropped_image = img.crop(xyxy)
-            cropped_image_path = os.path.join("classification_output", 
-                                              str(classification_id)+'_cropped_image.jpg')
+            cropped_image_path = os.path.join(
+                "classification_output", str(classification_id) + "_cropped_image.jpg"
+            )
             cropped_image.save(cropped_image_path)
             logger.debug("Saved crop of image at %s.", cropped_image_path)
 
@@ -135,10 +155,14 @@ class AiModel():
             if classification_result[0]:
                 logger.info("Classification result: %s", classification_result)
 
-                classified_animals.append({"id": classification_id,
-                                        "classification": classification_result,
-                                        "xyxy": xyxy})
-                classification_id = classification_id+1
+                classified_animals.append(
+                    {
+                        "id": classification_id,
+                        "classification": classification_result,
+                        "xyxy": xyxy,
+                    }
+                )
+                classification_id = classification_id + 1
 
         img_path = self.build_classification_square(img, classified_animals, img_path)
         return img_path, classified_animals
@@ -161,9 +185,13 @@ class AiModel():
             # Round precision on classification score
             animal["classification"][1] = round(animal["classification"][1], 2)
 
-            # Draw black background rectangle to improve text readability. 
+            # Draw black background rectangle to improve text readability.
             # Replicating Megadetector settings whenever possible.
-            text = str(animal["classification"][0])+ " "+str(animal["classification"][1])
+            text = (
+                str(animal["classification"][0])
+                + " "
+                + str(animal["classification"][1])
+            )
             font = cv2.FONT_HERSHEY_SIMPLEX
             text_scale = 1.5
             text_thickness = 2
@@ -171,7 +199,12 @@ class AiModel():
 
             text_x = x1 + text_padding
             text_y = y1 - text_padding
-            text_width, text_height = cv2.getTextSize(text, font, text_scale, text_thickness,)[0]
+            text_width, text_height = cv2.getTextSize(
+                text,
+                font,
+                text_scale,
+                text_thickness,
+            )[0]
 
             # Text background size is dependent on the size of the text
             text_background_x1 = x1
@@ -179,21 +212,33 @@ class AiModel():
             text_background_x2 = x1 + 2 * text_padding + text_width
             text_background_y2 = y1
 
-            classified_image = cv2.rectangle(classified_image,
-                                             (text_background_x1, text_background_y1),
-                                             (text_background_x2, text_background_y2),
-                                              color,
-                                              cv2.FILLED)
+            classified_image = cv2.rectangle(
+                classified_image,
+                (text_background_x1, text_background_y1),
+                (text_background_x2, text_background_y2),
+                color,
+                cv2.FILLED,
+            )
 
             # Add label to classification rectangle
-            cv2.putText(classified_image, text, (text_x, text_y),
-                        font, text_scale, (0,0,0), text_thickness, cv2.LINE_AA)
+            cv2.putText(
+                classified_image,
+                text,
+                (text_x, text_y),
+                font,
+                text_scale,
+                (0, 0, 0),
+                text_thickness,
+                cv2.LINE_AA,
+            )
             cimg = Image.fromarray(classified_image)
 
             # Save classified image
             detected_img_name = os.path.basename(img_path)
-            classified_img_name = "classified_"+detected_img_name
-            classified_image_path = os.path.join("classification_output",classified_img_name)
+            classified_img_name = "classified_" + detected_img_name
+            classified_image_path = os.path.join(
+                "classification_output", classified_img_name
+            )
             cimg.save(classified_image_path)
         return classified_image_path
 
@@ -201,13 +246,18 @@ class AiModel():
         """Classify animal on a crop (portion of original image)"""
 
         classifications = self.get_classifications(PIL_crop)
-        classified_animal = ['', 0]
+        classified_animal = ["", 0]
         for result in classifications:
-            if not classified_animal[0] and result[1] >= AiModel.classification_treshold:
+            if (
+                not classified_animal[0]
+                and result[1] >= AiModel.classification_treshold
+            ):
                 classified_animal = result
-            elif (classified_animal[0] and
-                  result[1] >= AiModel.classification_treshold and
-                  result[1] > classified_animal[1]):
+            elif (
+                classified_animal[0]
+                and result[1] >= AiModel.classification_treshold
+                and result[1] > classified_animal[1]
+            ):
                 classified_animal = result
 
         return classified_animal
@@ -251,10 +301,12 @@ class AiModel():
 
     # def get_classification(PIL_crop):
     # ADJUSTMENT 1
-    def get_classifications(self, PIL_crop): # ADJUSTMENT 2
-        tensor_cropped = self.classifier.preprocessImage(PIL_crop) #ADJUSTMENT 3
-        confs = self.classifier.predictOnBatch(tensor_cropped)[0,] #ADJUSTMENT 3
-        lbls = txt_animalclasses['en']
+    def get_classifications(self, PIL_crop):  # ADJUSTMENT 2
+        tensor_cropped = self.classifier.preprocessImage(PIL_crop)  # ADJUSTMENT 3
+        confs = self.classifier.predictOnBatch(tensor_cropped)[
+            0,
+        ]  # ADJUSTMENT 3
+        lbls = txt_animalclasses["en"]
         classifications = []
         for i in range(len(confs)):
             classifications.append([lbls[i], confs[i]])
