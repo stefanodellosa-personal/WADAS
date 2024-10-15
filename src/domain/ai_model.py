@@ -40,8 +40,10 @@ class AiModel:
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
-        logger.info("Initializing MegaDetectorV5 model for image detection to device {%s}...",
-                     AiModel.DEVICE)
+        logger.info(
+            "Initializing MegaDetectorV5 model for image detection to device {%s}...",
+            AiModel.DEVICE,
+        )
         self.detection_model = OVMegaDetectorV5(device=AiModel.DEVICE)
 
         self.original_image = ""

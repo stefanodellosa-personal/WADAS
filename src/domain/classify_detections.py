@@ -182,7 +182,7 @@ txt_animalclasses = {
 
 
 class Classifier:
-    def __init__(self, weight_path, device): # ADJUSTMENT 1, 2
+    def __init__(self, weight_path, device):  # ADJUSTMENT 1, 2
         self.model = OVClassificationModel(weight_path, device)
         self.model.loadWeights(weight_path)
         self.transforms = transforms.Compose(

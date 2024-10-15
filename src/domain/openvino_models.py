@@ -8,18 +8,19 @@ import torch
 
 core = ov.Core()
 core.set_property({props.cache_dir: "cache"})
-#TODO: Add NPU specific properties
+# TODO: Add NPU specific properties
 
-class DetectionModel():
+
+class DetectionModel:
     def __init__(self, device="cpu") -> None:
         print("Loading Openvino model")
-        
+
         ov_model = core.read_model("detection_model.onnx")
         self.model = ov.compile_model(ov_model, device_name=device.upper())
 
     def __call__(self, img: torch.tensor):
-       results = [torch.tensor(t) for t in self.model(img).values()]
-       return results
+        results = [torch.tensor(t) for t in self.model(img).values()]
+        return results
 
 
 class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
@@ -28,7 +29,7 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
 
 
-class OVClassificationModel():
+class OVClassificationModel:
     def __init__(self, weight_path, device):
 
         ov_model = core.read_model("classification_model.xml")
@@ -49,7 +50,7 @@ class OVClassificationModel():
         """
         total_output = []
         with torch.no_grad():
-            x = data.to(self.device) # ADJUSTMENT 2
+            x = data.to(self.device)  # ADJUSTMENT 2
             if withsoftmax:
                 output = self.forward(x).softmax(dim=1)
             else:
@@ -59,5 +60,5 @@ class OVClassificationModel():
         return np.array(total_output)
 
     def loadWeights(self, path):
-        #TODO: implement this method
+        # TODO: implement this method
         pass

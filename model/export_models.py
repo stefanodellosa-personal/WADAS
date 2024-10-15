@@ -24,14 +24,14 @@ sys.path.append(os.path.join(_thisdir, "../src"))
 
 def main():
 
-
     detection_model = pw_detection.MegaDetectorV5(device="cpu", pretrained=True)
 
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
     img_array = np.array(img)
 
-    transform = pw_trans.MegaDetector_v5_Transform(target_size=detection_model.IMAGE_SIZE,
-                                                        stride=detection_model.STRIDE)
+    transform = pw_trans.MegaDetector_v5_Transform(
+        target_size=detection_model.IMAGE_SIZE, stride=detection_model.STRIDE
+    )
 
     transformed_img = transform(img_array).unsqueeze(0)
 
@@ -40,28 +40,34 @@ def main():
     print("Exporting detection model to OpenVINO...")
     torch.onnx.export(detection_model.model, transformed_img, "detection_model.onnx")
 
-    results = detection_model.single_image_detection(transform(img_array),
-                                                     img_array.shape,
-                                                     "tmp.png",
-                                                     0.5)
-    
+    results = detection_model.single_image_detection(
+        transform(img_array), img_array.shape, "tmp.png", 0.5
+    )
+
     for xyxy in results["detections"].xyxy:
         cropped_image = img.crop(xyxy)
 
-
-        crop_transform = transforms.Compose([
-            transforms.Resize(size=(CROP_SIZE, CROP_SIZE), interpolation=InterpolationMode.BICUBIC, max_size=None,
-                              antialias=None),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=torch.tensor([0.4850, 0.4560, 0.4060]),
-                                 std=torch.tensor([0.2290, 0.2240, 0.2250]))])
+        crop_transform = transforms.Compose(
+            [
+                transforms.Resize(
+                    size=(CROP_SIZE, CROP_SIZE),
+                    interpolation=InterpolationMode.BICUBIC,
+                    max_size=None,
+                    antialias=None,
+                ),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=torch.tensor([0.4850, 0.4560, 0.4060]),
+                    std=torch.tensor([0.2290, 0.2240, 0.2250]),
+                ),
+            ]
+        )
 
         tensor_cropped = crop_transform(cropped_image).unsqueeze(dim=0)
 
         classification_model = Model(WEIGHT_PATH, "cpu")
         classification_model.loadWeights(WEIGHT_PATH)
         print("Exporting classification model to OpenVINO...")
-        
 
         ov_model = ov.convert_model(classification_model, example_input=tensor_cropped)
         ov.save_model(ov_model, "classification_model.xml")
