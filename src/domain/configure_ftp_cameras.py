@@ -20,11 +20,11 @@ from PySide6.QtWidgets import (
     QGridLayout,
 )
 
-from src.domain.camera import Camera, cameras
-from src.domain.ftp_camera import FTPCamera
-from src.domain.ftps_server import FTPsServer
-from src.domain.qtextedit_logger import QTextEditLogger
-from src.ui.ui_configure_ftp_cameras import Ui_DialogFTPCameras
+from domain.camera import Camera, cameras
+from domain.ftp_camera import FTPCamera
+from domain.ftps_server import FTPsServer
+from domain.qtextedit_logger import QTextEditLogger
+from ui.ui_configure_ftp_cameras import Ui_DialogFTPCameras
 
 
 class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
@@ -40,7 +40,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         # UI
         self.ui.setupUi(self)
         self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "src", "img", "mainwindow_icon.jpg"))
+            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
         )
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.pushButton_testFTPServer.setEnabled(False)

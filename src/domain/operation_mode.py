@@ -13,8 +13,8 @@ import keyring
 from PySide6.QtCore import QObject, Signal
 import ssl
 
-from src.domain.ai_model import AiModel
-from src.domain.ftps_server import FTPsServer
+from domain.ai_model import AiModel
+from domain.ftps_server import FTPsServer
 
 logger = logging.getLogger(__name__)
 

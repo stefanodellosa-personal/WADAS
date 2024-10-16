@@ -5,8 +5,8 @@ import os
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
 
-from src.domain.operation_mode import OperationMode
-from src.ui.ui_select_mode import Ui_DialogSelectMode
+from domain.operation_mode import OperationMode
+from ui.ui_select_mode import Ui_DialogSelectMode
 
 
 class DialogSelectMode(QDialog, Ui_DialogSelectMode):
@@ -17,7 +17,7 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
         self.ui = Ui_DialogSelectMode()
         self.ui.setupUi(self)
         self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "src", "img", "mainwindow_icon.jpg"))
+            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
         )
         self.selected_mode = selected_mode
 

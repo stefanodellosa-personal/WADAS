@@ -5,11 +5,11 @@ import logging
 
 from PySide6.QtCore import QThread
 
-from src.domain.camera import Camera
-from src.domain.camera import cameras
-from src.domain.camera import img_queue
-from src.domain.ftps_server import FTPsServer
-from src.domain.operation_mode import OperationMode
+from domain.camera import Camera
+from domain.camera import cameras
+from domain.camera import img_queue
+from domain.ftps_server import FTPsServer
+from domain.operation_mode import OperationMode
 
 
 logger = logging.getLogger(__name__)

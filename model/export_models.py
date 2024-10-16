@@ -10,7 +10,7 @@ import requests
 import torch
 from torchvision.transforms import InterpolationMode, transforms
 
-from src.domain.classify_detections import Model
+from domain.classify_detections import Model
 
 CROP_SIZE = 182
 BACKBONE = "vit_large_patch14_dinov2.lvd142m"

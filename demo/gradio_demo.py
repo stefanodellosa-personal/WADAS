@@ -1,5 +1,5 @@
 import gradio as gr
-from src.domain.ai_model import AiModel
+from domain.ai_model import AiModel
 
 ai_model = AiModel()
 url = "https://www.provincia.bz.it/agricoltura-foreste/fauna-caccia-pesca/images/braunbaer_6016_L.jpg"

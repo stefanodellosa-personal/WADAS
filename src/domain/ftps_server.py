@@ -9,7 +9,7 @@ from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import TLS_FTPHandler
 from pyftpdlib.servers import ThreadedFTPServer
 
-from src.domain.camera import img_queue
+from domain.camera import img_queue
 
 logger = logging.getLogger(__name__)
 

@@ -324,7 +324,7 @@
   <action name="actionConfigure_Ai_model">
    <property name="icon">
     <iconset>
-     <normaloff>../icons/icon-ai-24.png</normaloff>../icons/icon-ai-24.png</iconset>
+     <normaloff>./icons/icon-ai-24.png</normaloff>./icons/icon-ai-24.png</iconset>
    </property>
    <property name="text">
     <string>Configure Ai model</string>

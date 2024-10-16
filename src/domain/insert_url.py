@@ -17,7 +17,7 @@ class InsertUrlDialog(QDialog, Ui_InsertUrlDialog):
         self.ui = Ui_InsertUrlDialog()
         self.ui.setupUi(self)
         self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "src", "img", "mainwindow_icon.jpg"))
+            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
         )
         self.url = ""
         self.ui.buttonBox.accepted.connect(self.accept_and_close)

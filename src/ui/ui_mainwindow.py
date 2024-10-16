@@ -100,7 +100,7 @@ class Ui_MainWindow(object):
         self.actionConfigure_Ai_model.setObjectName("actionConfigure_Ai_model")
         icon5 = QIcon()
         icon5.addFile(
-            "../icons/icon-ai-24.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off
+            "./icons/icon-ai-24.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off
         )
         self.actionConfigure_Ai_model.setIcon(icon5)
         self.actionConfigure_Ai_model.setMenuRole(QAction.MenuRole.NoRole)

@@ -15,7 +15,7 @@ from torch import tensor
 import torch.nn as nn
 from torchvision.transforms import InterpolationMode, transforms
 
-from src.domain.openvino_models import OVClassificationModel
+from ai.openvino_model import OVClassificationModel
 
 # The following ClassifTools code snippet is created by the DeepFaune team.
 # Orignal license is shown below.
