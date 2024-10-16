@@ -5,18 +5,10 @@
 See requirements.txt
 
 ## Environment setup
-Reference Python versions: 3.10 or 3.11.
-
-Reference IDE used for the project is PyCharm, Conda (Miniconda) as package manager.
-
-Instructions will reflect the above-mentioned reference environment, users are free to choose any equivalent environment for development and execution of the project.
-
-### Dependencies install
-
-   1. Import the WADAS project into your IDE
-   2. Create venv enviromnent (See https://code.visualstudio.com/docs/python/environments for detailed info about how to create virtual environment within VScode, we used conda.)
-   3. Install dependencies:
-      a. pip install -r requirements.txt .\poc\requirements.txt (or use miniconda command line/Anaconda navigator UI)
+1. Install conda (https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
+2. Import the WADAS project into your IDE
+3. Run the command  ```conda env create --file="<PROJECT_FOLDER>\WADAS\src\conda_env_setup.yml"```
+4. Select the created environment in your IDE (N.B. Reference IDE used for the project is PyCharm)
 
 ## Run WADAS (with UI)
 
