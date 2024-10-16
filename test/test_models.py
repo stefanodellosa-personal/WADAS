@@ -1,9 +1,11 @@
 from ai.models import OVMegaDetectorV5, Classifier
 from ai.pipeline import DetectionPipeline
+from ai.openvino_model import OVModel
 from PIL import Image
 import requests
 import numpy as np
 import pytest
+import torch
 
 TEST_URL = "https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg"
 
@@ -75,3 +77,30 @@ def test_classification(detection_pipeline):
 
     assert classified_animals[0]["xyxy"].flatten().tolist() == [289, 175, 645, 424]
     assert classified_animals[0]["xyxy"].dtype == np.float32
+
+
+@pytest.fixture(scope="module")
+def ov_model():
+    model_name = "detection_model.xml"
+    device = "CPU"
+    return OVModel(model_name, device)
+
+
+def test_get_available_device(ov_model):
+    devices = ov_model.get_available_device()
+    assert "CPU" in devices
+
+
+def test_compile_model(ov_model):
+    model_name = "detection_model.xml"
+    model = ov_model.load_model(model_name)
+    compiled_model = ov_model.compile_model(model)
+    assert compiled_model is not None
+
+
+def test_call_model(ov_model):
+    input_tensor = torch.randn(1, 3, 1280, 1280)
+    output = ov_model(input_tensor)
+    assert isinstance(output, torch.Tensor) or (
+        isinstance(output, list) and all(isinstance(t, torch.Tensor) for t in output)
+    )

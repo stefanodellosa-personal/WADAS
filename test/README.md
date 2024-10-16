@@ -4,5 +4,5 @@ We use `pytest` to create unit tests for the project. Please refer to [pytest do
 
 ## How to test the model
 
-- Go into the `test/unittest` path
+- Go into the `test` path
 - Type `pytest` to automatically perform testing
