@@ -17,15 +17,14 @@ logger = logging.getLogger(__name__)
 class AiModel:
     """Class containing AI Model functionalities (detection & classification)"""
 
-    DEVICE = "cpu"
+    DEVICE = "auto"
     classification_treshold = 0.5
     detection_treshold = 0.5
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
         logger.info(
-            "Initializing MegaDetectorV5 model for image detection to device {%s}...",
-            AiModel.DEVICE,
+            f"Initializing AI model for image detection and classification to device {AiModel.DEVICE}..."
         )
         self.detection_pipeline = DetectionPipeline(device=AiModel.DEVICE)
 

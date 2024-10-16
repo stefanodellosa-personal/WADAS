@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class DetectionPipeline:
     """Class containing AI Model functionalities (detection & classification)"""
 
-    def __init__(self, device="cpu"):
+    def __init__(self, device="auto"):
         self.device = device
         # Initializing the MegaDetectorV5 model for image detection
         logger.info(f"Initializing detection model to device {self.device}...")
