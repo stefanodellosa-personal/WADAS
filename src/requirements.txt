@@ -12,4 +12,4 @@ intel-npu-acceleration-library
 PytorchWildlife
 onnx
 openvino
-
+pytest
