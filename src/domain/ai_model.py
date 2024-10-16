@@ -18,11 +18,6 @@ class AiModel:
     """Class containing AI Model functionalities (detection & classification)"""
 
     DEVICE = "cpu"
-    CLASSIFICATION_MODEL_PATH = os.path.join(
-        os.getcwd(), "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
-    )
-    CLASSIFICATION_MODEL_URL = "https://pbil.univ-lyon1.fr/software/download/deepfaune/v1.1/deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
-    CLASSIFICATION_MODEL_FILENAME = "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
     classification_treshold = 0.5
     detection_treshold = 0.5
 
@@ -46,6 +41,11 @@ class AiModel:
             self.detection_treshold,
             self.classification_treshold,
         )
+
+    @staticmethod
+    def check_model():
+        """Method to check if model is initialized."""
+        return DetectionPipeline.check_models()
 
     def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
@@ -112,7 +112,7 @@ class AiModel:
             # Cropping detection result(s) from original image leveraging detected boxes
             cropped_image = img.crop(detection["xyxy"])
             cropped_image_path = os.path.join(
-                f"classification_output{detection['xyxy']}_cropped_image.jpg"
+                "classification_output", f"{detection['id']}_cropped_image.jpg"
             )
             cropped_image.save(cropped_image_path)
             logger.debug("Saved crop of image at %s.", cropped_image_path)
@@ -136,7 +136,7 @@ class AiModel:
             classified_image = cv2.rectangle(orig_image, (x1, y1), (x2, y2), color, 2)
 
             # Round precision on classification score
-            animal["classification"][1] = round(animal["classification"][1], 2)
+            animal["classification"][1] = round(animal["classification"][1].item(), 2)
 
             # Draw black background rectangle to improve text readability.
             # Replicating Megadetector settings whenever possible.

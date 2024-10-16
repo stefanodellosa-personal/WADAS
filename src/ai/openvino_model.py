@@ -6,19 +6,20 @@ import os
 core = ov.Core()
 core.set_property({props.cache_dir: "cache"})
 
+__model_folder__ = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "model"
+)
+
 
 class OVModel:
     def __init__(self, model_name, device):
         """Base class for OpenVino models"""
         self.device = device
-        self.model_folder = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "..", "..", "model"
-        )
         self.model = self.compile_model(self.load_model(model_name))
 
     def load_model(self, model_name):
         """Load model from file"""
-        return core.read_model(os.path.join(self.model_folder, model_name))
+        return core.read_model(os.path.join(__model_folder__, model_name))
 
     def get_available_device(self):
         """Get available devices"""
@@ -37,3 +38,8 @@ class OVModel:
         if len(results) == 1:
             return results[0]
         return results
+
+    @staticmethod
+    def check_model(model_name):
+        """Check if model is initialized"""
+        return os.path.isfile(os.path.join(__model_folder__, model_name))

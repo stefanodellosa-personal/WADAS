@@ -22,6 +22,11 @@ class DetectionPipeline:
         logger.info(f"Loading classification model to device {self.device}...")
         self.classifier = Classifier(self.device)
 
+    @staticmethod
+    def check_models():
+        """Method to check if model is initialized."""
+        return OVMegaDetectorV5.check_model() and Classifier.check_model()
+
     def run_detection(self, img: Image, detection_treshold: float):
         """Method to run detection model on provided image."""
 

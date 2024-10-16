@@ -129,6 +129,11 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
         self.model = OVModel("detection_model.xml", device)
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
 
+    @staticmethod
+    def check_model():
+        """Check if model is initialized"""
+        return OVModel.check_model("detection_model.xml")
+
 
 class Classifier:
     """Classifier class for classification model"""
@@ -152,6 +157,11 @@ class Classifier:
                 ),
             ]
         )
+
+    @staticmethod
+    def check_model():
+        """Check if model is initialized"""
+        return OVModel.check_model("detection_model.xml")
 
     def predictOnBatch(self, batchtensor, withsoftmax=True):
         """Predict on a batch of images"""
