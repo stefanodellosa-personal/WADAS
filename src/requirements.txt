@@ -1,5 +1,4 @@
 cv2_enumerate_cameras
-enum
 ipykernel
 keyring
 opencv-python
@@ -9,7 +8,6 @@ torch
 torchvision
 torchaudio
 intel-npu-acceleration-library
-PytorchWildlife
 onnx
 openvino
 pytest
