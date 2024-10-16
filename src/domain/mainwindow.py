@@ -404,7 +404,7 @@ class MainWindow(QMainWindow):
         if not AiModel.check_model():
             logger.error("AI module not found. Downloading...")
             AiModel.download_models()
-            return False
+            return self.check_models()
         logger.info("AI module found!")
         return True
 
