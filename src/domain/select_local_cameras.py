@@ -17,10 +17,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Qt
 
-from src.domain.camera import Camera
-from src.domain.camera import cameras
-from src.domain.usb_camera import USBCamera
-from src.ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
+from domain.camera import Camera
+from domain.camera import cameras
+from domain.usb_camera import USBCamera
+from ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
 
 
 class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
@@ -31,7 +31,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
         self.ui = Ui_DialogSelectLocalCameras()
         self.ui.setupUi(self)
         self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "src", "img", "mainwindow_icon.jpg"))
+            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
         )
         self.enumerated_usb_cameras = enumerate_cameras(cv2.CAP_MSMF)
         # TODO: check API preference for linux and implement it OS independent.

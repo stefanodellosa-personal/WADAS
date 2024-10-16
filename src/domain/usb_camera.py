@@ -7,8 +7,8 @@ import threading
 
 import cv2
 
-from src.domain.utils import get_timestamp
-from src.domain.camera import Camera, img_queue
+from domain.utils import get_timestamp
+from domain.camera import Camera, img_queue
 
 logger = logging.getLogger(__name__)
 

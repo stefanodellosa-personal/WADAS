@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from PytorchWildlife import utils as pw_utils
-from src.domain.utils import get_timestamp
+from domain.utils import get_timestamp
 from ai import DetectionPipeline
 
 logger = logging.getLogger(__name__)

@@ -13,7 +13,7 @@ import validators
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
-from src.ui.ui_insert_email import Ui_DialogInsertEmail
+from ui.ui_insert_email import Ui_DialogInsertEmail
 
 
 class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
@@ -24,7 +24,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         self.ui = Ui_DialogInsertEmail()
         self.ui.setupUi(self)
         self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "src", "img", "mainwindow_icon.jpg"))
+            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
         )
 
         self.email_configuration = email_configuration

@@ -17,24 +17,24 @@ from PySide6.QtWidgets import (
 )
 import yaml
 
-from src.domain.ai_model import AiModel
-from src.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
-from src.domain.camera import Camera
-from src.domain.camera import cameras
-from src.domain.configure_ai_model import ConfigureAiModel
-from src.domain.configure_ftp_cameras import DialogFTPCameras
-from src.domain.download_dialog import DownloadDialog
-from src.domain.ftp_camera import FTPCamera
-from src.domain.insert_email import DialogInsertEmail
-from src.domain.ftps_server import FTPsServer
-from src.domain.insert_url import InsertUrlDialog
-from src.domain.operation_mode import OperationMode
-from src.domain.qtextedit_logger import QTextEditLogger
-from src.domain.select_local_cameras import DialogSelectLocalCameras
-from src.domain.select_mode import DialogSelectMode
-from src.domain.test_model_mode import TestModelMode
-from src.domain.usb_camera import USBCamera
-from src.ui.ui_mainwindow import Ui_MainWindow
+from domain.ai_model import AiModel
+from domain.animal_detection_mode import AnimalDetectionAndClassificationMode
+from domain.camera import Camera
+from domain.camera import cameras
+from domain.configure_ai_model import ConfigureAiModel
+from domain.configure_ftp_cameras import DialogFTPCameras
+from domain.download_dialog import DownloadDialog
+from domain.ftp_camera import FTPCamera
+from domain.insert_email import DialogInsertEmail
+from domain.ftps_server import FTPsServer
+from domain.insert_url import InsertUrlDialog
+from domain.operation_mode import OperationMode
+from domain.qtextedit_logger import QTextEditLogger
+from domain.select_local_cameras import DialogSelectLocalCameras
+from domain.select_mode import DialogSelectMode
+from domain.test_model_mode import TestModelMode
+from domain.usb_camera import USBCamera
+from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
 
@@ -73,10 +73,10 @@ class MainWindow(QMainWindow):
         self._setup_logger()
 
         # Initialize startup image
-        self.set_image(os.path.join(os.getcwd(), "src", "img", "WADAS_logo_big.jpg"))
+        self.set_image(os.path.join(os.getcwd(), "img", "WADAS_logo_big.jpg"))
         # Set mainwindow icon
         self.setWindowIcon(
-            QtGui.QIcon(os.path.join(os.getcwd(), "src", "img", "mainwindow_icon.jpg"))
+            QtGui.QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
         )
 
         # Update mainwindow UI methods
