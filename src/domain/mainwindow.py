@@ -191,10 +191,8 @@ class MainWindow(QMainWindow):
                 self.selected_operation_mode
                 == OperationMode.OperationModeTypes.TestModelMode
             ):
-                if not self.check_classification_model():
-                    logger.error(
-                        "Cannot run this mode without classification model. Aborting."
-                    )
+                if not self.check_models():
+                    logger.error("Cannot run this mode without AI models. Aborting.")
                     return
                 self.operation_mode.url = self.url_input_dialog()
                 if not self.operation_mode.url:
@@ -401,34 +399,13 @@ class MainWindow(QMainWindow):
             )
             self.setWindowModified(True)
 
-    def check_classification_model(self):
+    def check_models(self):
         """Method to initialize classification model."""
-
-        if not os.path.isfile(AiModel.CLASSIFICATION_MODEL_PATH):
-
-            message_box = QMessageBox
-            message = "No classification module found. Do you wish to download it?"
-            answer = message_box.question(
-                self, "", message, message_box.Yes | message_box.No
-            )
-
-            if answer == message_box.No:
-                logger.warning(
-                    "No Classification module, please download it to enable full features."
-                )
-                return False
-            else:
-                logger.warning("Classification module not found.")
-                download_dialog = DownloadDialog(
-                    AiModel.CLASSIFICATION_MODEL_URL,
-                    AiModel.CLASSIFICATION_MODEL_FILENAME,
-                )
-                download_dialog.exec()
-        else:
-            logger.info(
-                "Classification model found at %s!", AiModel.CLASSIFICATION_MODEL_PATH
-            )
-
+        if not AiModel.check_model():
+            logger.error("AI module not found. Downloading...")
+            AiModel.download_models()
+            return self.check_models()
+        logger.info("AI module found!")
         return True
 
     def save_config_to_file(self):
