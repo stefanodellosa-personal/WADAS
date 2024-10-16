@@ -37,6 +37,9 @@ build/
 
 # Model
 *.pt
+*.onnx
+*.bin
+*.xml
 
 # Dependency directories
 node_modules/
@@ -49,7 +52,7 @@ url_imgs/
 debug/
 wadas_motion_detection/
 demo_output/
-
+logs/
 # Images
 #*.png
 #*.jpg
@@ -60,3 +63,4 @@ demo_output/
 
 
 cache
+

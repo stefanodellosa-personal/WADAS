@@ -7,12 +7,15 @@
 ############### MODEL SPECIFIC ###############
 ##############################################
 import sys
+
 import numpy as np
 import timm
 import torch
 from torch import tensor
 import torch.nn as nn
 from torchvision.transforms import InterpolationMode, transforms
+
+from src.domain.openvino_models import OVClassificationModel
 
 # The following ClassifTools code snippet is created by the DeepFaune team.
 # Orignal license is shown below.
@@ -180,7 +183,7 @@ txt_animalclasses = {
 
 class Classifier:
     def __init__(self, weight_path, device):  # ADJUSTMENT 1, 2
-        self.model = Model(weight_path, device)
+        self.model = OVClassificationModel(weight_path, device)
         self.model.loadWeights(weight_path)
         self.transforms = transforms.Compose(
             [
