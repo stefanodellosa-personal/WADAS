@@ -24,12 +24,12 @@ class DetectionPipeline:
 
     @staticmethod
     def check_models():
-        """Method to check if model is initialized."""
+        """Method to check if models are initialized."""
         return OVMegaDetectorV5.check_model() and Classifier.check_model()
 
     @staticmethod
     def download_models(force: bool = False):
-        """Method to check if model is initialized."""
+        """Method to check if models are initialized."""
         return OVMegaDetectorV5.download_model(force) and Classifier.download_model(
             force
         )

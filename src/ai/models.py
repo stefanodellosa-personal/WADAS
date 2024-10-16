@@ -131,7 +131,7 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
 
     @staticmethod
     def check_model():
-        """Check if model is initialized"""
+        """Check if detection model is initialized"""
         return OVModel.check_model("detection_model.xml")
 
     @staticmethod
@@ -165,12 +165,12 @@ class Classifier:
 
     @staticmethod
     def check_model():
-        """Check if model is initialized"""
+        """Check if classification model is initialized"""
         return OVModel.check_model("classification_model.xml")
 
     @staticmethod
     def download_model(force: bool = False):
-        """Check if model is initialized"""
+        """Download classification model"""
         return OVModel.download_model("classification_model", force)
 
     def predictOnBatch(self, batchtensor, withsoftmax=True):
@@ -182,6 +182,8 @@ class Classifier:
             return logits
 
     def preprocessImage(self, croppedimage):
-        """Preprocess the image for classification"""
+        """Preprocess the image for classification
+        The preprocessing consists of resizing, converting to tensor and normalizing the image.
+        """
         preprocessimage = self.transforms(croppedimage)
         return preprocessimage.unsqueeze(dim=0)
