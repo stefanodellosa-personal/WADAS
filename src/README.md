@@ -1,9 +1,5 @@
 # WADAS POC
 
-## Dependencies
-
-See requirements.txt
-
 ## Environment setup
 1. Install conda (https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
 2. Import the WADAS project into your IDE
