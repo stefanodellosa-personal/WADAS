@@ -134,6 +134,11 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
         """Check if model is initialized"""
         return OVModel.check_model("detection_model.xml")
 
+    @staticmethod
+    def download_model(force: bool = False):
+        """Check if model is initialized"""
+        return OVModel.download_model("detection_model", force)
+
 
 class Classifier:
     """Classifier class for classification model"""
@@ -161,7 +166,12 @@ class Classifier:
     @staticmethod
     def check_model():
         """Check if model is initialized"""
-        return OVModel.check_model("detection_model.xml")
+        return OVModel.check_model("classification_model.xml")
+
+    @staticmethod
+    def download_model(force: bool = False):
+        """Check if model is initialized"""
+        return OVModel.download_model("classification_model", force)
 
     def predictOnBatch(self, batchtensor, withsoftmax=True):
         """Predict on a batch of images"""

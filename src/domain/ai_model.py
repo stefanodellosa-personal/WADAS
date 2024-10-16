@@ -47,6 +47,11 @@ class AiModel:
         """Method to check if model is initialized."""
         return DetectionPipeline.check_models()
 
+    @staticmethod
+    def download_models():
+        """Method to check if model is initialized."""
+        return DetectionPipeline.download_models()
+
     def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
 

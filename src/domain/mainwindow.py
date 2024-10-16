@@ -402,7 +402,8 @@ class MainWindow(QMainWindow):
     def check_models(self):
         """Method to initialize classification model."""
         if not AiModel.check_model():
-            logger.error("AI module not found. Aborting.")
+            logger.error("AI module not found. Downloading...")
+            AiModel.download_models()
             return False
         logger.info("AI module found!")
         return True

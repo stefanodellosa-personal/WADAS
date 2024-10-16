@@ -1,4 +1,5 @@
 import openvino.properties as props
+from huggingface_hub import snapshot_download
 import openvino as ov
 import torch
 import os
@@ -43,3 +44,15 @@ class OVModel:
     def check_model(model_name):
         """Check if model is initialized"""
         return os.path.isfile(os.path.join(__model_folder__, model_name))
+
+    @staticmethod
+    def download_model(model_name, force: bool = False):
+        """Check if model is initialized"""
+        return snapshot_download(
+            repo_id="alespalla/wadas",
+            repo_type="model",
+            revision="main",
+            local_dir=__model_folder__,
+            force_download=force,
+            allow_patterns=[f"{model_name}.xml", f"{model_name}.bin"],
+        )

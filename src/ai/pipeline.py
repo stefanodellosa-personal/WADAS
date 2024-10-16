@@ -27,6 +27,13 @@ class DetectionPipeline:
         """Method to check if model is initialized."""
         return OVMegaDetectorV5.check_model() and Classifier.check_model()
 
+    @staticmethod
+    def download_models(force: bool = False):
+        """Method to check if model is initialized."""
+        return OVMegaDetectorV5.download_model(force) and Classifier.download_model(
+            force
+        )
+
     def run_detection(self, img: Image, detection_treshold: float):
         """Method to run detection model on provided image."""
 
