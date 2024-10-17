@@ -22,11 +22,11 @@ class DetectionPipeline:
         logger.info(f"Loading classification model to device {self.device}...")
         self.classifier = Classifier(self.device)
         # Get the index of the animal class of the detection model
-        self.animal_class_idx = [
-            idx
-            for idx in self.detection_model.CLASS_NAMES.keys()
-            if self.detection_model.CLASS_NAMES[idx] == "animal"
-        ][0]
+        self.animal_class_idx = next(
+            key
+            for key, value in self.detection_model.CLASS_NAMES.items()
+            if value == "animal"
+        )
 
     @staticmethod
     def check_models():
