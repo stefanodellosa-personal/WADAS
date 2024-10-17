@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.configuration_file_name = ""
-        self.selected_operation_mode = ""
+        self.selected_operation_mode = None
         self.operation_mode = None
         self.key_ring = None
         self.email_config = dict.fromkeys(
@@ -288,7 +288,8 @@ class MainWindow(QMainWindow):
     def update_info_widget(self):
         """Update information widget."""
 
-        self.ui.label_op_mode.setText(self.selected_operation_mode.value)
+        if self.selected_operation_mode:
+            self.ui.label_op_mode.setText(self.selected_operation_mode.value)
         if self.operation_mode:
             self.ui.label_last_detection.setText(
                 os.path.basename(self.operation_mode.last_detection)
@@ -429,7 +430,9 @@ class MainWindow(QMainWindow):
                 ai_detect_treshold=AiModel.detection_treshold,
                 ai_class_treshold=AiModel.classification_treshold,
             ),
-            operation_mode=self.selected_operation_mode.value,
+            operation_mode=self.selected_operation_mode.value
+            if self.selected_operation_mode
+            else "",
             ftps_server=(
                 FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else ""
             ),
@@ -519,7 +522,7 @@ class MainWindow(QMainWindow):
                 self.selected_operation_mode = (
                     OperationMode.OperationModeTypes(wadas_config["operation_mode"])
                     if wadas_config["operation_mode"]
-                    else ""
+                    else None
                 )
 
                 logging.info("Configuration loaded from file %s.", file_name[0])
