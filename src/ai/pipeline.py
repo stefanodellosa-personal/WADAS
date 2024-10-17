@@ -21,6 +21,12 @@ class DetectionPipeline:
         # Load classification model
         logger.info(f"Loading classification model to device {self.device}...")
         self.classifier = Classifier(self.device)
+        # Get the index of the animal class of the detection model
+        self.animal_class_idx = [
+            idx
+            for idx in self.detection_model.CLASS_NAMES.keys()
+            if self.detection_model.CLASS_NAMES[idx] == "animal"
+        ][0]
 
     @staticmethod
     def check_models():
@@ -51,14 +57,25 @@ class DetectionPipeline:
             transform(img_array), img_array.shape, None, detection_treshold
         )
 
-        # Checks for humans in results
-        if (
-            results
-            and results["labels"]
-            and "person" in results["labels"][0]
-            and len(results["labels"]) == 1
-        ):
-            return None
+        # Checks for non animal in results and filter them out
+        if results:
+            # Get the index of the animal class
+            animal_idx = np.where(
+                results["detections"].class_id == self.animal_class_idx
+            )
+            # Filter out the non animal detections
+            results["labels"] = [
+                label
+                for label, class_id in zip(
+                    results["labels"], results["detections"].class_id
+                )
+                if class_id == self.animal_class_idx
+            ]
+            results["detections"].xyxy = results["detections"].xyxy[animal_idx]
+            results["detections"].confidence = results["detections"].confidence[
+                animal_idx
+            ]
+            results["detections"].class_id = results["detections"].class_id[animal_idx]
 
         return results
 

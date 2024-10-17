@@ -57,6 +57,47 @@ def test_detection(detection_pipeline):
     assert results["labels"] == ["animal 0.94"]
 
 
+def test_detection_non_animal(detection_pipeline):
+    # This image does contain two dogs and a human. Check that the detection pipeline returns only the dogs.
+    URL = "https://img.freepik.com/premium-photo/happy-human-dog-walking-through-park_1199394-134331.jpg"
+    img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
+    results = detection_pipeline.run_detection(img, 0.5)
+
+    assert results is not None
+    assert "detections" in results
+
+    assert len(results["detections"].xyxy) == 2
+
+    # Test with a valid image
+    assert results["detections"].xyxy.shape == (2, 4)
+    assert results["detections"].xyxy.dtype == np.float32
+    assert results["detections"].xyxy.tolist() == [
+        [341, 388, 419, 565],
+        [212, 395, 278, 570],
+    ]
+
+    assert results["detections"].mask == None
+    # assert results["detections"].confidence.tolist() == [0.94055, 0.9208]
+    assert results["detections"].confidence.shape == (2,)
+    assert results["detections"].confidence.dtype == np.float32
+
+    assert results["labels"] == ["animal 0.94", "animal 0.92"]
+
+
+def test_detection_panorama(detection_pipeline):
+    # This image does not contain any animals. Check that the detection pipeline returns no detections.
+    URL = "https://images-webcams.windy.com/04/1665091504/daylight/full/1665091504.jpg"
+
+    img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
+    results = detection_pipeline.run_detection(img, 0.5)
+
+    assert results is not None
+    assert "detections" in results
+
+    assert len(results["detections"].xyxy) == 0
+    assert results["labels"] == []
+
+
 def test_classification(detection_pipeline):
 
     img = Image.open(requests.get(TEST_URL, stream=True).raw).convert("RGB")
