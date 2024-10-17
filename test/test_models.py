@@ -72,8 +72,8 @@ def test_detection_non_animal(detection_pipeline):
     assert results["detections"].xyxy.shape == (2, 4)
     assert results["detections"].xyxy.dtype == np.float32
     assert results["detections"].xyxy.tolist() == [
-        [341, 388, 419, 565],
-        [212, 395, 278, 570],
+        [341.0, 388.0, 419.0, 565.0],
+        [212.0, 395.0, 278.0, 570.0],
     ]
 
     assert results["detections"].mask == None
