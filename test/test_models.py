@@ -77,7 +77,10 @@ def test_detection_non_animal(detection_pipeline):
     ]
 
     assert results["detections"].mask == None
-    # assert results["detections"].confidence.tolist() == [0.94055, 0.9208]
+    assert [round(x, 5) for x in results["detections"].confidence.tolist()] == [
+        0.94055,
+        0.9208,
+    ]
     assert results["detections"].confidence.shape == (2,)
     assert results["detections"].confidence.dtype == np.float32
 
