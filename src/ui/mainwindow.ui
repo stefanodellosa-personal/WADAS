@@ -100,25 +100,49 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_last_detection_title">
+      <widget class="QLabel" name="label">
        <property name="font">
         <font>
          <bold>true</bold>
         </font>
        </property>
        <property name="text">
-        <string>Last detection:</string>
+        <string>Enabled Camera(s):</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_last_detection">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+      <widget class="QListWidget" name="listWidget_en_cameras"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="font">
+        <font>
+         <bold>true</bold>
+        </font>
        </property>
+       <property name="text">
+        <string>Enabled Actuator(s)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="listWidget_en_actuators"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_classified_animal_title">
+       <property name="font">
+        <font>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Classified animal(s):</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_classified_animal">
        <property name="text">
         <string/>
        </property>
@@ -150,38 +174,29 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_classified_animal_title">
+      <widget class="QLabel" name="label_last_detection_title">
        <property name="font">
         <font>
          <bold>true</bold>
         </font>
        </property>
        <property name="text">
-        <string>Classified animal(s):</string>
+        <string>Last detection:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_classified_animal">
+      <widget class="QLabel" name="label_last_detection">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string/>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Enabled Camera(s):</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QListWidget" name="listWidget_en_cameras"/>
      </item>
     </layout>
    </widget>
@@ -324,7 +339,7 @@
   <action name="actionConfigure_Ai_model">
    <property name="icon">
     <iconset>
-     <normaloff>./icons/icon-ai-24.png</normaloff>./icons/icon-ai-24.png</iconset>
+     <normaloff>icons/icon-ai-24.png</normaloff>icons/icon-ai-24.png</iconset>
    </property>
    <property name="text">
     <string>Configure Ai model</string>

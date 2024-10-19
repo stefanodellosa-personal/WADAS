@@ -15,6 +15,7 @@ import ssl
 
 from domain.ai_model import AiModel
 from domain.ftps_server import FTPsServer
+from domain.actuator import actuators
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +119,12 @@ class OperationMode(QObject):
                 logger.debug("Email notification sent to recipient %s .", recipient)
             smtp_server.quit()
         logger.info("Email notification for %s sent!", img_path)
+
+    def actuate(self):
+        """Method to trigger actuators when enabled"""
+        if actuators:
+            # TODO: implement actuator logic
+            pass
 
     def execution_completed(self):
         """Method to perform end of execution steps."""

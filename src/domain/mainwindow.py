@@ -23,7 +23,6 @@ from domain.camera import Camera
 from domain.camera import cameras
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
-from domain.download_dialog import DownloadDialog
 from domain.ftp_camera import FTPCamera
 from domain.insert_email import DialogInsertEmail
 from domain.ftps_server import FTPsServer
