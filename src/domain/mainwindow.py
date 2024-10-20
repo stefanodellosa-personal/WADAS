@@ -496,6 +496,7 @@ class MainWindow(QMainWindow):
                     if key in notifiers.keys():
                         if key == Notifier.NotifierTypes.Email.value:
                             notifiers[key] = EmailNotifier(
+                                notification[key]["sender_email"],
                                 notification[key]["smtp_hostname"],
                                 notification[key]["smtp_port"],
                                 notification[key]["recipients_email"],
