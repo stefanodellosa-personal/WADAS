@@ -3,12 +3,8 @@
 import logging
 from abc import abstractmethod
 from enum import Enum
-from queue import Queue
 
 logger = logging.getLogger(__name__)
-
-# List of notifiers
-notifiers = []
 
 
 class Notifier:
@@ -30,3 +26,7 @@ class Notifier:
     def deserialize(data):
         """Method to deserialize Camera object from file."""
         pass
+
+
+# List of notifiers
+notifiers = dict.fromkeys([Notifier.NotifierTypes.Email.value])

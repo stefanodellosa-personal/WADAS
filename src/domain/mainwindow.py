@@ -24,6 +24,7 @@ from domain.camera import cameras
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.download_dialog import DownloadDialog
+from domain.email_notifier import EmailNotifier
 from domain.ftp_camera import FTPCamera
 from domain.insert_email import DialogInsertEmail
 from domain.ftps_server import FTPsServer
@@ -423,9 +424,13 @@ class MainWindow(QMainWindow):
                 or camera.type == Camera.CameraTypes.FTPCamera
             ):
                 cameras_to_dict.append(camera.serialize())
+        # Serialize configured notification methods
+        notification = {}
+        for key in notifiers.keys():
+            notification[key] = notifiers[key].serialize()
 
         data = dict(
-            email=self.email_config,
+            notification=notification if notification else "",
             cameras=cameras_to_dict,
             camera_detection_params=Camera.detection_params,
             ai_model=dict(
@@ -486,7 +491,15 @@ class MainWindow(QMainWindow):
                 wadas_config = yaml.safe_load(file)
 
                 # Applying configuration to WADAS from config file values
-                self.email_config = wadas_config["email"]
+                notification = wadas_config["notification"]
+                for key in notification.keys():
+                    if key in notifiers.keys():
+                        if key == Notifier.NotifierTypes.Email.value:
+                            notifiers[key] = EmailNotifier(
+                                notification[key]["smtp_hostname"],
+                                notification[key]["smtp_port"],
+                                notification[key]["recipients_email"],
+                            )
                 if FTPsServer.ftps_server:
                     FTPsServer.ftps_server.server.close_all()
                 FTPsServer.ftps_server = (

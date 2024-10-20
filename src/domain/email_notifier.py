@@ -16,8 +16,7 @@ class EmailNotifier(Notifier):
     def serialize(self):
         """Method to serialize email notifier object into file."""
         return dict(
-            type=self.type.value,
-            smtp_hostname=self.type.smtp_hostname,
+            smtp_hostname=self.smtp_hostname,
             smtp_port=self.smtp_port,
             recipients_email=self.recipients_email,
         )
@@ -26,7 +25,6 @@ class EmailNotifier(Notifier):
     def deserialize(data):
         """Method to deserialize email notifier object from file."""
         return EmailNotifier(
-            data["type"],
             data["smtp_hostname"],
             data["smtp_port"],
             data["recipients_email"],
