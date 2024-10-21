@@ -15,7 +15,9 @@ import ssl
 
 from domain.ai_model import AiModel
 from domain.ftps_server import FTPsServer
-from domain.actuator import actuators
+from domain.feedereactuator import FeederActuator
+from domain.roadsignactuator import RoadSignActuator
+from domain.actuator import Actuator
 
 logger = logging.getLogger(__name__)
 
@@ -120,11 +122,16 @@ class OperationMode(QObject):
             smtp_server.quit()
         logger.info("Email notification for %s sent!", img_path)
 
-    def actuate(self):
+    def actuate(self, actuator_list):
         """Method to trigger actuators when enabled"""
-        if actuators:
-            # TODO: implement actuator logic
-            pass
+        for actuator in actuator_list:
+            if actuator.enabled:
+                if actuator.type == Actuator.ActuatorTypes.RoadSignActuator:
+                    actuator.send_command(RoadSignActuator.Commands.DisplayON)
+                elif actuator.type == Actuator.ActuatorTypes.FeederActuator:
+                    actuator.send_command(FeederActuator.Commands.Open)
+                else:
+                    raise Exception("Actuator type not known")
 
     def execution_completed(self):
         """Method to perform end of execution steps."""
