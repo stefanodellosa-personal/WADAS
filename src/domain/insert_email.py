@@ -14,8 +14,10 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
 from domain.email_notifier import EmailNotifier
-from domain.notifier import Notifier, notifiers
+from domain.notifier import Notifier
 from ui.ui_insert_email import Ui_DialogInsertEmail
+
+module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
 class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
@@ -26,10 +28,10 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         self.ui = Ui_DialogInsertEmail()
         self.ui.setupUi(self)
         self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
+            QIcon(os.path.join(module_dir_path, "img", "mainwindow_icon.jpg"))
         )
 
-        self.email_notifier = notifiers[Notifier.NotifierTypes.Email.value]
+        self.email_notifier = Notifier.notifiers[Notifier.NotifierTypes.Email.value]
         self.valid_sender_email = False
         self.valid_smtp = False
         self.valid_port = False
@@ -55,7 +57,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     def initialize_form(self):
         """Method to initialize form with existing email configuration data (if any)."""
 
-        if notifiers[Notifier.NotifierTypes.Email.value]:
+        if Notifier.notifiers[Notifier.NotifierTypes.Email.value]:
             self.ui.lineEdit_senderEmail.setText(self.email_notifier.sender_email)
             self.ui.lineEdit_smtpServer.setText(self.email_notifier.smtp_hostname)
             self.ui.lineEdit_port.setText(self.email_notifier.smtp_port)
@@ -79,8 +81,8 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         ):
             recipients.append(recipient)
 
-        if not notifiers[Notifier.NotifierTypes.Email.value]:
-            notifiers[Notifier.NotifierTypes.Email.value] = EmailNotifier(
+        if not Notifier.notifiers[Notifier.NotifierTypes.Email.value]:
+            Notifier.notifiers[Notifier.NotifierTypes.Email.value] = EmailNotifier(
                 self.ui.lineEdit_senderEmail.text(),
                 self.ui.lineEdit_smtpServer.text(),
                 self.ui.lineEdit_port.text(),
@@ -90,14 +92,14 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
             self.email_notifier.sender_email = self.ui.lineEdit_senderEmail.text()
             self.email_notifier.smtp_hostname = self.ui.lineEdit_smtpServer.text()
             self.email_notifier.smtp_port = self.ui.lineEdit_port.text()
-            self.email_notifier.recipients_email = list()
+            self.email_notifier.recipients_email = []
             self.email_notifier.recipients_email = recipients
             keyring.set_password(
                 "WADAS_email",
                 self.ui.lineEdit_senderEmail.text(),
                 self.ui.lineEdit_password.text(),
             )
-            notifiers[Notifier.NotifierTypes.Email.value] = self.email_notifier
+            Notifier.notifiers[Notifier.NotifierTypes.Email.value] = self.email_notifier
         self.accept()
 
     def validate_email_configurations(self):

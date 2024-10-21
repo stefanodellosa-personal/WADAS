@@ -29,7 +29,7 @@ from domain.ftp_camera import FTPCamera
 from domain.insert_email import DialogInsertEmail
 from domain.ftps_server import FTPsServer
 from domain.insert_url import InsertUrlDialog
-from domain.notifier import notifiers, Notifier
+from domain.notifier import Notifier
 from domain.operation_mode import OperationMode
 from domain.qtextedit_logger import QTextEditLogger
 from domain.select_local_cameras import DialogSelectLocalCameras
@@ -208,8 +208,6 @@ class MainWindow(QMainWindow):
                 # Passing cameras list to the selected operation mode
                 self.operation_mode.cameras = cameras
 
-            self.operation_mode.email_notifier = self.email_config
-
             # Connect slots to update UI from operation mode
             self.__connect_mode_ui_slots()
 
@@ -359,8 +357,8 @@ class MainWindow(QMainWindow):
         If not, ask the user whether to proceed without."""
 
         notification = False
-        for notifier in notifiers:
-            if notifier.type == Notifier.NotifierTypes.Email:
+        for notifier in Notifier.notifiers:
+            if Notifier.notifiers[notifier].type == Notifier.NotifierTypes.Email:
                 credentials = keyring.get_credential("WADAS_email", "")
                 if notifier and credentials.username:
                     notification = True
@@ -426,11 +424,11 @@ class MainWindow(QMainWindow):
                 cameras_to_dict.append(camera.serialize())
         # Serialize configured notification methods
         notification = {}
-        for key in notifiers.keys():
-            notification[key] = notifiers[key].serialize()
+        for key in Notifier.notifiers:
+            notification[key] = Notifier.notifiers[key].serialize()
 
         data = dict(
-            notification=notification if notification else "",
+            notification=notification or "",
             cameras=cameras_to_dict,
             camera_detection_params=Camera.detection_params,
             ai_model=dict(
@@ -492,15 +490,10 @@ class MainWindow(QMainWindow):
 
                 # Applying configuration to WADAS from config file values
                 notification = wadas_config["notification"]
-                for key in notification.keys():
-                    if key in notifiers.keys():
+                for key in notification:
+                    if key in Notifier.notifiers:
                         if key == Notifier.NotifierTypes.Email.value:
-                            notifiers[key] = EmailNotifier(
-                                notification[key]["sender_email"],
-                                notification[key]["smtp_hostname"],
-                                notification[key]["smtp_port"],
-                                notification[key]["recipients_email"],
-                            )
+                            Notifier.notifiers[key] = EmailNotifier(**notification[key])
                 if FTPsServer.ftps_server:
                     FTPsServer.ftps_server.server.close_all()
                 FTPsServer.ftps_server = (
