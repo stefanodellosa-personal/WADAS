@@ -1,5 +1,6 @@
 import logging
 
+from domain.notifier import Notifier
 from domain.operation_mode import OperationMode
 
 logger = logging.getLogger(__name__)
@@ -66,7 +67,7 @@ class TestModelMode(OperationMode):
             logger.info("No results to classify.")
 
         # Send notification
-        self.send_notification(message, img_path)
+        self.send_notification(img_path, message)
         self.execution_completed()
 
     def check_for_termination_requests(self):

@@ -13,21 +13,25 @@ import validators
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
+from domain.email_notifier import EmailNotifier
+from domain.notifier import Notifier
 from ui.ui_insert_email import Ui_DialogInsertEmail
+
+module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
 class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     """Class to insert email configuration to enable WADAS for email notifications."""
 
-    def __init__(self, email_configuration):
+    def __init__(self):
         super(DialogInsertEmail, self).__init__()
         self.ui = Ui_DialogInsertEmail()
         self.ui.setupUi(self)
         self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
+            QIcon(os.path.join(module_dir_path, "img", "mainwindow_icon.jpg"))
         )
 
-        self.email_configuration = email_configuration
+        self.email_notifier = Notifier.notifiers[Notifier.NotifierTypes.Email.value]
         self.valid_sender_email = False
         self.valid_smtp = False
         self.valid_port = False
@@ -53,30 +57,49 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     def initialize_form(self):
         """Method to initialize form with existing email configuration data (if any)."""
 
-        self.ui.lineEdit_smtpServer.setText(self.email_configuration["smtp_hostname"])
-        self.ui.lineEdit_port.setText(self.email_configuration["smtp_port"])
-        credentials = keyring.get_credential("WADAS_email", "")
-        self.ui.lineEdit_senderEmail.setText(credentials.username)
-        self.ui.lineEdit_password.setText(credentials.password)
-        if recipients_email := self.email_configuration["recipients_email"]:
-            recipients = ", ".join(recipients_email)
-            self.ui.textEdit_recipient_email.setText(recipients)
-        self.validate_email_configurations()
+        if Notifier.notifiers[Notifier.NotifierTypes.Email.value]:
+            self.ui.lineEdit_senderEmail.setText(self.email_notifier.sender_email)
+            self.ui.lineEdit_smtpServer.setText(self.email_notifier.smtp_hostname)
+            self.ui.lineEdit_port.setText(self.email_notifier.smtp_port)
+            credentials = keyring.get_credential(
+                "WADAS_email", self.email_notifier.sender_email
+            )
+            if credentials.username == self.email_notifier.sender_email:
+                self.ui.lineEdit_senderEmail.setText(credentials.username)
+                self.ui.lineEdit_password.setText(credentials.password)
+            if recipients_email := self.email_notifier.recipients_email:
+                recipients = ", ".join(recipients_email)
+                self.ui.textEdit_recipient_email.setText(recipients)
+            self.validate_password()
+            self.validate_email_configurations()
 
     def accept_and_close(self):
         """When Ok is clicked, save email config info before closing."""
-        self.email_configuration["smtp_hostname"] = self.ui.lineEdit_smtpServer.text()
-        self.email_configuration["smtp_port"] = self.ui.lineEdit_port.text()
-        self.email_configuration["recipients_email"] = list()
+        recipients = []
         for recipient in (
             self.ui.textEdit_recipient_email.toPlainText().strip().split(", ")
         ):
-            self.email_configuration["recipients_email"].append(recipient)
-        keyring.set_password(
-            "WADAS_email",
-            self.ui.lineEdit_senderEmail.text(),
-            self.ui.lineEdit_password.text(),
-        )
+            recipients.append(recipient)
+
+        if not Notifier.notifiers[Notifier.NotifierTypes.Email.value]:
+            Notifier.notifiers[Notifier.NotifierTypes.Email.value] = EmailNotifier(
+                self.ui.lineEdit_senderEmail.text(),
+                self.ui.lineEdit_smtpServer.text(),
+                self.ui.lineEdit_port.text(),
+                recipients,
+            )
+        else:
+            self.email_notifier.sender_email = self.ui.lineEdit_senderEmail.text()
+            self.email_notifier.smtp_hostname = self.ui.lineEdit_smtpServer.text()
+            self.email_notifier.smtp_port = self.ui.lineEdit_port.text()
+            self.email_notifier.recipients_email = []
+            self.email_notifier.recipients_email = recipients
+            keyring.set_password(
+                "WADAS_email",
+                self.ui.lineEdit_senderEmail.text(),
+                self.ui.lineEdit_password.text(),
+            )
+            Notifier.notifiers[Notifier.NotifierTypes.Email.value] = self.email_notifier
         self.accept()
 
     def validate_email_configurations(self):
@@ -158,7 +181,9 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     def send_email(self):
         """Method to test email."""
 
-        credentials = keyring.get_credential("WADAS_email", "")
+        credentials = keyring.get_credential(
+            "WADAS_email", self.ui.lineEdit_senderEmail.text()
+        )
         sender = credentials.username
         recipients = [
             recipient
