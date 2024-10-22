@@ -1,21 +1,19 @@
 """Module containing class to handle WADAS operation modes."""
 
+from domain.ai_model import AiModel
+from domain.feedereactuator import FeederActuator
+from domain.ftps_server import FTPsServer
+from domain.roadsignactuator import RoadSignActuator
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from enum import Enum
+from PySide6.QtCore import QObject, Signal
+import keyring
 import logging
 import os
-
-from enum import Enum
 import smtplib
-
-import keyring
-from PySide6.QtCore import QObject, Signal
 import ssl
-
-from domain.ai_model import AiModel
-from domain.ftps_server import FTPsServer
-from domain.actuator import actuators
 
 logger = logging.getLogger(__name__)
 
@@ -120,11 +118,17 @@ class OperationMode(QObject):
             smtp_server.quit()
         logger.info("Email notification for %s sent!", img_path)
 
-    def actuate(self):
+    def actuate(self, actuator_list):
         """Method to trigger actuators when enabled"""
-        if actuators:
-            # TODO: implement actuator logic
-            pass
+        # TODO @stefano
+        for actuator in actuator_list:
+            if actuator.enabled:
+                if isinstance(actuator, RoadSignActuator):
+                    actuator.send_command(RoadSignActuator.Commands.display_on)
+                elif isinstance(actuator, FeederActuator):
+                    actuator.send_command(FeederActuator.Commands.open)
+                else:
+                    raise Exception("Unknown actuator type")
 
     def execution_completed(self):
         """Method to perform end of execution steps."""

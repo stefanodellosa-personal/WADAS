@@ -1,27 +1,36 @@
 """Actuator module"""
 
-import logging
 from abc import abstractmethod
 from enum import Enum
+from queue import Queue, Empty
+import datetime
+import logging
 
 logger = logging.getLogger(__name__)
-
-# List of Actuators
-actuators = []
 
 
 class Actuator:
     """Base class of an actuator."""
 
-    class ActuatorTypes(Enum):
-        Semaphore = "Semaphore"
-        Feeder = "Feeder"
+    actuators_pool = {}
 
-    def __init__(self, id, enabled=False):
-        self.type = None
-        self.id = id
+    def __init__(self, actuator_id, enabled=False):
+        self.cmd_queue = Queue()
+        self.actuator_id = actuator_id
+        self.last_update = None
         self.enabled = enabled
         self.stop_thread = False
+        Actuator.actuators_pool[self.actuator_id] = self
+
+    def send_command(self, msg: Enum):
+        self.cmd_queue.put(msg.value)
+
+    def get_command(self):
+        self.last_update = datetime.datetime.now()
+        try:
+            return self.cmd_queue.get(block=False)
+        except Empty:
+            return None
 
     @abstractmethod
     def serialize(self):
