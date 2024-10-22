@@ -1,10 +1,12 @@
 """FASTAPI app for HTTPS Actuator Server"""
 
-from actuator import Actuator
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
 import json
 import logging
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+
+from domain.actuator import Actuator
 
 logger = logging.getLogger(__name__)
 

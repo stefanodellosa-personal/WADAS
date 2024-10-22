@@ -1,4 +1,5 @@
 """FastAPI Actuator server module"""
+
 import logging
 import threading
 import uvicorn

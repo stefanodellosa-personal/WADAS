@@ -1,6 +1,7 @@
-from domain.actuator import Actuator
 from enum import Enum
 import json
+
+from domain.actuator import Actuator
 
 
 class FeederActuator(Actuator):

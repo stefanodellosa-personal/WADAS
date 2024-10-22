@@ -1,10 +1,10 @@
 """Actuator module"""
 
 from abc import abstractmethod
-from enum import Enum
-from queue import Queue, Empty
 import datetime
+from enum import Enum
 import logging
+from queue import Empty, Queue
 
 logger = logging.getLogger(__name__)
 
