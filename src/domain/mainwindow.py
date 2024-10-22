@@ -24,8 +24,8 @@ from domain.camera import cameras
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.ftp_camera import FTPCamera
-from domain.insert_email import DialogInsertEmail
 from domain.ftps_server import FTPsServer
+from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
 from domain.operation_mode import OperationMode
 from domain.qtextedit_logger import QTextEditLogger
