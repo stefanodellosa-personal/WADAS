@@ -21,7 +21,7 @@ class FastAPIActuatorServer:
             host=self.ip,
             port=self.port,
             ssl_certfile=self.certificate,
-            ssl_keyfile=self.key
+            ssl_keyfile=self.key,
         )
         server = uvicorn.Server(config)
 

@@ -8,7 +8,7 @@ class FeederActuator(Actuator):
     """FeederActuator, specialization of Actuator."""
 
     class Commands(Enum):
-        open = json.dumps({'open': True})
+        open = json.dumps({"open": True})
 
     def send_command(self, msg):
         if isinstance(msg, FeederActuator.Commands):
@@ -21,7 +21,7 @@ class FeederActuator(Actuator):
         return {
             "type": self.__class__.__name__,
             "id": self.actuator_id,
-            "enabled": self.enabled
+            "enabled": self.enabled,
         }
 
     @staticmethod

@@ -8,7 +8,7 @@ class RoadSignActuator(Actuator):
     """RoadSignActuator, specialization of Actuator."""
 
     class Commands(Enum):
-        display_on = json.dumps({'display': True})
+        display_on = json.dumps({"display": True})
 
     def send_command(self, msg):
         if isinstance(msg, RoadSignActuator.Commands):
@@ -21,7 +21,7 @@ class RoadSignActuator(Actuator):
         return {
             "type": self.__class__.__name__,
             "id": self.actuator_id,
-            "enabled": self.enabled
+            "enabled": self.enabled,
         }
 
     @staticmethod
