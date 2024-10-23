@@ -23,10 +23,13 @@ from domain.camera import Camera
 from domain.camera import cameras
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
+from domain.download_dialog import DownloadDialog
+from domain.email_notifier import EmailNotifier
 from domain.ftp_camera import FTPCamera
 from domain.ftps_server import FTPsServer
 from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
+from domain.notifier import Notifier
 from domain.operation_mode import OperationMode
 from domain.qtextedit_logger import QTextEditLogger
 from domain.select_local_cameras import DialogSelectLocalCameras
@@ -60,9 +63,6 @@ class MainWindow(QMainWindow):
         self.selected_operation_mode = None
         self.operation_mode = None
         self.key_ring = None
-        self.email_config = dict.fromkeys(
-            ["smtp_hostname", "smtp_port", "recipients_email"]
-        )
         self.ftp_server = None
 
         # Connect Actions
@@ -208,8 +208,6 @@ class MainWindow(QMainWindow):
                 # Passing cameras list to the selected operation mode
                 self.operation_mode.cameras = cameras
 
-            self.operation_mode.email_configuration = self.email_config
-
             # Connect slots to update UI from operation mode
             self.__connect_mode_ui_slots()
 
@@ -342,10 +340,8 @@ class MainWindow(QMainWindow):
     def configure_email(self):
         """Method to run dialog for insertion of email parameters to enable notifications."""
 
-        insert_email_dialog = DialogInsertEmail(self.email_config)
+        insert_email_dialog = DialogInsertEmail()
         if insert_email_dialog.exec_():
-            self.email_config = insert_email_dialog.email_configuration
-
             logger.info("Email configuration added.")
 
             credentials = keyring.get_credential("WADAS_email", "")
@@ -357,10 +353,16 @@ class MainWindow(QMainWindow):
             return
 
     def check_notification_enablement(self):
-        """Method to check whether a notification protocol has been set in WADAS."""
+        """Method to check whether a notification protocol has been set in WADAS.
+        If not, ask the user whether to proceed without."""
 
-        credentials = keyring.get_credential("WADAS_email", "")
-        if not self.email_config["smtp_hostname"] or not credentials.username:
+        notification = False
+        for notifier in Notifier.notifiers:
+            if Notifier.notifiers[notifier].type == Notifier.NotifierTypes.Email:
+                credentials = keyring.get_credential("WADAS_email", "")
+                if notifier and credentials.username:
+                    notification = True
+        if not notification:
             logger.warning("No notification protocol set.")
 
             message_box = QMessageBox
@@ -420,9 +422,13 @@ class MainWindow(QMainWindow):
                 or camera.type == Camera.CameraTypes.FTPCamera
             ):
                 cameras_to_dict.append(camera.serialize())
+        # Serialize configured notification methods
+        notification = {}
+        for key in Notifier.notifiers:
+            notification[key] = Notifier.notifiers[key].serialize()
 
         data = dict(
-            email=self.email_config,
+            notification=notification or "",
             cameras=cameras_to_dict,
             camera_detection_params=Camera.detection_params,
             ai_model=dict(
@@ -483,7 +489,11 @@ class MainWindow(QMainWindow):
                 wadas_config = yaml.safe_load(file)
 
                 # Applying configuration to WADAS from config file values
-                self.email_config = wadas_config["email"]
+                notification = wadas_config["notification"]
+                for key in notification:
+                    if key in Notifier.notifiers:
+                        if key == Notifier.NotifierTypes.Email.value:
+                            Notifier.notifiers[key] = EmailNotifier(**notification[key])
                 if FTPsServer.ftps_server:
                     FTPsServer.ftps_server.server.close_all()
                 FTPsServer.ftps_server = (

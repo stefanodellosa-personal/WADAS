@@ -35,9 +35,7 @@ class Camera:
     @abstractmethod
     def serialize(self):
         """Method to serialize Camera object into file."""
-        pass
 
     @staticmethod
     def deserialize(data):
         """Method to deserialize Camera object from file."""
-        pass

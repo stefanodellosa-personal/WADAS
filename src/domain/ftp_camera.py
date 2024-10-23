@@ -1,12 +1,8 @@
 """FTP Camera module"""
 
-import time
-import os
 import logging
-import threading
 
-from domain.utils import get_timestamp
-from domain.camera import Camera, img_queue
+from domain.camera import Camera
 
 logger = logging.getLogger(__name__)
 
