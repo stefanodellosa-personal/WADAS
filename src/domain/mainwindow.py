@@ -326,7 +326,10 @@ class MainWindow(QMainWindow):
 
         notification = False
         for notifier in Notifier.notifiers:
-            if Notifier.notifiers[notifier].type == Notifier.NotifierTypes.Email:
+            if (
+                Notifier.notifiers[notifier]
+                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.Email
+            ):
                 credentials = keyring.get_credential("WADAS_email", "")
                 if notifier and credentials.username:
                     notification = True
