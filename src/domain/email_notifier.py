@@ -88,12 +88,12 @@ class EmailNotifier(Notifier):
 
     def serialize(self):
         """Method to serialize email notifier object into file."""
-        return dict(
-            sender_email=self.sender_email,
-            smtp_hostname=self.smtp_hostname,
-            smtp_port=self.smtp_port,
-            recipients_email=self.recipients_email,
-        )
+        return {
+            "sender_email": self.sender_email,
+            "smtp_hostname": self.smtp_hostname,
+            "smtp_port": self.smtp_port,
+            "recipients_email": self.recipients_email,
+        }
 
     @staticmethod
     def deserialize(data):

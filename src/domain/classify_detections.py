@@ -3,9 +3,9 @@
 # https://plmlab.math.cnrs.fr/deepfaune/software/-/tree/master
 # Some code is created by the DeepFaune team and is indicated as so
 
-##############################################
-############### MODEL SPECIFIC ###############
-##############################################
+# ##############################################
+# ############### MODEL SPECIFIC ###############
+# ##############################################
 import sys
 
 import numpy as np
@@ -24,9 +24,9 @@ from ai.openvino_model import OVClassificationModel
 # 1. Accomodate for a non standard location of the model
 # 2. Run parametric device
 
-################################################
-############## CLASSIFTOOLS START ##############
-################################################
+# ################################################
+# ############## CLASSIFTOOLS START ##############
+# ################################################
 
 # Copyright CNRS 2023
 
@@ -275,12 +275,12 @@ class Model(nn.Module):
             self.load_state_dict(params["state_dict"])
         except Exception as e:
             print(
-                "\n/!\ Can't load checkpoint model /!\ because :\n\n " + str(e),
+                "\n! Can't load checkpoint model! reason :\n\n " + str(e),
                 file=sys.stderr,
             )
             raise e
 
 
-##############################################
-############## CLASSIFTOOLS END ##############
-##############################################
+# ##############################################
+# ############## CLASSIFTOOLS END ##############
+# ##############################################

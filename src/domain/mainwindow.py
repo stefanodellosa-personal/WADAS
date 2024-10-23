@@ -23,7 +23,6 @@ from domain.camera import Camera
 from domain.camera import cameras
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
-from domain.download_dialog import DownloadDialog
 from domain.email_notifier import EmailNotifier
 from domain.ftp_camera import FTPCamera
 from domain.insert_email import DialogInsertEmail
@@ -427,21 +426,21 @@ class MainWindow(QMainWindow):
         for key in Notifier.notifiers:
             notification[key] = Notifier.notifiers[key].serialize()
 
-        data = dict(
-            notification=notification or "",
-            cameras=cameras_to_dict,
-            camera_detection_params=Camera.detection_params,
-            ai_model=dict(
-                ai_detect_treshold=AiModel.detection_treshold,
-                ai_class_treshold=AiModel.classification_treshold,
-            ),
-            operation_mode=self.selected_operation_mode.value
+        data = {
+            "notification": notification or "",
+            "cameras": cameras_to_dict,
+            "camera_detection_params": Camera.detection_params,
+            "ai_model": {
+                "ai_detect_treshold": AiModel.detection_treshold,
+                "ai_class_treshold": AiModel.classification_treshold,
+            },
+            "operation_mode": self.selected_operation_mode.value
             if self.selected_operation_mode
             else "",
-            ftps_server=(
+            "ftps_server": (
                 FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else ""
             ),
-        )
+        }
 
         if not self.configuration_file_name:
             error_dialog = QErrorMessage()

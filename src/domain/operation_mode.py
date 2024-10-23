@@ -4,7 +4,6 @@ import logging
 
 from enum import Enum
 
-import keyring
 from PySide6.QtCore import QObject, Signal
 
 from domain.actuator import actuators

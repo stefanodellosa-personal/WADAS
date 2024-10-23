@@ -44,7 +44,6 @@ class DetectionPipeline:
         """Method to run detection model on provided image."""
 
         img_array = np.array(img)
-        img_array.shape, img_array.dtype
 
         # Initializing the Yolo-specific transform for the image
         transform = pw_trans.MegaDetector_v5_Transform(

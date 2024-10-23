@@ -119,15 +119,15 @@ class FTPsServer:
     def serialize(self):
         """Method to serialize FTPS Server object"""
 
-        return dict(
-            ssl_certificate=self.certificate,
-            ssl_key=self.key,
-            ip=self.ip,
-            port=self.port,
-            max_conn=self.max_conn,
-            max_conn_per_ip=self.max_conn_per_ip,
-            ftp_dir=self.ftp_dir,
-        )
+        return {
+            "ssl_certificate": self.certificate,
+            "ssl_key": self.key,
+            "ip": self.ip,
+            "port": self.port,
+            "max_conn": self.max_conn,
+            "max_conn_per_ip": self.max_conn_per_ip,
+            "ftp_dir": self.ftp_dir,
+        }
 
     @staticmethod
     def deserialize(data):

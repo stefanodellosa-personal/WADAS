@@ -319,10 +319,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 )
                 valid = False
             if not self.get_camera_pass(i):
-                self.ui.label_errorMessage.setText(f"Missing Camera password!")
+                self.ui.label_errorMessage.setText("Missing Camera password!")
                 valid = False
             if not self.get_camera_user(i):
-                self.ui.label_errorMessage.setText(f"Missing Camera user!")
+                self.ui.label_errorMessage.setText("Missing Camera user!")
                 valid = False
             i += 1
 

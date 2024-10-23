@@ -19,4 +19,16 @@ repos:
     - id: debug-statements
     - id: mixed-line-ending
     - id: trailing-whitespace
+-   repo: https://github.com/PyCQA/flake8
+    rev: 6.1.0
+    hooks:
+    -   id: flake8
+        additional_dependencies: [
+            'flake8-blind-except',
+            'flake8-bugbear',
+            'flake8-comprehensions',
+            'flake8-implicit-str-concat',
+            'pydocstyle>=5.0.0',
+        ]
+        exclude: ^src/ui/.*|test.*|demo/.*|model/.*
 

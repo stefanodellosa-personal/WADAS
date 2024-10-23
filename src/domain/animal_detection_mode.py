@@ -3,8 +3,6 @@
 
 import logging
 
-from PySide6.QtCore import QThread
-
 from domain.camera import Camera
 from domain.camera import cameras
 from domain.camera import img_queue

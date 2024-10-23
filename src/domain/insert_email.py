@@ -3,9 +3,7 @@
 
 import os
 import keyring
-from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import ssl
 import smtplib
 
@@ -185,12 +183,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
             "WADAS_email", self.ui.lineEdit_senderEmail.text()
         )
         sender = credentials.username
-        recipients = [
-            recipient
-            for recipient in self.ui.textEdit_recipient_email.toPlainText()
-            .strip()
-            .split(", ")
-        ]
+        recipients = self.ui.textEdit_recipient_email.toPlainText().strip().split(", ")
 
         text = "WADAS test email."
         message = MIMEText(text, "plain")

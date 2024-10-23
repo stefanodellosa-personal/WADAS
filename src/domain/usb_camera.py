@@ -191,18 +191,18 @@ class USBCamera(Camera):
 
     def serialize(self):
         """Method to serialize USB Camera object into file."""
-        return dict(
-            type=self.type.value,
-            id=self.id,
-            name=self.name,
-            enabled=self.enabled,
-            index=self.index,
-            backend=self.backend,
-            enable_mot_det=self.en_wadas_motion_detection,
-            pid=self.pid,
-            vid=self.vid,
-            path=self.path,
-        )
+        return {
+            "type": self.type.value,
+            "id": self.id,
+            "name": self.name,
+            "enabled": self.enabled,
+            "index": self.index,
+            "backend": self.backend,
+            "enable_mot_det": self.en_wadas_motion_detection,
+            "pid": self.pid,
+            "vid": self.vid,
+            "path": self.path,
+        }
 
     @staticmethod
     def deserialize(data):
