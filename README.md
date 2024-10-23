@@ -16,5 +16,8 @@ See the project [Wiki](https://github.com/stefanodellosa-personal/WADAS/wiki) fo
 **NOTE**: the owner discourages and forbids any usage of the application for scopes different than animal protection and conservation. Any violation of the intended use will be pursued by law.
 
 ### In memory of [Juan Carrito](https://www.parcoabruzzo.it/pagina.php?id=130)<br/>
-![alt text](https://www.parcoabruzzo.it/fotoGallery/49995_4_PNALM.jpeg)
+[![Juan Carrito](https://www.parcoabruzzo.it/fotoGallery/49995_4_PNALM.jpeg)](https://www.parcoabruzzo.it/pagina.php?id=130)
 <br/>With the hope that no other bear will ever perish in car accident.
+
+### WADAS is powered by <br/>
+[![Reolink](https://home-cdn.reolink.us/wp-content/uploads/2017/02/reolink-logo.png)](https://reolink.com/)
