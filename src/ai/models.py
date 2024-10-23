@@ -1,10 +1,10 @@
 """This module implements OpenVINO related classes and functionalities."""
 
-from ai.openvino_model import OVModel
+import torch
 from PytorchWildlife.models import detection as pw_detection
 from torchvision.transforms import InterpolationMode, transforms
-import torch
 
+from ai.openvino_model import OVModel
 
 txt_animalclasses = {
     "fr": [

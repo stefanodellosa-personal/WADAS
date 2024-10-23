@@ -1,15 +1,16 @@
 """Module containing AI Model based logic (detection & classification)."""
 
-import os
 import logging
+import os
 
-import requests
 import cv2
 import numpy as np
+import requests
 from PIL import Image
 from PytorchWildlife import utils as pw_utils
-from domain.utils import get_timestamp
+
 from ai import DetectionPipeline
+from domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class AiModel:
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
         logger.info(
-            f"Initializing AI model for image detection and classification to device {AiModel.DEVICE}..."
+            "Initializing AI model for image detection and classification to %s...", AiModel.DEVICE
         )
         self.detection_pipeline = DetectionPipeline(device=AiModel.DEVICE)
 
@@ -70,9 +71,7 @@ class AiModel:
             pw_utils.save_detection_images(
                 results, os.path.join(".", "detection_output"), overwrite=False
             )
-            detected_img_path = os.path.join(
-                "detection_output", os.path.basename(img_path)
-            )
+            detected_img_path = os.path.join("detection_output", os.path.basename(img_path))
         else:
             logger.info("No detected animals for %s. Removing image.", img_path)
             os.remove(img_path)
@@ -144,11 +143,7 @@ class AiModel:
 
             # Draw black background rectangle to improve text readability.
             # Replicating Megadetector settings whenever possible.
-            text = (
-                str(animal["classification"][0])
-                + " "
-                + str(animal["classification"][1])
-            )
+            text = str(animal["classification"][0]) + " " + str(animal["classification"][1])
             font = cv2.FONT_HERSHEY_SIMPLEX
             text_scale = 1.5
             text_thickness = 2
@@ -193,8 +188,6 @@ class AiModel:
             # Save classified image
             detected_img_name = os.path.basename(img_path)
             classified_img_name = "classified_" + detected_img_name
-            classified_image_path = os.path.join(
-                "classification_output", classified_img_name
-            )
+            classified_image_path = os.path.join("classification_output", classified_img_name)
             cimg.save(classified_image_path)
         return classified_image_path

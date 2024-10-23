@@ -3,14 +3,9 @@
 
 import logging
 
-from PySide6.QtCore import QThread
-
-from domain.camera import Camera
-from domain.camera import cameras
-from domain.camera import img_queue
+from domain.camera import Camera, cameras, img_queue
 from domain.ftps_server import FTPsServer
 from domain.operation_mode import OperationMode
-
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +50,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
             if not img_queue.empty():
                 logger.debug("Processing image from motion detection notification...")
                 cur_img = img_queue.get()
-                results, detected_img_path = self.ai_model.process_image(
-                    cur_img["img"], True
-                )
+                results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
 
                 self.last_detection = detected_img_path
                 self.check_for_termination_requests()
@@ -69,9 +62,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                     if self.en_classification:
                         # Classify if detection has identified animals
                         if len(results["detections"].xyxy) > 0:
-                            logger.info(
-                                "Running classification on detection result(s)..."
-                            )
+                            logger.info("Running classification on detection result(s)...")
                             (
                                 classified_img_path,
                                 classified_animals,
@@ -93,7 +84,8 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                             # Trigger image update in WADAS mainwindow
                             self.update_image.emit(classified_img_path)
                             self.update_info.emit()
-                            message = f"WADAS has classified {self.last_classified_animals} animal from camera {id}!"
+                            message = f"WADAS has classified {self.last_classified_animals}"
+                            message += f"animal from camera {id}!"
                             processed_img_path = classified_img_path
                         else:
                             logger.debug("No results to classify.")

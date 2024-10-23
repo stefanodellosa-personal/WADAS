@@ -1,11 +1,12 @@
-from ai.models import OVMegaDetectorV5, Classifier
-from ai.pipeline import DetectionPipeline
-from ai.openvino_model import OVModel
-from PIL import Image
-import requests
 import numpy as np
 import pytest
+import requests
 import torch
+from PIL import Image
+
+from ai.models import Classifier, OVMegaDetectorV5
+from ai.openvino_model import OVModel
+from ai.pipeline import DetectionPipeline
 
 TEST_URL = "https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg"
 
@@ -49,7 +50,7 @@ def test_detection(detection_pipeline):
     assert results["detections"].xyxy.dtype == np.float32
     assert results["detections"].xyxy.flatten().tolist() == [289, 175, 645, 424]
 
-    assert results["detections"].mask == None
+    assert results["detections"].mask is None
     assert results["detections"].confidence.item() > 0.94
     assert results["detections"].confidence.shape == (1,)
     assert results["detections"].confidence.dtype == np.float32
@@ -58,8 +59,12 @@ def test_detection(detection_pipeline):
 
 
 def test_detection_non_animal(detection_pipeline):
-    # This image does contain two dogs and a human. Check that the detection pipeline returns only the dogs.
-    URL = "https://img.freepik.com/premium-photo/happy-human-dog-walking-through-park_1199394-134331.jpg"
+    # This image does contain two dogs and a human.
+    # Check that the detection pipeline returns only the dogs.
+    URL = (
+        "https://img.freepik.com/premium-photo/"
+        "happy-human-dog-walking-through-park_1199394-134331.jpg"
+    )
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
     results = detection_pipeline.run_detection(img, 0.5)
 
@@ -72,7 +77,7 @@ def test_detection_non_animal(detection_pipeline):
     assert results["detections"].xyxy.shape == (2, 4)
     assert results["detections"].xyxy.dtype == np.float32
 
-    assert results["detections"].mask == None
+    assert results["detections"].mask is None
     assert results["detections"].confidence.tolist()[0] > 0.90
     assert results["detections"].confidence.tolist()[1] > 0.90
     assert results["detections"].confidence.shape == (2,)
@@ -82,7 +87,8 @@ def test_detection_non_animal(detection_pipeline):
 
 
 def test_detection_panorama(detection_pipeline):
-    # This image does not contain any animals. Check that the detection pipeline returns no detections.
+    # This image does not contain any animals.
+    # Check that the detection pipeline returns no detections.
     URL = "https://images-webcams.windy.com/04/1665091504/daylight/full/1665091504.jpg"
 
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
@@ -116,7 +122,9 @@ def test_classification(detection_pipeline):
 
 
 def test_classification_dog_overlapping(detection_pipeline):
-    URL = "https://www.addestramentocaniromasud.it/wp/wp-content/uploads/2021/05/cane-in-braccio.jpg"
+    URL = (
+        "https://www.addestramentocaniromasud.it/wp/wp-content/uploads/2021/05/cane-in-braccio.jpg"
+    )
 
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
     results = detection_pipeline.run_detection(img, 0.5)

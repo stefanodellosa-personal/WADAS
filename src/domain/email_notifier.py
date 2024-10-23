@@ -1,13 +1,14 @@
 """Email notifier module"""
 
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import keyring
 import logging
 import os
 import smtplib
 import ssl
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+import keyring
 
 from domain.notifier import Notifier
 
@@ -17,9 +18,7 @@ logger = logging.getLogger(__name__)
 class EmailNotifier(Notifier):
     """Email Notifier Class"""
 
-    def __init__(
-        self, sender_email, smtp_hostname, smtp_port, recipients_email, enabled=True
-    ):
+    def __init__(self, sender_email, smtp_hostname, smtp_port, recipients_email, enabled=True):
         super().__init__(enabled)
         self.type = Notifier.NotifierTypes.Email
         self.sender_email = sender_email
@@ -88,12 +87,12 @@ class EmailNotifier(Notifier):
 
     def serialize(self):
         """Method to serialize email notifier object into file."""
-        return dict(
-            sender_email=self.sender_email,
-            smtp_hostname=self.smtp_hostname,
-            smtp_port=self.smtp_port,
-            recipients_email=self.recipients_email,
-        )
+        return {
+            "sender_email": self.sender_email,
+            "smtp_hostname": self.smtp_hostname,
+            "smtp_port": self.smtp_port,
+            "recipients_email": self.recipients_email,
+        }
 
     @staticmethod
     def deserialize(data):

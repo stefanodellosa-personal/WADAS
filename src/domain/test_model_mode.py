@@ -1,6 +1,5 @@
 import logging
 
-from domain.notifier import Notifier
 from domain.operation_mode import OperationMode
 
 logger = logging.getLogger(__name__)
@@ -40,7 +39,7 @@ class TestModelMode(OperationMode):
 
         # Trigger image update in WADAS mainwindow
         self.update_image.emit(detected_img_path)
-        message = f"WADAS has detected an animal!"
+        message = "WADAS has detected an animal!"
         self.check_for_termination_requests()
 
         # Classify if detection has identified animals
@@ -55,9 +54,7 @@ class TestModelMode(OperationMode):
                 if not self.last_classified_animals:
                     self.last_classified_animals = self.last_classified_animals + last
                 else:
-                    self.last_classified_animals = (
-                        self.last_classified_animals + ", " + last
-                    )
+                    self.last_classified_animals = self.last_classified_animals + ", " + last
 
             # Trigger image update in WADAS mainwindow
             self.update_image.emit(img_path)

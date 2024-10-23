@@ -9,6 +9,7 @@ repos:
   rev: 22.6.0
   hooks:
     - id: black
+      args: [--line-length=100]
       exclude: ^src/ui/
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.1.0
@@ -19,4 +20,23 @@ repos:
     - id: debug-statements
     - id: mixed-line-ending
     - id: trailing-whitespace
-
+-   repo: https://github.com/PyCQA/flake8
+    rev: 6.1.0
+    hooks:
+    -   id: flake8
+        additional_dependencies: [
+            'flake8-blind-except',
+            'flake8-bugbear',
+            'flake8-comprehensions',
+            'flake8-implicit-str-concat',
+            'flake8-logging-format',
+            'pydocstyle>=5.0.0',
+        ]
+        exclude: ^src/ui/.*|demo/.*
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ["--profile", "black", "--filter-files"]
+        exclude: ^src/ui/.*|demo/.*

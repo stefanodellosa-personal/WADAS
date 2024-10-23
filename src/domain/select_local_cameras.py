@@ -1,24 +1,23 @@
 """Local cameras configuration module."""
 
 
-import os
 import functools
+import os
+
 import cv2
 from cv2_enumerate_cameras import enumerate_cameras
-
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
-    QDialog,
-    QLabel,
     QCheckBox,
+    QDialog,
+    QDialogButtonBox,
+    QLabel,
     QLineEdit,
     QPushButton,
-    QDialogButtonBox,
 )
-from PySide6.QtGui import QFont, QIcon
-from PySide6.QtCore import Qt
 
-from domain.camera import Camera
-from domain.camera import cameras
+from domain.camera import Camera, cameras
 from domain.usb_camera import USBCamera
 from ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
 
@@ -30,9 +29,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
         super(DialogSelectLocalCameras, self).__init__()
         self.ui = Ui_DialogSelectLocalCameras()
         self.ui.setupUi(self)
-        self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
-        )
+        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
         self.enumerated_usb_cameras = enumerate_cameras(cv2.CAP_MSMF)
         # TODO: check API preference for linux and implement it OS independent.
 
@@ -135,9 +132,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
         """Method to initialize detection parameters in UI."""
 
         self.ui.lineEdit_treshold.setText(f"{Camera.detection_params['treshold']}")
-        self.ui.lineEdit_minContourArea.setText(
-            f"{Camera.detection_params['min_contour_area']}"
-        )
+        self.ui.lineEdit_minContourArea.setText(f"{Camera.detection_params['min_contour_area']}")
         self.ui.lineEdit_detectionTreshold.setText(
             f"{Camera.detection_params['detection_per_second']}"
         )
@@ -151,14 +146,10 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
             checkbox = self.findChild(QCheckBox, f"checkBox_camera_{camera_index}")
             line_edit = self.findChild(QLineEdit, f"lineEdit_cameraID_{camera_index}")
             if checkbox and checkbox.isChecked() and not line_edit.text():
-                self.ui.label_errorMessage.setText(
-                    f"Please add ID for Camera {camera_index}"
-                )
+                self.ui.label_errorMessage.setText(f"Please add ID for Camera {camera_index}")
                 valid = False
             elif self.is_duplicated_id(camera_index):
-                self.ui.label_errorMessage.setText(
-                    f"Duplicated Camera ID {line_edit.text()}"
-                )
+                self.ui.label_errorMessage.setText(f"Duplicated Camera ID {line_edit.text()}")
                 valid = False
             else:
                 self.ui.label_errorMessage.setText("")
@@ -172,9 +163,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
         for camera_info in self.enumerated_usb_cameras:
             camera_index = str(camera_info.index)
             checkbox = self.findChild(QCheckBox, f"checkBox_camera_{camera_index}")
-            camera_id = self.findChild(
-                QLineEdit, f"lineEdit_cameraID_{camera_index}"
-            ).text()
+            camera_id = self.findChild(QLineEdit, f"lineEdit_cameraID_{camera_index}").text()
             if checkbox and checkbox.isChecked() and camera_id:
                 if camera_id not in camera_ids:
                     camera_ids.append(camera_id)
@@ -204,7 +193,8 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                                 and self.enumerated_usb_cameras[idx].path == camera.path
                             ):
 
-                                # Camera index has not changed, let's save ID and enablement status if changed.
+                                # Camera index has not changed,
+                                # let's save ID and enablement status if changed.
                                 camera.enabled = checkbox.isChecked()
                                 camera.id = line_edit.text()
                                 break

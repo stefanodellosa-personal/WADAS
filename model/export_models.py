@@ -1,20 +1,24 @@
-import sys
 import os
+import sys
 
 import numpy as np
 import openvino as ov
+import requests
+import torch
 from PIL import Image
 from PytorchWildlife.data import transforms as pw_trans
 from PytorchWildlife.models import detection as pw_detection
-import requests
-import torch
 from torchvision.transforms import InterpolationMode, transforms
 
 from domain.classify_detections import Model
 
 CROP_SIZE = 182
 BACKBONE = "vit_large_patch14_dinov2.lvd142m"
-URL = "https://www.provincia.bz.it/agricoltura-foreste/fauna-caccia-pesca/images/braunbaer_6016_L.jpg"
+# Line too long
+URL = (
+    "https://www.provincia.bz.it/agricoltura-foreste/"
+    "fauna-caccia-pesca/images/braunbaer_6016_L.jpg"
+)
 WEIGHT_PATH = f"{os.path.join('../', 'deepfaune-vit_large_patch14_dinov2.lvd142m.pt')}"
 
 _thisdir = os.path.dirname(os.path.abspath(__file__))

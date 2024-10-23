@@ -2,13 +2,11 @@
 
 
 import os
-import keyring
-from email.mime.image import MIMEImage
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import ssl
 import smtplib
+import ssl
+from email.mime.text import MIMEText
 
+import keyring
 import validators
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
@@ -27,9 +25,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         super(DialogInsertEmail, self).__init__()
         self.ui = Ui_DialogInsertEmail()
         self.ui.setupUi(self)
-        self.setWindowIcon(
-            QIcon(os.path.join(module_dir_path, "img", "mainwindow_icon.jpg"))
-        )
+        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "img", "mainwindow_icon.jpg")))
 
         self.email_notifier = Notifier.notifiers[Notifier.NotifierTypes.Email.value]
         self.valid_sender_email = False
@@ -47,9 +43,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         self.ui.lineEdit_smtpServer.textChanged.connect(self.validate_smtp_server)
         self.ui.lineEdit_port.textChanged.connect(self.validate_smtp_port)
         self.ui.lineEdit_password.textChanged.connect(self.validate_password)
-        self.ui.textEdit_recipient_email.textChanged.connect(
-            self.validate_recipients_email
-        )
+        self.ui.textEdit_recipient_email.textChanged.connect(self.validate_recipients_email)
         self.ui.pushButton_testEmail.clicked.connect(self.send_email)
 
         self.initialize_form()
@@ -61,9 +55,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
             self.ui.lineEdit_senderEmail.setText(self.email_notifier.sender_email)
             self.ui.lineEdit_smtpServer.setText(self.email_notifier.smtp_hostname)
             self.ui.lineEdit_port.setText(self.email_notifier.smtp_port)
-            credentials = keyring.get_credential(
-                "WADAS_email", self.email_notifier.sender_email
-            )
+            credentials = keyring.get_credential("WADAS_email", self.email_notifier.sender_email)
             if credentials.username == self.email_notifier.sender_email:
                 self.ui.lineEdit_senderEmail.setText(credentials.username)
                 self.ui.lineEdit_password.setText(credentials.password)
@@ -76,9 +68,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     def accept_and_close(self):
         """When Ok is clicked, save email config info before closing."""
         recipients = []
-        for recipient in (
-            self.ui.textEdit_recipient_email.toPlainText().strip().split(", ")
-        ):
+        for recipient in self.ui.textEdit_recipient_email.toPlainText().strip().split(", "):
             recipients.append(recipient)
 
         if not Notifier.notifiers[Notifier.NotifierTypes.Email.value]:
@@ -168,9 +158,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
             for email in emails:
                 if not validators.email(email):
                     self.valid_receiver_emails = False
-                    self.ui.label_status.setText(
-                        "Invalid recipients email(s) provided!"
-                    )
+                    self.ui.label_status.setText("Invalid recipients email(s) provided!")
                 else:
                     self.valid_receiver_emails = True
         else:
@@ -181,16 +169,9 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     def send_email(self):
         """Method to test email."""
 
-        credentials = keyring.get_credential(
-            "WADAS_email", self.ui.lineEdit_senderEmail.text()
-        )
+        credentials = keyring.get_credential("WADAS_email", self.ui.lineEdit_senderEmail.text())
         sender = credentials.username
-        recipients = [
-            recipient
-            for recipient in self.ui.textEdit_recipient_email.toPlainText()
-            .strip()
-            .split(", ")
-        ]
+        recipients = self.ui.textEdit_recipient_email.toPlainText().strip().split(", ")
 
         text = "WADAS test email."
         message = MIMEText(text, "plain")

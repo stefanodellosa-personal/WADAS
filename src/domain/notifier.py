@@ -1,9 +1,10 @@
 """Notification module"""
 
+import logging
 from abc import abstractmethod
 from enum import Enum
+
 import keyring
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,10 @@ class Notifier:
 
         sent = False
         for notifier in Notifier.notifiers:
-            if Notifier.notifiers[notifier].type == Notifier.NotifierTypes.Email:
+            if (
+                Notifier.notifiers[notifier]
+                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.Email
+            ):
                 username = Notifier.notifiers[notifier].sender_email
                 credentials = keyring.get_credential("WADAS_email", username)
                 if (
