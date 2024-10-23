@@ -24,7 +24,7 @@ class AiModel:
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
         logger.info(
-            f"Initializing AI model for image detection and classification to {AiModel.DEVICE}..."
+            "Initializing AI model for image detection and classification to %s...", AiModel.DEVICE
         )
         self.detection_pipeline = DetectionPipeline(device=AiModel.DEVICE)
 

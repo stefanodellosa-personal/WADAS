@@ -16,10 +16,10 @@ class DetectionPipeline:
     def __init__(self, device="auto"):
         self.device = device
         # Initializing the MegaDetectorV5 model for image detection
-        logger.info(f"Initializing detection model to device {self.device}...")
+        logger.info("Initializing detection model to device %s...", self.device)
         self.detection_model = OVMegaDetectorV5(device=self.device)
         # Load classification model
-        logger.info(f"Loading classification model to device {self.device}...")
+        logger.info("Loading classification model to device %s...", self.device)
         self.classifier = Classifier(self.device)
         # Get the index of the animal class of the detection model
         self.animal_class_idx = next(
