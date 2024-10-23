@@ -1,10 +1,9 @@
 """Module to download a file from URL."""
 
 import os
-
 from urllib.request import urlopen
 
-from PySide6.QtCore import Signal, QThread
+from PySide6.QtCore import QThread, Signal
 
 
 class Downloader(QThread):

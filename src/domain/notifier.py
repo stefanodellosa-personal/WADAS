@@ -1,9 +1,10 @@
 """Notification module"""
 
+import logging
 from abc import abstractmethod
 from enum import Enum
+
 import keyring
-import logging
 
 logger = logging.getLogger(__name__)
 

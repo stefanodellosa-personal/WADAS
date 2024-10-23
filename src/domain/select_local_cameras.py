@@ -1,24 +1,23 @@
 """Local cameras configuration module."""
 
 
-import os
 import functools
+import os
+
 import cv2
 from cv2_enumerate_cameras import enumerate_cameras
-
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
-    QDialog,
-    QLabel,
     QCheckBox,
+    QDialog,
+    QDialogButtonBox,
+    QLabel,
     QLineEdit,
     QPushButton,
-    QDialogButtonBox,
 )
-from PySide6.QtGui import QFont, QIcon
-from PySide6.QtCore import Qt
 
-from domain.camera import Camera
-from domain.camera import cameras
+from domain.camera import Camera, cameras
 from domain.usb_camera import USBCamera
 from ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
 

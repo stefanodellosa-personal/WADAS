@@ -33,4 +33,10 @@ repos:
             'pydocstyle>=5.0.0',
         ]
         exclude: ^src/ui/.*|demo/.*
-
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ["--profile", "black", "--filter-files"]
+        exclude: ^src/ui/.*|demo/.*

@@ -1,7 +1,6 @@
 """Module containing class to handle WADAS operation modes."""
 
 import logging
-
 from enum import Enum
 
 from PySide6.QtCore import QObject, Signal

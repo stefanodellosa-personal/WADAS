@@ -1,13 +1,14 @@
 """Email notifier module"""
 
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import keyring
 import logging
 import os
 import smtplib
 import ssl
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+import keyring
 
 from domain.notifier import Notifier
 

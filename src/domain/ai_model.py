@@ -1,15 +1,16 @@
 """Module containing AI Model based logic (detection & classification)."""
 
-import os
 import logging
+import os
 
-import requests
 import cv2
 import numpy as np
+import requests
 from PIL import Image
 from PytorchWildlife import utils as pw_utils
-from domain.utils import get_timestamp
+
 from ai import DetectionPipeline
+from domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 

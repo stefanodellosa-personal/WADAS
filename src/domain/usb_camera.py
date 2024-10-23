@@ -1,14 +1,14 @@
 """USB Camera module"""
 
-import time
-import os
 import logging
+import os
 import threading
+import time
 
 import cv2
 
-from domain.utils import get_timestamp
 from domain.camera import Camera, img_queue
+from domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 

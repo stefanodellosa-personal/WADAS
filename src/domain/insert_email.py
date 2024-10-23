@@ -2,11 +2,11 @@
 
 
 import os
-import keyring
-from email.mime.text import MIMEText
-import ssl
 import smtplib
+import ssl
+from email.mime.text import MIMEText
 
+import keyring
 import validators
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox

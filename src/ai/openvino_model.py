@@ -1,8 +1,9 @@
-import openvino.properties as props
-from huggingface_hub import snapshot_download
-import openvino as ov
-import torch
 import os
+
+import openvino as ov
+import openvino.properties as props
+import torch
+from huggingface_hub import snapshot_download
 
 core = ov.Core()
 core.set_property({props.cache_dir: "cache"})

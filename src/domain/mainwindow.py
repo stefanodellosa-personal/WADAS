@@ -1,10 +1,11 @@
 """Module containing MainWindows class and methods."""
 
 import logging
-from logging.handlers import RotatingFileHandler
 import os
+from logging.handlers import RotatingFileHandler
 
 import keyring
+import yaml
 from PySide6 import QtGui
 from PySide6.QtCore import QThread
 from PySide6.QtWidgets import (
@@ -15,18 +16,16 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
 )
-import yaml
 
 from domain.ai_model import AiModel
 from domain.animal_detection_mode import AnimalDetectionAndClassificationMode
-from domain.camera import Camera
-from domain.camera import cameras
+from domain.camera import Camera, cameras
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.email_notifier import EmailNotifier
 from domain.ftp_camera import FTPCamera
-from domain.insert_email import DialogInsertEmail
 from domain.ftps_server import FTPsServer
+from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
 from domain.notifier import Notifier
 from domain.operation_mode import OperationMode

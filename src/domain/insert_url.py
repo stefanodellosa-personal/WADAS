@@ -1,10 +1,10 @@
 """Insert URL module."""
 
 import os
-import validators
 
-from PySide6.QtWidgets import QDialog, QDialogButtonBox
+import validators
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
 from ui.ui_insert_url import Ui_InsertUrlDialog
 

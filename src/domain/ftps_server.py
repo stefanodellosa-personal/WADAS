@@ -1,9 +1,9 @@
 """FTPS server module"""
 
-import os
 import logging
-from logging.handlers import RotatingFileHandler
+import os
 import threading
+from logging.handlers import RotatingFileHandler
 
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import TLS_FTPHandler

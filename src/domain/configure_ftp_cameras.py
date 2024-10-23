@@ -4,21 +4,20 @@ import logging
 import os
 
 import keyring
-from validators import ipv4
-
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
+    QGridLayout,
+    QLabel,
     QLineEdit,
     QRadioButton,
-    QLabel,
     QScrollArea,
     QWidget,
-    QGridLayout,
 )
+from validators import ipv4
 
 from domain.camera import Camera, cameras
 from domain.ftp_camera import FTPCamera

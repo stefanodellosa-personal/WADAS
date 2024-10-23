@@ -1,13 +1,13 @@
-import sys
 import os
+import sys
 
 import numpy as np
 import openvino as ov
+import requests
+import torch
 from PIL import Image
 from PytorchWildlife.data import transforms as pw_trans
 from PytorchWildlife.models import detection as pw_detection
-import requests
-import torch
 from torchvision.transforms import InterpolationMode, transforms
 
 from domain.classify_detections import Model

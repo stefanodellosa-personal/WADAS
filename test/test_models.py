@@ -1,11 +1,12 @@
-from ai.models import OVMegaDetectorV5, Classifier
-from ai.pipeline import DetectionPipeline
-from ai.openvino_model import OVModel
-from PIL import Image
-import requests
 import numpy as np
 import pytest
+import requests
 import torch
+from PIL import Image
+
+from ai.models import Classifier, OVMegaDetectorV5
+from ai.openvino_model import OVModel
+from ai.pipeline import DetectionPipeline
 
 TEST_URL = "https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg"
 

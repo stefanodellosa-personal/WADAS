@@ -3,12 +3,9 @@
 
 import logging
 
-from domain.camera import Camera
-from domain.camera import cameras
-from domain.camera import img_queue
+from domain.camera import Camera, cameras, img_queue
 from domain.ftps_server import FTPsServer
 from domain.operation_mode import OperationMode
-
 
 logger = logging.getLogger(__name__)
 

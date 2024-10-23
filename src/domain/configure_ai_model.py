@@ -3,11 +3,11 @@
 
 import os
 
-from PySide6.QtWidgets import QDialog, QDialogButtonBox
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
-from ui.ui_configure_ai_model import Ui_DialogConfigureAi
 from domain.ai_model import AiModel
+from ui.ui_configure_ai_model import Ui_DialogConfigureAi
 
 
 class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):

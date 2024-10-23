@@ -11,8 +11,8 @@ import sys
 import numpy as np
 import timm
 import torch
-from torch import tensor
 import torch.nn as nn
+from torch import tensor
 from torchvision.transforms import InterpolationMode, transforms
 
 from ai.openvino_model import OVClassificationModel
