@@ -1,6 +1,6 @@
-from enum import Enum
 import json
 import logging
+from enum import Enum
 
 from domain.actuator import Actuator
 
@@ -18,8 +18,12 @@ class FeederActuator(Actuator):
         if isinstance(cmd, FeederActuator.Commands):
             super().send_command(cmd)
         else:
-            logger.error("Actuator %s with ID %s received an unknown command: %s.", self.__class__.__name__,
-                         self.actuator_id, cmd)
+            logger.error(
+                "Actuator %s with ID %s received an unknown command: %s.",
+                self.__class__.__name__,
+                self.actuator_id,
+                cmd,
+            )
             raise Exception("Unknown command")
 
     def serialize(self):
