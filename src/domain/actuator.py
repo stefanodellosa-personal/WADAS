@@ -32,7 +32,7 @@ class Actuator:
         try:
             return self.cmd_queue.get(block=False)
         except Empty:
-            return None
+            return None  # if there are no commands, return None
 
     @abstractmethod
     def serialize(self):
