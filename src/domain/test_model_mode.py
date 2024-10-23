@@ -54,9 +54,7 @@ class TestModelMode(OperationMode):
                 if not self.last_classified_animals:
                     self.last_classified_animals = self.last_classified_animals + last
                 else:
-                    self.last_classified_animals = (
-                        self.last_classified_animals + ", " + last
-                    )
+                    self.last_classified_animals = self.last_classified_animals + ", " + last
 
             # Trigger image update in WADAS mainwindow
             self.update_image.emit(img_path)

@@ -7,9 +7,7 @@ import os
 core = ov.Core()
 core.set_property({props.cache_dir: "cache"})
 
-__model_folder__ = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "model"
-)
+__model_folder__ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "model")
 
 
 class OVModel:

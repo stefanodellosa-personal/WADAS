@@ -58,8 +58,12 @@ def test_detection(detection_pipeline):
 
 
 def test_detection_non_animal(detection_pipeline):
-    # This image does contain two dogs and a human. Check that the detection pipeline returns only the dogs.
-    URL = "https://img.freepik.com/premium-photo/happy-human-dog-walking-through-park_1199394-134331.jpg"
+    # This image does contain two dogs and a human.
+    # Check that the detection pipeline returns only the dogs.
+    URL = (
+        "https://img.freepik.com/premium-photo/"
+        "happy-human-dog-walking-through-park_1199394-134331.jpg"
+    )
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
     results = detection_pipeline.run_detection(img, 0.5)
 
@@ -82,7 +86,8 @@ def test_detection_non_animal(detection_pipeline):
 
 
 def test_detection_panorama(detection_pipeline):
-    # This image does not contain any animals. Check that the detection pipeline returns no detections.
+    # This image does not contain any animals.
+    # Check that the detection pipeline returns no detections.
     URL = "https://images-webcams.windy.com/04/1665091504/daylight/full/1665091504.jpg"
 
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
@@ -116,7 +121,9 @@ def test_classification(detection_pipeline):
 
 
 def test_classification_dog_overlapping(detection_pipeline):
-    URL = "https://www.addestramentocaniromasud.it/wp/wp-content/uploads/2021/05/cane-in-braccio.jpg"
+    URL = (
+        "https://www.addestramentocaniromasud.it/wp/wp-content/uploads/2021/05/cane-in-braccio.jpg"
+    )
 
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
     results = detection_pipeline.run_detection(img, 0.5)

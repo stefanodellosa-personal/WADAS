@@ -14,9 +14,7 @@ class DownloadDialog(QDialog, Ui_DialogDownloadFile):
         super().__init__()
         self.ui = Ui_DialogDownloadFile()
         self.ui.setupUi(self)
-        self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
-        )
+        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
         self.ui.pushButton_cancel.setEnabled(False)
         # Slots
         self.ui.pushButton_download.pressed.connect(self.initDownload)

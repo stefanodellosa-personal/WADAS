@@ -17,9 +17,7 @@ logger = logging.getLogger(__name__)
 class EmailNotifier(Notifier):
     """Email Notifier Class"""
 
-    def __init__(
-        self, sender_email, smtp_hostname, smtp_port, recipients_email, enabled=True
-    ):
+    def __init__(self, sender_email, smtp_hostname, smtp_port, recipients_email, enabled=True):
         super().__init__(enabled)
         self.type = Notifier.NotifierTypes.Email
         self.sender_email = sender_email

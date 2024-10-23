@@ -19,14 +19,10 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
 
         # UI
         self.ui.setupUi(self)
-        self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
-        )
+        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_errorMEssage.setStyleSheet("color: red")
-        self.ui.lineEdit_classificationTreshold.setText(
-            str(AiModel.classification_treshold)
-        )
+        self.ui.lineEdit_classificationTreshold.setText(str(AiModel.classification_treshold))
         self.ui.lineEdit_detectionTreshold.setText(str(AiModel.detection_treshold))
 
         # Slots
@@ -47,9 +43,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
                 "Invalid classification treshold. Please insert a value between 0 and 1."
             )
             valid = False
-        elif (
-            dtreshold := float(self.ui.lineEdit_detectionTreshold.text())
-        ) > 1 or dtreshold < 0:
+        elif (dtreshold := float(self.ui.lineEdit_detectionTreshold.text())) > 1 or dtreshold < 0:
             self.ui.label_errorMEssage.setText(
                 "Invalid detection treshold. Please insert a value between 0 and 1."
             )
@@ -61,9 +55,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
     def accept_and_close(self):
         """When Ok is clicked, save Ai model config info before closing."""
 
-        AiModel.classification_treshold = float(
-            self.ui.lineEdit_classificationTreshold.text()
-        )
+        AiModel.classification_treshold = float(self.ui.lineEdit_classificationTreshold.text())
         AiModel.detection_treshold = float(self.ui.lineEdit_detectionTreshold.text())
 
         self.accept()

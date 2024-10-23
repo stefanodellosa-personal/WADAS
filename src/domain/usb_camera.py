@@ -109,16 +109,15 @@ class USBCamera(Camera):
                 approved_contours = [
                     cnt
                     for cnt in contours
-                    if cv2.contourArea(cnt)
-                    > Camera.detection_params["min_contour_area"]
+                    if cv2.contourArea(cnt) > Camera.detection_params["min_contour_area"]
                 ]
                 frame_out = frame.copy()
                 if len(approved_contours) > 0:
                     # Limit the amount of frame processed per second
                     current_detection_time = time.time()
-                    if (
-                        current_detection_time - last_detection_time
-                    ) < Camera.detection_params["detection_per_second"]:
+                    if (current_detection_time - last_detection_time) < Camera.detection_params[
+                        "detection_per_second"
+                    ]:
                         continue
 
                     logger.debug("Motion detected from camera %s!", self.id)
@@ -127,9 +126,7 @@ class USBCamera(Camera):
                     if test_mode:
                         for cnt in approved_contours:
                             x, y, w, h = cv2.boundingRect(cnt)
-                            frame_out = cv2.rectangle(
-                                frame, (x, y), (x + w, y + h), (0, 0, 200), 3
-                            )
+                            frame_out = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 200), 3)
 
                         # Display the resulting frame
                         cv2.putText(

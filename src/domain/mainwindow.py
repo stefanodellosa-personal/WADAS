@@ -73,9 +73,7 @@ class MainWindow(QMainWindow):
         # Initialize startup image
         self.set_image(os.path.join(os.getcwd(), "img", "WADAS_logo_big.jpg"))
         # Set mainwindow icon
-        self.setWindowIcon(
-            QtGui.QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
-        )
+        self.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
 
         # Update mainwindow UI methods
         self._init_logging_dropdown()
@@ -93,25 +91,13 @@ class MainWindow(QMainWindow):
         self.ui.actionActionConfigureEmail.triggered.connect(self.configure_email)
         self.ui.actionSelectLocalCameras.triggered.connect(self.select_local_cameras)
         self.ui.actionConfigure_Ai_model.triggered.connect(self.configure_ai_model)
-        self.ui.actionSave_configuration_as.triggered.connect(
-            self.save_as_to_config_file
-        )
-        self.ui.actionSave_configuration_as_menu.triggered.connect(
-            self.save_as_to_config_file
-        )
-        self.ui.actionOpen_configuration_file.triggered.connect(
-            self.load_config_from_file
-        )
-        self.ui.actionOpen_configuration_file_menu.triggered.connect(
-            self.load_config_from_file
-        )
+        self.ui.actionSave_configuration_as.triggered.connect(self.save_as_to_config_file)
+        self.ui.actionSave_configuration_as_menu.triggered.connect(self.save_as_to_config_file)
+        self.ui.actionOpen_configuration_file.triggered.connect(self.load_config_from_file)
+        self.ui.actionOpen_configuration_file_menu.triggered.connect(self.load_config_from_file)
         self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
-        self.ui.actionSave_configuration_menu.triggered.connect(
-            self.save_config_to_file
-        )
-        self.ui.actionConfigure_FTP_Cameras.triggered.connect(
-            self.configure_ftp_cameras
-        )
+        self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
+        self.ui.actionConfigure_FTP_Cameras.triggered.connect(self.configure_ftp_cameras)
 
     def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -124,9 +110,7 @@ class MainWindow(QMainWindow):
     def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
-        formatter = logging.Formatter(
-            "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"
-        )
+        formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
         logging_level = logging.DEBUG
         # Line edit logging in mainwindow
         self.log_txtedt_handler = QTextEditLogger(self.ui.plainTextEdit_log)
@@ -185,23 +169,16 @@ class MainWindow(QMainWindow):
         self.instantiate_selected_model()
         if self.operation_mode:
             # Satisfy preconditions and required inputs for the selected operation mode
-            if (
-                self.selected_operation_mode
-                == OperationMode.OperationModeTypes.TestModelMode
-            ):
+            if self.selected_operation_mode == OperationMode.OperationModeTypes.TestModelMode:
                 if not self.check_models():
                     logger.error("Cannot run this mode without AI models. Aborting.")
                     return
                 self.operation_mode.url = self.url_input_dialog()
                 if not self.operation_mode.url:
-                    logger.error(
-                        "Cannot proceed without a valid URL. Please run again."
-                    )
+                    logger.error("Cannot proceed without a valid URL. Please run again.")
                     return
             elif not cameras:
-                logger.error(
-                    "No camera configured. Please configure input cameras and run again."
-                )
+                logger.error("No camera configured. Please configure input cameras and run again.")
                 return
             else:
                 # Passing cameras list to the selected operation mode
@@ -248,8 +225,7 @@ class MainWindow(QMainWindow):
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
         elif (
-            self.selected_operation_mode
-            == OperationMode.OperationModeTypes.AnimalDetectionMode
+            self.selected_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode
             and not cameras
         ):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
@@ -316,19 +292,13 @@ class MainWindow(QMainWindow):
             logger.error("No operation mode selected.")
             return
         else:
-            if (
-                self.selected_operation_mode
-                == OperationMode.OperationModeTypes.TestModelMode
-            ):
+            if self.selected_operation_mode == OperationMode.OperationModeTypes.TestModelMode:
                 logger.info("Running test model mode....")
                 self.operation_mode = TestModelMode()
             elif (
-                self.selected_operation_mode
-                == OperationMode.OperationModeTypes.AnimalDetectionMode
+                self.selected_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode
             ):
-                self.operation_mode = AnimalDetectionAndClassificationMode(
-                    classification=False
-                )
+                self.operation_mode = AnimalDetectionAndClassificationMode(classification=False)
             elif (
                 self.selected_operation_mode
                 == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
@@ -366,9 +336,7 @@ class MainWindow(QMainWindow):
 
             message_box = QMessageBox
             message = "No notification protocol set. Do you wish to continue anyway?"
-            answer = message_box.question(
-                self, "", message, message_box.Yes | message_box.No
-            )
+            answer = message_box.question(self, "", message, message_box.Yes | message_box.No)
 
             if answer == message_box.No:
                 return False
@@ -437,9 +405,7 @@ class MainWindow(QMainWindow):
             "operation_mode": self.selected_operation_mode.value
             if self.selected_operation_mode
             else "",
-            "ftps_server": (
-                FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else ""
-            ),
+            "ftps_server": (FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else ""),
         }
 
         if not self.configuration_file_name:
@@ -521,12 +487,8 @@ class MainWindow(QMainWindow):
                                     ftp_camera.ftp_folder,
                                 )
                 Camera.detection_params = wadas_config["camera_detection_params"]
-                AiModel.detection_treshold = wadas_config["ai_model"][
-                    "ai_detect_treshold"
-                ]
-                AiModel.classification_treshold = wadas_config["ai_model"][
-                    "ai_class_treshold"
-                ]
+                AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
+                AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
                 self.selected_operation_mode = (
                     OperationMode.OperationModeTypes(wadas_config["operation_mode"])
                     if wadas_config["operation_mode"]
@@ -579,7 +541,5 @@ class MainWindow(QMainWindow):
         new_level = level_mapping.get(index, logging.DEBUG)
         logger.setLevel(logging.DEBUG)
         self.log_txtedt_handler.setLevel(logging.DEBUG)
-        logger.log(
-            new_level, "Logging level changed to %s:", logging.getLevelName(new_level)
-        )
+        logger.log(new_level, "Logging level changed to %s:", logging.getLevelName(new_level))
         self.log_txtedt_handler.setLevel(new_level)

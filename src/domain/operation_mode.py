@@ -20,9 +20,7 @@ class OperationMode(QObject):
     class OperationModeTypes(Enum):
         TestModelMode = "Test Model Mode"
         AnimalDetectionMode = "Animal Detection Mode"
-        AnimalDetectionAndClassificationMode = (
-            "Animal Detection and Classification Mode"
-        )
+        AnimalDetectionAndClassificationMode = "Animal Detection and Classification Mode"
         TunnelMode = "Tunnel Mode"
         BearDetectionMode = "Bear Detection Mode"
 

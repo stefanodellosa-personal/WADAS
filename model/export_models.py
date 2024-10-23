@@ -14,7 +14,11 @@ from domain.classify_detections import Model
 
 CROP_SIZE = 182
 BACKBONE = "vit_large_patch14_dinov2.lvd142m"
-URL = "https://www.provincia.bz.it/agricoltura-foreste/fauna-caccia-pesca/images/braunbaer_6016_L.jpg"
+# Line too long
+URL = (
+    "https://www.provincia.bz.it/agricoltura-foreste/"
+    "fauna-caccia-pesca/images/braunbaer_6016_L.jpg"
+)
 WEIGHT_PATH = f"{os.path.join('../', 'deepfaune-vit_large_patch14_dinov2.lvd142m.pt')}"
 
 _thisdir = os.path.dirname(os.path.abspath(__file__))
