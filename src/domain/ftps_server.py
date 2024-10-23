@@ -1,9 +1,9 @@
 """FTPS server module"""
 
-import os
 import logging
-from logging.handlers import RotatingFileHandler
+import os
 import threading
+from logging.handlers import RotatingFileHandler
 
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import TLS_FTPHandler
@@ -18,9 +18,7 @@ logger.setLevel(logging.DEBUG)
 handler = RotatingFileHandler(
     os.path.join(os.getcwd(), "log", "ftps_server.log"), maxBytes=100000, backupCount=3
 )
-formatter = logging.Formatter(
-    "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"
-)
+formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
 handler.setFormatter(formatter)
 pyftpdlib_logger.addHandler(handler)
 pyftpdlib_logger.propagate = False
@@ -28,14 +26,10 @@ pyftpdlib_logger.propagate = False
 
 class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
     def on_connect(self):
-        logger.info(
-            "Connected remote camera from %s:%s", self.remote_ip, self.remote_port
-        )
+        logger.info("Connected remote camera from %s:%s", self.remote_ip, self.remote_port)
 
     def on_disconnect(self):
-        logger.info(
-            "Disconnected remote camera from %s:%s", self.remote_ip, self.remote_port
-        )
+        logger.info("Disconnected remote camera from %s:%s", self.remote_ip, self.remote_port)
 
     def on_login(self, username):
         logger.info("%s user logged in.", username)
@@ -57,9 +51,7 @@ class FTPsServer:
 
     ftps_server = None
 
-    def __init__(
-        self, ip_address, port, max_conn, max_conn_per_ip, certificate, key, ftp_dir
-    ):
+    def __init__(self, ip_address, port, max_conn, max_conn_per_ip, certificate, key, ftp_dir):
         super(FTPsServer, self).__init__()
         # Store params to allow serialization
         self.ip = ip_address
@@ -119,15 +111,15 @@ class FTPsServer:
     def serialize(self):
         """Method to serialize FTPS Server object"""
 
-        return dict(
-            ssl_certificate=self.certificate,
-            ssl_key=self.key,
-            ip=self.ip,
-            port=self.port,
-            max_conn=self.max_conn,
-            max_conn_per_ip=self.max_conn_per_ip,
-            ftp_dir=self.ftp_dir,
-        )
+        return {
+            "ssl_certificate": self.certificate,
+            "ssl_key": self.key,
+            "ip": self.ip,
+            "port": self.port,
+            "max_conn": self.max_conn,
+            "max_conn_per_ip": self.max_conn_per_ip,
+            "ftp_dir": self.ftp_dir,
+        }
 
     @staticmethod
     def deserialize(data):

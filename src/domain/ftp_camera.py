@@ -17,12 +17,12 @@ class FTPCamera(Camera):
 
     def serialize(self):
         """Method to serialize FTP Camera object into file."""
-        return dict(
-            type=self.type.value,
-            id=self.id,
-            enabled=self.enabled,
-            ftp_folder=self.ftp_folder,
-        )
+        return {
+            "type": self.type.value,
+            "id": self.id,
+            "enabled": self.enabled,
+            "ftp_folder": self.ftp_folder,
+        }
 
     @staticmethod
     def deserialize(data):

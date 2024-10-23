@@ -16,9 +16,7 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
         super(DialogSelectMode, self).__init__()
         self.ui = Ui_DialogSelectMode()
         self.ui.setupUi(self)
-        self.setWindowIcon(
-            QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg"))
-        )
+        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
         self.selected_mode = selected_mode
 
         # Slots

@@ -1,10 +1,8 @@
 """Module containing class to handle WADAS operation modes."""
 
 import logging
-
 from enum import Enum
 
-import keyring
 from PySide6.QtCore import QObject, Signal
 
 from domain.actuator import actuators
@@ -21,9 +19,7 @@ class OperationMode(QObject):
     class OperationModeTypes(Enum):
         TestModelMode = "Test Model Mode"
         AnimalDetectionMode = "Animal Detection Mode"
-        AnimalDetectionAndClassificationMode = (
-            "Animal Detection and Classification Mode"
-        )
+        AnimalDetectionAndClassificationMode = "Animal Detection and Classification Mode"
         TunnelMode = "Tunnel Mode"
         BearDetectionMode = "Bear Detection Mode"
 
