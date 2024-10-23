@@ -1,14 +1,14 @@
 """USB Camera module"""
 
-import time
-import os
 import logging
+import os
 import threading
+import time
 
 import cv2
 
-from domain.utils import get_timestamp
 from domain.camera import Camera, img_queue
+from domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -109,16 +109,15 @@ class USBCamera(Camera):
                 approved_contours = [
                     cnt
                     for cnt in contours
-                    if cv2.contourArea(cnt)
-                    > Camera.detection_params["min_contour_area"]
+                    if cv2.contourArea(cnt) > Camera.detection_params["min_contour_area"]
                 ]
                 frame_out = frame.copy()
                 if len(approved_contours) > 0:
                     # Limit the amount of frame processed per second
                     current_detection_time = time.time()
-                    if (
-                        current_detection_time - last_detection_time
-                    ) < Camera.detection_params["detection_per_second"]:
+                    if (current_detection_time - last_detection_time) < Camera.detection_params[
+                        "detection_per_second"
+                    ]:
                         continue
 
                     logger.debug("Motion detected from camera %s!", self.id)
@@ -127,9 +126,7 @@ class USBCamera(Camera):
                     if test_mode:
                         for cnt in approved_contours:
                             x, y, w, h = cv2.boundingRect(cnt)
-                            frame_out = cv2.rectangle(
-                                frame, (x, y), (x + w, y + h), (0, 0, 200), 3
-                            )
+                            frame_out = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 200), 3)
 
                         # Display the resulting frame
                         cv2.putText(
@@ -191,18 +188,18 @@ class USBCamera(Camera):
 
     def serialize(self):
         """Method to serialize USB Camera object into file."""
-        return dict(
-            type=self.type.value,
-            id=self.id,
-            name=self.name,
-            enabled=self.enabled,
-            index=self.index,
-            backend=self.backend,
-            enable_mot_det=self.en_wadas_motion_detection,
-            pid=self.pid,
-            vid=self.vid,
-            path=self.path,
-        )
+        return {
+            "type": self.type.value,
+            "id": self.id,
+            "name": self.name,
+            "enabled": self.enabled,
+            "index": self.index,
+            "backend": self.backend,
+            "enable_mot_det": self.en_wadas_motion_detection,
+            "pid": self.pid,
+            "vid": self.vid,
+            "path": self.path,
+        }
 
     @staticmethod
     def deserialize(data):
