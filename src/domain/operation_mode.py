@@ -1,28 +1,15 @@
 """Module containing class to handle WADAS operation modes."""
 
-from domain.ai_model import AiModel
-from domain.feedereactuator import FeederActuator
-from domain.ftps_server import FTPsServer
-from domain.roadsignactuator import RoadSignActuator
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from enum import Enum
-from PySide6.QtCore import QObject, Signal
-import keyring
 import logging
-import os
-import smtplib
-import ssl
-
-from enum import Enum
 
 from PySide6.QtCore import QObject, Signal
 
-from domain.actuator import actuators
 from domain.ai_model import AiModel
+from domain.feeder_actuator import FeederActuator
 from domain.ftps_server import FTPsServer
 from domain.notifier import Notifier
+from domain.roadsign_actuator import RoadSignActuator
 
 logger = logging.getLogger(__name__)
 
@@ -74,9 +61,9 @@ class OperationMode(QObject):
         for actuator in actuator_list:
             if actuator.enabled:
                 if isinstance(actuator, RoadSignActuator):
-                    actuator.send_command(RoadSignActuator.Commands.display_on)
+                    actuator.send_command(RoadSignActuator.Commands.DISPLAY_ON)
                 elif isinstance(actuator, FeederActuator):
-                    actuator.send_command(FeederActuator.Commands.open)
+                    actuator.send_command(FeederActuator.Commands.OPEN)
                 else:
                     raise Exception("Unknown actuator type")
 

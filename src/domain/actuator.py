@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class Actuator:
     """Base class of an actuator."""
 
-    actuators_pool = {}
+    actuators = {}
 
     def __init__(self, actuator_id, enabled=False):
         self.cmd_queue = Queue()
@@ -20,12 +20,14 @@ class Actuator:
         self.last_update = None
         self.enabled = enabled
         self.stop_thread = False
-        Actuator.actuators_pool[self.actuator_id] = self
+        Actuator.actuators[self.actuator_id] = self
 
-    def send_command(self, msg: Enum):
-        self.cmd_queue.put(msg.value)
+    def send_command(self, cmd: Enum):
+        """Method to insert a command into the actuator queue"""
+        self.cmd_queue.put(cmd.value)
 
     def get_command(self):
+        """Method to get the last command of the queue"""
         self.last_update = datetime.datetime.now()
         try:
             return self.cmd_queue.get(block=False)
