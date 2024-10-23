@@ -30,5 +30,5 @@ repos:
             'flake8-implicit-str-concat',
             'pydocstyle>=5.0.0',
         ]
-        exclude: ^src/ui/.*|test.*|demo/.*|model/.*
+        exclude: ^src/ui/.*|demo/.*
 

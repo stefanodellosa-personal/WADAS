@@ -49,7 +49,7 @@ def test_detection(detection_pipeline):
     assert results["detections"].xyxy.dtype == np.float32
     assert results["detections"].xyxy.flatten().tolist() == [289, 175, 645, 424]
 
-    assert results["detections"].mask == None
+    assert results["detections"].mask is None
     assert results["detections"].confidence.item() > 0.94
     assert results["detections"].confidence.shape == (1,)
     assert results["detections"].confidence.dtype == np.float32
@@ -72,7 +72,7 @@ def test_detection_non_animal(detection_pipeline):
     assert results["detections"].xyxy.shape == (2, 4)
     assert results["detections"].xyxy.dtype == np.float32
 
-    assert results["detections"].mask == None
+    assert results["detections"].mask is None
     assert results["detections"].confidence.tolist()[0] > 0.90
     assert results["detections"].confidence.tolist()[1] > 0.90
     assert results["detections"].confidence.shape == (2,)
