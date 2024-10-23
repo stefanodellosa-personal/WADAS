@@ -194,6 +194,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                 checkbox = self.findChild(QCheckBox, f"checkBox_camera_{idx}")
                 line_edit = self.findChild(QLineEdit, f"lineEdit_cameraID_{idx}")
                 if checkbox and line_edit:
+                    saved = False
                     for camera in cameras:
                         if camera.type == Camera.CameraTypes.USBCamera:
                             if (
@@ -207,9 +208,15 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                                 # Camera index has not changed, let's save ID and enablement status if changed.
                                 camera.enabled = checkbox.isChecked()
                                 camera.id = line_edit.text()
+                                saved = True
                                 break
-                            else:
-                                # Camera index has changed or camera is new.
+                            elif (
+                                self.enumerated_usb_cameras[idx].name == camera.name
+                                and self.enumerated_usb_cameras[idx].pid == camera.pid
+                                and self.enumerated_usb_cameras[idx].vid == camera.vid
+                                and self.enumerated_usb_cameras[idx].path == camera.path
+                            ):
+                                # Camera index has changed
                                 camera.idx = idx
                                 camera.name = self.enumerated_usb_cameras[idx].name
                                 camera.pid = self.enumerated_usb_cameras[idx].pid
@@ -217,7 +224,22 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                                 camera.path = self.enumerated_usb_cameras[idx].path
                                 camera.enabled = checkbox.isChecked()
                                 camera.id = line_edit.text()
+                                saved = True
                                 break
+                    if not saved:
+                        # New camera
+                        camera = USBCamera(
+                            line_edit.text(),
+                            self.enumerated_usb_cameras[idx].name,
+                            checkbox.isChecked(),
+                            idx,
+                            self.enumerated_usb_cameras[idx].backend,
+                            True,
+                            self.enumerated_usb_cameras[idx].pid,
+                            self.enumerated_usb_cameras[idx].vid,
+                            self.enumerated_usb_cameras[idx].path,
+                        )
+                        cameras.append(camera)
         else:
             # Save cameras
             for idx in range(camera_number):
