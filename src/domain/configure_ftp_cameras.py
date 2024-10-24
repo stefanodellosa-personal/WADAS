@@ -61,7 +61,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         self.ui.pushButton_selectKeyFile.clicked.connect(self.select_key_file)
         self.ui.pushButton_sekectCertificateKey.clicked.connect(self.select_certificate_file)
         self.ui.lineEdit_ip.textChanged.connect(self.validate)
-        self.ui.lineEdit_ip.textChanged.connect(self.validate)
+        self.ui.lineEdit_port.textChanged.connect(self.validate)
         self.ui.lineEdit_max_conn.textChanged.connect(self.validate)
         self.ui.lineEdit_max_conn_ip.textChanged.connect(self.validate)
         self.ui.pushButton_addFTPCamera.clicked.connect(self.add_ftp_camera)
@@ -103,7 +103,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         self.add_ftp_camera()
                     camera_id_ln = self.findChild(QLineEdit, f"lineEdit_camera_id_{i}")
                     camera_id_ln.setText(camera.id)
-                    credentials = keyring.get_credential(f"WADAS_FTPcamera_{camera.id}", "")
+                    credentials = keyring.get_credential(f"WADAS_FTP_camera_{camera.id}", "")
                     if credentials:
                         camera_user_ln = self.findChild(QLineEdit, f"lineEdit_username_{i}")
                         camera_user_ln.setText(credentials.username)
@@ -146,14 +146,14 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                 cur_pass = self.get_camera_pass(i)
                                 if cur_user and cur_pass:
                                     credentials = keyring.get_credential(
-                                        f"WADAS_FTPcamera_{camera.id}", ""
+                                        f"WADAS_FTP_camera_{camera.id}", ""
                                     )
                                     if credentials and (
                                         credentials.username != cur_user
                                         or credentials.password != cur_pass
                                     ):
                                         keyring.set_password(
-                                            f"WADAS_FTPcamera_{cur_ui_id}",
+                                            f"WADAS_FTP_camera_{cur_ui_id}",
                                             cur_user,
                                             cur_pass,
                                         )
@@ -167,7 +167,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         cameras.append(camera)
                         # Store credentials in keyring
                         keyring.set_password(
-                            f"WADAS_FTPcamera_{cur_ui_id}",
+                            f"WADAS_FTP_camera_{cur_ui_id}",
                             self.get_camera_user(i),
                             self.get_camera_pass(i),
                         )
@@ -196,7 +196,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                     cameras.append(camera)
                     # Store credentials in keyring
                     keyring.set_password(
-                        f"WADAS_FTPcamera_{cur_camera_id}",
+                        f"WADAS_FTP_camera_{cur_camera_id}",
                         self.get_camera_user(i),
                         self.get_camera_pass(i),
                     )
@@ -300,6 +300,11 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             if not self.get_camera_user(i):
                 self.ui.label_errorMessage.setText("Missing Camera user!")
                 valid = False
+            elif self.is_duplicated_username(i):
+                self.ui.label_errorMessage.setText(
+                    f"Duplicated Camera Username {self.get_camera_user(i)}!"
+                )
+                valid = False
             i += 1
 
         if valid:
@@ -310,12 +315,26 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def is_duplicated_id(self, idx):
         """Method to check whether cameras have unique id."""
 
-        cameras_id = []
+        cameras_id = set()
         i = 1
         while i <= self.ui_camera_idx:
             cur_id = self.get_camera_id(i)
             if cur_id not in cameras_id:
-                cameras_id.append(cur_id)
+                cameras_id.add(cur_id)
+            elif i == idx:
+                return True
+            i += 1
+        return False
+
+    def is_duplicated_username(self, idx):
+        """Method to check whether cameras have duplicated username."""
+
+        cameras_username = set()
+        i = 1
+        while i <= self.ui_camera_idx:
+            cur_username = self.get_camera_user(i)
+            if cur_username not in cameras_username:
+                cameras_username.add(cur_username)
             elif i == idx:
                 return True
             i += 1
