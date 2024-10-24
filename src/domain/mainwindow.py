@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
+from domain.actuator import Actuator
 from domain.ai_model import AiModel
 from domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from domain.camera import Camera, cameras
@@ -47,6 +48,8 @@ level_mapping = {
     4: logging.CRITICAL,
 }
 
+module_dir_path = os.path.dirname(os.path.abspath(__file__))
+
 
 class MainWindow(QMainWindow):
     """Main Window class listing code customization. All code to manipulate
@@ -71,9 +74,11 @@ class MainWindow(QMainWindow):
         self._setup_logger()
 
         # Initialize startup image
-        self.set_image(os.path.join(os.getcwd(), "img", "WADAS_logo_big.jpg"))
+        self.set_image(os.path.join(module_dir_path, "..", "img", "WADAS_logo_big.jpg"))
         # Set mainwindow icon
-        self.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(
+            QtGui.QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg"))
+        )
 
         # Update mainwindow UI methods
         self._init_logging_dropdown()
@@ -257,6 +262,7 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen_configuration_file.setEnabled(not running)
         self.ui.actionSave_configuration_as.setEnabled(not running)
         self.ui.actionSave_configuration.setEnabled(not running)
+        self.ui.actionactionConfigure_actuators.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -305,7 +311,7 @@ class MainWindow(QMainWindow):
                 == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
             ):
                 self.operation_mode = AnimalDetectionAndClassificationMode()
-            # TODO: add elif with other operation modes
+            # add elif with other operation modes
 
     def configure_email(self):
         """Method to run dialog for insertion of email parameters to enable notifications."""
@@ -367,7 +373,7 @@ class MainWindow(QMainWindow):
             logger.info("Actuator(s) configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
-            self.update_en_camera_list()
+            self.update_en_actuator_list()
 
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""
@@ -533,6 +539,15 @@ class MainWindow(QMainWindow):
             if camera.enabled:
                 text = f"({camera.type.value}) {camera.id}"
                 self.ui.listWidget_en_cameras.addItem(text)
+
+    def update_en_actuator_list(self):
+        """Method to list enabled actuator(s) in UI"""
+
+        self.ui.listWidget_en_actuators.clear()
+        for actuator in Actuator.actuators:
+            if actuator.enabled:
+                text = f"({actuator.type.value}) {actuator.id}"
+                self.ui.listWidget_en_actuators.addItem(text)
 
     def _init_logging_dropdown(self):
         """Method to initialize logging levels in tooldbar dropdown"""

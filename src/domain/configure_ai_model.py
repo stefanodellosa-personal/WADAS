@@ -19,7 +19,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
 
         # UI
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "..", "img", "mainwindow_icon.jpg")))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_errorMEssage.setStyleSheet("color: red")
         self.ui.lineEdit_classificationTreshold.setText(str(AiModel.classification_treshold))

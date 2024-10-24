@@ -14,6 +14,7 @@ class RoadSignActuator(Actuator):
         DISPLAY_ON = json.dumps({"display": True})
 
     def __init__(self):
+        super(Actuator, self).__init__()
         self.type = Actuator.ActuatorTypes.ROADSIGN
 
     def send_command(self, cmd):

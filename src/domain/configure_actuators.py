@@ -22,7 +22,10 @@ from validators import ipv4
 
 from domain.actuator import Actuator
 from domain.qtextedit_logger import QTextEditLogger
+from domain.roadsign_actuator import RoadSignActuator
 from ui.ui_configure_actuators import Ui_DialogConfigureActuators
+
+module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
 class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
@@ -32,17 +35,18 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         super(DialogConfigureActuators, self).__init__()
         self.ui = Ui_DialogConfigureActuators()
         self.ui_actuator_idx = 0
+        self.removed_actuators = []
 
         # UI
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.pushButton_stop_server.setEnabled(False)
         self.ui.pushButton_remove_actuator.setEnabled(False)
         self.ui.label_status.setStyleSheet("color: red")
         self.add_actuator()
 
-        # Create scrollable area for ftp camera list in FTPCamera tab
+        # Create scrollable area for Actuator list in Actuators tab
         scroll_area = QScrollArea(self.ui.tab_clients)
         scroll_area.setWidgetResizable(True)
         scroll_widget = QWidget()
@@ -59,6 +63,8 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui.pushButton_remove_actuator.clicked.connect(self.remove_actuator())
         self.ui.pushButton_key_file.clicked.connect(self.select_key_file)
         self.ui.pushButton_cert_file.clicked.connect(self.select_certificate_file)
+        self.ui.lineEdit_server_ip.textChanged.connect(self.validate)
+        self.ui.lineEdit_server_port.textChanged.connect(self.validate)
 
         # Init dialog
         self.initialize_dialog()
@@ -93,10 +99,10 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         i = 1
         while i <= self.ui_actuator_idx:
             if not self.get_actuator_id(i):
-                self.ui.label_status.setText("Missing Camera ID!")
+                self.ui.label_status.setText("Missing Actuator ID!")
                 valid = False
             elif self.is_duplicated_id(i):
-                self.ui.label_status.setText(f"Duplicated Camera ID {self.get_actuator_id(i)}!")
+                self.ui.label_status.setText(f"Duplicated Actuator ID {self.get_actuator_id(i)}!")
                 valid = False
             i += 1
 
@@ -151,7 +157,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             self.validate()
 
     def remove_actuator(self):
-        """Method to remove FTP camera from list."""
+        """Method to remove Actuator from list."""
 
         i = 1
         while i <= self.ui_actuator_idx:
@@ -159,12 +165,12 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             if radiobtn:
                 actuator_id_ln = self.findChild(QLineEdit, f"lineEdit_actuator_id_{i}")
                 if radiobtn.isChecked() and actuator_id_ln:
-                    self.removed_cameras.append(actuator_id_ln.text())
-                    grid_layout_cameras = self.findChild(QGridLayout, "gridLayout_actuators")
-                    if grid_layout_cameras:
+                    self.removed_actuators.append(actuator_id_ln.text())
+                    gridLayout_actuators = self.findChild(QGridLayout, "gridLayout_actuators")
+                    if gridLayout_actuators:
                         j = 0
                         while j <= 6:
-                            grid_layout_cameras.itemAtPosition(i, j).widget().setParent(None)
+                            gridLayout_actuators.itemAtPosition(i, j).widget().setParent(None)
                             j += 1
             i += 1
         self.ui.pushButton_remove_actuator.setEnabled(False)
@@ -193,19 +199,29 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.validate()
 
     def get_actuator_id(self, row):
-        """Method to get camera id text from UI programmatically by row number"""
-        camera_id_ln = self.findChild(QLineEdit, f"lineEdit_camera_id_{row}")
-        return camera_id_ln.text() if camera_id_ln else None
+        """Method to get actuator id text from UI programmatically by row number"""
+        actuator_id_ln = self.findChild(QLineEdit, f"lineEdit_actuator_id_{row}")
+        return actuator_id_ln.text() if actuator_id_ln else None
+
+    def get_actuator_type(self, row):
+        """Method to get actuator type from UI programmatically by row number"""
+        actuator_type = self.findChild(QLineEdit, f"comboBox_actuator_type_{row}")
+        return actuator_type.text() if actuator_type else None
+
+    def get_actuator_enablement(self, row):
+        """Method to get actuator enablement from UI programmatically by row number"""
+        actuator_enablement = self.findChild(QLineEdit, f"label_actuator_enable_{row}")
+        return actuator_enablement.isChecked()
 
     def is_duplicated_id(self, idx):
         """Method to check whether actuators have unique id."""
 
-        actuators_id = []
+        actuators_id = set()
         i = 1
         while i <= self.ui_actuator_idx:
             cur_id = self.get_actuator_id(i)
             if cur_id not in actuators_id:
-                actuators_id.append(cur_id)
+                actuators_id.add(cur_id)
             elif i == idx:
                 return True
             i += 1
@@ -217,6 +233,15 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         if Actuator.actuators:
             # TODO: add logic
             pass
+        else:
+            i = 1
+            while i <= self.ui_actuator_idx:
+                cur_actuator_id = self.get_actuator_id(i)
+                cur_actuator_type = self.get_actuator_type(i)
+                cur_actuator_enbl = self.get_actuator_enablement(i)
+                if cur_actuator_id and cur_actuator_type:
+                    if cur_actuator_type == Actuator.ActuatorTypes.ROADSIGN:
+                        RoadSignActuator(cur_actuator_id, cur_actuator_enbl)
         self.accept()
 
     def _setup_logger(self):
