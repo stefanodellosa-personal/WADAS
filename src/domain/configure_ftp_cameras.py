@@ -315,12 +315,12 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def is_duplicated_id(self, idx):
         """Method to check whether cameras have unique id."""
 
-        cameras_id = []
+        cameras_id = set()
         i = 1
         while i <= self.ui_camera_idx:
             cur_id = self.get_camera_id(i)
             if cur_id not in cameras_id:
-                cameras_id.append(cur_id)
+                cameras_id.add(cur_id)
             elif i == idx:
                 return True
             i += 1
@@ -329,12 +329,12 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def is_duplicated_username(self, idx):
         """Method to check whether cameras have duplicated username."""
 
-        cameras_username = []
+        cameras_username = set()
         i = 1
         while i <= self.ui_camera_idx:
             cur_username = self.get_camera_user(i)
             if cur_username not in cameras_username:
-                cameras_username.append(cur_username)
+                cameras_username.add(cur_username)
             elif i == idx:
                 return True
             i += 1
