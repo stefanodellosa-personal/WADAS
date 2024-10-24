@@ -13,6 +13,9 @@ class RoadSignActuator(Actuator):
     class Commands(Enum):
         DISPLAY_ON = json.dumps({"display": True})
 
+    def __init__(self):
+        self.type = Actuator.ActuatorTypes.ROADSIGN
+
     def send_command(self, cmd):
         """Method to send the specific command to the Actuator superclass."""
         if isinstance(cmd, RoadSignActuator.Commands):

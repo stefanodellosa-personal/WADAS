@@ -48,6 +48,43 @@
        <attribute name="title">
         <string>Actuators</string>
        </attribute>
+       <widget class="QPushButton" name="pushButton_add_actuator">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>340</y>
+          <width>101</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Add actuator</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_remove_actuator">
+        <property name="geometry">
+         <rect>
+          <x>120</x>
+          <y>340</y>
+          <width>111</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Remove actuator</string>
+        </property>
+       </widget>
+       <widget class="QWidget" name="verticalLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>10</y>
+          <width>611</width>
+          <height>321</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_actuators"/>
+       </widget>
       </widget>
       <widget class="QWidget" name="tab_server">
        <attribute name="title">
@@ -140,7 +177,7 @@
           <rect>
            <x>10</x>
            <y>10</y>
-           <width>591</width>
+           <width>581</width>
            <height>71</height>
           </rect>
          </property>
@@ -220,12 +257,48 @@
           <x>0</x>
           <y>190</y>
           <width>601</width>
-          <height>141</height>
+          <height>171</height>
          </rect>
         </property>
         <property name="title">
          <string>Test Server</string>
         </property>
+        <widget class="QPlainTextEdit" name="plainTextEdit_test_server_log">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>581</width>
+           <height>81</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_start_server">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>281</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Start actuator server</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton_stop_server">
+         <property name="geometry">
+          <rect>
+           <x>300</x>
+           <y>40</y>
+           <width>291</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Stop actuator server</string>
+         </property>
+        </widget>
        </widget>
       </widget>
      </widget>

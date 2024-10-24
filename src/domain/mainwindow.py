@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 from domain.ai_model import AiModel
 from domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from domain.camera import Camera, cameras
+from domain.configure_actuators import DialogConfigureActuators
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.email_notifier import EmailNotifier
@@ -97,6 +98,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
         self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
         self.ui.actionConfigure_FTP_Cameras.triggered.connect(self.configure_ftp_cameras)
+        self.ui.actionactionConfigure_actuators.triggered.connect(self.configure_actuators)
 
     def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -348,11 +350,21 @@ class MainWindow(QMainWindow):
             return True
 
     def select_local_cameras(self):
-        """Method to trigger UI dialog for local cameras configuration."""
+        """Method to trigger UI dialog for local camera(s) configuration."""
 
         select_local_cameras = DialogSelectLocalCameras()
         if select_local_cameras.exec_():
             logger.info("Camera(s) configured.")
+            self.setWindowModified(True)
+            self.update_toolbar_status()
+            self.update_en_camera_list()
+
+    def configure_actuators(self):
+        """Method to trigger UI dialog for actuator(s) configuration."""
+
+        configure_actuators_dlg = DialogConfigureActuators()
+        if configure_actuators_dlg.exec_():
+            logger.info("Actuator(s) configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
@@ -528,14 +540,14 @@ class MainWindow(QMainWindow):
         label = QLabel("Log level: ")
         self.ui.toolBar.addWidget(label)
 
-        comboBox = QComboBox(self)
-        comboBox.setObjectName("logLevelComboBox")
+        combo_box = QComboBox(self)
+        combo_box.setObjectName("logLevelComboBox")
         levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-        comboBox.addItems(levels)
-        comboBox.setToolTip("Select logging level")
-        comboBox.setCurrentText("INFO")
-        comboBox.currentIndexChanged.connect(self.change_logging_level)
-        self.ui.toolBar.addWidget(comboBox)
+        combo_box.addItems(levels)
+        combo_box.setToolTip("Select logging level")
+        combo_box.setCurrentText("INFO")
+        combo_box.currentIndexChanged.connect(self.change_logging_level)
+        self.ui.toolBar.addWidget(combo_box)
 
     def change_logging_level(self, index):
         """Method to modify UI logging level"""

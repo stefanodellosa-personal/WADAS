@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
     QGridLayout, QGroupBox, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QSpacerItem, QTabWidget,
-    QWidget)
+    QPlainTextEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QTabWidget, QVBoxLayout, QWidget)
 
 class Ui_DialogConfigureActuators(object):
     def setupUi(self, DialogConfigureActuators):
@@ -40,6 +40,18 @@ class Ui_DialogConfigureActuators(object):
         self.tabWidget.setObjectName(u"tabWidget")
         self.tab_clients = QWidget()
         self.tab_clients.setObjectName(u"tab_clients")
+        self.pushButton_add_actuator = QPushButton(self.tab_clients)
+        self.pushButton_add_actuator.setObjectName(u"pushButton_add_actuator")
+        self.pushButton_add_actuator.setGeometry(QRect(10, 340, 101, 24))
+        self.pushButton_remove_actuator = QPushButton(self.tab_clients)
+        self.pushButton_remove_actuator.setObjectName(u"pushButton_remove_actuator")
+        self.pushButton_remove_actuator.setGeometry(QRect(120, 340, 111, 24))
+        self.verticalLayoutWidget = QWidget(self.tab_clients)
+        self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
+        self.verticalLayoutWidget.setGeometry(QRect(0, 10, 611, 321))
+        self.verticalLayout_actuators = QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout_actuators.setObjectName(u"verticalLayout_actuators")
+        self.verticalLayout_actuators.setContentsMargins(0, 0, 0, 0)
         self.tabWidget.addTab(self.tab_clients, "")
         self.tab_server = QWidget()
         self.tab_server.setObjectName(u"tab_server")
@@ -87,7 +99,7 @@ class Ui_DialogConfigureActuators(object):
         self.groupBox_2.setGeometry(QRect(0, 100, 601, 80))
         self.gridLayoutWidget_3 = QWidget(self.groupBox_2)
         self.gridLayoutWidget_3.setObjectName(u"gridLayoutWidget_3")
-        self.gridLayoutWidget_3.setGeometry(QRect(10, 10, 591, 71))
+        self.gridLayoutWidget_3.setGeometry(QRect(10, 10, 581, 71))
         self.gridLayout_3 = QGridLayout(self.gridLayoutWidget_3)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -139,7 +151,16 @@ class Ui_DialogConfigureActuators(object):
 
         self.groupBox_3 = QGroupBox(self.tab_server)
         self.groupBox_3.setObjectName(u"groupBox_3")
-        self.groupBox_3.setGeometry(QRect(0, 190, 601, 141))
+        self.groupBox_3.setGeometry(QRect(0, 190, 601, 171))
+        self.plainTextEdit_test_server_log = QPlainTextEdit(self.groupBox_3)
+        self.plainTextEdit_test_server_log.setObjectName(u"plainTextEdit_test_server_log")
+        self.plainTextEdit_test_server_log.setGeometry(QRect(10, 70, 581, 81))
+        self.pushButton_start_server = QPushButton(self.groupBox_3)
+        self.pushButton_start_server.setObjectName(u"pushButton_start_server")
+        self.pushButton_start_server.setGeometry(QRect(10, 40, 281, 24))
+        self.pushButton_stop_server = QPushButton(self.groupBox_3)
+        self.pushButton_stop_server.setObjectName(u"pushButton_stop_server")
+        self.pushButton_stop_server.setGeometry(QRect(300, 40, 291, 24))
         self.tabWidget.addTab(self.tab_server, "")
 
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
@@ -162,6 +183,8 @@ class Ui_DialogConfigureActuators(object):
 
     def retranslateUi(self, DialogConfigureActuators):
         DialogConfigureActuators.setWindowTitle(QCoreApplication.translate("DialogConfigureActuators", u"Configure actuators", None))
+        self.pushButton_add_actuator.setText(QCoreApplication.translate("DialogConfigureActuators", u"Add actuator", None))
+        self.pushButton_remove_actuator.setText(QCoreApplication.translate("DialogConfigureActuators", u"Remove actuator", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_clients), QCoreApplication.translate("DialogConfigureActuators", u"Actuators", None))
         self.groupBox.setTitle(QCoreApplication.translate("DialogConfigureActuators", u"Server", None))
         self.label_2.setText(QCoreApplication.translate("DialogConfigureActuators", u"Port", None))
@@ -174,6 +197,8 @@ class Ui_DialogConfigureActuators(object):
         self.pushButton_key_file.setText(QCoreApplication.translate("DialogConfigureActuators", u"Select key file", None))
         self.pushButton_cert_file.setText(QCoreApplication.translate("DialogConfigureActuators", u"Select certificate file", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("DialogConfigureActuators", u"Test Server", None))
+        self.pushButton_start_server.setText(QCoreApplication.translate("DialogConfigureActuators", u"Start actuator server", None))
+        self.pushButton_stop_server.setText(QCoreApplication.translate("DialogConfigureActuators", u"Stop actuator server", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_server), QCoreApplication.translate("DialogConfigureActuators", u"Server", None))
         self.label_status.setText("")
     # retranslateUi
