@@ -21,6 +21,8 @@ from domain.camera import Camera, cameras
 from domain.usb_camera import USBCamera
 from ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
 
+module_dir_path = os.path.dirname(os.path.abspath(__file__))
+
 
 class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
     """Class to select and configure local cameras (i.e., directly plugged to the WADAS node)."""
@@ -29,7 +31,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
         super(DialogSelectLocalCameras, self).__init__()
         self.ui = Ui_DialogSelectLocalCameras()
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
         self.enumerated_usb_cameras = enumerate_cameras(cv2.CAP_MSMF)
         # TODO: check API preference for linux and implement it OS independent.
 

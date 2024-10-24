@@ -25,7 +25,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         super(DialogInsertEmail, self).__init__()
         self.ui = Ui_DialogInsertEmail()
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
 
         self.email_notifier = Notifier.notifiers[Notifier.NotifierTypes.Email.value]
         self.valid_sender_email = False

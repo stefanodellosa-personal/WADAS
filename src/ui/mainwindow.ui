@@ -258,6 +258,7 @@
    <addaction name="separator"/>
    <addaction name="actionSelectLocalCameras"/>
    <addaction name="actionConfigure_FTP_Cameras"/>
+   <addaction name="actionactionConfigure_actuators"/>
    <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionSelect_Mode"/>
    <addaction name="actionConfigure_Ai_model"/>
@@ -442,6 +443,21 @@
    </property>
    <property name="toolTip">
     <string>Configure FTP cameras and server</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionactionConfigure_actuators">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/icon-actuator-24.png</normaloff>../icons/icon-actuator-24.png</iconset>
+   </property>
+   <property name="text">
+    <string>actionConfigure_actuators</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure actuators</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
