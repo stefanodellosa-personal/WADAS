@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 class FastAPIActuatorServer:
     """FastAPI-based HTTPS Server used to communicate with actuators"""
 
+    actuator_server = None
+
     def __init__(self, ip_address: str, port: int, certificate: str, key: str):
         self.ip = ip_address
         self.port = port

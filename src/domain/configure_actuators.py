@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 from validators import ipv4
 
 from domain.actuator import Actuator
+from domain.fastapi_actuator_server import FastAPIActuatorServer
 from domain.qtextedit_logger import QTextEditLogger
 from domain.roadsign_actuator import RoadSignActuator
 from ui.ui_configure_actuators import Ui_DialogConfigureActuators
@@ -74,7 +75,11 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
 
-        # TODO add server fields initialization
+        if FastAPIActuatorServer.actuator_server:
+            self.ui.lineEdit_server_ip.setText(FastAPIActuatorServer.actuator_server.ip)
+            self.ui.lineEdit_server_port.setText(FastAPIActuatorServer.actuator_server.port)
+            self.ui.label_key_file.setText(FastAPIActuatorServer.actuator_server.key)
+            self.ui.label_cert_file.setText(FastAPIActuatorServer.actuator_server.certificate)
         self.list_actuators_in_tab()
 
     def list_actuators_in_tab(self):
@@ -255,8 +260,18 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
     def accept_and_close(self):
         """When Ok is clicked, save Ai model config info before closing."""
 
+        if FastAPIActuatorServer.actuator_server:
+            # TODO: add logic to update existing actuator server values
+            pass
+        else:
+            FastAPIActuatorServer.actuator_server = FastAPIActuatorServer(
+                self.ui.lineEdit_server_ip.text(),
+                self.ui.lineEdit_server_port.text(),
+                self.ui.label_cert_file.text(),
+                self.ui.label_key_file.text(),
+            )
         if Actuator.actuators:
-            # TODO: add logic
+            # TODO: add logic to update existing actuator values
             pass
         else:
             i = 1

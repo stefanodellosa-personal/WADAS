@@ -25,6 +25,7 @@ from domain.configure_actuators import DialogConfigureActuators
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.email_notifier import EmailNotifier
+from domain.fastapi_actuator_server import FastAPIActuatorServer
 from domain.feeder_actuator import FeederActuator
 from domain.ftp_camera import FTPCamera
 from domain.ftps_server import FTPsServer
@@ -439,6 +440,11 @@ class MainWindow(QMainWindow):
             if self.selected_operation_mode
             else "",
             "ftps_server": (FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else ""),
+            "actuator_server": (
+                FastAPIActuatorServer.actuator_server.serialize()
+                if FastAPIActuatorServer.actuator_server
+                else ""
+            ),
         }
 
         if not self.configuration_file_name:
@@ -520,6 +526,9 @@ class MainWindow(QMainWindow):
                                     ftp_camera.ftp_folder,
                                 )
                 Camera.detection_params = wadas_config["camera_detection_params"]
+                FastAPIActuatorServer.actuator_server = FastAPIActuatorServer.deserialize(
+                    wadas_config["actuator_server"]
+                )
                 for data in wadas_config["actuators"]:
                     if data["type"] == Actuator.ActuatorTypes.ROADSIGN.value:
                         actuator = RoadSignActuator.deserialize(data)
