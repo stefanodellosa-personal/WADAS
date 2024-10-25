@@ -73,8 +73,29 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
-        # TODO: fill up logic
-        pass
+
+        # TODO add server fields initialization
+        self.list_actuators_in_tab()
+
+    def list_actuators_in_tab(self):
+        """Method to list cameras in FTPCameras tab."""
+
+        i = 1
+        for key in Actuator.actuators:
+            if i > 1:
+                self.add_actuator()
+            actuator_id_ln = self.findChild(QLineEdit, f"lineEdit_actuator_id_{i}")
+            actuator_id_ln.setText(Actuator.actuators[key].id)
+            actuator_type_cb: QComboBox
+            actuator_type_cb = self.findChild(QComboBox, f"comboBox_actuator_type_{i}")
+            if Actuator.actuators[key].type == Actuator.ActuatorTypes.ROADSIGN:
+                actuator_type_cb.setCurrentText(Actuator.ActuatorTypes.ROADSIGN.value)
+            elif Actuator.actuators[key].type == Actuator.ActuatorTypes.FEEDER:
+                actuator_type_cb.setCurrentText(Actuator.ActuatorTypes.FEEDER.value)
+            actuator_enablement: QCheckBox
+            actuator_enablement = self.findChild(QCheckBox, f"checkBox_actuator_enablement_{i}")
+            actuator_enablement.setChecked(Actuator.actuators[key].enabled)
+            i += 1
 
     def validate(self):
         """Method to validate dialog input fields"""
