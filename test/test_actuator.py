@@ -34,6 +34,7 @@ def test_get_command_with_command(actuator):
     command = actuator.get_command()
     assert command == "test_command"
     assert actuator.last_update is not None
+    assert actuator.cmd_queue.empty()
 
 
 def test_get_command_without_command(actuator):
