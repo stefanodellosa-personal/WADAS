@@ -37,5 +37,5 @@ def test_deserialize():
     }
     actuator = FeederActuator.deserialize(data)
     assert isinstance(actuator, FeederActuator)
-    assert actuator.actuator_id == "123"
+    assert actuator.id == "123"
     assert actuator.enabled is True

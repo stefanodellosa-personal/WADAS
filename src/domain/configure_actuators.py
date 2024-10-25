@@ -59,6 +59,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.add_actuator()
 
         # Slots
+        self.ui.buttonBox.accepted.connect(self.accept_and_close)
         self.ui.pushButton_add_actuator.clicked.connect(self.add_actuator)
         self.ui.pushButton_remove_actuator.clicked.connect(self.remove_actuator())
         self.ui.pushButton_key_file.clicked.connect(self.select_key_file)
@@ -200,17 +201,20 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
     def get_actuator_id(self, row):
         """Method to get actuator id text from UI programmatically by row number"""
+        actuator_id_ln: QLineEdit
         actuator_id_ln = self.findChild(QLineEdit, f"lineEdit_actuator_id_{row}")
         return actuator_id_ln.text() if actuator_id_ln else None
 
     def get_actuator_type(self, row):
         """Method to get actuator type from UI programmatically by row number"""
-        actuator_type = self.findChild(QLineEdit, f"comboBox_actuator_type_{row}")
-        return actuator_type.text() if actuator_type else None
+        actuator_type: QComboBox
+        actuator_type = self.findChild(QComboBox, f"comboBox_actuator_type_{row}")
+        return actuator_type.currentText()
 
     def get_actuator_enablement(self, row):
         """Method to get actuator enablement from UI programmatically by row number"""
-        actuator_enablement = self.findChild(QLineEdit, f"label_actuator_enable_{row}")
+        actuator_enablement: QCheckBox
+        actuator_enablement = self.findChild(QCheckBox, f"checkBox_actuator_enablement_{row}")
         return actuator_enablement.isChecked()
 
     def is_duplicated_id(self, idx):
@@ -240,8 +244,10 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                 cur_actuator_type = self.get_actuator_type(i)
                 cur_actuator_enbl = self.get_actuator_enablement(i)
                 if cur_actuator_id and cur_actuator_type:
-                    if cur_actuator_type == Actuator.ActuatorTypes.ROADSIGN:
-                        RoadSignActuator(cur_actuator_id, cur_actuator_enbl)
+                    if cur_actuator_type == Actuator.ActuatorTypes.ROADSIGN.value:
+                        actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enbl)
+                        Actuator.actuators[actuator.id] = actuator
+                i += 1
         self.accept()
 
     def _setup_logger(self):

@@ -25,6 +25,7 @@ from domain.configure_actuators import DialogConfigureActuators
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.email_notifier import EmailNotifier
+from domain.feeder_actuator import FeederActuator
 from domain.ftp_camera import FTPCamera
 from domain.ftps_server import FTPsServer
 from domain.insert_email import DialogInsertEmail
@@ -32,6 +33,7 @@ from domain.insert_url import InsertUrlDialog
 from domain.notifier import Notifier
 from domain.operation_mode import OperationMode
 from domain.qtextedit_logger import QTextEditLogger
+from domain.roadsign_actuator import RoadSignActuator
 from domain.select_local_cameras import DialogSelectLocalCameras
 from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
@@ -401,7 +403,7 @@ class MainWindow(QMainWindow):
         """Method to save configuration to file."""
 
         logger.info("Saving configuration to file...")
-        # Serializing cameras per class type
+        # Prepare serialization for cameras per class type
         cameras_to_dict = []
         for camera in cameras:
             if (
@@ -409,15 +411,26 @@ class MainWindow(QMainWindow):
                 or camera.type == Camera.CameraTypes.FTPCamera
             ):
                 cameras_to_dict.append(camera.serialize())
-        # Serialize configured notification methods
+        # Prepare serialization for notifiers per class type
         notification = {}
         for key in Notifier.notifiers:
-            notification[key] = Notifier.notifiers[key].serialize()
+            if key and Notifier.notifiers[key]:
+                notification[key] = Notifier.notifiers[key].serialize()
+        # Prepare serialization for actuators per class type
+        actuators = []
+        for key in Actuator.actuators:
+            if (
+                Actuator.actuators[key]
+                and Actuator.actuators[key].type == Actuator.ActuatorTypes.ROADSIGN
+            ):
+                actuators.append(Actuator.actuators[key].serialize())
 
+        # Build data structure to serialize
         data = {
             "notification": notification or "",
             "cameras": cameras_to_dict,
             "camera_detection_params": Camera.detection_params,
+            "actuators": actuators,
             "ai_model": {
                 "ai_detect_treshold": AiModel.detection_treshold,
                 "ai_class_treshold": AiModel.classification_treshold,
@@ -498,7 +511,7 @@ class MainWindow(QMainWindow):
                             if not os.path.isdir(ftp_camera.ftp_folder):
                                 os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
                             credentials = keyring.get_credential(
-                                f"WADAS_FTPcamera_{ftp_camera.id}", ""
+                                f"WADAS_FTP_camera_{ftp_camera.id}", ""
                             )
                             if credentials:
                                 FTPsServer.ftps_server.add_user(
@@ -507,6 +520,13 @@ class MainWindow(QMainWindow):
                                     ftp_camera.ftp_folder,
                                 )
                 Camera.detection_params = wadas_config["camera_detection_params"]
+                for data in wadas_config["actuators"]:
+                    if data["type"] == Actuator.ActuatorTypes.ROADSIGN.value:
+                        actuator = RoadSignActuator.deserialize(data)
+                        Actuator.actuators[actuator.id] = actuator
+                    elif data["type"] == Actuator.ActuatorTypes.FEEDER.value:
+                        actuator = FeederActuator.deserialize(data)
+                        Actuator.actuators[actuator.id] = actuator
                 AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
                 AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
                 self.selected_operation_mode = (
@@ -520,6 +540,7 @@ class MainWindow(QMainWindow):
                 self.setWindowModified(False)
                 self.update_toolbar_status()
                 self.update_en_camera_list()
+                self.update_en_actuator_list()
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
@@ -545,8 +566,10 @@ class MainWindow(QMainWindow):
 
         self.ui.listWidget_en_actuators.clear()
         for actuator in Actuator.actuators:
-            if actuator.enabled:
-                text = f"({actuator.type.value}) {actuator.id}"
+            if Actuator.actuators[actuator].enabled:
+                text = (
+                    f"({Actuator.actuators[actuator].type.value}) {Actuator.actuators[actuator].id}"
+                )
                 self.ui.listWidget_en_actuators.addItem(text)
 
     def _init_logging_dropdown(self):
