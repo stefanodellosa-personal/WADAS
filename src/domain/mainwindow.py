@@ -24,7 +24,7 @@ from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.email_notifier import EmailNotifier
 from domain.ftp_camera import FTPCamera
-from domain.ftps_server import FTPsServer
+from domain.ftps_server import FTPsServer, initialize_fpts_logger
 from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
 from domain.notifier import Notifier
@@ -126,6 +126,8 @@ class MainWindow(QMainWindow):
         file_handler.setLevel(logging_level)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
+        initialize_fpts_logger()
 
     def set_image(self, img):
         """Set image to show in WADAS. This is used for startup, detected and
