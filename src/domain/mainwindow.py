@@ -109,6 +109,11 @@ class MainWindow(QMainWindow):
     def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
+        # fix: one of our import libraries is setting a root logger with a handler
+        # we need to remove it to avoid duplicate logs
+        for handler in logging.root.handlers[1:]:
+            logging.root.removeHandler(handler)
+
         formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
         logging_level = logging.DEBUG
         # Line edit logging in mainwindow
