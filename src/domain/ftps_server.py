@@ -15,8 +15,11 @@ logger = logging.getLogger(__name__)
 
 pyftpdlib_logger = logging.getLogger("pyftpdlib")
 logger.setLevel(logging.DEBUG)
+ftps_log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "log")
+# Create the directory if it does not exist
+os.makedirs(os.path.dirname(ftps_log_dir), exist_ok=True)
 handler = RotatingFileHandler(
-    os.path.join(os.getcwd(), "log", "ftps_server.log"), maxBytes=100000, backupCount=3
+    os.path.join(ftps_log_dir, "ftps_server.log"), maxBytes=100000, backupCount=3
 )
 formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
 handler.setFormatter(formatter)
