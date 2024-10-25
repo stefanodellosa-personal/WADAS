@@ -37,6 +37,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui = Ui_DialogConfigureActuators()
         self.ui_actuator_idx = 0
         self.removed_actuators = []
+        self.actuator_server_thread = None
 
         # UI
         self.ui.setupUi(self)
@@ -67,6 +68,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui.pushButton_cert_file.clicked.connect(self.select_certificate_file)
         self.ui.lineEdit_server_ip.textChanged.connect(self.validate)
         self.ui.lineEdit_server_port.textChanged.connect(self.validate)
+        self.ui.pushButton_start_server.clicked.connect(self.start_actuator_server)
 
         # Init dialog
         self.initialize_dialog()
@@ -285,6 +287,21 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                         Actuator.actuators[actuator.id] = actuator
                 i += 1
         self.accept()
+
+    def start_actuator_server(self):
+        """Method to start the Actuator Server."""
+        # TODO @stefano review
+        if not FastAPIActuatorServer.actuator_server:
+            FastAPIActuatorServer.actuator_server = FastAPIActuatorServer(
+                self.ui.lineEdit_server_ip.text(),
+                int(self.ui.lineEdit_server_port.text()),
+                self.ui.label_cert_file.text(),
+                self.ui.label_key_file.text(),
+            )
+
+        self.ui.pushButton_stop_server.setEnabled(True)
+        # Start the thread
+        self.actuator_server_thread = FastAPIActuatorServer.actuator_server.run()
 
     def _setup_logger(self):
         """Initialize logger for UI logging."""
