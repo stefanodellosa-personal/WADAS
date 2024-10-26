@@ -17,12 +17,16 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
+from domain.actuator import Actuator
 from domain.ai_model import AiModel
 from domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from domain.camera import Camera, cameras
+from domain.configure_actuators import DialogConfigureActuators
 from domain.configure_ai_model import ConfigureAiModel
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.email_notifier import EmailNotifier
+from domain.fastapi_actuator_server import FastAPIActuatorServer
+from domain.feeder_actuator import FeederActuator
 from domain.ftp_camera import FTPCamera
 from domain.ftps_server import FTPsServer, initialize_fpts_logger
 from domain.insert_email import DialogInsertEmail
@@ -30,6 +34,7 @@ from domain.insert_url import InsertUrlDialog
 from domain.notifier import Notifier
 from domain.operation_mode import OperationMode
 from domain.qtextedit_logger import QTextEditLogger
+from domain.roadsign_actuator import RoadSignActuator
 from domain.select_local_cameras import DialogSelectLocalCameras
 from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
@@ -45,6 +50,8 @@ level_mapping = {
     3: logging.ERROR,
     4: logging.CRITICAL,
 }
+
+module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
 class MainWindow(QMainWindow):
@@ -70,9 +77,11 @@ class MainWindow(QMainWindow):
         self._setup_logger()
 
         # Initialize startup image
-        self.set_image(os.path.join(os.getcwd(), "img", "WADAS_logo_big.jpg"))
+        self.set_image(os.path.join(module_dir_path, "..", "img", "WADAS_logo_big.jpg"))
         # Set mainwindow icon
-        self.setWindowIcon(QtGui.QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(
+            QtGui.QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg"))
+        )
 
         # Update mainwindow UI methods
         self._init_logging_dropdown()
@@ -97,6 +106,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
         self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
         self.ui.actionConfigure_FTP_Cameras.triggered.connect(self.configure_ftp_cameras)
+        self.ui.actionactionConfigure_actuators.triggered.connect(self.configure_actuators)
 
     def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -262,6 +272,7 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen_configuration_file.setEnabled(not running)
         self.ui.actionSave_configuration_as.setEnabled(not running)
         self.ui.actionSave_configuration.setEnabled(not running)
+        self.ui.actionactionConfigure_actuators.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -310,7 +321,7 @@ class MainWindow(QMainWindow):
                 == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
             ):
                 self.operation_mode = AnimalDetectionAndClassificationMode()
-            # TODO: add elif with other operation modes
+            # add elif with other operation modes
 
     def configure_email(self):
         """Method to run dialog for insertion of email parameters to enable notifications."""
@@ -355,7 +366,7 @@ class MainWindow(QMainWindow):
             return True
 
     def select_local_cameras(self):
-        """Method to trigger UI dialog for local cameras configuration."""
+        """Method to trigger UI dialog for local camera(s) configuration."""
 
         select_local_cameras = DialogSelectLocalCameras()
         if select_local_cameras.exec_():
@@ -363,6 +374,16 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
+
+    def configure_actuators(self):
+        """Method to trigger UI dialog for actuator(s) configuration."""
+
+        configure_actuators_dlg = DialogConfigureActuators()
+        if configure_actuators_dlg.exec_():
+            logger.info("Actuator(s) configured.")
+            self.setWindowModified(True)
+            self.update_toolbar_status()
+            self.update_en_actuator_list()
 
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""
@@ -390,7 +411,7 @@ class MainWindow(QMainWindow):
         """Method to save configuration to file."""
 
         logger.info("Saving configuration to file...")
-        # Serializing cameras per class type
+        # Prepare serialization for cameras per class type
         cameras_to_dict = []
         for camera in cameras:
             if (
@@ -398,15 +419,22 @@ class MainWindow(QMainWindow):
                 or camera.type == Camera.CameraTypes.FTPCamera
             ):
                 cameras_to_dict.append(camera.serialize())
-        # Serialize configured notification methods
+        # Prepare serialization for notifiers per class type
         notification = {}
-        for key in Notifier.notifiers:
-            notification[key] = Notifier.notifiers[key].serialize()
+        for key, value in Notifier.notifiers.items():
+            if key and value:
+                notification[key] = Notifier.notifiers[key].serialize()
+        # Prepare serialization for actuators per class type
+        actuators = [
+            value.serialize() for key, value in Actuator.actuators.items() if key and value
+        ]
 
+        # Build data structure to serialize
         data = {
             "notification": notification or "",
             "cameras": cameras_to_dict,
             "camera_detection_params": Camera.detection_params,
+            "actuators": actuators,
             "ai_model": {
                 "ai_detect_treshold": AiModel.detection_treshold,
                 "ai_class_treshold": AiModel.classification_treshold,
@@ -415,6 +443,11 @@ class MainWindow(QMainWindow):
             if self.selected_operation_mode
             else "",
             "ftps_server": (FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else ""),
+            "actuator_server": (
+                FastAPIActuatorServer.actuator_server.serialize()
+                if FastAPIActuatorServer.actuator_server
+                else ""
+            ),
         }
 
         if not self.configuration_file_name:
@@ -487,7 +520,7 @@ class MainWindow(QMainWindow):
                             if not os.path.isdir(ftp_camera.ftp_folder):
                                 os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
                             credentials = keyring.get_credential(
-                                f"WADAS_FTPcamera_{ftp_camera.id}", ""
+                                f"WADAS_FTP_camera_{ftp_camera.id}", ""
                             )
                             if credentials:
                                 FTPsServer.ftps_server.add_user(
@@ -496,6 +529,17 @@ class MainWindow(QMainWindow):
                                     ftp_camera.ftp_folder,
                                 )
                 Camera.detection_params = wadas_config["camera_detection_params"]
+                FastAPIActuatorServer.actuator_server = FastAPIActuatorServer.deserialize(
+                    wadas_config["actuator_server"]
+                )
+                Actuator.actuators.clear()
+                for data in wadas_config["actuators"]:
+                    if data["type"] == Actuator.ActuatorTypes.ROADSIGN.value:
+                        actuator = RoadSignActuator.deserialize(data)
+                        Actuator.actuators[actuator.id] = actuator
+                    elif data["type"] == Actuator.ActuatorTypes.FEEDER.value:
+                        actuator = FeederActuator.deserialize(data)
+                        Actuator.actuators[actuator.id] = actuator
                 AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
                 AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
                 self.selected_operation_mode = (
@@ -509,6 +553,7 @@ class MainWindow(QMainWindow):
                 self.setWindowModified(False)
                 self.update_toolbar_status()
                 self.update_en_camera_list()
+                self.update_en_actuator_list()
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
@@ -529,20 +574,31 @@ class MainWindow(QMainWindow):
                 text = f"({camera.type.value}) {camera.id}"
                 self.ui.listWidget_en_cameras.addItem(text)
 
+    def update_en_actuator_list(self):
+        """Method to list enabled actuator(s) in UI"""
+
+        self.ui.listWidget_en_actuators.clear()
+        for actuator in Actuator.actuators:
+            if Actuator.actuators[actuator].enabled:
+                text = (
+                    f"({Actuator.actuators[actuator].type.value}) {Actuator.actuators[actuator].id}"
+                )
+                self.ui.listWidget_en_actuators.addItem(text)
+
     def _init_logging_dropdown(self):
         """Method to initialize logging levels in tooldbar dropdown"""
 
         label = QLabel("Log level: ")
         self.ui.toolBar.addWidget(label)
 
-        comboBox = QComboBox(self)
-        comboBox.setObjectName("logLevelComboBox")
+        combo_box = QComboBox(self)
+        combo_box.setObjectName("logLevelComboBox")
         levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-        comboBox.addItems(levels)
-        comboBox.setToolTip("Select logging level")
-        comboBox.setCurrentText("INFO")
-        comboBox.currentIndexChanged.connect(self.change_logging_level)
-        self.ui.toolBar.addWidget(comboBox)
+        combo_box.addItems(levels)
+        combo_box.setToolTip("Select logging level")
+        combo_box.setCurrentText("INFO")
+        combo_box.currentIndexChanged.connect(self.change_logging_level)
+        self.ui.toolBar.addWidget(combo_box)
 
     def change_logging_level(self, index):
         """Method to modify UI logging level"""

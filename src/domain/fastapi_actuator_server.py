@@ -11,22 +11,24 @@ logger = logging.getLogger(__name__)
 class FastAPIActuatorServer:
     """FastAPI-based HTTPS Server used to communicate with actuators"""
 
-    def __init__(self, ip_address: str, port: int, certificate: str, key: str):
-        self.ip = ip_address
+    actuator_server = None
+
+    def __init__(self, ip: str, port: int, ssl_certificate: str, ssl_key: str):
+        self.ip = ip
         self.port = port
-        self.certificate = certificate
-        self.key = key
+        self.ssl_certificate = ssl_certificate
+        self.ssl_key = ssl_key
         self.thread = None
         self.server = None
 
     def run(self):
         """Method to run the FastAPI Actuator server with SSL in a separate thread."""
         config = uvicorn.Config(
-            app="actuatorserver_app:app",
+            app="domain.actuator_server_app:app",
             host=self.ip,
             port=self.port,
-            ssl_certfile=self.certificate,
-            ssl_keyfile=self.key,
+            ssl_certfile=self.ssl_certificate,
+            ssl_keyfile=self.ssl_key,
         )
         self.server = uvicorn.Server(config)
 
@@ -46,8 +48,8 @@ class FastAPIActuatorServer:
     def serialize(self):
         """Method to serialize FastAPIActuatorServer object."""
         return {
-            "ssl_certificate": self.certificate,
-            "ssl_key": self.key,
+            "ssl_certificate": self.ssl_certificate,
+            "ssl_key": self.ssl_key,
             "ip": self.ip,
             "port": self.port,
         }
