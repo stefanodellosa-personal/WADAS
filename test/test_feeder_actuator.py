@@ -32,7 +32,7 @@ def test_serialize():
 
 def test_deserialize():
     data = {
-        "actuator_id": "123",
+        "id": "123",
         "enabled": True,
     }
     actuator = FeederActuator.deserialize(data)
