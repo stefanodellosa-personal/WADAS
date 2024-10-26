@@ -420,10 +420,7 @@ class MainWindow(QMainWindow):
         # Prepare serialization for actuators per class type
         actuators = []
         for key in Actuator.actuators:
-            if (
-                Actuator.actuators[key]
-                and Actuator.actuators[key].type == Actuator.ActuatorTypes.ROADSIGN
-            ):
+            if Actuator.actuators[key]:
                 actuators.append(Actuator.actuators[key].serialize())
 
         # Build data structure to serialize

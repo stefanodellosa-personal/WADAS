@@ -22,6 +22,7 @@ from validators import ipv4
 
 from domain.actuator import Actuator
 from domain.fastapi_actuator_server import FastAPIActuatorServer
+from domain.feeder_actuator import FeederActuator
 from domain.qtextedit_logger import QTextEditLogger
 from domain.roadsign_actuator import RoadSignActuator
 from ui.ui_configure_actuators import Ui_DialogConfigureActuators
@@ -37,6 +38,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui = Ui_DialogConfigureActuators()
         self.ui_actuator_idx = 0
         self.removed_actuators = []
+        self.actuator_server = None
         self.actuator_server_thread = None
 
         # UI
@@ -63,12 +65,13 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
         self.ui.pushButton_add_actuator.clicked.connect(self.add_actuator)
-        self.ui.pushButton_remove_actuator.clicked.connect(self.remove_actuator())
+        self.ui.pushButton_remove_actuator.clicked.connect(self.remove_actuator)
         self.ui.pushButton_key_file.clicked.connect(self.select_key_file)
         self.ui.pushButton_cert_file.clicked.connect(self.select_certificate_file)
         self.ui.lineEdit_server_ip.textChanged.connect(self.validate)
         self.ui.lineEdit_server_port.textChanged.connect(self.validate)
         self.ui.pushButton_start_server.clicked.connect(self.start_actuator_server)
+        self.ui.pushButton_stop_server.clicked.connect(self.stop_actuator_server)
 
         # Init dialog
         self.initialize_dialog()
@@ -78,18 +81,18 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         """Method to initialize dialog with existing values (if any)."""
 
         if FastAPIActuatorServer.actuator_server:
-            self.ui.lineEdit_server_ip.setText(FastAPIActuatorServer.actuator_server.ip)
-            self.ui.lineEdit_server_port.setText(FastAPIActuatorServer.actuator_server.port)
-            self.ui.label_key_file.setText(FastAPIActuatorServer.actuator_server.key)
-            self.ui.label_cert_file.setText(FastAPIActuatorServer.actuator_server.certificate)
+            self.ui.lineEdit_server_ip.setText(str(FastAPIActuatorServer.actuator_server.ip))
+            self.ui.lineEdit_server_port.setText(str(FastAPIActuatorServer.actuator_server.port))
+            self.ui.label_key_file.setText(FastAPIActuatorServer.actuator_server.ssl_key)
+            self.ui.label_cert_file.setText(FastAPIActuatorServer.actuator_server.ssl_certificate)
         self.list_actuators_in_tab()
 
     def list_actuators_in_tab(self):
         """Method to list cameras in FTPCameras tab."""
 
-        i = 1
+        i = 0
         for key in Actuator.actuators:
-            if i > 1:
+            if i > 0:
                 self.add_actuator()
             actuator_id_ln = self.findChild(QLineEdit, f"lineEdit_actuator_id_{i}")
             actuator_id_ln.setText(Actuator.actuators[key].id)
@@ -122,18 +125,16 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             self.ui.label_status.setText("Invalid SSL key file provided!")
             valid = False
         if not os.path.isfile(self.ui.label_cert_file.text()):
-            self.ui.label_status.setText("Invalid SSL key file provided!")
+            self.ui.label_status.setText("Invalid SSL certificate file provided!")
             valid = False
 
-        i = 1
-        while i <= self.ui_actuator_idx:
+        for i in range(0, self.ui_actuator_idx):
             if not self.get_actuator_id(i):
                 self.ui.label_status.setText("Missing Actuator ID!")
                 valid = False
             elif self.is_duplicated_id(i):
                 self.ui.label_status.setText(f"Duplicated Actuator ID {self.get_actuator_id(i)}!")
                 valid = False
-            i += 1
 
         if valid:
             self.ui.label_status.setText("")
@@ -145,7 +146,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
         grid_layout_actuators = self.findChild(QGridLayout, "gridLayout_actuators")
         if grid_layout_actuators:
-            row = self.ui_actuator_idx + 1
+            row = self.ui_actuator_idx
             # Actuator selection check box
             radio_button = QRadioButton()
             radio_button.setObjectName(f"radioButton_actuator_{row}")
@@ -188,8 +189,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
     def remove_actuator(self):
         """Method to remove Actuator from list."""
 
-        i = 1
-        while i <= self.ui_actuator_idx:
+        for i in range(0, self.ui_actuator_idx):
             radiobtn = self.findChild(QRadioButton, f"radioButton_actuator_{i}")
             if radiobtn:
                 actuator_id_ln = self.findChild(QLineEdit, f"lineEdit_actuator_id_{i}")
@@ -197,12 +197,10 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                     self.removed_actuators.append(actuator_id_ln.text())
                     gridLayout_actuators = self.findChild(QGridLayout, "gridLayout_actuators")
                     if gridLayout_actuators:
-                        j = 0
-                        while j <= 6:
+                        for j in range(0, 7):
                             gridLayout_actuators.itemAtPosition(i, j).widget().setParent(None)
-                            j += 1
-            i += 1
         self.ui.pushButton_remove_actuator.setEnabled(False)
+        self.validate()
 
     def update_remove_actuator_btn(self):
         """Method to remove actuator from the list"""
@@ -249,50 +247,71 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         """Method to check whether actuators have unique id."""
 
         actuators_id = set()
-        i = 1
-        while i <= self.ui_actuator_idx:
+        for i in range(0, self.ui_actuator_idx):
             cur_id = self.get_actuator_id(i)
             if cur_id not in actuators_id:
                 actuators_id.add(cur_id)
             elif i == idx:
                 return True
-            i += 1
         return False
 
     def accept_and_close(self):
         """When Ok is clicked, save Ai model config info before closing."""
 
         if FastAPIActuatorServer.actuator_server:
-            # TODO: add logic to update existing actuator server values
-            pass
+            FastAPIActuatorServer.actuator_server.ip = self.ui.lineEdit_server_ip.text()
+            FastAPIActuatorServer.actuator_server.port = int(self.ui.lineEdit_server_port.text())
+            FastAPIActuatorServer.actuator_server.ssl_certificate = self.ui.label_cert_file.text()
+            FastAPIActuatorServer.actuator_server.ssl_key = self.ui.label_key_file.text()
         else:
             FastAPIActuatorServer.actuator_server = FastAPIActuatorServer(
                 self.ui.lineEdit_server_ip.text(),
-                self.ui.lineEdit_server_port.text(),
+                int(self.ui.lineEdit_server_port.text()),
                 self.ui.label_cert_file.text(),
                 self.ui.label_key_file.text(),
             )
         if Actuator.actuators:
-            # TODO: add logic to update existing actuator values
-            pass
-        else:
-            i = 1
-            while i <= self.ui_actuator_idx:
+            actuators_id = set()
+            for i in range(0, self.ui_actuator_idx):
                 cur_actuator_id = self.get_actuator_id(i)
                 cur_actuator_type = self.get_actuator_type(i)
-                cur_actuator_enbl = self.get_actuator_enablement(i)
+                cur_actuator_enablement = self.get_actuator_enablement(i)
+                if cur_actuator_id and cur_actuator_type:
+                    actuators_id.add(cur_actuator_id)
+                    if cur_actuator_id in Actuator.actuators:
+                        # actuator exists and we update its enablement status
+                        Actuator.actuators[cur_actuator_id].enabled = cur_actuator_enablement
+                    else:
+                        # actuator does not exist, therefore we add it to the dictionary
+                        if cur_actuator_type == Actuator.ActuatorTypes.ROADSIGN.value:
+                            actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enablement)
+                            Actuator.actuators[actuator.id] = actuator
+                        elif cur_actuator_type == Actuator.ActuatorTypes.FEEDER.value:
+                            actuator = FeederActuator(cur_actuator_id, cur_actuator_enablement)
+                            Actuator.actuators[actuator.id] = actuator
+            # If an actuator changes the id we have to remove previous orphaned ids from dictionary
+            for key in list(Actuator.actuators.keys()):
+                if key not in actuators_id:
+                    del Actuator.actuators[key]
+        else:
+            for i in range(0, self.ui_actuator_idx):
+                cur_actuator_id = self.get_actuator_id(i)
+                cur_actuator_type = self.get_actuator_type(i)
+                cur_actuator_enablement = self.get_actuator_enablement(i)
                 if cur_actuator_id and cur_actuator_type:
                     if cur_actuator_type == Actuator.ActuatorTypes.ROADSIGN.value:
-                        actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enbl)
+                        actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enablement)
                         Actuator.actuators[actuator.id] = actuator
-                i += 1
+                    elif cur_actuator_type == Actuator.ActuatorTypes.FEEDER.value:
+                        actuator = FeederActuator(cur_actuator_id, cur_actuator_enablement)
+                        Actuator.actuators[actuator.id] = actuator
         self.accept()
 
     def start_actuator_server(self):
-        """Method to start the Actuator Server."""
+        """Method to start the Actuator server."""
         # TODO @stefano review
-        if not FastAPIActuatorServer.actuator_server:
-            FastAPIActuatorServer.actuator_server = FastAPIActuatorServer(
+        if not self.actuator_server:
+            self.actuator_server = FastAPIActuatorServer(
                 self.ui.lineEdit_server_ip.text(),
                 int(self.ui.lineEdit_server_port.text()),
                 self.ui.label_cert_file.text(),
@@ -301,12 +320,20 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
         self.ui.pushButton_stop_server.setEnabled(True)
         # Start the thread
-        self.actuator_server_thread = FastAPIActuatorServer.actuator_server.run()
+        self.actuator_server_thread = self.actuator_server.run()
+
+    def stop_actuator_server(self):
+        """Method to stop the Actuator server."""
+
+        if self.actuator_server and self.actuator_server_thread:
+            self.actuator_server.stop()
+            self.actuator_server_thread.join()
+            self.ui.pushButton_stop_server.setEnabled(False)
 
     def _setup_logger(self):
         """Initialize logger for UI logging."""
 
-        logger = logging.getLogger("pyftpdlib")
+        logger = logging.getLogger("fastapi")
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_test_server_log)
         logger.setLevel(logging.DEBUG)
         logger.addHandler(log_textbox)

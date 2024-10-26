@@ -32,10 +32,7 @@ class FeederActuator(Actuator):
 
     def serialize(self):
         """Method to serialize Actuator object into file."""
-        return {
-            "id": self.id,
-            "enabled": self.enabled,
-        }
+        return {"id": self.id, "enabled": self.enabled, "type": self.type.value}
 
     @staticmethod
     def deserialize(data):

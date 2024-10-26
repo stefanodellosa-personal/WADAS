@@ -13,11 +13,11 @@ class FastAPIActuatorServer:
 
     actuator_server = None
 
-    def __init__(self, ip_address: str, port: int, certificate: str, key: str):
-        self.ip = ip_address
+    def __init__(self, ip: str, port: int, ssl_certificate: str, ssl_key: str):
+        self.ip = ip
         self.port = port
-        self.certificate = certificate
-        self.key = key
+        self.ssl_certificate = ssl_certificate
+        self.ssl_key = ssl_key
         self.thread = None
         self.server = None
 
@@ -27,8 +27,8 @@ class FastAPIActuatorServer:
             app="domain.actuator_server_app:app",
             host=self.ip,
             port=self.port,
-            ssl_certfile=self.certificate,
-            ssl_keyfile=self.key,
+            ssl_certfile=self.ssl_certificate,
+            ssl_keyfile=self.ssl_key,
         )
         self.server = uvicorn.Server(config)
 
@@ -48,8 +48,8 @@ class FastAPIActuatorServer:
     def serialize(self):
         """Method to serialize FastAPIActuatorServer object."""
         return {
-            "ssl_certificate": self.certificate,
-            "ssl_key": self.key,
+            "ssl_certificate": self.ssl_certificate,
+            "ssl_key": self.ssl_key,
             "ip": self.ip,
             "port": self.port,
         }
