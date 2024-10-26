@@ -414,14 +414,13 @@ class MainWindow(QMainWindow):
                 cameras_to_dict.append(camera.serialize())
         # Prepare serialization for notifiers per class type
         notification = {}
-        for key in Notifier.notifiers:
-            if key and Notifier.notifiers[key]:
+        for key, value in Notifier.notifiers.items():
+            if key and value:
                 notification[key] = Notifier.notifiers[key].serialize()
         # Prepare serialization for actuators per class type
-        actuators = []
-        for key in Actuator.actuators:
-            if Actuator.actuators[key]:
-                actuators.append(Actuator.actuators[key].serialize())
+        actuators = [
+            value.serialize() for key, value in Actuator.actuators.items() if key and value
+        ]
 
         # Build data structure to serialize
         data = {
@@ -526,6 +525,7 @@ class MainWindow(QMainWindow):
                 FastAPIActuatorServer.actuator_server = FastAPIActuatorServer.deserialize(
                     wadas_config["actuator_server"]
                 )
+                Actuator.actuators.clear()
                 for data in wadas_config["actuators"]:
                     if data["type"] == Actuator.ActuatorTypes.ROADSIGN.value:
                         actuator = RoadSignActuator.deserialize(data)

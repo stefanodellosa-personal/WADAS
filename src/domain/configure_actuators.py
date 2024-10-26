@@ -334,6 +334,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
     def _setup_logger(self):
         """Initialize logger for UI logging."""
 
+        # TODO: fix log redirectin to UI dialog only
         logger = logging.getLogger("fastapi")
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_test_server_log)
         logger.setLevel(logging.DEBUG)

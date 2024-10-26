@@ -23,7 +23,7 @@ def test_serialize():
     actuator = FeederActuator(id="123", enabled=True)
     serialized_data = actuator.serialize()
     expected_data = {
-        "type": "FeederActuator",
+        "type": "Feeder",
         "id": "123",
         "enabled": True,
     }
