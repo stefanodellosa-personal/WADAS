@@ -200,6 +200,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                         for j in range(0, 7):
                             gridLayout_actuators.itemAtPosition(i, j).widget().setParent(None)
         self.ui.pushButton_remove_actuator.setEnabled(False)
+        self.ui_actuator_idx -= 1
         self.validate()
 
     def update_remove_actuator_btn(self):
