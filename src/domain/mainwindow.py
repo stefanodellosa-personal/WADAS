@@ -28,7 +28,7 @@ from domain.email_notifier import EmailNotifier
 from domain.fastapi_actuator_server import FastAPIActuatorServer
 from domain.feeder_actuator import FeederActuator
 from domain.ftp_camera import FTPCamera
-from domain.ftps_server import FTPsServer
+from domain.ftps_server import FTPsServer, initialize_fpts_logger
 from domain.insert_email import DialogInsertEmail
 from domain.insert_url import InsertUrlDialog
 from domain.notifier import Notifier
@@ -119,6 +119,11 @@ class MainWindow(QMainWindow):
     def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
+        # fix: one of our import libraries is setting a root logger with a handler
+        # we need to remove it to avoid duplicate logs
+        for handler in logging.root.handlers[1:]:
+            logging.root.removeHandler(handler)
+
         formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
         logging_level = logging.DEBUG
         # Line edit logging in mainwindow
@@ -136,6 +141,8 @@ class MainWindow(QMainWindow):
         file_handler.setLevel(logging_level)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
+        initialize_fpts_logger()
 
     def set_image(self, img):
         """Set image to show in WADAS. This is used for startup, detected and
