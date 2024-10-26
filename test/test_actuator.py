@@ -16,7 +16,7 @@ def actuator():
 
 
 def test_actuator_initialization(actuator):
-    assert actuator.actuator_id == "test_actuator"
+    assert actuator.id == "test_actuator"
     assert actuator.enabled is False
     assert actuator.last_update is None
     assert actuator.stop_thread is False

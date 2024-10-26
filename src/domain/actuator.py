@@ -14,13 +14,17 @@ class Actuator:
 
     actuators = {}
 
+    class ActuatorTypes(Enum):
+        ROADSIGN = "Road Sign"
+        FEEDER = "Feeder"
+
     def __init__(self, actuator_id, enabled=False):
         self.cmd_queue = Queue()
-        self.actuator_id = actuator_id
+        self.id = actuator_id
         self.last_update = None
         self.enabled = enabled
         self.stop_thread = False
-        Actuator.actuators[self.actuator_id] = self
+        self.type = None
 
     def send_command(self, cmd: Enum):
         """Method to insert a command into the actuator queue"""
