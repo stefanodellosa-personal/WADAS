@@ -130,19 +130,25 @@
       <widget class="QListWidget" name="listWidget_en_actuators"/>
      </item>
      <item>
-      <widget class="QLabel" name="label_classified_animal_title">
+      <widget class="QLabel" name="label_last_detection_title">
        <property name="font">
         <font>
          <bold>true</bold>
         </font>
        </property>
        <property name="text">
-        <string>Classified animal(s):</string>
+        <string>Last detection:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_classified_animal">
+      <widget class="QLabel" name="label_last_detection">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string/>
        </property>
@@ -174,25 +180,19 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_last_detection_title">
+      <widget class="QLabel" name="label_classified_animal_title">
        <property name="font">
         <font>
          <bold>true</bold>
         </font>
        </property>
        <property name="text">
-        <string>Last detection:</string>
+        <string>Classified animal(s):</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_last_detection">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
+      <widget class="QLabel" name="label_classified_animal">
        <property name="text">
         <string/>
        </property>
@@ -451,7 +451,7 @@
   <action name="actionactionConfigure_actuators">
    <property name="icon">
     <iconset>
-     <normaloff>icons/icon-actuator-24.png</normaloff>../icons/icon-actuator-24.png</iconset>
+     <normaloff>icons/icon-actuator-24.png</normaloff>icons/icon-actuator-24.png</iconset>
    </property>
    <property name="text">
     <string>actionConfigure_actuators</string>

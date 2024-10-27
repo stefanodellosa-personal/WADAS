@@ -167,16 +167,18 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.listWidget_en_actuators)
 
-        self.label_classified_animal_title = QLabel(self.verticalLayoutWidget)
-        self.label_classified_animal_title.setObjectName(u"label_classified_animal_title")
-        self.label_classified_animal_title.setFont(font)
+        self.label_last_detection_title = QLabel(self.verticalLayoutWidget)
+        self.label_last_detection_title.setObjectName(u"label_last_detection_title")
+        self.label_last_detection_title.setFont(font)
 
-        self.verticalLayout.addWidget(self.label_classified_animal_title)
+        self.verticalLayout.addWidget(self.label_last_detection_title)
 
-        self.label_classified_animal = QLabel(self.verticalLayoutWidget)
-        self.label_classified_animal.setObjectName(u"label_classified_animal")
+        self.label_last_detection = QLabel(self.verticalLayoutWidget)
+        self.label_last_detection.setObjectName(u"label_last_detection")
+        sizePolicy2.setHeightForWidth(self.label_last_detection.sizePolicy().hasHeightForWidth())
+        self.label_last_detection.setSizePolicy(sizePolicy2)
 
-        self.verticalLayout.addWidget(self.label_classified_animal)
+        self.verticalLayout.addWidget(self.label_last_detection)
 
         self.label_last_classification_title = QLabel(self.verticalLayoutWidget)
         self.label_last_classification_title.setObjectName(u"label_last_classification_title")
@@ -191,18 +193,16 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.label_last_classification)
 
-        self.label_last_detection_title = QLabel(self.verticalLayoutWidget)
-        self.label_last_detection_title.setObjectName(u"label_last_detection_title")
-        self.label_last_detection_title.setFont(font)
+        self.label_classified_animal_title = QLabel(self.verticalLayoutWidget)
+        self.label_classified_animal_title.setObjectName(u"label_classified_animal_title")
+        self.label_classified_animal_title.setFont(font)
 
-        self.verticalLayout.addWidget(self.label_last_detection_title)
+        self.verticalLayout.addWidget(self.label_classified_animal_title)
 
-        self.label_last_detection = QLabel(self.verticalLayoutWidget)
-        self.label_last_detection.setObjectName(u"label_last_detection")
-        sizePolicy2.setHeightForWidth(self.label_last_detection.sizePolicy().hasHeightForWidth())
-        self.label_last_detection.setSizePolicy(sizePolicy2)
+        self.label_classified_animal = QLabel(self.verticalLayoutWidget)
+        self.label_classified_animal.setObjectName(u"label_classified_animal")
 
-        self.verticalLayout.addWidget(self.label_last_detection)
+        self.verticalLayout.addWidget(self.label_classified_animal)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
@@ -308,12 +308,12 @@ class Ui_MainWindow(object):
         self.label_op_mode.setText("")
         self.label.setText(QCoreApplication.translate("MainWindow", u"Enabled Camera(s):", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Enabled Actuator(s)", None))
-        self.label_classified_animal_title.setText(QCoreApplication.translate("MainWindow", u"Classified animal(s):", None))
-        self.label_classified_animal.setText("")
-        self.label_last_classification_title.setText(QCoreApplication.translate("MainWindow", u"Last classification:", None))
-        self.label_last_classification.setText("")
         self.label_last_detection_title.setText(QCoreApplication.translate("MainWindow", u"Last detection:", None))
         self.label_last_detection.setText("")
+        self.label_last_classification_title.setText(QCoreApplication.translate("MainWindow", u"Last classification:", None))
+        self.label_last_classification.setText("")
+        self.label_classified_animal_title.setText(QCoreApplication.translate("MainWindow", u"Classified animal(s):", None))
+        self.label_classified_animal.setText("")
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
