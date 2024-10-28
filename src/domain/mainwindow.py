@@ -116,6 +116,9 @@ class MainWindow(QMainWindow):
         self.operation_mode.run_finished.connect(self.on_run_completion)
         self.operation_mode.update_image.connect(self.update_info_widget)
 
+        # Connect Signal to update actuator list in widget.
+        self.operation_mode.update_actuator_status.connect(self.update_en_actuator_list)
+
     def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
 
@@ -578,10 +581,11 @@ class MainWindow(QMainWindow):
         """Method to list enabled actuator(s) in UI"""
 
         self.ui.listWidget_en_actuators.clear()
-        for actuator in Actuator.actuators:
-            if Actuator.actuators[actuator].enabled:
+        for actuator in Actuator.actuators.values():
+            if actuator.enabled:
                 text = (
-                    f"({Actuator.actuators[actuator].type.value}) {Actuator.actuators[actuator].id}"
+                    f"({actuator.type.value}) {actuator.id} - "
+                    f"{'inactive' if actuator.last_update is None else 'active'}"
                 )
                 self.ui.listWidget_en_actuators.addItem(text)
 

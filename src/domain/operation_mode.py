@@ -1,6 +1,8 @@
 """Module containing class to handle WADAS operation modes."""
 
 import logging
+import threading
+import time
 from enum import Enum
 
 from PySide6.QtCore import QObject, Signal
@@ -26,9 +28,12 @@ class OperationMode(QObject):
 
     # Signals
     update_image = Signal(str)
+    update_actuator_status = Signal()
     update_info = Signal()
     run_finished = Signal()
     run_progress = Signal(int)
+
+    flag_stop_update_actuators_thread = False
 
     def __init__(self):
         super(OperationMode, self).__init__()
@@ -80,3 +85,20 @@ class OperationMode(QObject):
             FTPsServer.ftps_server.server.close_all()
             FTPsServer.ftps_server.server.close()
             self.ftp_thread.join()
+
+    def _scheduled_update_actuators_trigger(self):
+        while not self.flag_stop_update_actuators_thread:
+            time.sleep(1)
+            self.update_actuator_status.emit()
+
+    def start_update_actuators_thread(self):
+        update_actuators_thread = threading.Thread(target=self._scheduled_update_actuators_trigger)
+        if update_actuators_thread:
+            update_actuators_thread.start()
+            logger.info("Starting thread for update actuators view...")
+        else:
+            logger.error("Unable to create new thread for update actuators view.")
+        return update_actuators_thread
+
+    def stop_update_actuators_thread(self):
+        self.flag_stop_update_actuators_thread = True
