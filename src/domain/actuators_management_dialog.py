@@ -1,4 +1,4 @@
-""""""
+"""Camera Actuator managment module"""
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
@@ -21,10 +21,8 @@ class ActuatorManagementDialog(QDialog):
         self.camera = camera
         self.original_actuators = list(camera.actuators)  # Save original list for cancel action
 
-        # Create main layout as grid layout
         layout = QGridLayout(self)
 
-        # Actuator List View
         self.actuator_model = QStandardItemModel()
         self.actuator_model.setHorizontalHeaderLabels(["Actuators"])
 
@@ -44,7 +42,7 @@ class ActuatorManagementDialog(QDialog):
         self.populate_actuator_dropdown()
         layout.addWidget(self.actuator_dropdown, 1, 0)
 
-        # Add and Remove buttons
+        # Add and Remove actuator buttons
         self.add_button = QPushButton("Add Actuator")
         self.remove_button = QPushButton("Remove Actuator")
         self.remove_button.setEnabled(False)  # Initially disabled
@@ -55,7 +53,7 @@ class ActuatorManagementDialog(QDialog):
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         layout.addWidget(self.button_box, 2, 0, 1, 3)
 
-        # Connect button actions
+        # Slots
         self.add_button.clicked.connect(self.add_actuator)
         self.remove_button.clicked.connect(self.remove_selected_actuator)
         self.button_box.accepted.connect(self.apply_changes)
@@ -74,13 +72,15 @@ class ActuatorManagementDialog(QDialog):
         """Populate the dropdown with the list of available actuators."""
         self.actuator_dropdown.clear()
         for actuator_id, actuator in Actuator.actuators.items():
-            self.actuator_dropdown.addItem(f"{actuator_id} - {actuator.type.value}", actuator)
+            if actuator.enabled and actuator not in self.camera.actuators:
+                self.actuator_dropdown.addItem(f"{actuator_id} - {actuator.type.value}", actuator)
 
     def add_actuator(self):
         """Add the selected actuator to the camera's actuator list."""
         actuator = self.actuator_dropdown.currentData()
-        if actuator and actuator not in self.camera.actuators:
+        if actuator and actuator.enabled and actuator not in self.camera.actuators:
             self.camera.actuators.append(actuator)
+            self.populate_actuator_dropdown()
             self.populate_actuator_model()
 
     def remove_selected_actuator(self):
@@ -89,6 +89,7 @@ class ActuatorManagementDialog(QDialog):
         if selected_indexes:
             row = selected_indexes[0].row()
             del self.camera.actuators[row]
+            self.populate_actuator_dropdown()
             self.populate_actuator_model()
 
     def apply_changes(self):

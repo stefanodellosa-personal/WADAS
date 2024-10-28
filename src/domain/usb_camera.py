@@ -27,7 +27,10 @@ class USBCamera(Camera):
         pid="",
         vid="",
         path="",
+        actuators=None,
     ):
+        if actuators is None:
+            actuators = []
         super().__init__(id)
         self.type = Camera.CameraTypes.USBCamera
         self.name = name
@@ -38,6 +41,7 @@ class USBCamera(Camera):
         self.pid = pid
         self.vid = vid
         self.path = path
+        self.actuators = actuators
 
     def detect_motion_from_video(self, test_mode=False):
         """Method to run motion detection on camera video stream.
@@ -199,6 +203,7 @@ class USBCamera(Camera):
             "pid": self.pid,
             "vid": self.vid,
             "path": self.path,
+            "actuators": self.actuators,
         }
 
     @staticmethod
@@ -214,4 +219,5 @@ class USBCamera(Camera):
             data["pid"],
             data["vid"],
             data["path"],
+            data["actuators"],
         )

@@ -523,6 +523,14 @@ class MainWindow(QMainWindow):
                     if wadas_config["ftps_server"]
                     else None
                 )
+                Actuator.actuators.clear()
+                for data in wadas_config["actuators"]:
+                    if data["type"] == Actuator.ActuatorTypes.ROADSIGN.value:
+                        actuator = RoadSignActuator.deserialize(data)
+                        Actuator.actuators[actuator.id] = actuator
+                    elif data["type"] == Actuator.ActuatorTypes.FEEDER.value:
+                        actuator = FeederActuator.deserialize(data)
+                        Actuator.actuators[actuator.id] = actuator
                 cameras.clear()
                 for data in wadas_config["cameras"]:
                     if data["type"] == Camera.CameraTypes.USBCamera.value:
@@ -547,14 +555,6 @@ class MainWindow(QMainWindow):
                 FastAPIActuatorServer.actuator_server = FastAPIActuatorServer.deserialize(
                     wadas_config["actuator_server"]
                 )
-                Actuator.actuators.clear()
-                for data in wadas_config["actuators"]:
-                    if data["type"] == Actuator.ActuatorTypes.ROADSIGN.value:
-                        actuator = RoadSignActuator.deserialize(data)
-                        Actuator.actuators[actuator.id] = actuator
-                    elif data["type"] == Actuator.ActuatorTypes.FEEDER.value:
-                        actuator = FeederActuator.deserialize(data)
-                        Actuator.actuators[actuator.id] = actuator
                 AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
                 AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
                 self.selected_operation_mode = (
