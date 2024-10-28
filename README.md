@@ -20,4 +20,4 @@ See the project [Wiki](https://github.com/stefanodellosa-personal/WADAS/wiki) fo
 <br/>With the hope that no other bear will ever perish in car accident.
 
 ### WADAS is powered by <br/>
-[![Reolink](https://home-cdn.reolink.us/wp-content/uploads/2017/02/reolink-logo.png)](https://reolink.com/)
+<a href="https://reolink.com/"><img src="https://github.com/stefanodellosa-personal/WADAS/blob/main/powered_by/reolink_logo.png" height="100"></a><a href="https://www.intel.com/content/www/us/en/products/details/processors/core-ultra.html"><img src="https://github.com/stefanodellosa-personal/WADAS/blob/main/powered_by/core-ultra-processor-family-badges-5-7-9-right.png" height="100"></a>
