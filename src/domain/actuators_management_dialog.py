@@ -6,9 +6,9 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QGridLayout,
     QPushButton,
     QTreeView,
-    QVBoxLayout,
 )
 
 from domain.actuator import Actuator
@@ -19,11 +19,10 @@ class ActuatorManagementDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(f"Manage Actuators for Camera ID: {camera.id}")
         self.camera = camera
-        self.original_actuators = list(
-            camera.actuators
-        )  # Save the original actuators for "Cancel" action
+        self.original_actuators = list(camera.actuators)  # Save original list for cancel action
 
-        layout = QVBoxLayout(self)
+        # Create main layout as grid layout
+        layout = QGridLayout(self)
 
         # Actuator List View
         self.actuator_model = QStandardItemModel()
@@ -35,25 +34,30 @@ class ActuatorManagementDialog(QDialog):
         # Tree view for actuators
         self.actuator_tree_view = QTreeView()
         self.actuator_tree_view.setModel(self.actuator_model)
-        layout.addWidget(self.actuator_tree_view)
+        self.actuator_tree_view.selectionModel().selectionChanged.connect(
+            self.update_remove_button_state
+        )
+        layout.addWidget(self.actuator_tree_view, 0, 0, 1, 3)
 
         # Dropdown for selecting possible actuators
         self.actuator_dropdown = QComboBox()
         self.populate_actuator_dropdown()
-        layout.addWidget(self.actuator_dropdown)
+        layout.addWidget(self.actuator_dropdown, 1, 0)
 
-        # Buttons
-        add_button = QPushButton("Add Actuator")
-        remove_button = QPushButton("Remove Selected Actuator")
-        layout.addWidget(add_button)
-        layout.addWidget(remove_button)
+        # Add and Remove buttons
+        self.add_button = QPushButton("Add Actuator")
+        self.remove_button = QPushButton("Remove Actuator")
+        self.remove_button.setEnabled(False)  # Initially disabled
+        layout.addWidget(self.add_button, 1, 1)
+        layout.addWidget(self.remove_button, 1, 2)
 
+        # OK and Cancel buttons in a dialog button box
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        layout.addWidget(self.button_box)
+        layout.addWidget(self.button_box, 2, 0, 1, 3)
 
-        # Connect buttons
-        add_button.clicked.connect(self.add_actuator)
-        remove_button.clicked.connect(self.remove_selected_actuator)
+        # Connect button actions
+        self.add_button.clicked.connect(self.add_actuator)
+        self.remove_button.clicked.connect(self.remove_selected_actuator)
         self.button_box.accepted.connect(self.apply_changes)
         self.button_box.rejected.connect(self.reject)
 
@@ -89,12 +93,14 @@ class ActuatorManagementDialog(QDialog):
 
     def apply_changes(self):
         """Apply changes to the camera's actuator list and accept the dialog."""
-        # Here, we assume that self.camera.actuators has the updated list
-        # The changes are already reflected in the camera object, so just accept the dialog
-        # TODO: change logic to avoid changes on original object list rather than pristine it.
+        # Changes are directly applied to self.camera.actuators, so we just accept the dialog
         self.accept()
 
     def reject(self):
         """Discard changes by resetting actuators to the original list."""
         self.camera.actuators = self.original_actuators
         super().reject()
+
+    def update_remove_button_state(self):
+        """Enable the remove button only if an actuator is selected in the tree view."""
+        self.remove_button.setEnabled(bool(self.actuator_tree_view.selectedIndexes()))
