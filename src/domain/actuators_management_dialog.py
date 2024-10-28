@@ -14,7 +14,9 @@ from PySide6.QtWidgets import (
 from domain.actuator import Actuator
 
 
-class ActuatorManagementDialog(QDialog):
+class DialogCameraActuatorManagement(QDialog):
+    """Dialog to edit Actuator(s) list of a given camera"""
+
     def __init__(self, camera, parent=None):
         super().__init__(parent)
         self.setWindowTitle(f"Manage Actuators for Camera ID: {camera.id}")
@@ -61,6 +63,7 @@ class ActuatorManagementDialog(QDialog):
 
     def populate_actuator_model(self):
         """Populate the QTreeView model with the actuators associated with this camera."""
+        # Clean model before population
         self.actuator_model.removeRows(0, self.actuator_model.rowCount())
 
         for actuator in self.camera.actuators:

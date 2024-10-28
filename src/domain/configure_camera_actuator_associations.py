@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QDialog
 
-from domain.actuators_management_dialog import ActuatorManagementDialog
+from domain.actuators_management_dialog import DialogCameraActuatorManagement
 from domain.camera import Camera, cameras
 from ui.ui_configure_camera_to_actuator_associations import (
     Ui_DialogCameraActuatorAssociation,
@@ -16,6 +16,8 @@ module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
 class DialogConfigureCameraToActuatorAssociations(QDialog, Ui_DialogCameraActuatorAssociation):
+    """Dialog to configure Camera To Actuator(s) association."""
+
     def __init__(self):
         super().__init__()
         self.ui = Ui_DialogCameraActuatorAssociation()
@@ -48,14 +50,20 @@ class DialogConfigureCameraToActuatorAssociations(QDialog, Ui_DialogCameraActuat
             camera_id = item_data.id
             camera = next((c for c in cameras if c.id == camera_id), None)
             if camera:
-                dialog = ActuatorManagementDialog(camera, self)
+                dialog = DialogCameraActuatorManagement(camera, self)
                 dialog.exec()
                 # Refresh the camera item in the tree view after editing actuators
                 self.populate_model()
 
     def populate_model(self):
 
+        # Clean model before population
         self.model.removeRows(0, self.model.rowCount())
+
+        if not cameras:
+            no_items = QStandardItem("No enabled camera. Please edit cameras and retry.")
+            self.model.appendRow(no_items)
+
         # Add cameras and actuators to the model
         for camera in cameras:
             if camera.enabled:

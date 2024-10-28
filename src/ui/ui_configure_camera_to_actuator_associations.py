@@ -16,7 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
-    QHeaderView, QSizePolicy, QTreeView, QWidget)
+    QHeaderView, QLabel, QSizePolicy, QTreeView,
+    QWidget)
 
 class Ui_DialogCameraActuatorAssociation(object):
     def setupUi(self, DialogCameraActuatorAssociation):
@@ -30,7 +31,10 @@ class Ui_DialogCameraActuatorAssociation(object):
         self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
         self.treeView = QTreeView(DialogCameraActuatorAssociation)
         self.treeView.setObjectName(u"treeView")
-        self.treeView.setGeometry(QRect(10, 10, 621, 421))
+        self.treeView.setGeometry(QRect(10, 30, 621, 411))
+        self.label = QLabel(DialogCameraActuatorAssociation)
+        self.label.setObjectName(u"label")
+        self.label.setGeometry(QRect(10, 10, 621, 16))
 
         self.retranslateUi(DialogCameraActuatorAssociation)
         self.buttonBox.accepted.connect(DialogCameraActuatorAssociation.accept)
@@ -41,5 +45,6 @@ class Ui_DialogCameraActuatorAssociation(object):
 
     def retranslateUi(self, DialogCameraActuatorAssociation):
         DialogCameraActuatorAssociation.setWindowTitle(QCoreApplication.translate("DialogCameraActuatorAssociation", u"Camera to Actuator associations", None))
+        self.label.setText(QCoreApplication.translate("DialogCameraActuatorAssociation", u"Double click on a camera from the list to edit actuator(s) to associate:", None))
     # retranslateUi
 

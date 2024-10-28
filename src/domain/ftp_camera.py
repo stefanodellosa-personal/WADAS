@@ -33,8 +33,6 @@ class FTPCamera(Camera):
     @staticmethod
     def deserialize(data):
         """Method to deserialize FTP Camera object from file."""
-        actuators = []
-        for key in data["actuators"]:
-            actuators.append(Actuator.actuators[key])
 
+        actuators = [Actuator.actuators[key] for key in data["actuators"]]
         return FTPCamera(data["id"], data["ftp_folder"], data["enabled"], actuators)
