@@ -23,6 +23,9 @@ from domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from domain.camera import Camera, cameras
 from domain.configure_actuators import DialogConfigureActuators
 from domain.configure_ai_model import ConfigureAiModel
+from domain.configure_camera_actuator_associations import (
+    DialogConfigureCameraToActuatorAssociations,
+)
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.email_notifier import EmailNotifier
 from domain.fastapi_actuator_server import FastAPIActuatorServer
@@ -107,6 +110,9 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
         self.ui.actionConfigure_FTP_Cameras.triggered.connect(self.configure_ftp_cameras)
         self.ui.actionactionConfigure_actuators.triggered.connect(self.configure_actuators)
+        self.ui.actionactionConfigure_camera_to_actuator_associations.triggered.connect(
+            self.configure_camera_to_actuators_associations
+        )
 
     def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -384,6 +390,15 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_actuator_list()
+
+    def configure_camera_to_actuators_associations(self):
+        """Method to trigger UI dialog for actuator(s) configuration."""
+
+        configure_camera2actuators_dlg = DialogConfigureCameraToActuatorAssociations()
+        if configure_camera2actuators_dlg.exec_():
+            logger.info("Camera(s) to Actuator(s) association(s) configured.")
+            self.setWindowModified(True)
+            self.update_toolbar_status()
 
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""

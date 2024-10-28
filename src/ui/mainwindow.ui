@@ -259,6 +259,7 @@
    <addaction name="actionSelectLocalCameras"/>
    <addaction name="actionConfigure_FTP_Cameras"/>
    <addaction name="actionactionConfigure_actuators"/>
+   <addaction name="actionactionConfigure_camera_to_actuator_associations"/>
    <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionSelect_Mode"/>
    <addaction name="actionConfigure_Ai_model"/>
@@ -458,6 +459,20 @@
    </property>
    <property name="toolTip">
     <string>Configure actuators</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionactionConfigure_camera_to_actuator_associations">
+   <property name="icon">
+    <iconset theme="insert-link"/>
+   </property>
+   <property name="text">
+    <string>actionConfigure_camera_to_actuator_associations</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure camera to actuator association(s)</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

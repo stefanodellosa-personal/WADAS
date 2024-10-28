@@ -31,6 +31,7 @@ class Camera:
         self.id = id
         self.enabled = enabled
         self.stop_thread = False
+        self.actuators = []
 
     @abstractmethod
     def serialize(self):
