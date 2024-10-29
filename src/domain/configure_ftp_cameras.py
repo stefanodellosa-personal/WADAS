@@ -100,7 +100,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if cameras:
             i = 1
             for camera in cameras:
-                if camera.type == Camera.CameraTypes.FTPCamera:
+                if camera.type == Camera.CameraTypes.FTP_CAMERA:
                     if i > 1:
                         self.add_ftp_camera()
                     camera_id_ln = self.findChild(QLineEdit, f"lineEdit_camera_id_{i}")
@@ -141,7 +141,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                     ui_camera_id.append(cur_ui_id)
                     found = False
                     for camera in cameras:
-                        if camera.type == Camera.CameraTypes.FTPCamera:
+                        if camera.type == Camera.CameraTypes.FTP_CAMERA:
                             if cur_ui_id == camera.id:
                                 found = True
                                 cur_user = self.get_camera_user(i)
@@ -179,13 +179,13 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             orphan_cameras = (
                 camera
                 for camera in cameras
-                if camera.id not in ui_camera_id and camera.type == Camera.CameraTypes.FTPCamera
+                if camera.id not in ui_camera_id and camera.type == Camera.CameraTypes.FTP_CAMERA
             )
             for camera in orphan_cameras:
                 cameras.remove(camera)
             for camera in tuple(cameras):
                 if camera.id in self.removed_cameras:
-                    if camera.type == Camera.CameraTypes.FTPCamera:
+                    if camera.type == Camera.CameraTypes.FTP_CAMERA:
                         cameras.remove(camera)
         else:
             # Insert new camera(s) in list (including the ones with modified id)

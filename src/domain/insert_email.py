@@ -27,7 +27,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         self.ui.setupUi(self)
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
 
-        self.email_notifier = Notifier.notifiers[Notifier.NotifierTypes.Email.value]
+        self.email_notifier = Notifier.notifiers[Notifier.NotifierTypes.EMAIL.value]
         self.valid_sender_email = False
         self.valid_smtp = False
         self.valid_port = False
@@ -51,7 +51,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
     def initialize_form(self):
         """Method to initialize form with existing email configuration data (if any)."""
 
-        if Notifier.notifiers[Notifier.NotifierTypes.Email.value]:
+        if Notifier.notifiers[Notifier.NotifierTypes.EMAIL.value]:
             self.ui.lineEdit_senderEmail.setText(self.email_notifier.sender_email)
             self.ui.lineEdit_smtpServer.setText(self.email_notifier.smtp_hostname)
             self.ui.lineEdit_port.setText(self.email_notifier.smtp_port)
@@ -71,8 +71,8 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         for recipient in self.ui.textEdit_recipient_email.toPlainText().strip().split(", "):
             recipients.append(recipient)
 
-        if not Notifier.notifiers[Notifier.NotifierTypes.Email.value]:
-            Notifier.notifiers[Notifier.NotifierTypes.Email.value] = EmailNotifier(
+        if not Notifier.notifiers[Notifier.NotifierTypes.EMAIL.value]:
+            Notifier.notifiers[Notifier.NotifierTypes.EMAIL.value] = EmailNotifier(
                 self.ui.lineEdit_senderEmail.text(),
                 self.ui.lineEdit_smtpServer.text(),
                 self.ui.lineEdit_port.text(),
@@ -89,7 +89,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
                 self.ui.lineEdit_senderEmail.text(),
                 self.ui.lineEdit_password.text(),
             )
-            Notifier.notifiers[Notifier.NotifierTypes.Email.value] = self.email_notifier
+            Notifier.notifiers[Notifier.NotifierTypes.EMAIL.value] = self.email_notifier
         self.accept()
 
     def validate_email_configurations(self):
