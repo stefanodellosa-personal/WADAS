@@ -119,7 +119,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
             cur_enum_cam = self.enumerated_usb_cameras[i]
             camera: USBCamera
             for camera in cameras:
-                if camera.type == Camera.CameraTypes.USBCamera:
+                if camera.type == Camera.CameraTypes.USB_CAMERA:
                     # Iterate only USB Camera type
                     if (
                         camera.path == cur_enum_cam.path
@@ -187,7 +187,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
                 if checkbox and line_edit:
                     saved = False
                     for camera in cameras:
-                        if camera.type == Camera.CameraTypes.USBCamera:
+                        if camera.type == Camera.CameraTypes.USB_CAMERA:
                             if (
                                 self.enumerated_usb_cameras[idx].index == camera.index
                                 and self.enumerated_usb_cameras[idx].name == camera.name

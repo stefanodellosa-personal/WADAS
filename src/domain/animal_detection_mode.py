@@ -30,13 +30,13 @@ class AnimalDetectionAndClassificationMode(OperationMode):
         camera: Camera
         for camera in cameras:
             if camera.enabled:
-                if camera.type == Camera.CameraTypes.USBCamera:
+                if camera.type == Camera.CameraTypes.USB_CAMERA:
                     # Create thread for motion detection
                     logger.info("Instantiating thread for camera %s", camera.id)
                     camera.stop_thread = False
                     self.camera_thread.append(camera.run())
                 elif (
-                    camera.type == Camera.CameraTypes.FTPCamera
+                    camera.type == Camera.CameraTypes.FTP_CAMERA
                     and FTPsServer.ftps_server
                     and not self.ftp_thread
                 ):
@@ -120,7 +120,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
             # Stop USB Cameras thread(s), if any.
             self.process_queue = False
             for camera in cameras:
-                if camera.type == Camera.CameraTypes.USBCamera:
+                if camera.type == Camera.CameraTypes.USB_CAMERA:
                     camera.stop_thread = True
 
             # Stop HTTPS Actuator Server
@@ -133,6 +133,6 @@ class AnimalDetectionAndClassificationMode(OperationMode):
 
     def ftp_camera_exist(self):
         for camera in cameras:
-            if camera.type == Camera.CameraTypes.FTPCamera:
+            if camera.type == Camera.CameraTypes.FTP_CAMERA:
                 return True
         return False

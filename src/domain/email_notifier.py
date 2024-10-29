@@ -20,7 +20,7 @@ class EmailNotifier(Notifier):
 
     def __init__(self, sender_email, smtp_hostname, smtp_port, recipients_email, enabled=True):
         super().__init__(enabled)
-        self.type = Notifier.NotifierTypes.Email
+        self.type = Notifier.NotifierTypes.EMAIL
         self.sender_email = sender_email
         self.smtp_hostname = smtp_hostname
         self.smtp_port = smtp_port
