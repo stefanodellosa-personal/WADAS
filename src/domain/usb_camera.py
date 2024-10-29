@@ -32,7 +32,7 @@ class USBCamera(Camera):
         if actuators is None:
             actuators = []
         super().__init__(id)
-        self.type = Camera.CameraTypes.USBCamera
+        self.type = Camera.CameraTypes.USB_CAMERA
         self.name = name
         self.enabled = enabled
         self.index = int(index)

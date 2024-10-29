@@ -352,7 +352,7 @@ class MainWindow(QMainWindow):
         for notifier in Notifier.notifiers:
             if (
                 Notifier.notifiers[notifier]
-                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.Email
+                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
             ):
                 credentials = keyring.get_credential("WADAS_email", "")
                 if notifier and credentials.username:
@@ -430,8 +430,8 @@ class MainWindow(QMainWindow):
         cameras_to_dict = []
         for camera in cameras:
             if (
-                camera.type == Camera.CameraTypes.USBCamera
-                or camera.type == Camera.CameraTypes.FTPCamera
+                camera.type == Camera.CameraTypes.USB_CAMERA
+                or camera.type == Camera.CameraTypes.FTP_CAMERA
             ):
                 cameras_to_dict.append(camera.serialize())
         # Prepare serialization for notifiers per class type
@@ -514,7 +514,7 @@ class MainWindow(QMainWindow):
                 notification = wadas_config["notification"]
                 for key in notification:
                     if key in Notifier.notifiers:
-                        if key == Notifier.NotifierTypes.Email.value:
+                        if key == Notifier.NotifierTypes.EMAIL.value:
                             Notifier.notifiers[key] = EmailNotifier(**notification[key])
                 if FTPsServer.ftps_server:
                     FTPsServer.ftps_server.server.close_all()
@@ -533,10 +533,10 @@ class MainWindow(QMainWindow):
                         Actuator.actuators[actuator.id] = actuator
                 cameras.clear()
                 for data in wadas_config["cameras"]:
-                    if data["type"] == Camera.CameraTypes.USBCamera.value:
+                    if data["type"] == Camera.CameraTypes.USB_CAMERA.value:
                         usb_camera = USBCamera.deserialize(data)
                         cameras.append(usb_camera)
-                    elif data["type"] == Camera.CameraTypes.FTPCamera.value:
+                    elif data["type"] == Camera.CameraTypes.FTP_CAMERA.value:
                         ftp_camera = FTPCamera.deserialize(data)
                         cameras.append(ftp_camera)
                         if FTPsServer.ftps_server:

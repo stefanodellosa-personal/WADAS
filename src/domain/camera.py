@@ -23,8 +23,8 @@ class Camera:
     }
 
     class CameraTypes(Enum):
-        USBCamera = "USB Camera"
-        FTPCamera = "FTP Camera"
+        USB_CAMERA = "USB Camera"
+        FTP_CAMERA = "FTP Camera"
 
     def __init__(self, id, enabled=False):
         self.type = None

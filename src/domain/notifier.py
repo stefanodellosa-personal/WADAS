@@ -13,9 +13,9 @@ class Notifier:
     """Base class for notifiers."""
 
     class NotifierTypes(Enum):
-        Email = "Email"
+        EMAIL = "Email"
 
-    notifiers = dict.fromkeys([NotifierTypes.Email.value])
+    notifiers = dict.fromkeys([NotifierTypes.EMAIL.value])
 
     def __init__(self, enabled=True):
         self.type = None
@@ -29,7 +29,7 @@ class Notifier:
         for notifier in Notifier.notifiers:
             if (
                 Notifier.notifiers[notifier]
-                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.Email
+                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
             ):
                 username = Notifier.notifiers[notifier].sender_email
                 credentials = keyring.get_credential("WADAS_email", username)

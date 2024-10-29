@@ -15,7 +15,7 @@ class FTPCamera(Camera):
         if actuators is None:
             actuators = []
         super().__init__(id, enabled)
-        self.type = Camera.CameraTypes.FTPCamera
+        self.type = Camera.CameraTypes.FTP_CAMERA
         self.ftp_folder = ftp_folder
         self.actuators = actuators
 
