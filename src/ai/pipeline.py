@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class DetectionPipeline:
     """Class containing AI Model functionalities (detection & classification)"""
 
-    def __init__(self, device="auto"):
+    def __init__(self, device="auto", language="en"):
         self.device = device
         # Initializing the MegaDetectorV5 model for image detection
         logger.info("Initializing detection model to device %s...", self.device)
@@ -26,6 +26,13 @@ class DetectionPipeline:
         self.animal_class_idx = next(
             key for key, value in self.detection_model.CLASS_NAMES.items() if value == "animal"
         )
+        self.language = language
+
+    def set_language(self, language):
+        if language not in txt_animalclasses:
+            raise ValueError("Language not supported")
+        """Method to set the language for the classification labels."""
+        self.language = language
 
     @staticmethod
     def check_models():
@@ -96,14 +103,14 @@ class DetectionPipeline:
 
         return classified_animals
 
-    def classify_crop(self, crop_img, classification_treshold, language="en"):
+    def classify_crop(self, crop_img, classification_treshold):
         """Classify animal on a crop (portion of original image)"""
 
         tensor_cropped = self.classifier.preprocessImage(crop_img)
         logits = self.classifier.predictOnBatch(tensor_cropped)[
             0,
         ]
-        labels = txt_animalclasses[language]
+        labels = txt_animalclasses[self.language]
 
         if max(logits) < classification_treshold:
             return ["", 0]
