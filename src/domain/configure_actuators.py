@@ -41,7 +41,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.removed_actuators = []
         self.actuator_server = None
         self.actuator_server_thread = None
-        self.removed_rows = []
+        self.removed_rows = set()
 
         # UI
         self.ui.setupUi(self)
@@ -201,7 +201,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                 if radiobtn.isChecked() and actuator_id_ln:
                     self.removed_actuators.append(actuator_id_ln.text())
                     # QGridLayout does not remove the row, only widgets so we store deleted rows
-                    self.removed_rows.append(i)
+                    self.removed_rows.add(i)
                     gridLayout_actuators = self.findChild(QGridLayout, "gridLayout_actuators")
                     if gridLayout_actuators:
                         for j in range(0, 7):

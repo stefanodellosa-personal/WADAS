@@ -21,7 +21,7 @@ class DialogCameraActuatorManagement(QDialog):
         super().__init__(parent)
         self.setWindowTitle(f"Manage Actuators for Camera ID: {camera.id}")
         self.camera = camera
-        self.original_actuators = list(camera.actuators)  # Save original list for cancel action
+        self.original_actuators = camera.actuators.copy()  # Save original list for cancel action
 
         layout = QGridLayout(self)
 
