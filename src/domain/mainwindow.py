@@ -23,6 +23,9 @@ from domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from domain.camera import Camera, cameras
 from domain.configure_actuators import DialogConfigureActuators
 from domain.configure_ai_model import ConfigureAiModel
+from domain.configure_camera_actuator_associations import (
+    DialogConfigureCameraToActuatorAssociations,
+)
 from domain.configure_ftp_cameras import DialogFTPCameras
 from domain.email_notifier import EmailNotifier
 from domain.fastapi_actuator_server import FastAPIActuatorServer
@@ -106,7 +109,10 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
         self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
         self.ui.actionConfigure_FTP_Cameras.triggered.connect(self.configure_ftp_cameras)
-        self.ui.actionactionConfigure_actuators.triggered.connect(self.configure_actuators)
+        self.ui.actionConfigure_actuators.triggered.connect(self.configure_actuators)
+        self.ui.actionConfigure_camera_to_actuator_associations.triggered.connect(
+            self.configure_camera_to_actuators_associations
+        )
 
     def __connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -272,7 +278,8 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen_configuration_file.setEnabled(not running)
         self.ui.actionSave_configuration_as.setEnabled(not running)
         self.ui.actionSave_configuration.setEnabled(not running)
-        self.ui.actionactionConfigure_actuators.setEnabled(not running)
+        self.ui.actionConfigure_actuators.setEnabled(not running)
+        self.ui.actionConfigure_camera_to_actuator_associations.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -384,6 +391,15 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_actuator_list()
+
+    def configure_camera_to_actuators_associations(self):
+        """Method to trigger UI dialog for actuator(s) configuration."""
+
+        configure_camera2actuators_dlg = DialogConfigureCameraToActuatorAssociations()
+        if configure_camera2actuators_dlg.exec_():
+            logger.info("Camera(s) to Actuator(s) association(s) configured.")
+            self.setWindowModified(True)
+            self.update_toolbar_status()
 
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""
@@ -508,6 +524,14 @@ class MainWindow(QMainWindow):
                     if wadas_config["ftps_server"]
                     else None
                 )
+                Actuator.actuators.clear()
+                for data in wadas_config["actuators"]:
+                    if data["type"] == Actuator.ActuatorTypes.ROADSIGN.value:
+                        actuator = RoadSignActuator.deserialize(data)
+                        Actuator.actuators[actuator.id] = actuator
+                    elif data["type"] == Actuator.ActuatorTypes.FEEDER.value:
+                        actuator = FeederActuator.deserialize(data)
+                        Actuator.actuators[actuator.id] = actuator
                 cameras.clear()
                 for data in wadas_config["cameras"]:
                     if data["type"] == Camera.CameraTypes.USB_CAMERA.value:
@@ -529,17 +553,11 @@ class MainWindow(QMainWindow):
                                     ftp_camera.ftp_folder,
                                 )
                 Camera.detection_params = wadas_config["camera_detection_params"]
-                FastAPIActuatorServer.actuator_server = FastAPIActuatorServer.deserialize(
-                    wadas_config["actuator_server"]
+                FastAPIActuatorServer.actuator_server = (
+                    FastAPIActuatorServer.deserialize(wadas_config["actuator_server"])
+                    if wadas_config["actuator_server"]
+                    else None
                 )
-                Actuator.actuators.clear()
-                for data in wadas_config["actuators"]:
-                    if data["type"] == Actuator.ActuatorTypes.ROADSIGN.value:
-                        actuator = RoadSignActuator.deserialize(data)
-                        Actuator.actuators[actuator.id] = actuator
-                    elif data["type"] == Actuator.ActuatorTypes.FEEDER.value:
-                        actuator = FeederActuator.deserialize(data)
-                        Actuator.actuators[actuator.id] = actuator
                 AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
                 AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
                 self.selected_operation_mode = (
