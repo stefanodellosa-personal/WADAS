@@ -37,6 +37,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         self.ui_camera_idx = 0
         self.ftp_thread = None
         self.removed_cameras = []
+        self.removed_rows = set()
 
         # UI
         self.ui.setupUi(self)
@@ -133,9 +134,11 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if cameras:
             # Check for need of updating cameras credentials.
             # If camera ID changes it is seen as new camera.
-            i = 1
             ui_camera_id = []
-            while i <= self.ui_camera_idx:
+            for i in range(0, self.ui_camera_idx):
+                if i in self.removed_rows:
+                    continue
+
                 cur_ui_id = self.get_camera_id(i)
                 if cur_ui_id:
                     ui_camera_id.append(cur_ui_id)
@@ -173,7 +176,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                             self.get_camera_user(i),
                             self.get_camera_pass(i),
                         )
-                i += 1
 
             # Check for cameras old id (prior to modification) and remove them
             orphan_cameras = (
@@ -189,8 +191,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         cameras.remove(camera)
         else:
             # Insert new camera(s) in list (including the ones with modified id)
-            i = 1
-            while i <= self.ui_camera_idx:
+            for i in range(0, self.ui_camera_idx):
                 cur_camera_id = self.get_camera_id(i)
                 if cur_camera_id:
                     cur_cam_ftp_dir = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id)
@@ -211,7 +212,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                             self.get_camera_pass(i),
                             cur_cam_ftp_dir,
                         )
-                i += 1
         self.accept()
 
     def get_camera_id(self, row):
@@ -272,7 +272,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             self.ui.label_errorMessage.setText("Invalid SSL key file provided!")
             valid = False
         if not os.path.isfile(self.ui.label_certificate_file_path.text()):
-            self.ui.label_errorMessage.setText("Invalid SSL key file provided!")
+            self.ui.label_errorMessage.setText("Invalid SSL certificate file provided!")
             valid = False
         if not os.path.isdir(self.ui.label_FTPServer_path.text()):
             self.ui.label_errorMessage.setText("Invalid FTP server directory provided!")
@@ -288,8 +288,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             )
             valid = False
 
-        i = 1
-        while i <= self.ui_camera_idx:
+        for i in range(0, self.ui_camera_idx):
+            if i in self.removed_rows:
+                continue
+
             if not self.get_camera_id(i):
                 self.ui.label_errorMessage.setText("Missing Camera ID!")
                 valid = False
@@ -307,7 +309,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                     f"Duplicated Camera Username {self.get_camera_user(i)}!"
                 )
                 valid = False
-            i += 1
 
         if valid:
             self.ui.label_errorMessage.setText("")
@@ -318,28 +319,24 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         """Method to check whether cameras have unique id."""
 
         cameras_id = set()
-        i = 1
-        while i <= self.ui_camera_idx:
+        for i in range(0, self.ui_camera_idx):
             cur_id = self.get_camera_id(i)
             if cur_id not in cameras_id:
                 cameras_id.add(cur_id)
             elif i == idx:
                 return True
-            i += 1
         return False
 
     def is_duplicated_username(self, idx):
         """Method to check whether cameras have duplicated username."""
 
         cameras_username = set()
-        i = 1
-        while i <= self.ui_camera_idx:
+        for i in range(0, self.ui_camera_idx):
             cur_username = self.get_camera_user(i)
-            if cur_username not in cameras_username:
+            if cur_username and cur_username not in cameras_username:
                 cameras_username.add(cur_username)
             elif i == idx:
                 return True
-            i += 1
         return False
 
     def add_ftp_camera(self):
@@ -389,20 +386,17 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def remove_ftp_camera(self):
         """Method to remove FTP camera from list."""
 
-        i = 1
-        while i <= self.ui_camera_idx:
+        for i in range(0, self.ui_camera_idx):
             radiobtn = self.findChild(QRadioButton, f"radioButton_camera_{i}")
             if radiobtn:
                 camera_id_ln = self.findChild(QLineEdit, f"lineEdit_camera_id_{i}")
                 if radiobtn.isChecked() and camera_id_ln:
                     self.removed_cameras.append(camera_id_ln.text())
+                    self.removed_rows.add(i)
                     grid_layout_cameras = self.findChild(QGridLayout, "gridLayout_cameras")
                     if grid_layout_cameras:
-                        j = 0
-                        while j <= 6:
+                        for j in range(0, 6):
                             grid_layout_cameras.itemAtPosition(i, j).widget().setParent(None)
-                            j += 1
-            i += 1
         self.ui.pushButton_removeFTPCamera.setEnabled(False)
 
     def update_remove_ftp_camera_btn(self):
@@ -423,14 +417,12 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 self.ui.label_key_file_path.text(),
                 self.ui.label_FTPServer_path.text(),
             )
-        i = 1
-        while i <= self.ui_camera_idx:
+        for i in range(0, self.ui_camera_idx):
             FTPsServer.ftps_server.add_user(
                 self.get_camera_user(i),
                 self.get_camera_pass(i),
                 self.ui.label_FTPServer_path.text(),
             )
-            i += 1
 
         self.ui.pushButton_stopFTPServer.setEnabled(True)
         # Start the thread
