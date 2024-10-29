@@ -6,6 +6,7 @@ import os
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
+from ai.models import txt_animalclasses
 from domain.ai_model import AiModel
 from ui.ui_configure_ai_model import Ui_DialogConfigureAi
 
@@ -24,6 +25,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.label_errorMEssage.setStyleSheet("color: red")
         self.ui.lineEdit_classificationTreshold.setText(str(AiModel.classification_treshold))
         self.ui.lineEdit_detectionTreshold.setText(str(AiModel.detection_treshold))
+        self.populate_language_dropdown()
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
@@ -31,6 +33,14 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.lineEdit_detectionTreshold.textChanged.connect(self.validate_data)
 
         self.validate_data()
+
+    def populate_language_dropdown(self):
+        """Populate the dropdown with the list of available actuators."""
+        self.ui.comboBox_class_lang.clear()
+        for language in txt_animalclasses:
+            self.ui.comboBox_class_lang.addItem(language)
+        if AiModel.language in txt_animalclasses:
+            self.ui.comboBox_class_lang.setCurrentText(AiModel.language)
 
     def validate_data(self):
         """Method to validate input values."""
@@ -57,5 +67,6 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
 
         AiModel.classification_treshold = float(self.ui.lineEdit_classificationTreshold.text())
         AiModel.detection_treshold = float(self.ui.lineEdit_detectionTreshold.text())
+        AiModel.language = self.ui.comboBox_class_lang.currentText()
 
         self.accept()

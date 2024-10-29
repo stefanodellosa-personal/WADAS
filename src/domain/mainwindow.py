@@ -413,6 +413,7 @@ class MainWindow(QMainWindow):
                 AiModel.classification_treshold,
             )
             self.setWindowModified(True)
+            self.update_toolbar_status()
 
     def check_models(self):
         """Method to initialize classification model."""
@@ -454,6 +455,7 @@ class MainWindow(QMainWindow):
             "ai_model": {
                 "ai_detect_treshold": AiModel.detection_treshold,
                 "ai_class_treshold": AiModel.classification_treshold,
+                "ai_language": AiModel.language,
             },
             "operation_mode": self.selected_operation_mode.value
             if self.selected_operation_mode
@@ -560,6 +562,7 @@ class MainWindow(QMainWindow):
                 )
                 AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
                 AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
+                AiModel.language = wadas_config["ai_model"]["ai_language"]
                 self.selected_operation_mode = (
                     OperationMode.OperationModeTypes(wadas_config["operation_mode"])
                     if wadas_config["operation_mode"]
