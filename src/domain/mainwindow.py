@@ -552,8 +552,10 @@ class MainWindow(QMainWindow):
                                     ftp_camera.ftp_folder,
                                 )
                 Camera.detection_params = wadas_config["camera_detection_params"]
-                FastAPIActuatorServer.actuator_server = FastAPIActuatorServer.deserialize(
-                    wadas_config["actuator_server"]
+                FastAPIActuatorServer.actuator_server = (
+                    FastAPIActuatorServer.deserialize(wadas_config["actuator_server"])
+                    if wadas_config["actuator_server"]
+                    else None
                 )
                 AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
                 AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
