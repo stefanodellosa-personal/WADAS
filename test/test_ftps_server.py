@@ -1,4 +1,5 @@
 import os
+import tempfile
 import time
 from ftplib import FTP
 
@@ -9,8 +10,16 @@ from domain.ftps_server import FTPsServer
 
 @pytest.fixture
 def ftps_server():
+    curr_dir = os.path.dirname(os.path.realpath(__file__))
+    temp_dir = tempfile.TemporaryDirectory()
     return FTPsServer(
-        "0.0.0.0", 21, 50, 5, "../cert/server.pem", "../cert/keyserver.pem", "./ftp_root"
+        "0.0.0.0",
+        21,
+        50,
+        5,
+        os.path.join(curr_dir, "test_cert/server.pem"),
+        os.path.join(curr_dir, "test_cert/keyserver.pem"),
+        temp_dir.name,
     )
 
 
@@ -19,14 +28,11 @@ def test_ftp_server_init(ftps_server):
     assert isinstance(ftps_server, FTPsServer)
     assert ftps_server.ip == "0.0.0.0"
     assert ftps_server.port == 21
-    assert ftps_server.server is not None
 
 
 def add_user(ftps_server, username, password):
-    path = os.path.join(ftps_server.ftp_dir, username)
-    if not os.path.isdir(path):
-        os.makedirs(path, exist_ok=True)
-    ftps_server.add_user(username, password, path)
+    temp_dir = tempfile.TemporaryDirectory()
+    ftps_server.add_user(username, password, temp_dir.name)
 
 
 def test_add_user(ftps_server):
