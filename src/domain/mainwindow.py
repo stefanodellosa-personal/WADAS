@@ -109,8 +109,8 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration.triggered.connect(self.save_config_to_file)
         self.ui.actionSave_configuration_menu.triggered.connect(self.save_config_to_file)
         self.ui.actionConfigure_FTP_Cameras.triggered.connect(self.configure_ftp_cameras)
-        self.ui.actionactionConfigure_actuators.triggered.connect(self.configure_actuators)
-        self.ui.actionactionConfigure_camera_to_actuator_associations.triggered.connect(
+        self.ui.actionConfigure_actuators.triggered.connect(self.configure_actuators)
+        self.ui.actionConfigure_camera_to_actuator_associations.triggered.connect(
             self.configure_camera_to_actuators_associations
         )
 
@@ -278,7 +278,8 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen_configuration_file.setEnabled(not running)
         self.ui.actionSave_configuration_as.setEnabled(not running)
         self.ui.actionSave_configuration.setEnabled(not running)
-        self.ui.actionactionConfigure_actuators.setEnabled(not running)
+        self.ui.actionConfigure_actuators.setEnabled(not running)
+        self.ui.actionConfigure_camera_to_actuator_associations.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""

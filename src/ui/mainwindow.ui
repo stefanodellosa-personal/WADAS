@@ -258,8 +258,8 @@
    <addaction name="separator"/>
    <addaction name="actionSelectLocalCameras"/>
    <addaction name="actionConfigure_FTP_Cameras"/>
-   <addaction name="actionactionConfigure_actuators"/>
-   <addaction name="actionactionConfigure_camera_to_actuator_associations"/>
+   <addaction name="actionConfigure_actuators"/>
+   <addaction name="actionConfigure_camera_to_actuator_associations"/>
    <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionSelect_Mode"/>
    <addaction name="actionConfigure_Ai_model"/>
@@ -449,7 +449,7 @@
     <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
-  <action name="actionactionConfigure_actuators">
+  <action name="actionConfigure_actuators">
    <property name="icon">
     <iconset>
      <normaloff>icons/icon-actuator-24.png</normaloff>icons/icon-actuator-24.png</iconset>
@@ -464,7 +464,7 @@
     <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
-  <action name="actionactionConfigure_camera_to_actuator_associations">
+  <action name="actionConfigure_camera_to_actuator_associations">
    <property name="icon">
     <iconset theme="insert-link"/>
    </property>
