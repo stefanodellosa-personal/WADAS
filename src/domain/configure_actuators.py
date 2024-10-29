@@ -41,6 +41,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.removed_actuators = []
         self.actuator_server = None
         self.actuator_server_thread = None
+        self.removed_rows = []
 
         # UI
         self.ui.setupUi(self)
@@ -130,6 +131,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             valid = False
 
         for i in range(0, self.ui_actuator_idx):
+            if i in self.removed_rows:
+                continue
+
             if not self.get_actuator_id(i):
                 self.ui.label_status.setText("Missing Actuator ID!")
                 valid = False
@@ -196,12 +200,13 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                 actuator_id_ln = self.findChild(QLineEdit, f"lineEdit_actuator_id_{i}")
                 if radiobtn.isChecked() and actuator_id_ln:
                     self.removed_actuators.append(actuator_id_ln.text())
+                    # QGridLayout does not remove the row, only widgets so we store deleted rows
+                    self.removed_rows.append(i)
                     gridLayout_actuators = self.findChild(QGridLayout, "gridLayout_actuators")
                     if gridLayout_actuators:
                         for j in range(0, 7):
                             gridLayout_actuators.itemAtPosition(i, j).widget().setParent(None)
         self.ui.pushButton_remove_actuator.setEnabled(False)
-        self.ui_actuator_idx -= 1
         self.validate()
 
     def update_remove_actuator_btn(self):
@@ -275,6 +280,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         if Actuator.actuators:
             actuators_id = set()
             for i in range(0, self.ui_actuator_idx):
+                if i in self.removed_rows:
+                    continue
+
                 cur_actuator_id = self.get_actuator_id(i)
                 cur_actuator_type = self.get_actuator_type(i)
                 cur_actuator_enablement = self.get_actuator_enablement(i)
