@@ -169,3 +169,15 @@ def test_call_model(ov_model):
     assert isinstance(output, torch.Tensor) or (
         isinstance(output, list) and all(isinstance(t, torch.Tensor) for t in output)
     )
+
+
+@pytest.mark.parametrize("language", ["en", "fr", "it", "de"])
+def test_set_language_valid(detection_pipeline, language):
+    detection_pipeline.set_language(language)
+    assert detection_pipeline.language == language
+
+
+@pytest.mark.parametrize("language", ["ru", "ch", "jp"])
+def test_set_language_invalid(detection_pipeline, language):
+    with pytest.raises(ValueError, match="Language not supported"):
+        detection_pipeline.set_language(language)
