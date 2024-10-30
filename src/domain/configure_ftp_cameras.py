@@ -99,10 +99,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def list_ftp_cameras_in_tab(self):
         """Method to list cameras in FTPCameras tab."""
         if cameras:
-            i = 1
+            i = 0
             for camera in cameras:
                 if camera.type == Camera.CameraTypes.FTP_CAMERA:
-                    if i > 1:
+                    if i > 0:
                         self.add_ftp_camera()
                     camera_id_ln = self.findChild(QLineEdit, f"lineEdit_camera_id_{i}")
                     camera_id_ln.setText(camera.id)
@@ -344,7 +344,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
 
         grid_layout_cameras = self.findChild(QGridLayout, "gridLayout_cameras")
         if grid_layout_cameras:
-            row = self.ui_camera_idx + 1
+            row = self.ui_camera_idx
             # Camera selection check box
             radio_button = QRadioButton()
             radio_button.setObjectName(f"radioButton_camera_{row}")
@@ -395,7 +395,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                     self.removed_rows.add(i)
                     grid_layout_cameras = self.findChild(QGridLayout, "gridLayout_cameras")
                     if grid_layout_cameras:
-                        for j in range(0, 6):
+                        for j in range(0, 7):
                             grid_layout_cameras.itemAtPosition(i, j).widget().setParent(None)
         self.ui.pushButton_removeFTPCamera.setEnabled(False)
 
