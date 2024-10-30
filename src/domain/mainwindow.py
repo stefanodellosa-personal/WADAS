@@ -611,9 +611,13 @@ class MainWindow(QMainWindow):
                 ):
                     text = f"({actuator.type.value}) {actuator.id} - inactive"
                     self.ui.listWidget_en_actuators.addItem(text)
-                    self.ui.listWidget_en_actuators.item(
+                    item = self.ui.listWidget_en_actuators.item(
                         self.ui.listWidget_en_actuators.count() - 1
-                    ).setForeground(QBrush(QtCore.Qt.GlobalColor.red))
+                    )
+                    item.setForeground(QBrush(QtCore.Qt.GlobalColor.red))
+                    item.setToolTip(
+                        f"Last Activity: {actuator.last_update.strftime('%d %b %Y, %H:%M:%S')}"
+                    )
                 else:
                     text = f"({actuator.type.value}) {actuator.id}"
                     self.ui.listWidget_en_actuators.addItem(text)

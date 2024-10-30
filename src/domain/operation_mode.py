@@ -88,7 +88,7 @@ class OperationMode(QObject):
 
     def _scheduled_update_actuators_trigger(self):
         while not self.flag_stop_update_actuators_thread:
-            time.sleep(3)
+            time.sleep(10)
             self.update_actuator_status.emit()
 
     def start_update_actuators_thread(self):
