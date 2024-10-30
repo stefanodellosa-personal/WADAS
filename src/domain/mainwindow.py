@@ -1,13 +1,15 @@
 """Module containing MainWindows class and methods."""
-
+import datetime
 import logging
 import os
+from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 
 import keyring
 import yaml
-from PySide6 import QtGui
+from PySide6 import QtCore, QtGui
 from PySide6.QtCore import QThread
+from PySide6.QtGui import QBrush
 from PySide6.QtWidgets import (
     QComboBox,
     QErrorMessage,
@@ -604,11 +606,17 @@ class MainWindow(QMainWindow):
         self.ui.listWidget_en_actuators.clear()
         for actuator in Actuator.actuators.values():
             if actuator.enabled:
-                text = (
-                    f"({actuator.type.value}) {actuator.id} - "
-                    f"{'inactive' if actuator.last_update is None else 'active'}"
-                )
-                self.ui.listWidget_en_actuators.addItem(text)
+                if actuator.last_update is not None and (
+                    datetime.datetime.now() - actuator.last_update > timedelta(seconds=30)
+                ):
+                    text = f"({actuator.type.value}) {actuator.id} - inactive"
+                    self.ui.listWidget_en_actuators.addItem(text)
+                    self.ui.listWidget_en_actuators.item(
+                        self.ui.listWidget_en_actuators.count() - 1
+                    ).setForeground(QBrush(QtCore.Qt.GlobalColor.red))
+                else:
+                    text = f"({actuator.type.value}) {actuator.id}"
+                    self.ui.listWidget_en_actuators.addItem(text)
 
     def _init_logging_dropdown(self):
         """Method to initialize logging levels in tooldbar dropdown"""
