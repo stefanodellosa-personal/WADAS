@@ -16,7 +16,7 @@ def ftps_server():
     key_path = os.path.join(temp_dir, "keyserver.pem")
     util.cert_gen(key_path, cert_path)
     return FTPsServer(
-        "0.0.0.0",
+        "127.0.0.1",
         21,
         50,
         5,
@@ -29,7 +29,7 @@ def ftps_server():
 def test_ftp_server_init(ftps_server):
     assert ftps_server is not None
     assert isinstance(ftps_server, FTPsServer)
-    assert ftps_server.ip == "0.0.0.0"
+    assert ftps_server.ip == "127.0.0.1"
     assert ftps_server.port == 21
 
 
