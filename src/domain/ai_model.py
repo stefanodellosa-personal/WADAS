@@ -21,13 +21,16 @@ class AiModel:
     DEVICE = "auto"
     classification_treshold = 0.5
     detection_treshold = 0.5
+    language = "en"
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
         logger.info(
             "Initializing AI model for image detection and classification to %s...", AiModel.DEVICE
         )
-        self.detection_pipeline = DetectionPipeline(device=AiModel.DEVICE)
+        self.detection_pipeline = DetectionPipeline(
+            device=AiModel.DEVICE, language=AiModel.language
+        )
 
         self.original_image = ""
 
@@ -97,8 +100,7 @@ class AiModel:
         return [img_path, results, detected_img_path]
 
     def classify(self, img_path, results):
-        """Method to perform classification on detection result(s).
-        TODO: avoid to classify crops with people classification."""
+        """Method to perform classification on detection result(s)."""
 
         if not results:
             logger.warning("No results to classify. Skipping classification.")

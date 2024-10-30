@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 from validators import ipv4
 
 from domain.actuator import Actuator
+from domain.camera import cameras
 from domain.fastapi_actuator_server import FastAPIActuatorServer
 from domain.feeder_actuator import FeederActuator
 from domain.qtextedit_logger import QTextEditLogger
@@ -40,6 +41,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.removed_actuators = []
         self.actuator_server = None
         self.actuator_server_thread = None
+        self.removed_rows = set()
 
         # UI
         self.ui.setupUi(self)
@@ -133,6 +135,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             valid = False
 
         for i in range(0, self.ui_actuator_idx):
+            if i in self.removed_rows:
+                continue
+
             if not self.get_actuator_id(i):
                 self.ui.label_status.setText("Missing Actuator ID!")
                 valid = False
@@ -199,12 +204,13 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                 actuator_id_ln = self.findChild(QLineEdit, f"lineEdit_actuator_id_{i}")
                 if radiobtn.isChecked() and actuator_id_ln:
                     self.removed_actuators.append(actuator_id_ln.text())
+                    # QGridLayout does not remove the row, only widgets so we store deleted rows
+                    self.removed_rows.add(i)
                     gridLayout_actuators = self.findChild(QGridLayout, "gridLayout_actuators")
                     if gridLayout_actuators:
                         for j in range(0, 7):
                             gridLayout_actuators.itemAtPosition(i, j).widget().setParent(None)
         self.ui.pushButton_remove_actuator.setEnabled(False)
-        self.ui_actuator_idx -= 1
         self.validate()
 
     def update_remove_actuator_btn(self):
@@ -278,6 +284,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         if Actuator.actuators:
             actuators_id = set()
             for i in range(0, self.ui_actuator_idx):
+                if i in self.removed_rows:
+                    continue
+
                 cur_actuator_id = self.get_actuator_id(i)
                 cur_actuator_type = self.get_actuator_type(i)
                 cur_actuator_enablement = self.get_actuator_enablement(i)
@@ -298,6 +307,11 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             for key in list(Actuator.actuators.keys()):
                 if key not in actuators_id:
                     del Actuator.actuators[key]
+                    # Remove orphan actuators from Camera association (if any)
+                    for camera in cameras:
+                        for actuator in tuple(camera.actuators):
+                            if actuator.id == key:
+                                camera.actuators.remove(actuator)
         else:
             for i in range(0, self.ui_actuator_idx):
                 cur_actuator_id = self.get_actuator_id(i)
@@ -314,7 +328,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
     def start_actuator_server(self):
         """Method to start the Actuator server."""
-        # TODO @stefano review
+
         if not self.actuator_server:
             self.actuator_server = FastAPIActuatorServer(
                 self.ui.lineEdit_server_ip.text(),
@@ -338,7 +352,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
     def _setup_logger(self):
         """Initialize logger for UI logging."""
 
-        # TODO: fix log redirectin to UI dialog only
+        # TODO: fix log redirecting to UI dialog only
         logger = logging.getLogger("fastapi")
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_test_server_log)
         logger.setLevel(logging.DEBUG)
