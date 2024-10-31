@@ -40,3 +40,7 @@ repos:
         name: isort (python)
         args: ["--profile", "black", "--filter-files"]
         exclude: ^src/ui/.*|demo/.*
+-   repo: https://github.com/regebro/pyroma
+    rev: "4.2"
+    hooks:
+    -   id: pyroma
