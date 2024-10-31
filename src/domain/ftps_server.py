@@ -83,10 +83,7 @@ class FTPsServer:
         # TODO: check if ThrottledDTPHandler is needed
 
         # Server
-        address = (ip_address, port)
-        self.server = ThreadedFTPServer(address, self.handler)
-        self.server.max_cons = max_conn
-        self.server.max_cons_per_ip = max_conn_per_ip
+        self.server = None
 
     def add_user(self, username, password, directory):
         """Method to add user(s) to the authorizer."""
@@ -101,7 +98,9 @@ class FTPsServer:
 
     def run(self):
         """Method to create new thread and run a FTPS server."""
-
+        self.server = ThreadedFTPServer((self.ip, self.port), self.handler)
+        self.server.max_cons = self.max_conn
+        self.server.max_cons_per_ip = self.max_conn_per_ip
         if self.server:
             thread = threading.Thread(target=self.server.serve_forever)
 
