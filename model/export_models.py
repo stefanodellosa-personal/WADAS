@@ -1,29 +1,63 @@
 import os
-import sys
+import subprocess
 
 import numpy as np
 import openvino as ov
 import requests
+import timm
 import torch
 from PIL import Image
 from PytorchWildlife.data import transforms as pw_trans
 from PytorchWildlife.models import detection as pw_detection
 from torchvision.transforms import InterpolationMode, transforms
-
-from domain.classify_detections import Model
+from tqdm import tqdm
 
 CROP_SIZE = 182
-BACKBONE = "vit_large_patch14_dinov2.lvd142m"
+WEIGHT_PATH = "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
 # Line too long
 URL = (
     "https://www.provincia.bz.it/agricoltura-foreste/"
     "fauna-caccia-pesca/images/braunbaer_6016_L.jpg"
 )
-WEIGHT_PATH = f"{os.path.join('../', 'deepfaune-vit_large_patch14_dinov2.lvd142m.pt')}"
 
-_thisdir = os.path.dirname(os.path.abspath(__file__))
-print(_thisdir)
-sys.path.append(os.path.join(_thisdir, "../src"))
+
+class Model(torch.nn.Module):
+    def __init__(self, weight_path, device="cpu", version="v1.1"):
+        """
+        Constructor of model classifier
+        """
+        super().__init__()
+
+        if not os.path.exists(weight_path):
+            self.download_weights(weight_path, version)
+
+        params = torch.load(weight_path, map_location=device, weights_only=False)
+        self.base_model = timm.create_model(
+            params["args"]["backbone"],
+            pretrained=False,
+            num_classes=params["args"]["num_classes"],
+            dynamic_img_size=True,
+        )
+        self.load_state_dict(params["state_dict"])
+
+    def forward(self, input):
+        return self.base_model(input)
+
+    def download_weights(self, fname, version):
+        url = f"https://pbil.univ-lyon1.fr/software/download/deepfaune/{version}/{fname}"
+        print(f"Downloading weights from {url}")
+        response = requests.get(url, stream=True)
+        total_size = int(response.headers.get("content-length", 0))
+        chunk_size = 8192
+
+        with tqdm(total=total_size, unit="B", unit_scale=True) as progress_bar:
+            with open(fname, "wb") as file:
+                for data in response.iter_content(chunk_size=chunk_size):
+                    progress_bar.update(len(data))
+                    file.write(data)
+
+        if total_size != 0 and progress_bar.n != total_size:
+            raise RuntimeError("Could not download file")
 
 
 def main():
@@ -39,10 +73,11 @@ def main():
 
     transformed_img = transform(img_array).unsqueeze(0)
 
-    print(transformed_img.shape, transformed_img.dtype, type(transformed_img))
-
     print("Exporting detection model to OpenVINO...")
+    # Need to export via ONNX as OV returns error in torch scripting
     torch.onnx.export(detection_model.model, transformed_img, "detection_model.onnx")
+    subprocess.run("ovc detection_model.onnx --compress_to_fp16 True", shell=True)
+    os.remove("detection_model.onnx")
 
     results = detection_model.single_image_detection(
         transform(img_array), img_array.shape, "tmp.png", 0.5
@@ -70,7 +105,6 @@ def main():
         tensor_cropped = crop_transform(cropped_image).unsqueeze(dim=0)
 
         classification_model = Model(WEIGHT_PATH, "cpu")
-        classification_model.loadWeights(WEIGHT_PATH)
         print("Exporting classification model to OpenVINO...")
 
         ov_model = ov.convert_model(classification_model, example_input=tensor_cropped)
@@ -78,4 +112,5 @@ def main():
         # torch.onnx.export(classification_model, tensor_cropped, "classification_model.onnx")
 
 
-main()
+if __name__ == "__main__":
+    main()
