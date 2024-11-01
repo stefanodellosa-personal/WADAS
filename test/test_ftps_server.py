@@ -17,7 +17,7 @@ def ftps_server():
     util.cert_gen(key_path, cert_path)
     server = FTPsServer(
         "127.0.0.1",
-        8888,
+        21,
         50,
         5,
         cert_path,
@@ -36,7 +36,7 @@ def test_ftp_server_init(ftps_server):
     assert ftps_server is not None
     assert isinstance(ftps_server, FTPsServer)
     assert ftps_server.ip == "127.0.0.1"
-    assert ftps_server.port == 8888
+    assert ftps_server.port == 21
 
 
 def add_user(ftps_server, username, password):
@@ -64,7 +64,7 @@ def test_server_working(ftps_server):
     password = "pass1"
     add_user(ftps_server, username, password)
     time.sleep(2)
-    resp = ftp_client_connect("127.0.0.1", 8888, username, password)
+    resp = ftp_client_connect("127.0.0.1", 21, username, password)
     assert resp == "230 Login successful."
 
 
@@ -73,7 +73,7 @@ def test_hot_add_user(ftps_server):
     password = "pass1"
     time.sleep(2)
     add_user(ftps_server, username, password)
-    resp = ftp_client_connect("127.0.0.1", 8888, username, password)
+    resp = ftp_client_connect("127.0.0.1", 21, username, password)
     assert resp == "230 Login successful."
 
 
@@ -90,6 +90,6 @@ def test_server_restart(ftps_server):
     thread = ftps_server.run()
     assert thread is not None
     time.sleep(2)
-    resp = ftp_client_connect("127.0.0.1", 8888, username, password)
+    resp = ftp_client_connect("127.0.0.1", 21, username, password)
     assert resp == "230 Login successful."
     ftps_server.server.close_all()
