@@ -11,10 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:latest
-      ports:
-        - 21
     defaults:
       run:
         shell: bash -el {0}
