@@ -92,6 +92,7 @@ class EmailNotifier(Notifier):
             "smtp_hostname": self.smtp_hostname,
             "smtp_port": self.smtp_port,
             "recipients_email": self.recipients_email,
+            "enabled": self.enabled,
         }
 
     @staticmethod
