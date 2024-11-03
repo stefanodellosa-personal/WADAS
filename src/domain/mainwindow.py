@@ -524,7 +524,7 @@ class MainWindow(QMainWindow):
                     if key in Notifier.notifiers:
                         if key == Notifier.NotifierTypes.EMAIL.value:
                             Notifier.notifiers[key] = EmailNotifier(**notification[key])
-                if FTPsServer.ftps_server:
+                if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
                     FTPsServer.ftps_server.server.close_all()
                 FTPsServer.ftps_server = (
                     FTPsServer.deserialize(wadas_config["ftps_server"])
