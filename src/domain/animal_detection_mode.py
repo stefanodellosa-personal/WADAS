@@ -2,9 +2,7 @@
 
 import logging
 
-from domain.actuator import Actuator
 from domain.camera import Camera, cameras, img_queue
-from domain.fastapi_actuator_server import FastAPIActuatorServer
 from domain.ftps_server import FTPsServer
 from domain.operation_mode import OperationMode
 
@@ -43,12 +41,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                     logger.info("Instantiating FTPS server...")
                     self.ftp_thread = FTPsServer.ftps_server.run()
 
-        if Actuator.actuators and FastAPIActuatorServer.actuator_server:
-            logger.info("Instantiating HTTPS Actuator server...")
-            FastAPIActuatorServer.actuator_server.run()
-            self.start_update_actuators_thread()
-        else:
-            logger.info("No actuator or actuator server defined")
+        self.start_actuator_server()
 
         self.check_for_termination_requests()
         logger.info("Ready for video stream from Camera(s)...")
@@ -123,10 +116,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                 if camera.type == Camera.CameraTypes.USB_CAMERA:
                     camera.stop_thread = True
 
-            # Stop HTTPS Actuator Server
-            if FastAPIActuatorServer.actuator_server:
-                self.stop_update_actuators_thread()
-                FastAPIActuatorServer.actuator_server.stop()
+            self.stop_actuator_server()
 
             self.run_finished.emit()
             return

@@ -7,7 +7,9 @@ from enum import Enum
 
 from PySide6.QtCore import QObject, Signal
 
+from domain.actuator import Actuator
 from domain.ai_model import AiModel
+from domain.fastapi_actuator_server import FastAPIActuatorServer
 from domain.feeder_actuator import FeederActuator
 from domain.ftps_server import FTPsServer
 from domain.notifier import Notifier
@@ -91,6 +93,14 @@ class OperationMode(QObject):
             time.sleep(10)
             self.update_actuator_status.emit()
 
+    def start_actuator_server(self):
+        if Actuator.actuators and FastAPIActuatorServer.actuator_server:
+            logger.info("Instantiating HTTPS Actuator server...")
+            FastAPIActuatorServer.actuator_server.run()
+            self.start_update_actuators_thread()
+        else:
+            logger.info("No actuator or actuator server defined")
+
     def start_update_actuators_thread(self):
         update_actuators_thread = threading.Thread(target=self._scheduled_update_actuators_trigger)
         if update_actuators_thread:
@@ -102,3 +112,9 @@ class OperationMode(QObject):
 
     def stop_update_actuators_thread(self):
         self.flag_stop_update_actuators_thread = True
+
+    def stop_actuator_server(self):
+        # Stop HTTPS Actuator Server
+        if FastAPIActuatorServer.actuator_server:
+            self.stop_update_actuators_thread()
+            FastAPIActuatorServer.actuator_server.stop()
