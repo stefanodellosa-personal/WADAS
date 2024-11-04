@@ -19,6 +19,12 @@ def test_send_command_invalid():
     assert "Unknown command" in str(excinfo.value)
 
 
+def test_actuate():
+    actuator = RoadSignActuator(id="123", enabled=True)
+    actuator.actuate()
+    assert actuator.get_command() == RoadSignActuator.Commands.DISPLAY_ON.value
+
+
 def test_serialize():
     actuator = RoadSignActuator(id="123", enabled=True)
     serialized_data = actuator.serialize()

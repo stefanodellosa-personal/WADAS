@@ -1,13 +1,15 @@
 """Module containing MainWindows class and methods."""
-
+import datetime
 import logging
 import os
+from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 
 import keyring
 import yaml
-from PySide6 import QtGui
+from PySide6 import QtCore, QtGui
 from PySide6.QtCore import QThread
+from PySide6.QtGui import QBrush
 from PySide6.QtWidgets import (
     QComboBox,
     QErrorMessage,
@@ -121,6 +123,9 @@ class MainWindow(QMainWindow):
         self.operation_mode.update_image.connect(self.set_image)
         self.operation_mode.run_finished.connect(self.on_run_completion)
         self.operation_mode.update_image.connect(self.update_info_widget)
+
+        # Connect Signal to update actuator list in widget.
+        self.operation_mode.update_actuator_status.connect(self.update_en_actuator_list)
 
     def _setup_logger(self):
         """Initialize MainWindow logger for UI logging."""
@@ -519,7 +524,7 @@ class MainWindow(QMainWindow):
                     if key in Notifier.notifiers:
                         if key == Notifier.NotifierTypes.EMAIL.value:
                             Notifier.notifiers[key] = EmailNotifier(**notification[key])
-                if FTPsServer.ftps_server:
+                if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
                     FTPsServer.ftps_server.server.close_all()
                 FTPsServer.ftps_server = (
                     FTPsServer.deserialize(wadas_config["ftps_server"])
@@ -599,12 +604,23 @@ class MainWindow(QMainWindow):
         """Method to list enabled actuator(s) in UI"""
 
         self.ui.listWidget_en_actuators.clear()
-        for actuator in Actuator.actuators:
-            if Actuator.actuators[actuator].enabled:
-                text = (
-                    f"({Actuator.actuators[actuator].type.value}) {Actuator.actuators[actuator].id}"
-                )
-                self.ui.listWidget_en_actuators.addItem(text)
+        for actuator in Actuator.actuators.values():
+            if actuator.enabled:
+                if actuator.last_update is not None and (
+                    datetime.datetime.now() - actuator.last_update > timedelta(seconds=30)
+                ):
+                    text = f"({actuator.type.value}) {actuator.id} - inactive"
+                    self.ui.listWidget_en_actuators.addItem(text)
+                    item = self.ui.listWidget_en_actuators.item(
+                        self.ui.listWidget_en_actuators.count() - 1
+                    )
+                    item.setForeground(QBrush(QtCore.Qt.GlobalColor.red))
+                    item.setToolTip(
+                        f"Last Activity: {actuator.last_update.strftime('%d %b %Y, %H:%M:%S')}"
+                    )
+                else:
+                    text = f"({actuator.type.value}) {actuator.id}"
+                    self.ui.listWidget_en_actuators.addItem(text)
 
     def _init_logging_dropdown(self):
         """Method to initialize logging levels in tooldbar dropdown"""

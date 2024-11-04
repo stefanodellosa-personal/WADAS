@@ -1,6 +1,5 @@
 """Animal Detection and Classification module."""
 
-
 import logging
 
 from domain.camera import Camera, cameras, img_queue
@@ -41,6 +40,8 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                 ):
                     logger.info("Instantiating FTPS server...")
                     self.ftp_thread = FTPsServer.ftps_server.run()
+
+        self.start_actuator_server()
 
         self.check_for_termination_requests()
         logger.info("Ready for video stream from Camera(s)...")
@@ -114,6 +115,9 @@ class AnimalDetectionAndClassificationMode(OperationMode):
             for camera in cameras:
                 if camera.type == Camera.CameraTypes.USB_CAMERA:
                     camera.stop_thread = True
+
+            self.stop_actuator_server()
+
             self.run_finished.emit()
             return
 
