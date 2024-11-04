@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>522</width>
-    <height>291</height>
+    <height>302</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,8 +19,8 @@
   <property name="windowTitle">
    <string>Email configuration</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -162,20 +162,27 @@
      </widget>
     </widget>
    </item>
-   <item>
-    <widget class="QLabel" name="label_status">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item>
+   <item row="3" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_status">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QCheckBox" name="checkBox_email_en">
+     <property name="text">
+      <string>Enable email notifications</string>
      </property>
     </widget>
    </item>

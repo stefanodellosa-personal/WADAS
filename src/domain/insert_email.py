@@ -52,6 +52,7 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         """Method to initialize form with existing email configuration data (if any)."""
 
         if Notifier.notifiers[Notifier.NotifierTypes.EMAIL.value]:
+            self.ui.checkBox_email_en.setChecked(self.email_notifier.enabled)
             self.ui.lineEdit_senderEmail.setText(self.email_notifier.sender_email)
             self.ui.lineEdit_smtpServer.setText(self.email_notifier.smtp_hostname)
             self.ui.lineEdit_port.setText(self.email_notifier.smtp_port)
@@ -64,6 +65,8 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
                 self.ui.textEdit_recipient_email.setText(recipients)
             self.validate_password()
             self.validate_email_configurations()
+        else:
+            self.ui.checkBox_email_en.setChecked(True)
 
     def accept_and_close(self):
         """When Ok is clicked, save email config info before closing."""
@@ -77,8 +80,10 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
                 self.ui.lineEdit_smtpServer.text(),
                 self.ui.lineEdit_port.text(),
                 recipients,
+                self.ui.checkBox_email_en.isChecked(),
             )
         else:
+            self.email_notifier.enabled = self.ui.checkBox_email_en.isChecked()
             self.email_notifier.sender_email = self.ui.lineEdit_senderEmail.text()
             self.email_notifier.smtp_hostname = self.ui.lineEdit_smtpServer.text()
             self.email_notifier.smtp_port = self.ui.lineEdit_port.text()
