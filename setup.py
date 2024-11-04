@@ -12,8 +12,8 @@ setup(
     packages=find_packages(),
     package_data={"": ["*.ui", "*.png", "*.jpg"]},
     include_package_data=True,
-    author="Stefano Dellosa, Alessandro Palla",  # TODO: Add your names
-    author_email="stefano.dellosa@gmail.com, alespalla.ap@gmail.com",  # TODO: Add your emails
+    author="Stefano Dell'Osa, Alessandro Palla, Antonio Farina, Cesare Di Mauro",
+    author_email="stefano.dellosa@gmail.com, alespalla.ap@gmail.com, hexfati@gmail.com, cesare.di.mauro@gmail.com",  # noqa
     description=description,
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
