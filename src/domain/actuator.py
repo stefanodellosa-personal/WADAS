@@ -39,6 +39,11 @@ class Actuator:
             return None  # if there are no commands, return None
 
     @abstractmethod
+    def actuate(self):
+        """Method to trigger the actuator sending the appropriate command"""
+        pass
+
+    @abstractmethod
     def serialize(self):
         """Method to serialize Actuator object into file."""
         pass

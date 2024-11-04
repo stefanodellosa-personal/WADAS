@@ -30,6 +30,10 @@ class RoadSignActuator(Actuator):
             )
             raise Exception("Unknown command.")
 
+    def actuate(self):
+        """Method to trigger the RoadSignActuator sending it the DISPLAY_ON Command"""
+        self.send_command(self.Commands.DISPLAY_ON)
+
     def serialize(self):
         """Method to serialize RoadSignActuator object into file."""
         return {"id": self.id, "enabled": self.enabled, "type": self.type.value}

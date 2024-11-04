@@ -12,6 +12,7 @@ class FeederActuator(Actuator):
 
     class Commands(Enum):
         OPEN = json.dumps({"open": True})
+        CLOSE = json.dumps({"close": True})
 
     def __init__(self, id, enabled):
         super().__init__(id, enabled)
@@ -29,6 +30,10 @@ class FeederActuator(Actuator):
                 cmd,
             )
             raise Exception("Unknown command")
+
+    def actuate(self):
+        """Method to trigger the FeederActuator sending it the CLOSE Command"""
+        self.send_command(self.Commands.CLOSE)
 
     def serialize(self):
         """Method to serialize Actuator object into file."""
