@@ -13,7 +13,7 @@ setup(
     package_data={"": ["*.ui", "*.png", "*.jpg"]},
     include_package_data=True,
     entry_points={
-        "console_scripts": ["wadas=scripts.gui:main"],
+        "console_scripts": ["wadas=wadas.main:main"],
     },
     author="Stefano Dellosa, Alessandro Palla",  # TODO: Add your names
     author_email="stefano.dellosa@gmail.com, alespalla.ap@gmail.com",  # TODO: Add your emails
