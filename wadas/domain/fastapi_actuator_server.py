@@ -24,7 +24,7 @@ class FastAPIActuatorServer:
     def run(self):
         """Method to run the FastAPI Actuator server with SSL in a separate thread."""
         config = uvicorn.Config(
-            app="domain.actuator_server_app:app",
+            app="wadas.domain.actuator_server_app:app",
             host=self.ip,
             port=self.port,
             ssl_certfile=self.ssl_certificate,
