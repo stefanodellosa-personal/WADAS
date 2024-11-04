@@ -11,7 +11,7 @@ class FeederActuator(Actuator):
     """FeederActuator, specialization of Actuator."""
 
     class Commands(Enum):
-        OPEN = json.dumps({"open": True})
+        CLOSE = json.dumps({"close": True})
 
     def __init__(self, id, enabled):
         super().__init__(id, enabled)
@@ -32,7 +32,7 @@ class FeederActuator(Actuator):
 
     def actuate(self):
         """Method to trigger the FeederActuator sending it the OPEN Command"""
-        self.send_command(self.Commands.OPEN)
+        self.send_command(self.Commands.CLOSE)
 
     def serialize(self):
         """Method to serialize Actuator object into file."""
