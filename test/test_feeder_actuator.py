@@ -19,6 +19,12 @@ def test_send_command_invalid():
     assert "Unknown command" in str(excinfo.value)
 
 
+def test_actuate():
+    actuator = FeederActuator(id="123", enabled=True)
+    actuator.actuate()
+    assert actuator.get_command() == FeederActuator.Commands.OPEN.value
+
+
 def test_serialize():
     actuator = FeederActuator(id="123", enabled=True)
     serialized_data = actuator.serialize()

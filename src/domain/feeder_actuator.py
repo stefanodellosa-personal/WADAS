@@ -30,6 +30,10 @@ class FeederActuator(Actuator):
             )
             raise Exception("Unknown command")
 
+    def actuate(self):
+        """Method to trigger the FeederActuator sending it the OPEN Command"""
+        self.send_command(self.Commands.OPEN)
+
     def serialize(self):
         """Method to serialize Actuator object into file."""
         return {"id": self.id, "enabled": self.enabled, "type": self.type.value}
