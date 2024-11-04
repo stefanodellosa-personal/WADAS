@@ -42,6 +42,7 @@ class FastAPIActuatorServer:
 
     def stop(self):
         """Method to safely stop the FastAPIActuatorServer thread"""
+        logger.info("Stopping FastAPI Actuator Server...")
         if self.server:
             self.server.should_exit = True
 
