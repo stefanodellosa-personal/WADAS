@@ -3,7 +3,7 @@ from queue import Empty
 
 import pytest
 
-from domain.actuator import Actuator
+from wadas.domain.actuator import Actuator
 
 
 class TestEnum(Enum):

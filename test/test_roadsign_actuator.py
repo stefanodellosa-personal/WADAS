@@ -1,6 +1,6 @@
 import pytest
 
-from domain.roadsign_actuator import RoadSignActuator
+from wadas.domain.roadsign_actuator import RoadSignActuator
 
 
 def test_send_command_valid():

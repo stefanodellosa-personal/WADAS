@@ -24,7 +24,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: WADAS
-        environment-file: src/conda_env_setup.yml
+        environment-file: wadas/conda_env_setup.yml
         auto-activate-base: false
     - run: |
         conda info
