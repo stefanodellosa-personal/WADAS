@@ -90,7 +90,8 @@ def test_detection_panorama(detection_pipeline):
     # This image does not contain any animals.
     # Check that the detection pipeline returns no detections.
     URL = (
-        "https://upload.wikimedia.org/wikipedia/commons/b/b2/Alpine_Landscape_%28250461587%29.jpeg"
+        "https://www.shutterstock.com/image-photo/"
+        "after-rain-landscapes-arches-national-260nw-2077881598.jpg"
     )
 
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
