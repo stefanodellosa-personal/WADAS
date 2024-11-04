@@ -3,10 +3,9 @@
 import logging
 
 import numpy as np
+from ai.models import Classifier, OVMegaDetectorV5, txt_animalclasses
 from PIL import Image
 from PytorchWildlife.data import transforms as pw_trans
-
-from ai.models import Classifier, OVMegaDetectorV5, txt_animalclasses
 
 logger = logging.getLogger(__name__)
 

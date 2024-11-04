@@ -5,13 +5,12 @@ import threading
 import time
 from enum import Enum
 
-from PySide6.QtCore import QObject, Signal
-
 from domain.actuator import Actuator
 from domain.ai_model import AiModel
 from domain.fastapi_actuator_server import FastAPIActuatorServer
 from domain.ftps_server import FTPsServer
 from domain.notifier import Notifier
+from PySide6.QtCore import QObject, Signal
 
 logger = logging.getLogger(__name__)
 

@@ -7,18 +7,6 @@ from logging.handlers import RotatingFileHandler
 
 import keyring
 import yaml
-from PySide6 import QtCore, QtGui
-from PySide6.QtCore import QThread
-from PySide6.QtGui import QBrush
-from PySide6.QtWidgets import (
-    QComboBox,
-    QErrorMessage,
-    QFileDialog,
-    QLabel,
-    QMainWindow,
-    QMessageBox,
-)
-
 from domain.actuator import Actuator
 from domain.ai_model import AiModel
 from domain.animal_detection_mode import AnimalDetectionAndClassificationMode
@@ -44,6 +32,17 @@ from domain.select_local_cameras import DialogSelectLocalCameras
 from domain.select_mode import DialogSelectMode
 from domain.test_model_mode import TestModelMode
 from domain.usb_camera import USBCamera
+from PySide6 import QtCore, QtGui
+from PySide6.QtCore import QThread
+from PySide6.QtGui import QBrush
+from PySide6.QtWidgets import (
+    QComboBox,
+    QErrorMessage,
+    QFileDialog,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+)
 from ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()

@@ -2,10 +2,9 @@
 
 import os
 
+from domain.operation_mode import OperationMode
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
-
-from domain.operation_mode import OperationMode
 from ui.ui_select_mode import Ui_DialogSelectMode
 
 

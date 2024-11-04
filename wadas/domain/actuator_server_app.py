@@ -3,10 +3,9 @@
 import json
 import logging
 
+from domain.actuator import Actuator
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-
-from domain.actuator import Actuator
 
 logger = logging.getLogger(__name__)
 

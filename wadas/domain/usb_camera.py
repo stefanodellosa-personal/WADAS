@@ -6,7 +6,6 @@ import threading
 import time
 
 import cv2
-
 from domain.camera import Camera, img_queue
 from domain.utils import get_timestamp
 

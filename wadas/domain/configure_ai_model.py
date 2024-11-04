@@ -3,11 +3,10 @@
 
 import os
 
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QDialogButtonBox
-
 from ai.models import txt_animalclasses
 from domain.ai_model import AiModel
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QDialog, QDialogButtonBox
 from ui.ui_configure_ai_model import Ui_DialogConfigureAi
 
 

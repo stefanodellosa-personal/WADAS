@@ -3,7 +3,7 @@
 ## Environment setup
 1. Install conda (https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
 2. Import the WADAS project into your IDE
-3. Run the command  ```conda env create --file="<PROJECT_FOLDER>\WADAS\src\conda_env_setup.yml"```
+3. Run the command  ```conda env create --file="<PROJECT_FOLDER>\WADAS\wadas\conda_env_setup.yml"```
 4. Select the created environment in your IDE (N.B. Reference IDE used for the project is PyCharm)
 
 ## Run WADAS (with UI)

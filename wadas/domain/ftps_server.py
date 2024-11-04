@@ -5,11 +5,10 @@ import os
 import threading
 from logging.handlers import RotatingFileHandler
 
+from domain.camera import img_queue
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import TLS_FTPHandler
 from pyftpdlib.servers import ThreadedFTPServer
-
-from domain.camera import img_queue
 
 logger = logging.getLogger(__name__)
 

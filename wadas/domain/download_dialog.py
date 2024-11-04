@@ -2,10 +2,9 @@
 
 import os
 
+from domain.download_file import Downloader
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
-
-from domain.download_file import Downloader
 from ui.ui_download_file import Ui_DialogDownloadFile
 
 

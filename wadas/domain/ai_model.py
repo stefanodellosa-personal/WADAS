@@ -6,11 +6,10 @@ import os
 import cv2
 import numpy as np
 import requests
-from PIL import Image
-from PytorchWildlife import utils as pw_utils
-
 from ai import DetectionPipeline
 from domain.utils import get_timestamp
+from PIL import Image
+from PytorchWildlife import utils as pw_utils
 
 logger = logging.getLogger(__name__)
 

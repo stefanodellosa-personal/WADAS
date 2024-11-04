@@ -2,9 +2,8 @@
 
 import sys
 
-from PySide6.QtWidgets import QApplication
-
 from domain.mainwindow import MainWindow
+from PySide6.QtWidgets import QApplication
 
 
 def main():

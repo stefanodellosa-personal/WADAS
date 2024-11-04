@@ -4,6 +4,10 @@ import logging
 import os
 
 import keyring
+from domain.camera import Camera, cameras
+from domain.ftp_camera import FTPCamera
+from domain.ftps_server import FTPsServer
+from domain.qtextedit_logger import QTextEditLogger
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -17,13 +21,8 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QWidget,
 )
-from validators import ipv4
-
-from domain.camera import Camera, cameras
-from domain.ftp_camera import FTPCamera
-from domain.ftps_server import FTPsServer
-from domain.qtextedit_logger import QTextEditLogger
 from ui.ui_configure_ftp_cameras import Ui_DialogFTPCameras
+from validators import ipv4
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 

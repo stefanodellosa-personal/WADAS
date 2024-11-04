@@ -1,5 +1,6 @@
 """Camera Actuator managment module"""
 
+from domain.actuator import Actuator
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
@@ -10,8 +11,6 @@ from PySide6.QtWidgets import (
     QPushButton,
     QTreeView,
 )
-
-from domain.actuator import Actuator
 
 
 class DialogCameraActuatorManagement(QDialog):
