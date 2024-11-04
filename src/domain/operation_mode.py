@@ -13,7 +13,6 @@ from domain.fastapi_actuator_server import FastAPIActuatorServer
 from domain.feeder_actuator import FeederActuator
 from domain.ftps_server import FTPsServer
 from domain.notifier import Notifier
-from domain.roadsign_actuator import RoadSignActuator
 
 logger = logging.getLogger(__name__)
 
@@ -67,12 +66,7 @@ class OperationMode(QObject):
         # TODO @stefano
         for actuator in actuator_list:
             if actuator.enabled:
-                if isinstance(actuator, RoadSignActuator):
-                    actuator.send_command(RoadSignActuator.Commands.DISPLAY_ON)
-                elif isinstance(actuator, FeederActuator):
-                    actuator.send_command(FeederActuator.Commands.OPEN)
-                else:
-                    raise Exception("Unknown actuator type")
+                actuator.actuate()
 
     def execution_completed(self):
         """Method to perform end of execution steps."""
