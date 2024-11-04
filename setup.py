@@ -10,7 +10,7 @@ setup(
     name="wadas",
     version="0.1.0",
     packages=find_packages(),
-    package_data={"": ["*.png", "*.ui", "*.png", "*.jpg"]},
+    package_data={"": ["*.ui", "*.png", "*.jpg"]},
     include_package_data=True,
     entry_points={
         "console_scripts": ["wadas=scripts.gui:main"],
