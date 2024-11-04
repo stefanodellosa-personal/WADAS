@@ -87,6 +87,10 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             self.ui.lineEdit_server_port.setText(str(FastAPIActuatorServer.actuator_server.port))
             self.ui.label_key_file.setText(FastAPIActuatorServer.actuator_server.ssl_key)
             self.ui.label_cert_file.setText(FastAPIActuatorServer.actuator_server.ssl_certificate)
+        else:
+            self.ui.lineEdit_server_ip.setText("0.0.0.0")
+            self.ui.lineEdit_server_port.setText("8443")
+
         self.list_actuators_in_tab()
 
     def list_actuators_in_tab(self):
