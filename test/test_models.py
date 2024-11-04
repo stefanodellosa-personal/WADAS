@@ -89,7 +89,9 @@ def test_detection_non_animal(detection_pipeline):
 def test_detection_panorama(detection_pipeline):
     # This image does not contain any animals.
     # Check that the detection pipeline returns no detections.
-    URL = "https://images-webcams.windy.com/04/1665091504/daylight/full/1665091504.jpg"
+    URL = (
+        "https://upload.wikimedia.org/wikipedia/commons/b/b2/Alpine_Landscape_%28250461587%29.jpeg"
+    )
 
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
     results = detection_pipeline.run_detection(img, 0.5)
