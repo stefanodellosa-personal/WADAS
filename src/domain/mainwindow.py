@@ -349,7 +349,8 @@ class MainWindow(QMainWindow):
         """Method to check whether a notification protocol has been set in WADAS.
         If not, ask the user whether to proceed without."""
 
-        notification = False
+        notification_cfg = False
+        notification_enabled = False
         for notifier in Notifier.notifiers:
             if (
                 Notifier.notifiers[notifier]
@@ -357,12 +358,19 @@ class MainWindow(QMainWindow):
             ):
                 credentials = keyring.get_credential("WADAS_email", "")
                 if notifier and credentials.username:
-                    notification = True
-        if not notification:
+                    notification_cfg = True
+                if Notifier.notifiers[notifier].enabled:
+                    notification_enabled = True
+        message = ""
+        if not notification_cfg:
             logger.warning("No notification protocol set.")
-
-            message_box = QMessageBox
             message = "No notification protocol set. Do you wish to continue anyway?"
+        elif not notification_enabled:
+            logger.warning("No notification protocol enabled.")
+            message = "No enabled notification protocol. Do you wish to continue anyway?"
+
+        if message:
+            message_box = QMessageBox
             answer = message_box.question(self, "", message, message_box.Yes | message_box.No)
 
             if answer == message_box.No:

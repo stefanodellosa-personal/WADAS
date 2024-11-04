@@ -45,7 +45,6 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
         self.ui.lineEdit_password.textChanged.connect(self.validate_password)
         self.ui.textEdit_recipient_email.textChanged.connect(self.validate_recipients_email)
         self.ui.pushButton_testEmail.clicked.connect(self.send_email)
-        self.ui.checkBox_email_en.stateChanged.connect(self.update_form_input_enablement)
 
         self.initialize_form()
 
@@ -81,8 +80,10 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
                 self.ui.lineEdit_smtpServer.text(),
                 self.ui.lineEdit_port.text(),
                 recipients,
+                self.ui.checkBox_email_en.isChecked(),
             )
         else:
+            self.email_notifier.enabled = self.ui.checkBox_email_en.isChecked()
             self.email_notifier.sender_email = self.ui.lineEdit_senderEmail.text()
             self.email_notifier.smtp_hostname = self.ui.lineEdit_smtpServer.text()
             self.email_notifier.smtp_port = self.ui.lineEdit_port.text()
@@ -197,12 +198,3 @@ class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
             for recipient in recipients:
                 smtp_server.sendmail(sender, recipient, message.as_string())
         self.ui.label_status.setText("Test email(s) sent!")
-
-    def update_form_input_enablement(self, state):
-        """Method to enable/disable form fields depending on email notification enablement."""
-
-        self.ui.lineEdit_port.setEnabled(state == 2)
-        self.ui.lineEdit_senderEmail.setEnabled(state == 2)
-        self.ui.lineEdit_smtpServer.setEnabled(state == 2)
-        self.ui.lineEdit_password.setEnabled(state == 2)
-        self.ui.textEdit_recipient_email.setEnabled(state == 2)
