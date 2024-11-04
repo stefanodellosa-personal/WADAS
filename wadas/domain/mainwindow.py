@@ -78,6 +78,9 @@ class MainWindow(QMainWindow):
         # Connect Actions
         self._connect_actions()
 
+        # Create required folders
+        os.makedirs("log", exist_ok=True)
+
         # Setup UI logger
         self._setup_logger()
 
@@ -92,9 +95,6 @@ class MainWindow(QMainWindow):
         self._init_logging_dropdown()
         self.update_toolbar_status()
         logger.info("Welcome to WADAS!")
-
-        # Create required folders
-        os.makedirs("log", exist_ok=True)
 
     def _connect_actions(self):
         """List all actions to connect to MainWindow"""
