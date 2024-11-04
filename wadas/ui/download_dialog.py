@@ -6,7 +6,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
 
 from wadas.domain.download_file import Downloader
-from wadas.ui.ui_download_file import Ui_DialogDownloadFile
+from wadas.ui.qt.ui_download_file import Ui_DialogDownloadFile
 
 
 class DownloadDialog(QDialog, Ui_DialogDownloadFile):

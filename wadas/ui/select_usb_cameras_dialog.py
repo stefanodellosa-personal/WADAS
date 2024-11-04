@@ -19,17 +19,17 @@ from PySide6.QtWidgets import (
 
 from wadas.domain.camera import Camera, cameras
 from wadas.domain.usb_camera import USBCamera
-from wadas.ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
+from wadas.ui.qt.ui_select_usb_cameras import Ui_DialogSelectUSBCameras
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
-class DialogSelectLocalCameras(QDialog, Ui_DialogSelectLocalCameras):
+class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
     """Class to select and configure local cameras (i.e., directly plugged to the WADAS node)."""
 
     def __init__(self):
         super(DialogSelectLocalCameras, self).__init__()
-        self.ui = Ui_DialogSelectLocalCameras()
+        self.ui = Ui_DialogSelectUSBCameras()
         self.ui.setupUi(self)
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
         self.enumerated_usb_cameras = enumerate_cameras(cv2.CAP_MSMF)

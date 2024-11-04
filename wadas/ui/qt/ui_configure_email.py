@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'insert_email.ui'
+## Form generated from reading UI file 'configure_email.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.7.2
 ##
@@ -20,19 +20,19 @@ from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog
     QPushButton, QSizePolicy, QSpacerItem, QTabWidget,
     QTextEdit, QWidget)
 
-class Ui_DialogInsertEmail(object):
-    def setupUi(self, DialogInsertEmail):
-        if not DialogInsertEmail.objectName():
-            DialogInsertEmail.setObjectName(u"DialogInsertEmail")
-        DialogInsertEmail.resize(522, 302)
+class Ui_DialogConfigureEmail(object):
+    def setupUi(self, DialogConfigureEmail):
+        if not DialogConfigureEmail.objectName():
+            DialogConfigureEmail.setObjectName(u"DialogConfigureEmail")
+        DialogConfigureEmail.resize(522, 302)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(DialogInsertEmail.sizePolicy().hasHeightForWidth())
-        DialogInsertEmail.setSizePolicy(sizePolicy)
-        self.gridLayout_2 = QGridLayout(DialogInsertEmail)
+        sizePolicy.setHeightForWidth(DialogConfigureEmail.sizePolicy().hasHeightForWidth())
+        DialogConfigureEmail.setSizePolicy(sizePolicy)
+        self.gridLayout_2 = QGridLayout(DialogConfigureEmail)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.tabWidget = QTabWidget(DialogInsertEmail)
+        self.tabWidget = QTabWidget(DialogConfigureEmail)
         self.tabWidget.setObjectName(u"tabWidget")
         self.tab_3 = QWidget()
         self.tab_3.setObjectName(u"tab_3")
@@ -101,7 +101,7 @@ class Ui_DialogInsertEmail(object):
         self.tab_4.setObjectName(u"tab_4")
         self.textEdit_recipient_email = QTextEdit(self.tab_4)
         self.textEdit_recipient_email.setObjectName(u"textEdit_recipient_email")
-        self.textEdit_recipient_email.setGeometry(QRect(10, 50, 481, 131))
+        self.textEdit_recipient_email.setGeometry(QRect(10, 50, 481, 121))
         self.label_5 = QLabel(self.tab_4)
         self.label_5.setObjectName(u"label_5")
         self.label_5.setGeometry(QRect(10, 10, 471, 16))
@@ -112,19 +112,19 @@ class Ui_DialogInsertEmail(object):
 
         self.gridLayout_2.addWidget(self.tabWidget, 1, 0, 1, 1)
 
-        self.buttonBox = QDialogButtonBox(DialogInsertEmail)
+        self.buttonBox = QDialogButtonBox(DialogConfigureEmail)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.gridLayout_2.addWidget(self.buttonBox, 3, 0, 1, 1)
 
-        self.label_status = QLabel(DialogInsertEmail)
+        self.label_status = QLabel(DialogConfigureEmail)
         self.label_status.setObjectName(u"label_status")
 
         self.gridLayout_2.addWidget(self.label_status, 2, 0, 1, 1)
 
-        self.checkBox_email_en = QCheckBox(DialogInsertEmail)
+        self.checkBox_email_en = QCheckBox(DialogConfigureEmail)
         self.checkBox_email_en.setObjectName(u"checkBox_email_en")
 
         self.gridLayout_2.addWidget(self.checkBox_email_en, 0, 0, 1, 1)
@@ -134,28 +134,28 @@ class Ui_DialogInsertEmail(object):
         QWidget.setTabOrder(self.lineEdit_smtpServer, self.lineEdit_port)
         QWidget.setTabOrder(self.lineEdit_port, self.pushButton_testEmail)
 
-        self.retranslateUi(DialogInsertEmail)
-        self.buttonBox.accepted.connect(DialogInsertEmail.accept)
-        self.buttonBox.rejected.connect(DialogInsertEmail.reject)
+        self.retranslateUi(DialogConfigureEmail)
+        self.buttonBox.accepted.connect(DialogConfigureEmail.accept)
+        self.buttonBox.rejected.connect(DialogConfigureEmail.reject)
 
         self.tabWidget.setCurrentIndex(0)
 
 
-        QMetaObject.connectSlotsByName(DialogInsertEmail)
+        QMetaObject.connectSlotsByName(DialogConfigureEmail)
     # setupUi
 
-    def retranslateUi(self, DialogInsertEmail):
-        DialogInsertEmail.setWindowTitle(QCoreApplication.translate("DialogInsertEmail", u"Email configuration", None))
-        self.label_4.setText(QCoreApplication.translate("DialogInsertEmail", u"Port", None))
-        self.label_3.setText(QCoreApplication.translate("DialogInsertEmail", u"SMTP server", None))
-        self.label.setText(QCoreApplication.translate("DialogInsertEmail", u"Sender email", None))
-        self.pushButton_testEmail.setText(QCoreApplication.translate("DialogInsertEmail", u"Test email", None))
-        self.label_2.setText(QCoreApplication.translate("DialogInsertEmail", u"password", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("DialogInsertEmail", u"Sender", None))
-        self.label_5.setText(QCoreApplication.translate("DialogInsertEmail", u"Insert recipients email address(es) separated by comma and space. ", None))
-        self.label_6.setText(QCoreApplication.translate("DialogInsertEmail", u"Example: email1@domail.com, email2@domail.com, email3@domail.com", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("DialogInsertEmail", u"Recipients", None))
+    def retranslateUi(self, DialogConfigureEmail):
+        DialogConfigureEmail.setWindowTitle(QCoreApplication.translate("DialogConfigureEmail", u"Email configuration", None))
+        self.label_4.setText(QCoreApplication.translate("DialogConfigureEmail", u"Port", None))
+        self.label_3.setText(QCoreApplication.translate("DialogConfigureEmail", u"SMTP server", None))
+        self.label.setText(QCoreApplication.translate("DialogConfigureEmail", u"Sender email", None))
+        self.pushButton_testEmail.setText(QCoreApplication.translate("DialogConfigureEmail", u"Test email", None))
+        self.label_2.setText(QCoreApplication.translate("DialogConfigureEmail", u"password", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("DialogConfigureEmail", u"Sender", None))
+        self.label_5.setText(QCoreApplication.translate("DialogConfigureEmail", u"Insert recipients email address(es) separated by comma and space. ", None))
+        self.label_6.setText(QCoreApplication.translate("DialogConfigureEmail", u"Example: email1@domail.com, email2@domail.com, email3@domail.com", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("DialogConfigureEmail", u"Recipients", None))
         self.label_status.setText("")
-        self.checkBox_email_en.setText(QCoreApplication.translate("DialogInsertEmail", u"Enable email notifications", None))
+        self.checkBox_email_en.setText(QCoreApplication.translate("DialogConfigureEmail", u"Enable email notifications", None))
     # retranslateUi
 

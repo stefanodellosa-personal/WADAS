@@ -35,6 +35,9 @@ build/
 *.cache
 *.sublime-workspace
 
+# Env
+.conda/
+
 # Model
 *.pt
 *.onnx

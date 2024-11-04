@@ -23,28 +23,28 @@ from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import Camera, cameras
-from wadas.domain.configure_actuators import DialogConfigureActuators
-from wadas.domain.configure_ai_model import ConfigureAiModel
-from wadas.domain.configure_camera_actuator_associations import (
+from wadas.ui.configure_actuators_dialog import DialogConfigureActuators
+from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
+from wadas.ui.configure_camera_actuator_associations_dialog import (
     DialogConfigureCameraToActuatorAssociations,
 )
-from wadas.domain.configure_ftp_cameras import DialogFTPCameras
+from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.domain.email_notifier import EmailNotifier
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.feeder_actuator import FeederActuator
 from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.ftps_server import FTPsServer, initialize_fpts_logger
-from wadas.domain.insert_email import DialogInsertEmail
-from wadas.domain.insert_url import InsertUrlDialog
+from wadas.ui.configure_email_dialog import DialogInsertEmail
+from wadas.ui.insert_url_dialog import InsertUrlDialog
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.qtextedit_logger import QTextEditLogger
 from wadas.domain.roadsign_actuator import RoadSignActuator
-from wadas.domain.select_local_cameras import DialogSelectLocalCameras
-from wadas.domain.select_mode import DialogSelectMode
+from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
+from wadas.ui.select_mode_dialog import DialogSelectMode
 from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.usb_camera import USBCamera
-from wadas.ui.ui_mainwindow import Ui_MainWindow
+from wadas.ui.qt.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
 
