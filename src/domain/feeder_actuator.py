@@ -11,6 +11,7 @@ class FeederActuator(Actuator):
     """FeederActuator, specialization of Actuator."""
 
     class Commands(Enum):
+        OPEN = json.dumps({"open": True})
         CLOSE = json.dumps({"close": True})
 
     def __init__(self, id, enabled):
