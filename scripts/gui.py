@@ -2,8 +2,9 @@
 
 import sys
 
-from domain.mainwindow import MainWindow
 from PySide6.QtWidgets import QApplication
+
+from wadas.domain.mainwindow import MainWindow
 
 
 def main():

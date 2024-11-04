@@ -9,7 +9,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import keyring
-from domain.notifier import Notifier
+
+from wadas.domain.notifier import Notifier
 
 logger = logging.getLogger(__name__)
 

@@ -2,10 +2,11 @@
 
 import os
 
-from domain.operation_mode import OperationMode
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
-from ui.ui_select_mode import Ui_DialogSelectMode
+
+from wadas.domain.operation_mode import OperationMode
+from wadas.ui.ui_select_mode import Ui_DialogSelectMode
 
 
 class DialogSelectMode(QDialog, Ui_DialogSelectMode):

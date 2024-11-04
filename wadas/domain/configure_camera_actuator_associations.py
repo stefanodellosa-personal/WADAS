@@ -2,12 +2,13 @@
 
 import os
 
-from domain.actuators_management_dialog import DialogCameraActuatorManagement
-from domain.camera import Camera, cameras
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QDialog
-from ui.ui_configure_camera_to_actuator_associations import (
+
+from wadas.domain.actuators_management_dialog import DialogCameraActuatorManagement
+from wadas.domain.camera import Camera, cameras
+from wadas.ui.ui_configure_camera_to_actuator_associations import (
     Ui_DialogCameraActuatorAssociation,
 )
 

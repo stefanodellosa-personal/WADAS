@@ -2,9 +2,9 @@
 
 import logging
 
-from domain.camera import Camera, cameras, img_queue
-from domain.ftps_server import FTPsServer
-from domain.operation_mode import OperationMode
+from wadas.domain.camera import Camera, cameras, img_queue
+from wadas.domain.ftps_server import FTPsServer
+from wadas.domain.operation_mode import OperationMode
 
 logger = logging.getLogger(__name__)
 

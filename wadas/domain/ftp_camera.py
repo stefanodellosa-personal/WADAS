@@ -2,8 +2,8 @@
 
 import logging
 
-from domain.actuator import Actuator
-from domain.camera import Camera
+from wadas.domain.actuator import Actuator
+from wadas.domain.camera import Camera
 
 logger = logging.getLogger(__name__)
 

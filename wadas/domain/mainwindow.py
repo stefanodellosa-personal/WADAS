@@ -7,31 +7,6 @@ from logging.handlers import RotatingFileHandler
 
 import keyring
 import yaml
-from domain.actuator import Actuator
-from domain.ai_model import AiModel
-from domain.animal_detection_mode import AnimalDetectionAndClassificationMode
-from domain.camera import Camera, cameras
-from domain.configure_actuators import DialogConfigureActuators
-from domain.configure_ai_model import ConfigureAiModel
-from domain.configure_camera_actuator_associations import (
-    DialogConfigureCameraToActuatorAssociations,
-)
-from domain.configure_ftp_cameras import DialogFTPCameras
-from domain.email_notifier import EmailNotifier
-from domain.fastapi_actuator_server import FastAPIActuatorServer
-from domain.feeder_actuator import FeederActuator
-from domain.ftp_camera import FTPCamera
-from domain.ftps_server import FTPsServer, initialize_fpts_logger
-from domain.insert_email import DialogInsertEmail
-from domain.insert_url import InsertUrlDialog
-from domain.notifier import Notifier
-from domain.operation_mode import OperationMode
-from domain.qtextedit_logger import QTextEditLogger
-from domain.roadsign_actuator import RoadSignActuator
-from domain.select_local_cameras import DialogSelectLocalCameras
-from domain.select_mode import DialogSelectMode
-from domain.test_model_mode import TestModelMode
-from domain.usb_camera import USBCamera
 from PySide6 import QtCore, QtGui
 from PySide6.QtCore import QThread
 from PySide6.QtGui import QBrush
@@ -43,7 +18,33 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
 )
-from ui.ui_mainwindow import Ui_MainWindow
+
+from wadas.domain.actuator import Actuator
+from wadas.domain.ai_model import AiModel
+from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
+from wadas.domain.camera import Camera, cameras
+from wadas.domain.configure_actuators import DialogConfigureActuators
+from wadas.domain.configure_ai_model import ConfigureAiModel
+from wadas.domain.configure_camera_actuator_associations import (
+    DialogConfigureCameraToActuatorAssociations,
+)
+from wadas.domain.configure_ftp_cameras import DialogFTPCameras
+from wadas.domain.email_notifier import EmailNotifier
+from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
+from wadas.domain.feeder_actuator import FeederActuator
+from wadas.domain.ftp_camera import FTPCamera
+from wadas.domain.ftps_server import FTPsServer, initialize_fpts_logger
+from wadas.domain.insert_email import DialogInsertEmail
+from wadas.domain.insert_url import InsertUrlDialog
+from wadas.domain.notifier import Notifier
+from wadas.domain.operation_mode import OperationMode
+from wadas.domain.qtextedit_logger import QTextEditLogger
+from wadas.domain.roadsign_actuator import RoadSignActuator
+from wadas.domain.select_local_cameras import DialogSelectLocalCameras
+from wadas.domain.select_mode import DialogSelectMode
+from wadas.domain.test_model_mode import TestModelMode
+from wadas.domain.usb_camera import USBCamera
+from wadas.ui.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
 

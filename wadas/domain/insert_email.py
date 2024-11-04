@@ -8,11 +8,12 @@ from email.mime.text import MIMEText
 
 import keyring
 import validators
-from domain.email_notifier import EmailNotifier
-from domain.notifier import Notifier
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
-from ui.ui_insert_email import Ui_DialogInsertEmail
+
+from wadas.domain.email_notifier import EmailNotifier
+from wadas.domain.notifier import Notifier
+from wadas.ui.ui_insert_email import Ui_DialogInsertEmail
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 

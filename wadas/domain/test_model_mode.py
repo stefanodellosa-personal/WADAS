@@ -1,6 +1,6 @@
 import logging
 
-from domain.operation_mode import OperationMode
+from wadas.domain.operation_mode import OperationMode
 
 logger = logging.getLogger(__name__)
 

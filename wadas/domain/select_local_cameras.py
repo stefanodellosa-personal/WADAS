@@ -6,8 +6,6 @@ import os
 
 import cv2
 from cv2_enumerate_cameras import enumerate_cameras
-from domain.camera import Camera, cameras
-from domain.usb_camera import USBCamera
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
@@ -18,7 +16,10 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPushButton,
 )
-from ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
+
+from wadas.domain.camera import Camera, cameras
+from wadas.domain.usb_camera import USBCamera
+from wadas.ui.ui_select_local_cameras import Ui_DialogSelectLocalCameras
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 

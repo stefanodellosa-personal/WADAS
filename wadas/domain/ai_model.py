@@ -6,10 +6,11 @@ import os
 import cv2
 import numpy as np
 import requests
-from ai import DetectionPipeline
-from domain.utils import get_timestamp
 from PIL import Image
 from PytorchWildlife import utils as pw_utils
+
+from wadas.ai import DetectionPipeline
+from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
