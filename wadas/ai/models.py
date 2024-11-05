@@ -176,10 +176,7 @@ class Classifier:
     def predictOnBatch(self, batchtensor, withsoftmax=True):
         """Predict on a batch of images"""
         logits = self.model(batchtensor)
-        if withsoftmax:
-            return logits.softmax(dim=1)
-        else:
-            return logits
+        return logits.softmax(dim=1) if withsoftmax else logits
 
     def preprocessImage(self, croppedimage):
         """Preprocess the image for classification
