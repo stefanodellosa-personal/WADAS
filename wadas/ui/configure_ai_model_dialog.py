@@ -8,7 +8,9 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
 from wadas.ai.models import txt_animalclasses
 from wadas.domain.ai_model import AiModel
-from wadas.ui.ui_configure_ai_model import Ui_DialogConfigureAi
+from wadas.ui.qt.ui_configure_ai_model import Ui_DialogConfigureAi
+
+module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
 class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
@@ -20,7 +22,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
 
         # UI
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "..", "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_errorMEssage.setStyleSheet("color: red")
         self.ui.lineEdit_classificationTreshold.setText(str(AiModel.classification_treshold))

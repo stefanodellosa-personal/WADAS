@@ -4,7 +4,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from wadas.domain.mainwindow import MainWindow
+from wadas.ui.mainwindow import MainWindow
 
 
 def main():

@@ -6,7 +6,7 @@ import validators
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
-from wadas.ui.ui_insert_url import Ui_InsertUrlDialog
+from wadas.ui.qt.ui_insert_url import Ui_InsertUrlDialog
 
 
 class InsertUrlDialog(QDialog, Ui_InsertUrlDialog):

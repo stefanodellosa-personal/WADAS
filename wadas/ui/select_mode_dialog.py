@@ -6,7 +6,9 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
 
 from wadas.domain.operation_mode import OperationMode
-from wadas.ui.ui_select_mode import Ui_DialogSelectMode
+from wadas.ui.qt.ui_select_mode import Ui_DialogSelectMode
+
+module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
 class DialogSelectMode(QDialog, Ui_DialogSelectMode):
@@ -16,7 +18,7 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
         super(DialogSelectMode, self).__init__()
         self.ui = Ui_DialogSelectMode()
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
         self.selected_mode = selected_mode
 
         # Slots

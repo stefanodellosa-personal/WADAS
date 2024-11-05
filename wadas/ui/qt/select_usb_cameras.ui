@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DialogSelectLocalCameras</class>
- <widget class="QDialog" name="DialogSelectLocalCameras">
+ <class>DialogSelectUSBCameras</class>
+ <widget class="QDialog" name="DialogSelectUSBCameras">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Camera(s) configuration</string>
+   <string>USB Camera(s) configuration</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -163,7 +163,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DialogSelectLocalCameras</receiver>
+   <receiver>DialogSelectUSBCameras</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -179,7 +179,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DialogSelectLocalCameras</receiver>
+   <receiver>DialogSelectUSBCameras</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

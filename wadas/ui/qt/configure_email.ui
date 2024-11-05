@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DialogInsertEmail</class>
- <widget class="QDialog" name="DialogInsertEmail">
+ <class>DialogConfigureEmail</class>
+ <widget class="QDialog" name="DialogConfigureEmail">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -129,7 +129,7 @@
          <x>10</x>
          <y>50</y>
          <width>481</width>
-         <height>131</height>
+         <height>121</height>
         </rect>
        </property>
       </widget>
@@ -200,7 +200,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DialogInsertEmail</receiver>
+   <receiver>DialogConfigureEmail</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -216,7 +216,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DialogInsertEmail</receiver>
+   <receiver>DialogConfigureEmail</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

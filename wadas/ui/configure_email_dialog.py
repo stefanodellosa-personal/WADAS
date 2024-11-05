@@ -13,17 +13,17 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
 from wadas.domain.email_notifier import EmailNotifier
 from wadas.domain.notifier import Notifier
-from wadas.ui.ui_insert_email import Ui_DialogInsertEmail
+from wadas.ui.qt.ui_configure_email import Ui_DialogConfigureEmail
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
-class DialogInsertEmail(QDialog, Ui_DialogInsertEmail):
+class DialogInsertEmail(QDialog, Ui_DialogConfigureEmail):
     """Class to insert email configuration to enable WADAS for email notifications."""
 
     def __init__(self):
         super(DialogInsertEmail, self).__init__()
-        self.ui = Ui_DialogInsertEmail()
+        self.ui = Ui_DialogConfigureEmail()
         self.ui.setupUi(self)
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
 
