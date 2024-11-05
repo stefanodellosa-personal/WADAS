@@ -46,6 +46,8 @@ class OperationMode(QObject):
         self.email_configuration = {}
         self.camera_thread = []
         self.ftp_thread = None
+        self.actuators_server_thread = None
+        self.actuators_view_thread = None
 
     def init_model(self):
         """Method to run the selected WADAS operation mode"""
@@ -91,27 +93,31 @@ class OperationMode(QObject):
         """Method to start the HTTPS Actuator Server"""
         if Actuator.actuators and FastAPIActuatorServer.actuator_server:
             logger.info("Instantiating HTTPS Actuator server...")
-            FastAPIActuatorServer.actuator_server.run()
-            self.start_update_actuators_thread()
+            self.actuators_server_thread = FastAPIActuatorServer.actuator_server.run()
+            self.actuators_view_thread = self.start_update_actuators_thread()
         else:
             logger.info("No actuator or actuator server defined")
 
     def start_update_actuators_thread(self):
         """Start the thread responsible for keeping the actuator(s) view updated"""
-        update_actuators_thread = threading.Thread(target=self._scheduled_update_actuators_trigger)
-        if update_actuators_thread:
-            update_actuators_thread.start()
+        update_thread = threading.Thread(target=self._scheduled_update_actuators_trigger)
+        if update_thread:
+            update_thread.start()
             logger.info("Starting thread for update actuators view...")
         else:
             logger.error("Unable to create new thread for update actuators view.")
-        return update_actuators_thread
+        return update_thread
 
     def stop_update_actuators_thread(self):
         """Method to stop the thread responsible for keeping the actuator(s) view updated"""
         self.flag_stop_update_actuators_thread = True
+        if self.actuators_view_thread:
+            self.actuators_view_thread.join()
 
     def stop_actuator_server(self):
         """Method to Stop HTTPS Actuator Server"""
         if FastAPIActuatorServer.actuator_server:
             self.stop_update_actuators_thread()
             FastAPIActuatorServer.actuator_server.stop()
+            if self.actuators_server_thread:
+                self.actuators_server_thread.join()
