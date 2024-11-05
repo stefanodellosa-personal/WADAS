@@ -5,6 +5,8 @@
 2. Import the WADAS project into your IDE
 3. Run the command  ```conda env create --file="<PROJECT_FOLDER>\WADAS\wadas\conda_env_setup.yml"```
 4. Select the created environment in your IDE (N.B. Reference IDE used for the project is PyCharm)
+5. Using conda env you might have to export following environment variable:
+```QT_PLUGIN_PATH=%VIRTUAL_ENV%\Lib\site-packages\PySide6\plugins``` to let the UI work properly.
 
 ## Run WADAS (with UI)
 
