@@ -513,3 +513,35 @@ class MainWindow(QMainWindow):
         self.log_txtedt_handler.setLevel(logging.DEBUG)
         logger.log(new_level, "Logging level changed to %s:", logging.getLevelName(new_level))
         self.log_txtedt_handler.setLevel(new_level)
+
+    def closeEvent(self, event):
+
+        if not self.ui.actionRun.isEnabled() and self.ui.actionStop.isEnabled():
+            reply = QMessageBox.question(
+                self,
+                "Confirm Exit",
+                "Are you sure you want to exit?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                # Terminate running mode for safe shutdown
+                self.interrupt_thread()
+                event.accept()
+            else:
+                event.ignore()
+        elif self.ui.actionSave_configuration_as.isEnabled():
+            reply = QMessageBox.question(
+                self,
+                "Confirm Exit",
+                """There are unsaved settings, if you proceed now all changes will be lost.
+                Are you sure you want to exit?""",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.accept()
