@@ -3,9 +3,9 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from domain.actuator import Actuator
-from domain.actuator_server_app import app
-from domain.fastapi_actuator_server import FastAPIActuatorServer
+from wadas.domain.actuator import Actuator
+from wadas.domain.actuator_server_app import app
+from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 
 client = TestClient(app)
 

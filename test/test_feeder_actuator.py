@@ -1,6 +1,6 @@
 import pytest
 
-from domain.feeder_actuator import FeederActuator
+from wadas.domain.feeder_actuator import FeederActuator
 
 
 def test_send_command_valid():
