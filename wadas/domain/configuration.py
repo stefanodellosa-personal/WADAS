@@ -6,6 +6,7 @@ import os
 import keyring
 import yaml
 
+from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
@@ -20,7 +21,6 @@ from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.usb_camera import USBCamera
 
 logger = logging.getLogger(__name__)
-WADAS_VERSION = 0.1
 
 
 def load_configuration_from_file(file_path):
@@ -112,6 +112,7 @@ def save_configuration_to_file(file):
 
     # Build data structure to serialize
     data = {
+        "version": __version__,
         "notification": notification or "",
         "cameras": cameras_to_dict,
         "camera_detection_params": Camera.detection_params,

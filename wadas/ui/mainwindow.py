@@ -20,16 +20,12 @@ from PySide6.QtWidgets import (
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
-from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
-from wadas.domain.camera import Camera, cameras
-from wadas.domain.configuration import load_configuration_from_file, save_configuration_to_file, WADAS_VERSION
-from wadas.domain.ftps_server import FTPsServer, initialize_fpts_logger
+from wadas.domain.camera import cameras
+from wadas.domain.configuration import load_configuration_from_file, save_configuration_to_file
+from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.qtextedit_logger import QTextEditLogger
-from wadas.domain.roadsign_actuator import RoadSignActuator
-from wadas.domain.test_model_mode import TestModelMode
-from wadas.domain.usb_camera import USBCamera
 from wadas.ui.configure_actuators_dialog import DialogConfigureActuators
 from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
 from wadas.ui.configure_camera_actuator_associations_dialog import (
