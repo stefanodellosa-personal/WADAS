@@ -11,6 +11,7 @@ class TestModelMode(OperationMode):
         self.modename = "test_model_mode"
         self.url = ""
         self.last_classified_animals = ""
+        self.type = OperationMode.OperationModeTypes.TestModelMode
 
     def run(self):
         """WADAS test model operation mode"""

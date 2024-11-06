@@ -20,12 +20,13 @@ from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.usb_camera import USBCamera
 
 logger = logging.getLogger(__name__)
+WADAS_VERSION = 0.1
 
 
-def load_configuration_from_file(file):
+def load_configuration_from_file(file_path):
     """Method to load configuration from YAML file."""
 
-    with (open(str(file), "r") as file):
+    with open(str(file_path), "r") as file:
 
         logging.info("Loading configuration from file...")
         wadas_config = yaml.safe_load(file)
@@ -84,12 +85,12 @@ def load_configuration_from_file(file):
             else None
         )
 
-        logger.info("Configuration loaded from file %s.", file)
+        logger.info("Configuration loaded from file %s.", file_path)
 
         return selected_operation_mode
 
 
-def save_configuration_to_file(file, operation_mode):
+def save_configuration_to_file(file):
     """Method to save configuration to YAML file."""
 
     logger.info("Saving configuration to file...")
@@ -120,7 +121,9 @@ def save_configuration_to_file(file, operation_mode):
             "ai_class_treshold": AiModel.classification_treshold,
             "ai_language": AiModel.language,
         },
-        "operation_mode": operation_mode if operation_mode else "",
+        "operation_mode": (
+            OperationMode.cur_operation_mode.type.value if OperationMode.cur_operation_mode else ""
+        ),
         "ftps_server": (FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else ""),
         "actuator_server": (
             FastAPIActuatorServer.actuator_server.serialize()
