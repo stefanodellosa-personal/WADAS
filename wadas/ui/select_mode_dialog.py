@@ -30,19 +30,21 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
     def initialize_radiobutton_selection(self):
         """Method to initialize radiobuttons according to previous selection (if any)."""
 
-        if OperationMode.cur_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode:
-            self.ui.radioButton_animal_det_mode.setChecked(True)
-        elif (
-            OperationMode.cur_operation_mode
-            == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
-        ):
-            self.ui.radioButton_animal_det_and_class_mode.setChecked(True)
-        elif OperationMode.cur_operation_mode == OperationMode.OperationModeTypes.TunnelMode:
-            self.ui.radioButton_tunnel_mode.setChecked(True)
-        elif OperationMode.cur_operation_mode == OperationMode.OperationModeTypes.BearDetectionMode:
-            self.ui.radioButton_bear_det_mode.setChecked(True)
-        else:
-            self.ui.radioButton_test_model_mode.setChecked(True)
+        # Set default selection
+        self.ui.radioButton_test_model_mode.setChecked(True)
+
+        if  OperationMode.cur_operation_mode:
+            if OperationMode.cur_operation_mode.type == OperationMode.OperationModeTypes.AnimalDetectionMode:
+                self.ui.radioButton_animal_det_mode.setChecked(True)
+            elif (
+                OperationMode.cur_operation_mode.type
+                == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
+            ):
+                self.ui.radioButton_animal_det_and_class_mode.setChecked(True)
+            elif OperationMode.cur_operation_mode.type == OperationMode.OperationModeTypes.TunnelMode:
+                self.ui.radioButton_tunnel_mode.setChecked(True)
+            elif OperationMode.cur_operation_mode.type == OperationMode.OperationModeTypes.BearDetectionMode:
+                self.ui.radioButton_bear_det_mode.setChecked(True)
 
     def accept_and_close(self):
         """When Ok is clicked, save radio button selection before closing."""
