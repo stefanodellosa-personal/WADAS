@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
             self.configure_camera_to_actuators_associations
         )
 
-    def __connect_mode_ui_slots(self):
+    def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
 
         # Connect Signal to update image in widget.
@@ -199,7 +199,7 @@ class MainWindow(QMainWindow):
                 OperationMode.cur_operation_mode.cameras = cameras
 
             # Connect slots to update UI from operation mode
-            self.__connect_mode_ui_slots()
+            self._connect_mode_ui_slots()
 
             # Initialize thread where to run the inference
             self.thread = QThread()
@@ -230,7 +230,8 @@ class MainWindow(QMainWindow):
     def interrupt_thread(self):
         """Method to interrupt a running thread."""
 
-        self.thread.requestInterruption()
+        if self.thread:
+            self.thread.requestInterruption()
 
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
@@ -446,6 +447,7 @@ class MainWindow(QMainWindow):
             self.configuration_file_name = file_name[0]
             self.setWindowModified(False)
             self.update_toolbar_status()
+            self.update_info_widget()
             self.update_en_camera_list()
             self.update_en_actuator_list()
 
@@ -535,7 +537,7 @@ class MainWindow(QMainWindow):
                 self,
                 "Confirm Exit",
                 """There are unsaved settings, if you proceed now all changes will be lost.
-                Are you sure you want to exit?""",
+Are you sure you want to exit?""",
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No
             )

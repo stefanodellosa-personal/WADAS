@@ -9,6 +9,7 @@ import yaml
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
+from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import Camera, cameras
 from wadas.domain.email_notifier import EmailNotifier
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
@@ -18,6 +19,7 @@ from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.roadsign_actuator import RoadSignActuator
+from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.usb_camera import USBCamera
 
 logger = logging.getLogger(__name__)
@@ -32,11 +34,14 @@ def load_configuration_from_file(file_path):
         wadas_config = yaml.safe_load(file)
 
         # Applying configuration to WADAS from config file values
+
+        # Notifiers
         notification = wadas_config["notification"]
         for key in notification:
             if key in Notifier.notifiers:
                 if key == Notifier.NotifierTypes.EMAIL.value:
                     Notifier.notifiers[key] = EmailNotifier(**notification[key])
+        # FTP Server
         if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
             FTPsServer.ftps_server.server.close_all()
         FTPsServer.ftps_server = (
@@ -44,6 +49,7 @@ def load_configuration_from_file(file_path):
             if wadas_config["ftps_server"]
             else None
         )
+        # Actuators
         Actuator.actuators.clear()
         for data in wadas_config["actuators"]:
             if data["type"] == Actuator.ActuatorTypes.ROADSIGN.value:
@@ -52,6 +58,7 @@ def load_configuration_from_file(file_path):
             elif data["type"] == Actuator.ActuatorTypes.FEEDER.value:
                 actuator = FeederActuator.deserialize(data)
                 Actuator.actuators[actuator.id] = actuator
+        # Camera(s)
         cameras.clear()
         for data in wadas_config["cameras"]:
             if data["type"] == Camera.CameraTypes.USB_CAMERA.value:
@@ -71,23 +78,37 @@ def load_configuration_from_file(file_path):
                             ftp_camera.ftp_folder,
                         )
         Camera.detection_params = wadas_config["camera_detection_params"]
+        # FastAPI Actuator Server
         FastAPIActuatorServer.actuator_server = (
             FastAPIActuatorServer.deserialize(wadas_config["actuator_server"])
             if wadas_config["actuator_server"]
             else None
         )
+        # Ai model
         AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
         AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
         AiModel.language = wadas_config["ai_model"]["ai_language"]
-        selected_operation_mode = (
-            OperationMode.OperationModeTypes(wadas_config["operation_mode"])
-            if wadas_config["operation_mode"]
-            else None
-        )
+        # Operation Mode
+        if (
+            wadas_config["operation_mode"]
+            == OperationMode.OperationModeTypes.AnimalDetectionMode.value
+        ):
+            OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode(
+                classification=False
+            )
+        elif (
+            wadas_config["operation_mode"]
+            == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode.value
+        ):
+            OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode(
+                classification=True
+            )
+        elif wadas_config["operation_mode"] == OperationMode.OperationModeTypes.TestModelMode.value:
+            OperationMode.cur_operation_mode = TestModelMode()
+        else:
+            OperationMode.cur_operation_mode = None
 
         logger.info("Configuration loaded from file %s.", file_path)
-
-        return selected_operation_mode
 
 
 def save_configuration_to_file(file):
