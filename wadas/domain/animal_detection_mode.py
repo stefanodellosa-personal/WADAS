@@ -1,6 +1,7 @@
 """Animal Detection and Classification module."""
 
 import logging
+import time
 
 from wadas.domain.camera import Camera, cameras, img_queue
 from wadas.domain.ftps_server import FTPsServer
@@ -97,7 +98,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                     # Send notification
                     if message and processed_img_path:
                         self.send_notification(processed_img_path, message)
-
+            time.sleep(1)
         self.execution_completed()
 
     def check_for_termination_requests(self):
