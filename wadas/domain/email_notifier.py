@@ -83,8 +83,6 @@ class EmailNotifier(Notifier):
             smtp_server.quit()
         logger.info("Email notification for %s sent!", img_path)
 
-        return True
-
     def serialize(self):
         """Method to serialize email notifier object into file."""
         return {
