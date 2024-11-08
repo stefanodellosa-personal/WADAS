@@ -1,5 +1,6 @@
 """FastAPI Actuator server module"""
 
+import datetime
 import logging
 import threading
 
@@ -20,6 +21,7 @@ class FastAPIActuatorServer:
         self.ssl_key = ssl_key
         self.thread = None
         self.server = None
+        self.startup_time = None
 
     def run(self):
         """Method to run the FastAPI Actuator server with SSL in a separate thread."""
@@ -29,12 +31,14 @@ class FastAPIActuatorServer:
             port=self.port,
             ssl_certfile=self.ssl_certificate,
             ssl_keyfile=self.ssl_key,
+            timeout_graceful_shutdown=5,
         )
         self.server = uvicorn.Server(config)
 
         self.thread = threading.Thread(target=self.server.run)
         if self.thread:
             self.thread.start()
+            self.startup_time = datetime.datetime.now()
             logger.info("Starting thread for HTTPS Actuator Server with FastAPI...")
         else:
             logger.error("Unable to create new thread for FastAPI Actuator Server.")
@@ -45,6 +49,7 @@ class FastAPIActuatorServer:
         logger.info("Stopping FastAPI Actuator Server...")
         if self.server:
             self.server.should_exit = True
+            self.startup_time = None
 
     def serialize(self):
         """Method to serialize FastAPIActuatorServer object."""
