@@ -107,9 +107,7 @@ class DetectionPipeline:
         """Classify animal on a crop (portion of original image)"""
 
         tensor_cropped = self.classifier.preprocessImage(crop_img)
-        logits = self.classifier.predictOnBatch(tensor_cropped)[
-            0,
-        ]
+        logits = self.classifier.predictOnBatch(tensor_cropped)[0,]
         labels = txt_animalclasses[self.language]
 
         if max(logits) < classification_treshold:

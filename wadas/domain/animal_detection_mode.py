@@ -17,6 +17,11 @@ class AnimalDetectionAndClassificationMode(OperationMode):
         super(AnimalDetectionAndClassificationMode, self).__init__()
         self.process_queue = True
         self.en_classification = classification
+        self.type = (
+            OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
+            if classification
+            else OperationMode.OperationModeTypes.AnimalDetectionMode
+        )
 
     def run(self):
         """WADAS animal detection and classification mode"""

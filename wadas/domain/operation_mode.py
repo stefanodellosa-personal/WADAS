@@ -26,6 +26,9 @@ class OperationMode(QObject):
         TunnelMode = "Tunnel Mode"
         BearDetectionMode = "Bear Detection Mode"
 
+    # Currently selected operation mode
+    cur_operation_mode = None
+
     # Signals
     update_image = Signal(str)
     update_actuator_status = Signal()

@@ -25,24 +25,28 @@ class Notifier:
     def send_notification(img_path, message=""):
         """Method to send notification through enabled protocols."""
 
-        sent = False
+        configured_notifier = False
+        enabled_notifier = False
         for notifier in Notifier.notifiers:
-            if (
-                Notifier.notifiers[notifier]
-                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
-            ):
-                username = Notifier.notifiers[notifier].sender_email
-                credentials = keyring.get_credential("WADAS_email", username)
-                if (
-                    Notifier.notifiers[notifier].smtp_hostname
-                    and Notifier.notifiers[notifier].smtp_port
-                    and Notifier.notifiers[notifier].recipients_email
-                    and credentials.username
-                ):
-                    sent = Notifier.notifiers[notifier].send_email(img_path)
-            # add here other notification protocols.
-        if not sent:
-            logger.warning("No notification protocol set. Skipping notification.")
+            if Notifier.notifiers[notifier]:
+                if Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL:
+                    username = Notifier.notifiers[notifier].sender_email
+                    credentials = keyring.get_credential("WADAS_email", username)
+                    if (
+                        Notifier.notifiers[notifier].smtp_hostname
+                        and Notifier.notifiers[notifier].smtp_port
+                        and Notifier.notifiers[notifier].recipients_email
+                        and credentials.username
+                    ):
+                        configured_notifier = True
+                        if Notifier.notifiers[notifier].enabled:
+                            enabled_notifier = True
+                            Notifier.notifiers[notifier].send_email(img_path)
+                # add here other notification protocols.
+        if not configured_notifier:
+            logger.warning("No notification protocol configured. Skipping notification.")
+        elif not enabled_notifier:
+            logger.warning("No notification protocol enabled. Skipping notification.")
 
     @abstractmethod
     def serialize(self):
