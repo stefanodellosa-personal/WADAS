@@ -4,9 +4,9 @@ import requests
 import torch
 from PIL import Image
 
-from ai.models import Classifier, OVMegaDetectorV5
-from ai.openvino_model import OVModel
-from ai.pipeline import DetectionPipeline
+from wadas.ai.models import Classifier, OVMegaDetectorV5
+from wadas.ai.openvino_model import OVModel
+from wadas.ai.pipeline import DetectionPipeline
 
 TEST_URL = "https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg"
 
@@ -89,7 +89,10 @@ def test_detection_non_animal(detection_pipeline):
 def test_detection_panorama(detection_pipeline):
     # This image does not contain any animals.
     # Check that the detection pipeline returns no detections.
-    URL = "https://images-webcams.windy.com/04/1665091504/daylight/full/1665091504.jpg"
+    URL = (
+        "https://www.shutterstock.com/image-photo/"
+        "after-rain-landscapes-arches-national-260nw-2077881598.jpg"
+    )
 
     img = Image.open(requests.get(URL, stream=True).raw).convert("RGB")
     results = detection_pipeline.run_detection(img, 0.5)

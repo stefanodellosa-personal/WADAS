@@ -1,5 +1,5 @@
 import gradio as gr
-from domain.ai_model import AiModel
+from wadas.domain.ai_model import AiModel
 
 ai_model = AiModel()
 url = (

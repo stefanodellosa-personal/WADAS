@@ -340,9 +340,7 @@ classifier = Classifier()
 
 def get_classifications(PIL_crop):
     tensor_cropped = classifier.preprocessImage(PIL_crop)
-    confs = classifier.predictOnBatch(tensor_cropped)[
-        0,
-    ]
+    confs = classifier.predictOnBatch(tensor_cropped)[0,]
     lbls = txt_animalclasses["en"]
     classifications = []
     for i in range(len(confs)):
@@ -353,6 +351,7 @@ def get_classifications(PIL_crop):
 ##############################################
 ############### ECOASSIST END ################
 ##############################################
+
 
 # Get single classification result (higher probability)
 # input: cropped PIL image

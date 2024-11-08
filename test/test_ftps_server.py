@@ -6,7 +6,7 @@ from ftplib import FTP
 import pytest
 import util
 
-from domain.ftps_server import FTPsServer
+from wadas.domain.ftps_server import FTPsServer
 
 
 @pytest.fixture

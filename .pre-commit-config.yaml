@@ -6,13 +6,13 @@
 default_install_hook_types: [pre-commit, commit-msg]
 repos:
 - repo: https://github.com/psf/black
-  rev: 22.6.0
+  rev: 24.10.0
   hooks:
     - id: black
       args: [--line-length=100]
-      exclude: ^src/ui/
+      exclude: ^wadas/ui/
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.1.0
+  rev: v5.0.0
   hooks:
     - id: check-merge-conflict
     - id: check-json
@@ -21,7 +21,7 @@ repos:
     - id: mixed-line-ending
     - id: trailing-whitespace
 -   repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0
+    rev: 7.1.1
     hooks:
     -   id: flake8
         additional_dependencies: [
@@ -32,11 +32,15 @@ repos:
             'flake8-logging-format',
             'pydocstyle>=5.0.0',
         ]
-        exclude: ^src/ui/.*|demo/.*
+        exclude: ^wadas/ui/.*|demo/.*
 -   repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
         name: isort (python)
         args: ["--profile", "black", "--filter-files"]
-        exclude: ^src/ui/.*|demo/.*
+        exclude: ^wadas/ui/.*|demo/.*
+-   repo: https://github.com/regebro/pyroma
+    rev: "4.2"
+    hooks:
+    -   id: pyroma

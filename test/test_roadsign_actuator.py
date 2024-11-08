@@ -1,6 +1,6 @@
 import pytest
 
-from domain.roadsign_actuator import RoadSignActuator
+from wadas.domain.roadsign_actuator import RoadSignActuator
 
 
 def test_send_command_valid():
@@ -17,6 +17,12 @@ def test_send_command_invalid():
     with pytest.raises(Exception) as excinfo:
         actuator.send_command(invalid_command)
     assert "Unknown command" in str(excinfo.value)
+
+
+def test_actuate():
+    actuator = RoadSignActuator(id="123", enabled=True)
+    actuator.actuate()
+    assert actuator.get_command() == RoadSignActuator.Commands.DISPLAY_ON.value
 
 
 def test_serialize():
