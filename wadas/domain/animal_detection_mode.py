@@ -58,7 +58,6 @@ class AnimalDetectionAndClassificationMode(OperationMode):
 
             if cur_img:
                 logger.debug("Processing image from motion detection notification...")
-                cur_img = img_queue.get()
                 results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
 
                 self.last_detection = detected_img_path
