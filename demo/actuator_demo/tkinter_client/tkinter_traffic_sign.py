@@ -3,33 +3,37 @@
 import requests
 import urllib3
 
-from tkinter import Tk, Frame, Label, PhotoImage
+from tkinter import Frame, Label, PhotoImage, Tk
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-url = "https://localhost/api/v1/actuators/"
-actuator_id = "A98DB973KWL8XP1L"
+URL = "https://localhost/api/v1/actuators/"
+ACTUATOR_ID = "A98DB973KWL8XP1L"
 
 count = 0
 flag = False
 
 
 def check_update():
-    global count
-    global flag
-    print(count)
+    global count, flag
+
     if count == 60:
         traffic_sign.config(fg="black")
         count = 0
         flag = False
 
-    response = requests.get(f"{url}{str(actuator_id)}", verify=False)
-    if response.status_code == 200:
-        if "display" in response.json():
-            if response.json()["display"]:
-                count = 0
-                flag = True
-                traffic_sign.config(fg="#d84b20")
+    try:
+        response = requests.get(f"{URL}{ACTUATOR_ID}", verify=False)
+        if (
+            response.status_code == 200
+            and "display" in response.json()
+            and response.json()["display"]
+        ):
+            count = 0
+            flag = True
+            traffic_sign.config(fg="#d84b20")
+    except requests.exceptions.ConnectionError:
+        print("Failed to establish connection")
 
     count += flag
     root.after(5000, check_update)
