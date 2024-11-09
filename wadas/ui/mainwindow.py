@@ -22,6 +22,7 @@ from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import cameras
 from wadas.domain.configuration import load_configuration_from_file, save_configuration_to_file
+from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
@@ -226,6 +227,7 @@ class MainWindow(QMainWindow):
 
         self.update_toolbar_status_on_run(False)
         self.update_info_widget()
+        self.update_en_actuator_list()
 
     def interrupt_thread(self):
         """Method to interrupt a running thread."""
@@ -472,25 +474,49 @@ class MainWindow(QMainWindow):
 
     def update_en_actuator_list(self):
         """Method to list enabled actuator(s) in UI"""
-
+        threshold_time = 30
         self.ui.listWidget_en_actuators.clear()
         for actuator in Actuator.actuators.values():
             if actuator.enabled:
-                if actuator.last_update is not None and (
-                    datetime.datetime.now() - actuator.last_update > timedelta(seconds=30)
-                ):
-                    text = f"({actuator.type.value}) {actuator.id} - inactive"
-                    self.ui.listWidget_en_actuators.addItem(text)
-                    item = self.ui.listWidget_en_actuators.item(
-                        self.ui.listWidget_en_actuators.count() - 1
-                    )
-                    item.setForeground(QBrush(QtCore.Qt.GlobalColor.red))
-                    item.setToolTip(
-                        f"Last Activity: {actuator.last_update.strftime('%d %b %Y, %H:%M:%S')}"
-                    )
+                if FastAPIActuatorServer.actuator_server.startup_time:
+                    # inactive actuator: connected at least once but unseen for {threshold_time} seconds
+                    # or never connected within the first 30 seconds since server startup.
+                    if (actuator.last_update is not None and (
+                            datetime.datetime.now() - actuator.last_update > timedelta(seconds=threshold_time)) or
+                            actuator.last_update is None and (
+                                    datetime.datetime.now() - FastAPIActuatorServer.actuator_server.startup_time > timedelta(
+                                seconds=threshold_time))):
+
+                        text = f"({actuator.type.value}) {actuator.id} - inactive"
+                        color = QtCore.Qt.GlobalColor.red
+                        tooltip_text = f"Last Activity: {actuator.last_update.strftime('%d %b %Y, %H:%M:%S')}" \
+                            if actuator.last_update else "Last Activity: never"
+
+                    # active actuator: connected in the last {threshold_time} seconds
+                    elif actuator.last_update is not None and (
+                            datetime.datetime.now() - actuator.last_update <= timedelta(seconds=threshold_time)):
+                        text = f"({actuator.type.value}) {actuator.id}"
+                        color = QtCore.Qt.GlobalColor.darkGreen
+                        tooltip_text = f"Last Activity: {actuator.last_update.strftime('%d %b %Y, %H:%M:%S')}"
+
+                    # waiting for actuator first connection
+                    else:
+                        text = f"({actuator.type.value}) {actuator.id}"
+                        color = QtCore.Qt.GlobalColor.black
+                        tooltip_text = ""
+
+                # server not started
                 else:
                     text = f"({actuator.type.value}) {actuator.id}"
-                    self.ui.listWidget_en_actuators.addItem(text)
+                    color = QtCore.Qt.GlobalColor.black
+                    tooltip_text = ""
+
+                self.ui.listWidget_en_actuators.addItem(text)
+                item = self.ui.listWidget_en_actuators.item(
+                    self.ui.listWidget_en_actuators.count() - 1
+                )
+                item.setForeground(QBrush(color))
+                item.setToolTip(tooltip_text)
 
     def _init_logging_dropdown(self):
         """Method to initialize logging levels in tooldbar dropdown"""
