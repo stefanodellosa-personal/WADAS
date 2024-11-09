@@ -5,12 +5,15 @@ import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from starlette.middleware.cors import CORSMiddleware
 
 from wadas.domain.actuator import Actuator
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+app.add_middleware(CORSMiddleware, allow_origins=["*"])
 
 
 @app.get("/api/v1/actuators/{actuator_id}")
