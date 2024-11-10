@@ -65,6 +65,8 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         self.ui.pushButton_sekectCertificateKey.clicked.connect(self.select_certificate_file)
         self.ui.lineEdit_ip.textChanged.connect(self.validate)
         self.ui.lineEdit_port.textChanged.connect(self.validate)
+        self.ui.lineEdit_passive_port_range_start.textChanged.connect(self.validate)
+        self.ui.lineEdit_passive_port_range_end.textChanged.connect(self.validate)
         self.ui.lineEdit_max_conn.textChanged.connect(self.validate)
         self.ui.lineEdit_max_conn_ip.textChanged.connect(self.validate)
         self.ui.pushButton_addFTPCamera.clicked.connect(self.add_ftp_camera)
@@ -88,11 +90,15 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             self.ui.lineEdit_port.setText(str(FTPsServer.ftps_server.port))
             self.ui.lineEdit_max_conn.setText(str(FTPsServer.ftps_server.max_conn))
             self.ui.lineEdit_max_conn_ip.setText(str(FTPsServer.ftps_server.max_conn_per_ip))
+            self.ui.lineEdit_passive_port_range_start.setText(str(FTPsServer.ftps_server.passive_ports[0]))
+            self.ui.lineEdit_passive_port_range_end.setText(str(FTPsServer.ftps_server.passive_ports[-1]))
         else:
             self.ui.lineEdit_ip.setText("0.0.0.0")
             self.ui.lineEdit_port.setText("21")
             self.ui.lineEdit_max_conn.setText("50")
             self.ui.lineEdit_max_conn_ip.setText("5")
+            self.ui.lineEdit_passive_port_range_start.setText("65522")
+            self.ui.lineEdit_passive_port_range_end.setText("65523")
 
         self.list_ftp_cameras_in_tab()
 
@@ -119,12 +125,14 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
 
         # If server object exists needs to be closed
         # in order to be edited (otherwise socket editing fails)
-        if FTPsServer.ftps_server:
+        if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
             FTPsServer.ftps_server.server.close_all()
 
         FTPsServer.ftps_server = FTPsServer(
             self.ui.lineEdit_ip.text(),
             int(self.ui.lineEdit_port.text()),
+            range(int(self.ui.lineEdit_passive_port_range_start.text()),
+                  int(self.ui.lineEdit_passive_port_range_end.text())),
             int(self.ui.lineEdit_max_conn.text()),
             int(self.ui.lineEdit_max_conn_ip.text()),
             self.ui.label_certificate_file_path.text(),
@@ -268,6 +276,27 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         else:
             self.ui.label_errorMessage.setText("No server port provided!")
             valid = False
+        start_passive_port = self.ui.lineEdit_passive_port_range_start.text()
+        end_passive_port = self.ui.lineEdit_passive_port_range_end.text()
+        if not start_passive_port:
+            self.ui.label_errorMessage.setText("Start passive port not provided!")
+            valid = False
+        elif start_passive_port and (int(start_passive_port) < 1 or int(start_passive_port) > 65535):
+            self.ui.label_errorMessage.setText("Invalid start passive port provided!")
+            valid = False
+        if not end_passive_port:
+            self.ui.label_errorMessage.setText("End passive port not provided!")
+            valid = False
+        if end_passive_port and (int(end_passive_port) < 1 or int(end_passive_port) > 65535):
+            self.ui.label_errorMessage.setText("Invalid passive end port provided!")
+            valid = False
+        if start_passive_port and end_passive_port:
+            if int(start_passive_port) > int(end_passive_port):
+                self.ui.label_errorMessage.setText("Start passive port cannot be greater than end passive port!")
+                valid = False
+            elif int(end_passive_port) < int(start_passive_port):
+                self.ui.label_errorMessage.setText("End passive port cannot be lower than start passive port!")
+                valid = False
         if not os.path.isfile(self.ui.label_key_file_path.text()):
             self.ui.label_errorMessage.setText("Invalid SSL key file provided!")
             valid = False
@@ -411,6 +440,8 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             FTPsServer.ftps_server = FTPsServer(
                 self.ui.lineEdit_ip.text(),
                 int(self.ui.lineEdit_port.text()),
+                range(int(self.ui.lineEdit_passive_port_range_start.text()),
+                      int(self.ui.lineEdit_passive_port_range_end.text())),
                 int(self.ui.lineEdit_max_conn.text()),
                 int(self.ui.lineEdit_max_conn_ip.text()),
                 self.ui.label_certificate_file_path.text(),
