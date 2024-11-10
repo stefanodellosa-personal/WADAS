@@ -70,6 +70,7 @@ class FTPsServer:
         self.handler = TLS_FTP_WADAS_Handler
         self.handler.certfile = self.certificate
         self.handler.keyfile = self.key
+        self.handler.passive_ports = [65522, 65523]
         # welcome banner
         self.handler.banner = "WADAS FTPS server!"
 
