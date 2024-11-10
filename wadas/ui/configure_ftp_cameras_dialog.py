@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QWidget,
 )
+from prompt_toolkit.key_binding.bindings.named_commands import end_of_file
 from validators import ipv4
 
 from wadas.domain.camera import Camera, cameras
@@ -262,34 +263,42 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         self.ui.label_FTPServer_path.setText(dir)
         self.validate()
 
+    def validate_port(self, port, port_name):
+        """Validate port method"""
+
+        if int(port) < 1 or int(port) > 65535:
+            self.ui.label_errorMessage.setText(f"Invalid {port_name} port provided!")
+            return False
+        return True
+
     def validate(self):
         """Method to validate data prior to accept and close dialog."""
 
+        # IP
         valid = True
         if not ipv4(self.ui.lineEdit_ip.text()):
             self.ui.label_errorMessage.setText("Invalid server IP address provided!")
             valid = False
+        # Port
         if port := self.ui.lineEdit_port.text():
-            if int(port) < 1 or int(port) > 65535:
-                self.ui.label_errorMessage.setText("Invalid server port provided!")
-                valid = False
+            valid = self.validate_port(port, "server")
         else:
             self.ui.label_errorMessage.setText("No server port provided!")
             valid = False
+        # Passive ports
         start_passive_port = self.ui.lineEdit_passive_port_range_start.text()
         end_passive_port = self.ui.lineEdit_passive_port_range_end.text()
         if not start_passive_port:
             self.ui.label_errorMessage.setText("Start passive port not provided!")
             valid = False
-        elif start_passive_port and (int(start_passive_port) < 1 or int(start_passive_port) > 65535):
-            self.ui.label_errorMessage.setText("Invalid start passive port provided!")
-            valid = False
+        else:
+            self.validate_port(start_passive_port, "start passive port")
         if not end_passive_port:
             self.ui.label_errorMessage.setText("End passive port not provided!")
             valid = False
-        if end_passive_port and (int(end_passive_port) < 1 or int(end_passive_port) > 65535):
-            self.ui.label_errorMessage.setText("Invalid passive end port provided!")
-            valid = False
+        else:
+            self.validate_port(end_passive_port, "end passive port")
+
         if start_passive_port and end_passive_port:
             if int(start_passive_port) > int(end_passive_port):
                 self.ui.label_errorMessage.setText("Start passive port cannot be greater than end passive port!")
@@ -297,15 +306,19 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             elif int(end_passive_port) < int(start_passive_port):
                 self.ui.label_errorMessage.setText("End passive port cannot be lower than start passive port!")
                 valid = False
+        # SSL key file
         if not os.path.isfile(self.ui.label_key_file_path.text()):
             self.ui.label_errorMessage.setText("Invalid SSL key file provided!")
             valid = False
+        # SSL certificate file
         if not os.path.isfile(self.ui.label_certificate_file_path.text()):
             self.ui.label_errorMessage.setText("Invalid SSL certificate file provided!")
             valid = False
+        # FTP dir
         if not os.path.isdir(self.ui.label_FTPServer_path.text()):
             self.ui.label_errorMessage.setText("Invalid FTP server directory provided!")
             valid = False
+        # Max conn
         max_conn = self.ui.lineEdit_max_conn.text()
         if not max_conn or int(max_conn) < 0:
             self.ui.label_errorMessage.setText("No or Invalid maximum connection value provided!")
@@ -316,7 +329,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 "No or Invalid maximum connection per IP value provided!"
             )
             valid = False
-
+        # Camera IDs, users and passwords
         for i in range(0, self.ui_camera_idx):
             if i in self.removed_rows:
                 continue
