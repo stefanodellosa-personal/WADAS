@@ -90,8 +90,8 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             self.ui.lineEdit_port.setText(str(FTPsServer.ftps_server.port))
             self.ui.lineEdit_max_conn.setText(str(FTPsServer.ftps_server.max_conn))
             self.ui.lineEdit_max_conn_ip.setText(str(FTPsServer.ftps_server.max_conn_per_ip))
-            self.ui.lineEdit_passive_port_range_start.setText(str(FTPsServer.ftps_server.passive_ports[0]))
-            self.ui.lineEdit_passive_port_range_end.setText(str(FTPsServer.ftps_server.passive_ports[-1]))
+            self.ui.lineEdit_passive_port_range_start.setText(str(min(FTPsServer.ftps_server.passive_ports)))
+            self.ui.lineEdit_passive_port_range_end.setText(str(max(FTPsServer.ftps_server.passive_ports)))
         else:
             self.ui.lineEdit_ip.setText("0.0.0.0")
             self.ui.lineEdit_port.setText("21")
@@ -131,8 +131,8 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         FTPsServer.ftps_server = FTPsServer(
             self.ui.lineEdit_ip.text(),
             int(self.ui.lineEdit_port.text()),
-            range(int(self.ui.lineEdit_passive_port_range_start.text()),
-                  int(self.ui.lineEdit_passive_port_range_end.text())),
+            list(range(int(self.ui.lineEdit_passive_port_range_start.text()),
+                  int(self.ui.lineEdit_passive_port_range_end.text())+1)),
             int(self.ui.lineEdit_max_conn.text()),
             int(self.ui.lineEdit_max_conn_ip.text()),
             self.ui.label_certificate_file_path.text(),

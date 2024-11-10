@@ -62,7 +62,7 @@ class FTPsServer:
         # Store params to allow serialization
         self.ip = ip_address
         self.port = port
-        self.passive_ports = list(passive_ports)
+        self.passive_ports = passive_ports
         self.max_conn = max_conn
         self.max_conn_per_ip = max_conn_per_ip
         self.certificate = certificate
