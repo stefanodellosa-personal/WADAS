@@ -266,9 +266,39 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
     def validate_port(self, port, port_name):
         """Validate port method"""
 
-        if int(port) < 1 or int(port) > 65535:
+        try:
+            port_to_int = int(port)
+        except  ValueError:
+            self.ui.label_errorMessage.setText(f"Invalid {port_name} port type. Shall be an integer value!")
+            return False
+
+        if port_to_int < 1 or port_to_int > 65535:
             self.ui.label_errorMessage.setText(f"Invalid {port_name} port provided!")
             return False
+        else:
+            return True
+
+    def validate_passive_port_range(self, start_passive_port, end_passive_port):
+        """Method to validate passive ports range."""
+
+        try:
+            int_start_passive_port = int(start_passive_port)
+        except ValueError:
+            self.ui.label_errorMessage.setText(f"Invalid start passive port type. Shall be an integer value!")
+            return False
+        try:
+            int_end_passive_port = int(end_passive_port)
+        except ValueError:
+            self.ui.label_errorMessage.setText(f"Invalid end passive port type. Shall be an integer value!")
+            return False
+
+        if start_passive_port and end_passive_port:
+            if int_start_passive_port > int_end_passive_port:
+                self.ui.label_errorMessage.setText("Start passive port cannot be greater than end passive port!")
+                return False
+            elif int_end_passive_port < int_start_passive_port:
+                self.ui.label_errorMessage.setText("End passive port cannot be lower than start passive port!")
+                return False
         return True
 
     def validate(self):
@@ -281,7 +311,8 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             valid = False
         # Port
         if port := self.ui.lineEdit_port.text():
-            valid = self.validate_port(port, "server")
+            if not self.validate_port(port, "server"):
+                valid = False
         else:
             self.ui.label_errorMessage.setText("No server port provided!")
             valid = False
@@ -291,21 +322,15 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         if not start_passive_port:
             self.ui.label_errorMessage.setText("Start passive port not provided!")
             valid = False
-        else:
-            self.validate_port(start_passive_port, "start passive port")
+        elif self.validate_port(start_passive_port, "start passive port") == False:
+            valid = False
         if not end_passive_port:
             self.ui.label_errorMessage.setText("End passive port not provided!")
             valid = False
-        else:
-            self.validate_port(end_passive_port, "end passive port")
-
-        if start_passive_port and end_passive_port:
-            if int(start_passive_port) > int(end_passive_port):
-                self.ui.label_errorMessage.setText("Start passive port cannot be greater than end passive port!")
-                valid = False
-            elif int(end_passive_port) < int(start_passive_port):
-                self.ui.label_errorMessage.setText("End passive port cannot be lower than start passive port!")
-                valid = False
+        elif self.validate_port(end_passive_port, "end passive port") == False:
+            valid = False
+        if not self.validate_passive_port_range(start_passive_port, end_passive_port):
+            valid = False
         # SSL key file
         if not os.path.isfile(self.ui.label_key_file_path.text()):
             self.ui.label_errorMessage.setText("Invalid SSL key file provided!")
