@@ -18,6 +18,7 @@ def ftps_server():
     return FTPsServer(
         "127.0.0.1",
         21,
+        [65522, 65523],
         50,
         5,
         cert_path,
@@ -31,6 +32,7 @@ def test_ftp_server_init(ftps_server):
     assert isinstance(ftps_server, FTPsServer)
     assert ftps_server.ip == "127.0.0.1"
     assert ftps_server.port == 21
+    assert ftps_server.passive_ports == [65522, 65523]
 
 
 def add_user(ftps_server, username, password):
