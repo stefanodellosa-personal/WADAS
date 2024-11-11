@@ -9,6 +9,7 @@ from PySide6.QtCore import QObject, Signal
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
+from wadas.domain.camera import cameras
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
@@ -65,12 +66,16 @@ class OperationMode(QObject):
         """Method to send notification(s) trough Notifier class (and subclasses)"""
         Notifier.send_notification(img_path, message)
 
-    def actuate(self, actuator_list):
-        """Method to trigger actuators when enabled"""
-        # TODO @stefano
-        for actuator in actuator_list:
-            if actuator.enabled:
-                actuator.actuate()
+    def actuate(self, camera_id):
+        """Method to trigger actuators associated to the camera, when enabled"""
+        curr_camera = None
+        for curr_camera in cameras:
+            if curr_camera.id == camera_id:
+                break
+        if curr_camera:
+            for actuator in curr_camera.actuators:
+                if actuator.enabled:
+                    actuator.actuate()
 
     def execution_completed(self):
         """Method to perform end of execution steps."""
