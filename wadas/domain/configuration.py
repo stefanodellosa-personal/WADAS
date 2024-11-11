@@ -9,7 +9,6 @@ import yaml
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
-from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import Camera, cameras
 from wadas.domain.email_notifier import EmailNotifier
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
@@ -19,7 +18,6 @@ from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.roadsign_actuator import RoadSignActuator
-from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.usb_camera import USBCamera
 
 logger = logging.getLogger(__name__)
@@ -93,18 +91,18 @@ def load_configuration_from_file(file_path):
             wadas_config["operation_mode"]
             == OperationMode.OperationModeTypes.AnimalDetectionMode.value
         ):
-            OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode(
-                classification=False
+            OperationMode.cur_operation_mode_type = (
+                OperationMode.OperationModeTypes.AnimalDetectionMode
             )
         elif (
             wadas_config["operation_mode"]
             == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode.value
         ):
-            OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode(
-                classification=True
+            OperationMode.cur_operation_mode_type = (
+                OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
             )
         elif wadas_config["operation_mode"] == OperationMode.OperationModeTypes.TestModelMode.value:
-            OperationMode.cur_operation_mode = TestModelMode()
+            OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.TestModelMode
         else:
             OperationMode.cur_operation_mode = None
 
@@ -144,7 +142,9 @@ def save_configuration_to_file(file):
             "ai_language": AiModel.language,
         },
         "operation_mode": (
-            OperationMode.cur_operation_mode.type.value if OperationMode.cur_operation_mode else ""
+            OperationMode.cur_operation_mode_type.value
+            if OperationMode.cur_operation_mode_type
+            else ""
         ),
         "ftps_server": (FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else ""),
         "actuator_server": (

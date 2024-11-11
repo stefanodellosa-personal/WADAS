@@ -9,6 +9,7 @@ from PySide6.QtCore import QObject, Signal
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
+from wadas.domain.camera import cameras
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
@@ -28,6 +29,7 @@ class OperationMode(QObject):
 
     # Currently selected operation mode
     cur_operation_mode = None
+    cur_operation_mode_type = None  # We need this separately as object is deleted after op_mode run
 
     # Signals
     update_image = Signal(str)
@@ -65,12 +67,16 @@ class OperationMode(QObject):
         """Method to send notification(s) trough Notifier class (and subclasses)"""
         Notifier.send_notification(img_path, message)
 
-    def actuate(self, actuator_list):
-        """Method to trigger actuators when enabled"""
-        # TODO @stefano
-        for actuator in actuator_list:
-            if actuator.enabled:
-                actuator.actuate()
+    def actuate(self, camera_id):
+        """Method to trigger actuators associated to the camera, when enabled"""
+        cur_camera = None
+        for cur_camera in cameras:
+            if cur_camera.id == camera_id:
+                break
+        if cur_camera:
+            for actuator in cur_camera.actuators:
+                if actuator.enabled:
+                    actuator.actuate()
 
     def execution_completed(self):
         """Method to perform end of execution steps."""
