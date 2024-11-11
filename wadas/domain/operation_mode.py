@@ -68,12 +68,12 @@ class OperationMode(QObject):
 
     def actuate(self, camera_id):
         """Method to trigger actuators associated to the camera, when enabled"""
-        curr_camera = None
-        for curr_camera in cameras:
-            if curr_camera.id == camera_id:
+        cur_camera = None
+        for cur_camera in cameras:
+            if cur_camera.id == camera_id:
                 break
-        if curr_camera:
-            for actuator in curr_camera.actuators:
+        if cur_camera:
+            for actuator in cur_camera.actuators:
                 if actuator.enabled:
                     actuator.actuate()
 
