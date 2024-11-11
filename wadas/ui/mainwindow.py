@@ -242,8 +242,8 @@ class MainWindow(QMainWindow):
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
         elif (
-            OperationMode.cur_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode
-            and not cameras
+                OperationMode.cur_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode
+                and not cameras
         ):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
@@ -326,8 +326,8 @@ class MainWindow(QMainWindow):
         notification_enabled = False
         for notifier in Notifier.notifiers:
             if (
-                Notifier.notifiers[notifier]
-                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
+                    Notifier.notifiers[notifier]
+                    and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
             ):
                 credentials = keyring.get_credential("WADAS_email", "")
                 if notifier and credentials.username:
@@ -474,13 +474,13 @@ class MainWindow(QMainWindow):
 
     def update_en_actuator_list(self):
         """Method to list enabled actuator(s) in UI"""
-        threshold_time = 30
+        threshold_time = FastAPIActuatorServer.actuator_server.actuator_timeout_threshold if FastAPIActuatorServer.actuator_server else 30
         self.ui.listWidget_en_actuators.clear()
         for actuator in Actuator.actuators.values():
             if actuator.enabled:
                 if FastAPIActuatorServer.actuator_server.startup_time:
                     # inactive actuator: connected at least once but unseen for {threshold_time} seconds
-                    # or never connected within the first 30 seconds since server startup.
+                    # or never connected within the first {threshold_time} seconds since server startup.
                     if (actuator.last_update is not None and (
                             datetime.datetime.now() - actuator.last_update > timedelta(seconds=threshold_time)) or
                             actuator.last_update is None and (

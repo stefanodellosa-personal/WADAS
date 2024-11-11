@@ -14,7 +14,9 @@ class FastAPIActuatorServer:
 
     actuator_server = None
 
-    def __init__(self, ip: str, port: int, ssl_certificate: str, ssl_key: str):
+    def __init__(
+        self, ip: str, port: int, ssl_certificate: str, ssl_key: str, actuator_timeout_threshold=30
+    ):
         self.ip = ip
         self.port = port
         self.ssl_certificate = ssl_certificate
@@ -22,6 +24,7 @@ class FastAPIActuatorServer:
         self.thread = None
         self.server = None
         self.startup_time = None
+        self.actuator_timeout_threshold = actuator_timeout_threshold
 
     def run(self):
         """Method to run the FastAPI Actuator server with SSL in a separate thread."""
