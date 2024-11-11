@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
+from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import cameras
 from wadas.domain.configuration import load_configuration_from_file, save_configuration_to_file
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
@@ -27,6 +28,7 @@ from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.qtextedit_logger import QTextEditLogger
+from wadas.domain.test_model_mode import TestModelMode
 from wadas.ui.configure_actuators_dialog import DialogConfigureActuators
 from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
 from wadas.ui.configure_camera_actuator_associations_dialog import (
@@ -164,8 +166,8 @@ class MainWindow(QMainWindow):
 
         dialog = DialogSelectMode()
         if dialog.exec_():
-            if OperationMode.cur_operation_mode:
-                logger.info("Selected mode from dialog: %s", OperationMode.cur_operation_mode.type.value)
+            if OperationMode.cur_operation_mode_type:
+                logger.info("Selected mode from dialog: %s", OperationMode.cur_operation_mode_type.value)
                 self.setWindowModified(True)
             else:
                 logger.debug("No operation mode selected.")
@@ -182,6 +184,7 @@ class MainWindow(QMainWindow):
         if not proceed:
             return
 
+        self.instantiate_selected_model()
         if OperationMode.cur_operation_mode:
             # Satisfy preconditions and required inputs for the selected operation mode
             if OperationMode.cur_operation_mode.type == OperationMode.OperationModeTypes.TestModelMode:
@@ -222,6 +225,27 @@ class MainWindow(QMainWindow):
         else:
             logger.error("Unable to run the selected model.")
 
+    def instantiate_selected_model(self):
+        """Given the selected model from dedicated UI Dialog, instantiate
+        the corresponding object."""
+        if not OperationMode.cur_operation_mode_type:
+            logger.error("No operation mode selected.")
+            return
+        else:
+            if OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode:
+                logger.info("Running test model mode....")
+                OperationMode.cur_operation_mode = TestModelMode()
+            elif (
+                    OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode
+            ):
+                OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode(classification=False)
+            elif (
+                    OperationMode.cur_operation_mode_type
+                    == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
+            ):
+                OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode()
+            # add elif with other operation modes
+
     def on_run_completion(self):
         """Actions performed after a run is completed."""
 
@@ -238,11 +262,11 @@ class MainWindow(QMainWindow):
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
 
-        if not OperationMode.cur_operation_mode:
+        if not OperationMode.cur_operation_mode_type:
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
         elif (
-            OperationMode.cur_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode
+            OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode
             and not cameras
         ):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
@@ -279,8 +303,8 @@ class MainWindow(QMainWindow):
     def update_info_widget(self):
         """Update information widget."""
 
-        if OperationMode.cur_operation_mode:
-            self.ui.label_op_mode.setText(OperationMode.cur_operation_mode.type.value)
+        if OperationMode.cur_operation_mode_type:
+            self.ui.label_op_mode.setText(OperationMode.cur_operation_mode_type.value)
         if OperationMode.cur_operation_mode:
             self.ui.label_last_detection.setText(
                 os.path.basename(OperationMode.cur_operation_mode.last_detection)
