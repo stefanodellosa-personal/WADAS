@@ -61,6 +61,7 @@ class FastAPIActuatorServer:
             "ssl_key": self.ssl_key,
             "ip": self.ip,
             "port": self.port,
+            "actuator_timeout_threshold": self.actuator_timeout_threshold,
         }
 
     @staticmethod
