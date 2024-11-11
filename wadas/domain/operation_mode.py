@@ -28,6 +28,7 @@ class OperationMode(QObject):
 
     # Currently selected operation mode
     cur_operation_mode = None
+    cur_operation_mode_type = None  # We need this separately as object is deleted after op_mode run
 
     # Signals
     update_image = Signal(str)
