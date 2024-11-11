@@ -77,7 +77,6 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
         # Init dialog
         self.initialize_dialog()
-        self._setup_logger()
 
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
@@ -336,7 +335,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                 self.ui.label_cert_file.text(),
                 self.ui.label_key_file.text(),
             )
-
+        self._setup_logger()
         self.ui.pushButton_stop_server.setEnabled(True)
         # Start the thread
         self.actuator_server_thread = self.actuator_server.run()
@@ -351,9 +350,10 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
     def _setup_logger(self):
         """Initialize logger for UI logging."""
-
-        # TODO: fix log redirecting to UI dialog only
-        logger = logging.getLogger("fastapi")
+        logger_names = ["uvicorn", "uvicorn.error", "uvicorn.access"]
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_test_server_log)
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(log_textbox)
+        for logger_name in logger_names:
+            server_logger = logging.getLogger(logger_name)
+            for handler in server_logger.handlers[:]:
+                server_logger.removeHandler(handler)
+            server_logger.addHandler(log_textbox)
