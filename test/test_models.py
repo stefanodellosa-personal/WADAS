@@ -14,8 +14,8 @@ TEST_URL = "https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg"
 @pytest.fixture(scope="session", autouse=True)
 def test_download_models():
     """Test download models. This will run before any test function."""
-    assert OVMegaDetectorV5.download_model(force=True)
-    assert Classifier.download_model(force=True)
+    assert OVMegaDetectorV5.download_model(force=False)
+    assert Classifier.download_model(force=False)
 
 
 def test_detection_model():
