@@ -7,7 +7,7 @@ from tkinter import Frame, Label, PhotoImage, Tk
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-URL = "https://localhost/api/v1/actuators/"
+URL = "https://localhost:8443/api/v1/actuators/"
 ACTUATOR_ID = "A98DB973KWL8XP1L"
 
 count = 0
