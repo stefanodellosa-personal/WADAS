@@ -110,6 +110,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                         message = "WADAS has detected an animal from camera %s!" % id
                     # Send notification
                     if message and processed_img_path:
+                        self.actuate(cur_img["img_id"])
                         self.send_notification(processed_img_path, message)
 
         self.execution_completed()

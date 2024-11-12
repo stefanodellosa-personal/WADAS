@@ -53,7 +53,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.add_actuator()
 
         # Create scrollable area for Actuator list in Actuators tab
-        scroll_area = QScrollArea(self.ui.tab_clients)
+        scroll_area = QScrollArea(self.ui.tab_actuator_list)
         scroll_area.setWidgetResizable(True)
         scroll_widget = QWidget()
         scroll_area.setWidget(scroll_widget)
@@ -70,6 +70,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui.pushButton_remove_actuator.clicked.connect(self.remove_actuator)
         self.ui.pushButton_key_file.clicked.connect(self.select_key_file)
         self.ui.pushButton_cert_file.clicked.connect(self.select_certificate_file)
+        self.ui.lineEdit_actuator_timeout.textChanged.connect(self.validate)
         self.ui.lineEdit_server_ip.textChanged.connect(self.validate)
         self.ui.lineEdit_server_port.textChanged.connect(self.validate)
         self.ui.pushButton_start_server.clicked.connect(self.start_actuator_server)
@@ -82,11 +83,14 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         """Method to initialize dialog with existing values (if any)."""
 
         if FastAPIActuatorServer.actuator_server:
+            self.ui.lineEdit_actuator_timeout.setText(str(
+                FastAPIActuatorServer.actuator_server.actuator_timeout_threshold))
             self.ui.lineEdit_server_ip.setText(str(FastAPIActuatorServer.actuator_server.ip))
             self.ui.lineEdit_server_port.setText(str(FastAPIActuatorServer.actuator_server.port))
             self.ui.label_key_file.setText(FastAPIActuatorServer.actuator_server.ssl_key)
             self.ui.label_cert_file.setText(FastAPIActuatorServer.actuator_server.ssl_certificate)
         else:
+            self.ui.lineEdit_actuator_timeout.setText("30")
             self.ui.lineEdit_server_ip.setText("0.0.0.0")
             self.ui.lineEdit_server_port.setText("8443")
 
@@ -116,9 +120,26 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         """Method to validate dialog input fields"""
 
         valid = True
+        # Actuator timeout
+        actuator_timeout = self.ui.lineEdit_actuator_timeout.text()
+        if not actuator_timeout:
+            self.ui.label_status.setText("No actuator timeout provided!")
+            valid = False
+        else:
+            try:
+                int_actuator_timeout = int(self.ui.lineEdit_actuator_timeout.text())
+                if int_actuator_timeout < 0:
+                    self.ui.label_status.setText(
+                        "Invalid actuator timeout provided! It shall be a positive integer value.")
+                    valid = False
+            except ValueError:
+                self.ui.label_status.setText("Invalid actuator timeout provided! It shall be an integer value.")
+                valid = False
+        # IP
         if not ipv4(self.ui.lineEdit_server_ip.text()):
             self.ui.label_status.setText("Invalid server IP address provided!")
             valid = False
+        # Port
         if port := self.ui.lineEdit_server_port.text():
             if int(port) < 1 or int(port) > 65535:
                 self.ui.label_status.setText("Invalid server port provided!")
@@ -126,13 +147,15 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         else:
             self.ui.label_status.setText("No server port provided!")
             valid = False
+        # SSL key file
         if not os.path.isfile(self.ui.label_key_file.text()):
             self.ui.label_status.setText("Invalid SSL key file provided!")
             valid = False
+        # SSL Certificate file
         if not os.path.isfile(self.ui.label_cert_file.text()):
             self.ui.label_status.setText("Invalid SSL certificate file provided!")
             valid = False
-
+        # Actuator ID
         for i in range(0, self.ui_actuator_idx):
             if i in self.removed_rows:
                 continue
@@ -269,6 +292,8 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         """When Ok is clicked, save Ai model config info before closing."""
 
         if FastAPIActuatorServer.actuator_server:
+            FastAPIActuatorServer.actuator_server.actuator_timeout_threshold = int(
+                self.ui.lineEdit_actuator_timeout.text())
             FastAPIActuatorServer.actuator_server.ip = self.ui.lineEdit_server_ip.text()
             FastAPIActuatorServer.actuator_server.port = int(self.ui.lineEdit_server_port.text())
             FastAPIActuatorServer.actuator_server.ssl_certificate = self.ui.label_cert_file.text()
@@ -279,6 +304,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                 int(self.ui.lineEdit_server_port.text()),
                 self.ui.label_cert_file.text(),
                 self.ui.label_key_file.text(),
+                int(self.ui.lineEdit_actuator_timeout.text())
             )
         if Actuator.actuators:
             actuators_id = set()

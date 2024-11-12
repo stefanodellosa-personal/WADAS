@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'configure_actuators.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -38,21 +38,48 @@ class Ui_DialogConfigureActuators(object):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.tabWidget = QTabWidget(self.gridLayoutWidget)
         self.tabWidget.setObjectName(u"tabWidget")
-        self.tab_clients = QWidget()
-        self.tab_clients.setObjectName(u"tab_clients")
-        self.pushButton_add_actuator = QPushButton(self.tab_clients)
+        self.tab_actuator_list = QWidget()
+        self.tab_actuator_list.setObjectName(u"tab_actuator_list")
+        self.pushButton_add_actuator = QPushButton(self.tab_actuator_list)
         self.pushButton_add_actuator.setObjectName(u"pushButton_add_actuator")
         self.pushButton_add_actuator.setGeometry(QRect(10, 340, 101, 24))
-        self.pushButton_remove_actuator = QPushButton(self.tab_clients)
+        self.pushButton_remove_actuator = QPushButton(self.tab_actuator_list)
         self.pushButton_remove_actuator.setObjectName(u"pushButton_remove_actuator")
         self.pushButton_remove_actuator.setGeometry(QRect(120, 340, 111, 24))
-        self.verticalLayoutWidget = QWidget(self.tab_clients)
+        self.verticalLayoutWidget = QWidget(self.tab_actuator_list)
         self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
         self.verticalLayoutWidget.setGeometry(QRect(0, 10, 611, 321))
         self.verticalLayout_actuators = QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout_actuators.setObjectName(u"verticalLayout_actuators")
         self.verticalLayout_actuators.setContentsMargins(0, 0, 0, 0)
-        self.tabWidget.addTab(self.tab_clients, "")
+        self.tabWidget.addTab(self.tab_actuator_list, "")
+        self.tab_actuator = QWidget()
+        self.tab_actuator.setObjectName(u"tab_actuator")
+        self.gridLayoutWidget_4 = QWidget(self.tab_actuator)
+        self.gridLayoutWidget_4.setObjectName(u"gridLayoutWidget_4")
+        self.gridLayoutWidget_4.setGeometry(QRect(0, 10, 611, 351))
+        self.gridLayout_4 = QGridLayout(self.gridLayoutWidget_4)
+        self.gridLayout_4.setObjectName(u"gridLayout_4")
+        self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.lineEdit_actuator_timeout = QLineEdit(self.gridLayoutWidget_4)
+        self.lineEdit_actuator_timeout.setObjectName(u"lineEdit_actuator_timeout")
+
+        self.gridLayout_4.addWidget(self.lineEdit_actuator_timeout, 0, 1, 1, 1)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_4.addItem(self.verticalSpacer, 1, 0, 1, 1)
+
+        self.label_5 = QLabel(self.gridLayoutWidget_4)
+        self.label_5.setObjectName(u"label_5")
+
+        self.gridLayout_4.addWidget(self.label_5, 0, 0, 1, 1)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout_4.addItem(self.horizontalSpacer_2, 0, 2, 1, 1)
+
+        self.tabWidget.addTab(self.tab_actuator, "")
         self.tab_server = QWidget()
         self.tab_server.setObjectName(u"tab_server")
         self.groupBox = QGroupBox(self.tab_server)
@@ -185,7 +212,18 @@ class Ui_DialogConfigureActuators(object):
         DialogConfigureActuators.setWindowTitle(QCoreApplication.translate("DialogConfigureActuators", u"Configure actuators", None))
         self.pushButton_add_actuator.setText(QCoreApplication.translate("DialogConfigureActuators", u"Add actuator", None))
         self.pushButton_remove_actuator.setText(QCoreApplication.translate("DialogConfigureActuators", u"Remove actuator", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_clients), QCoreApplication.translate("DialogConfigureActuators", u"Actuators", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_actuator_list), QCoreApplication.translate("DialogConfigureActuators", u"Actuators", None))
+#if QT_CONFIG(tooltip)
+        self.tab_actuator.setToolTip(QCoreApplication.translate("DialogConfigureActuators", u"Actuator configuration options", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.lineEdit_actuator_timeout.setToolTip(QCoreApplication.translate("DialogConfigureActuators", u"Actuator timeout in seconds", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.label_5.setToolTip(QCoreApplication.translate("DialogConfigureActuators", u"Actuator timeout in seconds", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_5.setText(QCoreApplication.translate("DialogConfigureActuators", u"Actuator timeout (s)", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_actuator), QCoreApplication.translate("DialogConfigureActuators", u"Actuator", None))
         self.groupBox.setTitle(QCoreApplication.translate("DialogConfigureActuators", u"Server", None))
         self.label_2.setText(QCoreApplication.translate("DialogConfigureActuators", u"Port", None))
         self.label.setText(QCoreApplication.translate("DialogConfigureActuators", u"IP", None))

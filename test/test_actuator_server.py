@@ -41,6 +41,7 @@ def test_server_serialize():
         "ssl_key": "mykey.pem",
         "ip": "127.0.0.1",
         "port": 443,
+        "actuator_timeout_threshold": 30,
     }
     assert serialized_data == expected_data
 
@@ -51,6 +52,7 @@ def test_server_deserialize():
         "ssl_key": "mykey.pem",
         "ip": "127.0.0.1",
         "port": 443,
+        "actuator_timeout_threshold": 30,
     }
     server = FastAPIActuatorServer.deserialize(data)
     assert isinstance(server, FastAPIActuatorServer)

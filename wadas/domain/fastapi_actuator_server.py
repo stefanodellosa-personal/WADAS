@@ -35,7 +35,9 @@ class FastAPIActuatorServer:
 
     actuator_server = None
 
-    def __init__(self, ip: str, port: int, ssl_certificate: str, ssl_key: str):
+    def __init__(
+        self, ip: str, port: int, ssl_certificate: str, ssl_key: str, actuator_timeout_threshold=30
+    ):
         self.ip = ip
         self.port = port
         self.ssl_certificate = ssl_certificate
@@ -43,6 +45,7 @@ class FastAPIActuatorServer:
         self.thread = None
         self.server = None
         self.startup_time = None
+        self.actuator_timeout_threshold = actuator_timeout_threshold
 
         config = uvicorn.Config(
             app="wadas.domain.actuator_server_app:app",
@@ -79,6 +82,7 @@ class FastAPIActuatorServer:
             "ssl_key": self.ssl_key,
             "ip": self.ip,
             "port": self.port,
+            "actuator_timeout_threshold": self.actuator_timeout_threshold,
         }
 
     @staticmethod
