@@ -23,7 +23,7 @@ from wadas.domain.ai_model import AiModel
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import cameras
 from wadas.domain.configuration import load_configuration_from_file, save_configuration_to_file
-from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer, initialize_fastapi_logger
+from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode

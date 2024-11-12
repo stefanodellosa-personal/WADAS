@@ -10,7 +10,10 @@ from PySide6.QtCore import QObject, Signal
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import cameras
-from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
+from wadas.domain.fastapi_actuator_server import (
+    FastAPIActuatorServer,
+    initialize_fastapi_logger,
+)
 from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
 
@@ -101,6 +104,7 @@ class OperationMode(QObject):
     def start_actuator_server(self):
         """Method to start the HTTPS Actuator Server"""
         if Actuator.actuators and FastAPIActuatorServer.actuator_server:
+            initialize_fastapi_logger()
             logger.info("Instantiating HTTPS Actuator server...")
             self.actuators_server_thread = FastAPIActuatorServer.actuator_server.run()
             self.actuators_view_thread = self.start_update_actuators_thread()

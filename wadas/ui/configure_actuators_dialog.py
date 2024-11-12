@@ -365,6 +365,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui.pushButton_stop_server.setEnabled(True)
         # Start the thread
         self.actuator_server_thread = self.actuator_server.run()
+        self.ui.pushButton_start_server.setEnabled(False)
 
     def stop_actuator_server(self):
         """Method to stop the Actuator server."""
@@ -372,7 +373,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         if self.actuator_server and self.actuator_server_thread:
             self.actuator_server.stop()
             self.actuator_server_thread.join()
-            self.ui.pushButton_stop_server.setEnabled(False)
+
+        self.ui.pushButton_stop_server.setEnabled(False)
+        self.ui.pushButton_start_server.setEnabled(True)
 
     def _setup_logger(self):
         """Initialize logger for UI logging."""
@@ -383,3 +386,4 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             for handler in server_logger.handlers[:]:
                 server_logger.removeHandler(handler)
             server_logger.addHandler(log_textbox)
+            server_logger.propagate = False
