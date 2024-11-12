@@ -1,10 +1,15 @@
-from unittest.mock import mock_open, patch
+from unittest.mock import patch
 
+import pytest
+from mocks import OpenStringMock
+
+from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
-from wadas.domain.configuration import (  # save_configuration_to_file,
+from wadas.domain.configuration import (
     load_configuration_from_file,
+    save_configuration_to_file,
 )
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import FTPsServer
@@ -12,9 +17,23 @@ from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 
 
+@pytest.fixture
+def init():
+    Notifier.notifiers = {"Email": None}
+    FTPsServer.ftps_server = None
+    Actuator.actuators.clear()
+    cameras.clear()
+    Camera.detection_params.clear()
+    FastAPIActuatorServer.actuator_server = None
+    AiModel.classification_treshold = 0.0
+    AiModel.detection_treshold = 0.0
+    AiModel.language = ""
+    OperationMode.cur_operation_mode = None
+
+
 @patch(
     "builtins.open",
-    new_callable=mock_open,
+    new_callable=OpenStringMock,
     read_data="""
 actuator_server:
 actuators: []
@@ -29,7 +48,7 @@ notification: []
 operation_mode:
 """,
 )
-def test_load_empty_config(mock_file):
+def test_load_empty_config(mock_file, init):
     load_configuration_from_file("")
     assert Notifier.notifiers == {"Email": None}
     assert FTPsServer.ftps_server is None
@@ -43,9 +62,22 @@ def test_load_empty_config(mock_file):
     assert OperationMode.cur_operation_mode is None
 
 
-# @patch("builtins.open", new_callable=mock_open, create=True)
-# def test_save_empty_config(mock_file):
-#     save_configuration_to_file("")
-#     mock_file.assert_called_once_with('', 'w')
-#     mock = mock_file()
-#     assert mock.write.call_args_list == 'OK'
+@patch("builtins.open", new_callable=OpenStringMock, create=True)
+def test_save_empty_config(mock_file, init):
+    save_configuration_to_file("")
+    assert (
+        mock_file.dump()
+        == f"""actuator_server: ''
+actuators: []
+ai_model:
+  ai_class_treshold: 0.0
+  ai_detect_treshold: 0.0
+  ai_language: ''
+camera_detection_params: []
+cameras: []
+ftps_server: ''
+notification: ''
+operation_mode: ''
+version: {__version__}
+"""
+    )
