@@ -5,6 +5,7 @@ import os
 
 import cv2
 import numpy as np
+import PIL
 import requests
 from PIL import Image
 from PytorchWildlife import utils as pw_utils
@@ -60,7 +61,13 @@ class AiModel:
 
         if not os.path.isfile(img_path):
             logger.error("%s is not a valid image path. Aborting.", img_path)
-            return
+            return None, None
+
+        try:
+            Image.open(img_path).verify()
+        except PIL.UnidentifiedImageError:
+            logger.error("%s is not a valid image file. Aborting.", img_path)
+            return None, None
 
         logger.info("Running detection on image %s ...", img_path)
         img = Image.open(img_path).convert("RGB")
