@@ -81,3 +81,73 @@ operation_mode: ''
 version: {__version__}
 """
     )
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data="""
+actuator_server:
+  ip: 1.2.3.4
+  port: 567
+  ssl_certificate: eshare_crt.pem
+  ssl_key: eshare_key.pem
+actuators: []
+ai_model:
+  ai_class_treshold: 0.123
+  ai_detect_treshold: 0.456
+  ai_language: xyz
+cameras: []
+camera_detection_params: []
+ftps_server: []
+notification: []
+operation_mode:
+""",
+)
+def test_load_actuator_server_config(mock_file, init):
+    load_configuration_from_file("")
+    assert Notifier.notifiers == {"Email": None}
+    assert FTPsServer.ftps_server is None
+    assert Actuator.actuators == {}
+    assert cameras == []
+    assert Camera.detection_params == []
+    assert FastAPIActuatorServer.actuator_server is not None
+    assert FastAPIActuatorServer.actuator_server.ip == "1.2.3.4"
+    assert FastAPIActuatorServer.actuator_server.port == 567
+    assert FastAPIActuatorServer.actuator_server.ssl_certificate == "eshare_crt.pem"
+    assert FastAPIActuatorServer.actuator_server.ssl_key == "eshare_key.pem"
+    assert FastAPIActuatorServer.actuator_server.thread is None
+    assert FastAPIActuatorServer.actuator_server.server is None
+    assert FastAPIActuatorServer.actuator_server.startup_time is None
+    assert AiModel.classification_treshold == 0.123
+    assert AiModel.detection_treshold == 0.456
+    assert AiModel.language == "xyz"
+    assert OperationMode.cur_operation_mode is None
+
+
+@patch("builtins.open", new_callable=OpenStringMock, create=True)
+def test_save_actuator_server_config(mock_file, init):
+    FastAPIActuatorServer.actuator_server = FastAPIActuatorServer(
+        "1.2.3.4", 567, "eshare_crt.pem", "eshare_key.pem"
+    )
+    save_configuration_to_file("")
+    assert (
+        mock_file.dump()
+        == f"""actuator_server:
+  ip: 1.2.3.4
+  port: 567
+  ssl_certificate: eshare_crt.pem
+  ssl_key: eshare_key.pem
+actuators: []
+ai_model:
+  ai_class_treshold: 0.0
+  ai_detect_treshold: 0.0
+  ai_language: ''
+camera_detection_params: []
+cameras: []
+ftps_server: ''
+notification: ''
+operation_mode: ''
+version: {__version__}
+"""
+    )
