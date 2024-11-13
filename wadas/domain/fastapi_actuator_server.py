@@ -11,21 +11,22 @@ import uvicorn
 logger = logging.getLogger(__name__)
 
 
-def initialize_fastapi_logger():
+def initialize_fastapi_logger(handler=None, level=logging.DEBUG):
     """Method to initialize Fastapi server logger"""
-    handler = RotatingFileHandler(
-        os.path.join("log", "fastapi_server.log"), maxBytes=100000, backupCount=3
-    )
-    formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
-    handler.setFormatter(formatter)
+    if not handler:
+        handler = RotatingFileHandler(
+            os.path.join("log", "fastapi_server.log"), maxBytes=100000, backupCount=3
+        )
+        formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
+        handler.setFormatter(formatter)
 
-    logger_names = ["uvicorn", "uvicorn.error", "uvicorn.access"]
+    logger_names = ("uvicorn", "uvicorn.error", "uvicorn.access")
     for logger_name in logger_names:
         server_logger = logging.getLogger(logger_name)
         for h in server_logger.handlers[:]:
             server_logger.removeHandler(h)
 
-        server_logger.setLevel(logging.DEBUG)
+        server_logger.setLevel(level)
         server_logger.addHandler(handler)
         server_logger.propagate = False
 

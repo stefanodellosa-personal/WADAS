@@ -22,7 +22,7 @@ from validators import ipv4
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.camera import cameras
-from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
+from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer, initialize_fastapi_logger
 from wadas.domain.feeder_actuator import FeederActuator
 from wadas.domain.qtextedit_logger import QTextEditLogger
 from wadas.domain.roadsign_actuator import RoadSignActuator
@@ -378,12 +378,6 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui.pushButton_start_server.setEnabled(True)
 
     def _setup_logger(self):
-        """Initialize logger for UI logging."""
-        logger_names = ["uvicorn", "uvicorn.error", "uvicorn.access"]
+        """Initialize fastapi logger for UI logging."""
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_test_server_log)
-        for logger_name in logger_names:
-            server_logger = logging.getLogger(logger_name)
-            for handler in server_logger.handlers[:]:
-                server_logger.removeHandler(handler)
-            server_logger.addHandler(log_textbox)
-            server_logger.propagate = False
+        initialize_fastapi_logger(handler=log_textbox)
