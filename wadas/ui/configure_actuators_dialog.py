@@ -22,7 +22,7 @@ from validators import ipv4
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.camera import cameras
-from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
+from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer, initialize_fastapi_logger
 from wadas.domain.feeder_actuator import FeederActuator
 from wadas.domain.qtextedit_logger import QTextEditLogger
 from wadas.domain.roadsign_actuator import RoadSignActuator
@@ -78,7 +78,6 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
         # Init dialog
         self.initialize_dialog()
-        self._setup_logger()
 
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
@@ -362,10 +361,11 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                 self.ui.label_cert_file.text(),
                 self.ui.label_key_file.text(),
             )
-
+        self._setup_logger()
         self.ui.pushButton_stop_server.setEnabled(True)
         # Start the thread
         self.actuator_server_thread = self.actuator_server.run()
+        self.ui.pushButton_start_server.setEnabled(False)
 
     def stop_actuator_server(self):
         """Method to stop the Actuator server."""
@@ -373,13 +373,11 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         if self.actuator_server and self.actuator_server_thread:
             self.actuator_server.stop()
             self.actuator_server_thread.join()
-            self.ui.pushButton_stop_server.setEnabled(False)
+
+        self.ui.pushButton_stop_server.setEnabled(False)
+        self.ui.pushButton_start_server.setEnabled(True)
 
     def _setup_logger(self):
-        """Initialize logger for UI logging."""
-
-        # TODO: fix log redirecting to UI dialog only
-        logger = logging.getLogger("fastapi")
+        """Initialize fastapi logger for UI logging."""
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_test_server_log)
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(log_textbox)
+        initialize_fastapi_logger(handler=log_textbox)
