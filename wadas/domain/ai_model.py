@@ -5,6 +5,7 @@ import os
 
 import cv2
 import numpy as np
+import PIL
 import requests
 from PIL import Image
 from PytorchWildlife import utils as pw_utils
@@ -58,12 +59,21 @@ class AiModel:
     def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
 
-        if not os.path.isfile(img_path):
+        try:
+            img = Image.open(img_path)
+            img.verify()
+        except FileNotFoundError:
             logger.error("%s is not a valid image path. Aborting.", img_path)
-            return
+            return None, None
+        except PIL.UnidentifiedImageError:
+            logger.error("%s is not a valid image file. Aborting.", img_path)
+            return None, None
 
         logger.info("Running detection on image %s ...", img_path)
+
+        # since .verify() closes the underlying file descriptor we need to re-open the file
         img = Image.open(img_path).convert("RGB")
+
         results = self.detection_pipeline.run_detection(img, AiModel.detection_treshold)
 
         detected_img_path = ""
