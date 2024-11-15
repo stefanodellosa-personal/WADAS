@@ -29,6 +29,7 @@ from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.qtextedit_logger import QTextEditLogger
 from wadas.domain.test_model_mode import TestModelMode
+from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.configure_actuators_dialog import DialogConfigureActuators
 from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
 from wadas.ui.configure_camera_actuator_associations_dialog import (
@@ -147,6 +148,8 @@ class MainWindow(QMainWindow):
         logger.addHandler(file_handler)
 
         initialize_fpts_logger()
+        initialize_asyncio_logger()
+
 
     def set_image(self, img):
         """Set image to show in WADAS. This is used for startup, detected and
