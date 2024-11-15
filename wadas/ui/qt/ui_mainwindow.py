@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'mainwindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,10 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QFrame, QLabel, QListWidget,
-    QListWidgetItem, QMainWindow, QMenu, QMenuBar,
-    QPlainTextEdit, QSizePolicy, QStatusBar, QToolBar,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QLabel,
+    QListWidget, QListWidgetItem, QMainWindow, QMenu,
+    QMenuBar, QPlainTextEdit, QSizePolicy, QStatusBar,
+    QToolBar, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -31,7 +31,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
-        MainWindow.setMinimumSize(QSize(1150, 815))
+        MainWindow.setMinimumSize(QSize(800, 600))
         self.actionSelect_Mode = QAction(MainWindow)
         self.actionSelect_Mode.setObjectName(u"actionSelect_Mode")
         icon = QIcon(QIcon.fromTheme(u"camera-web"))
@@ -112,112 +112,138 @@ class Ui_MainWindow(object):
         self.actionConfigure_camera_to_actuator_associations.setMenuRole(QAction.MenuRole.NoRole)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.label_image = QLabel(self.centralwidget)
-        self.label_image.setObjectName(u"label_image")
-        self.label_image.setEnabled(True)
-        self.label_image.setGeometry(QRect(10, 10, 800, 600))
-        sizePolicy.setHeightForWidth(self.label_image.sizePolicy().hasHeightForWidth())
-        self.label_image.setSizePolicy(sizePolicy)
-        self.plainTextEdit_log = QPlainTextEdit(self.centralwidget)
-        self.plainTextEdit_log.setObjectName(u"plainTextEdit_log")
-        self.plainTextEdit_log.setGeometry(QRect(10, 620, 1121, 109))
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum)
+        self.gridLayout = QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.label_op_mode_title = QLabel(self.centralwidget)
+        self.label_op_mode_title.setObjectName(u"label_op_mode_title")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.plainTextEdit_log.sizePolicy().hasHeightForWidth())
-        self.plainTextEdit_log.setSizePolicy(sizePolicy1)
-        self.verticalLayoutWidget = QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
-        self.verticalLayoutWidget.setGeometry(QRect(830, 10, 301, 601))
-        self.verticalLayout = QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.label_op_mode_title = QLabel(self.verticalLayoutWidget)
-        self.label_op_mode_title.setObjectName(u"label_op_mode_title")
+        sizePolicy1.setHeightForWidth(self.label_op_mode_title.sizePolicy().hasHeightForWidth())
+        self.label_op_mode_title.setSizePolicy(sizePolicy1)
         font = QFont()
         font.setBold(True)
         self.label_op_mode_title.setFont(font)
 
         self.verticalLayout.addWidget(self.label_op_mode_title)
 
-        self.label_op_mode = QLabel(self.verticalLayoutWidget)
+        self.label_op_mode = QLabel(self.centralwidget)
         self.label_op_mode.setObjectName(u"label_op_mode")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.label_op_mode.sizePolicy().hasHeightForWidth())
-        self.label_op_mode.setSizePolicy(sizePolicy2)
+        sizePolicy1.setHeightForWidth(self.label_op_mode.sizePolicy().hasHeightForWidth())
+        self.label_op_mode.setSizePolicy(sizePolicy1)
 
         self.verticalLayout.addWidget(self.label_op_mode)
 
-        self.label = QLabel(self.verticalLayoutWidget)
+        self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
+        sizePolicy1.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
+        self.label.setSizePolicy(sizePolicy1)
         self.label.setFont(font)
 
         self.verticalLayout.addWidget(self.label)
 
-        self.listWidget_en_cameras = QListWidget(self.verticalLayoutWidget)
+        self.listWidget_en_cameras = QListWidget(self.centralwidget)
         self.listWidget_en_cameras.setObjectName(u"listWidget_en_cameras")
+        sizePolicy.setHeightForWidth(self.listWidget_en_cameras.sizePolicy().hasHeightForWidth())
+        self.listWidget_en_cameras.setSizePolicy(sizePolicy)
 
         self.verticalLayout.addWidget(self.listWidget_en_cameras)
 
-        self.label_2 = QLabel(self.verticalLayoutWidget)
+        self.label_2 = QLabel(self.centralwidget)
         self.label_2.setObjectName(u"label_2")
+        sizePolicy1.setHeightForWidth(self.label_2.sizePolicy().hasHeightForWidth())
+        self.label_2.setSizePolicy(sizePolicy1)
         self.label_2.setFont(font)
 
         self.verticalLayout.addWidget(self.label_2)
 
-        self.listWidget_en_actuators = QListWidget(self.verticalLayoutWidget)
+        self.listWidget_en_actuators = QListWidget(self.centralwidget)
         self.listWidget_en_actuators.setObjectName(u"listWidget_en_actuators")
+        sizePolicy.setHeightForWidth(self.listWidget_en_actuators.sizePolicy().hasHeightForWidth())
+        self.listWidget_en_actuators.setSizePolicy(sizePolicy)
 
         self.verticalLayout.addWidget(self.listWidget_en_actuators)
 
-        self.label_last_detection_title = QLabel(self.verticalLayoutWidget)
+        self.label_last_detection_title = QLabel(self.centralwidget)
         self.label_last_detection_title.setObjectName(u"label_last_detection_title")
         self.label_last_detection_title.setFont(font)
 
         self.verticalLayout.addWidget(self.label_last_detection_title)
 
-        self.label_last_detection = QLabel(self.verticalLayoutWidget)
+        self.label_last_detection = QLabel(self.centralwidget)
         self.label_last_detection.setObjectName(u"label_last_detection")
-        sizePolicy2.setHeightForWidth(self.label_last_detection.sizePolicy().hasHeightForWidth())
-        self.label_last_detection.setSizePolicy(sizePolicy2)
+        sizePolicy1.setHeightForWidth(self.label_last_detection.sizePolicy().hasHeightForWidth())
+        self.label_last_detection.setSizePolicy(sizePolicy1)
 
         self.verticalLayout.addWidget(self.label_last_detection)
 
-        self.label_last_classification_title = QLabel(self.verticalLayoutWidget)
+        self.label_last_classification_title = QLabel(self.centralwidget)
         self.label_last_classification_title.setObjectName(u"label_last_classification_title")
         self.label_last_classification_title.setFont(font)
 
         self.verticalLayout.addWidget(self.label_last_classification_title)
 
-        self.label_last_classification = QLabel(self.verticalLayoutWidget)
+        self.label_last_classification = QLabel(self.centralwidget)
         self.label_last_classification.setObjectName(u"label_last_classification")
-        sizePolicy2.setHeightForWidth(self.label_last_classification.sizePolicy().hasHeightForWidth())
-        self.label_last_classification.setSizePolicy(sizePolicy2)
+        sizePolicy1.setHeightForWidth(self.label_last_classification.sizePolicy().hasHeightForWidth())
+        self.label_last_classification.setSizePolicy(sizePolicy1)
 
         self.verticalLayout.addWidget(self.label_last_classification)
 
-        self.label_classified_animal_title = QLabel(self.verticalLayoutWidget)
+        self.label_classified_animal_title = QLabel(self.centralwidget)
         self.label_classified_animal_title.setObjectName(u"label_classified_animal_title")
         self.label_classified_animal_title.setFont(font)
 
         self.verticalLayout.addWidget(self.label_classified_animal_title)
 
-        self.label_classified_animal = QLabel(self.verticalLayoutWidget)
+        self.label_classified_animal = QLabel(self.centralwidget)
         self.label_classified_animal.setObjectName(u"label_classified_animal")
 
         self.verticalLayout.addWidget(self.label_classified_animal)
 
+
+        self.gridLayout.addLayout(self.verticalLayout, 0, 2, 1, 1)
+
+        self.label_image = QLabel(self.centralwidget)
+        self.label_image.setObjectName(u"label_image")
+        self.label_image.setEnabled(True)
+        sizePolicy.setHeightForWidth(self.label_image.sizePolicy().hasHeightForWidth())
+        self.label_image.setSizePolicy(sizePolicy)
+        self.label_image.setMinimumSize(QSize(400, 300))
+        self.label_image.setMaximumSize(QSize(800, 600))
+
+        self.gridLayout.addWidget(self.label_image, 0, 0, 1, 1)
+
+        self.plainTextEdit_log = QPlainTextEdit(self.centralwidget)
+        self.plainTextEdit_log.setObjectName(u"plainTextEdit_log")
+        sizePolicy.setHeightForWidth(self.plainTextEdit_log.sizePolicy().hasHeightForWidth())
+        self.plainTextEdit_log.setSizePolicy(sizePolicy)
+        self.plainTextEdit_log.setMinimumSize(QSize(400, 100))
+
+        self.gridLayout.addWidget(self.plainTextEdit_log, 1, 0, 1, 3)
+
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
-        self.line.setGeometry(QRect(803, 10, 20, 601))
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.line.sizePolicy().hasHeightForWidth())
+        self.line.setSizePolicy(sizePolicy2)
         self.line.setFrameShape(QFrame.Shape.VLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.gridLayout.addWidget(self.line, 0, 1, 1, 1)
+
+        self.gridLayout.setRowStretch(0, 300)
+        self.gridLayout.setRowStretch(1, 100)
+        self.gridLayout.setColumnStretch(0, 300)
+        self.gridLayout.setColumnStretch(2, 100)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1150, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1150, 33))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuHelp = QMenu(self.menubar)
@@ -313,7 +339,6 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionConfigure_camera_to_actuator_associations.setToolTip(QCoreApplication.translate("MainWindow", u"Configure camera to actuator association(s)", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_image.setText(QCoreApplication.translate("MainWindow", u"Detecion viewer", None))
         self.label_op_mode_title.setText(QCoreApplication.translate("MainWindow", u"Operation mode:", None))
         self.label_op_mode.setText("")
         self.label.setText(QCoreApplication.translate("MainWindow", u"Enabled Camera(s):", None))
@@ -324,6 +349,7 @@ class Ui_MainWindow(object):
         self.label_last_classification.setText("")
         self.label_classified_animal_title.setText(QCoreApplication.translate("MainWindow", u"Classified animal(s):", None))
         self.label_classified_animal.setText("")
+        self.label_image.setText(QCoreApplication.translate("MainWindow", u"Detecion viewer", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
