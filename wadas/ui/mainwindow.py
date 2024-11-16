@@ -68,6 +68,8 @@ class MainWindow(QMainWindow):
         self.configuration_file_name = ""
         self.key_ring = None
         self.ftp_server = None
+        self.valid_email_keyring = False
+        self.valid_ftp_keyring = False
 
         # Connect Actions
         self._connect_actions()
@@ -276,7 +278,8 @@ class MainWindow(QMainWindow):
             self.ui.actionRun.setEnabled(False)
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
-            self.ui.actionRun.setEnabled(True)
+            valid_configuration = (self.valid_email_keyring) and (self.valid_ftp_keyring)
+            self.ui.actionRun.setEnabled(valid_configuration)
         self.ui.actionStop.setEnabled(False)
         self.ui.actionSave_configuration_as.setEnabled(self.isWindowModified())
         self.ui.actionSave_configuration_as_menu.setEnabled(self.isWindowModified())
@@ -341,9 +344,9 @@ class MainWindow(QMainWindow):
             logger.info("Saved credentials for %s", credentials.username)
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.valid_email_keyring = True
         else:
             logger.debug("Email configuration aborted.")
-            return
 
     def check_notification_enablement(self):
         """Method to check whether a notification protocol has been set in WADAS.
@@ -472,7 +475,7 @@ class MainWindow(QMainWindow):
         )
 
         if file_name[0]:
-            valid_ftp_keyring, valid_email_keyring = load_configuration_from_file(file_name[0])
+            self.valid_ftp_keyring, self.valid_email_keyring = load_configuration_from_file(file_name[0])
             self.configuration_file_name = file_name[0]
             self.setWindowModified(False)
             self.update_toolbar_status()
@@ -480,6 +483,27 @@ class MainWindow(QMainWindow):
             self.update_en_camera_list()
             self.update_en_actuator_list()
 
+            if not self.valid_email_keyring:
+                reply = QMessageBox.question(
+                    self,
+                    "Invalid email credentials.",
+                    "Would you like to edit email configuration to fix credentials issue?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+                if reply == QMessageBox.Yes:
+                    self.configure_email()
+
+            if not self.valid_ftp_keyring:
+                reply = QMessageBox.question(
+                    self,
+                    "Invalid FTP camera credentials",
+                    "Would you like to edit FTP camera configuration to fix credentials issue?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+                if reply == QMessageBox.Yes:
+                    self.configure_ftp_cameras()
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
@@ -490,6 +514,7 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
+            self.valid_email_keyring = True
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""
