@@ -174,15 +174,17 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                         break
                     if not found:
                         # If camera id is not in cameras list, then is new or modified
+                        camera_user = self.get_camera_user(i)
                         camera = FTPCamera(
                             cur_ui_id,
                             os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id),
+
                         )
                         cameras.append(camera)
                         # Store credentials in keyring
                         keyring.set_password(
                             f"WADAS_FTP_camera_{cur_ui_id}",
-                            self.get_camera_user(i),
+                            camera_user,
                             self.get_camera_pass(i),
                         )
 
@@ -204,12 +206,13 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 cur_camera_id = self.get_camera_id(i)
                 if cur_camera_id:
                     cur_cam_ftp_dir = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id)
-                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir)
+                    camera_user = self.get_camera_user(i)
+                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir, camera_user)
                     cameras.append(camera)
                     # Store credentials in keyring
                     keyring.set_password(
                         f"WADAS_FTP_camera_{cur_camera_id}",
-                        self.get_camera_user(i),
+                        camera_user,
                         self.get_camera_pass(i),
                     )
                     # Add camera user to FTPS server
