@@ -57,7 +57,7 @@ class DialogInsertEmail(QDialog, Ui_DialogConfigureEmail):
             self.ui.lineEdit_smtpServer.setText(self.email_notifier.smtp_hostname)
             self.ui.lineEdit_port.setText(self.email_notifier.smtp_port)
             credentials = keyring.get_credential("WADAS_email", self.email_notifier.sender_email)
-            if credentials.username == self.email_notifier.sender_email:
+            if credentials and credentials.username == self.email_notifier.sender_email:
                 self.ui.lineEdit_senderEmail.setText(credentials.username)
                 self.ui.lineEdit_password.setText(credentials.password)
             if recipients_email := self.email_notifier.recipients_email:

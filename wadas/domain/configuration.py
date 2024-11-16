@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 def load_configuration_from_file(file_path):
     """Method to load configuration from YAML file."""
 
+    valid_ftp_keyring = True
+    valid_email_keyring = True
     with open(str(file_path), "r") as file:
 
         logging.info("Loading configuration from file...")
@@ -38,7 +40,17 @@ def load_configuration_from_file(file_path):
         for key in notification:
             if key in Notifier.notifiers:
                 if key == Notifier.NotifierTypes.EMAIL.value:
-                    Notifier.notifiers[key] = EmailNotifier(**notification[key])
+                    email_notifier = EmailNotifier(**notification[key])
+                    Notifier.notifiers[key] = email_notifier
+                    credentials = keyring.get_credential("WADAS_email", email_notifier.sender_email)
+                    if not credentials:
+                        logger.error(
+                            "Unable to find email credentials for %s stored on the system."
+                            "Please insert them through email configuration dialog.",
+                            email_notifier.sender_email,
+                        )
+                        valid_email_keyring = False
+
         # FTP Server
         if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
             FTPsServer.ftps_server.server.close_all()
@@ -76,6 +88,7 @@ def load_configuration_from_file(file_path):
                                 "Please make sure to align system stored credential with"
                                 " configuration file. System credentials will be used."
                             )
+                            valid_ftp_keyring = False
                         else:
                             FTPsServer.ftps_server.add_user(
                                 credentials.username,
@@ -88,6 +101,7 @@ def load_configuration_from_file(file_path):
                             "Please add credentials manually from FTP Camera configuration dialog.",
                             ftp_camera.id,
                         )
+                        valid_ftp_keyring = False
         Camera.detection_params = wadas_config["camera_detection_params"]
         # FastAPI Actuator Server
         FastAPIActuatorServer.actuator_server = (
@@ -120,6 +134,7 @@ def load_configuration_from_file(file_path):
             OperationMode.cur_operation_mode = None
 
         logger.info("Configuration loaded from file %s.", file_path)
+    return valid_ftp_keyring, valid_email_keyring
 
 
 def save_configuration_to_file(file):

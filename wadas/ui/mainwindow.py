@@ -472,13 +472,14 @@ class MainWindow(QMainWindow):
         )
 
         if file_name[0]:
-            load_configuration_from_file(file_name[0])
+            valid_ftp_keyring, valid_email_keyring = load_configuration_from_file(file_name[0])
             self.configuration_file_name = file_name[0]
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()
             self.update_en_camera_list()
             self.update_en_actuator_list()
+
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
