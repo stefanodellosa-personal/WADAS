@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QRadioButton,
     QScrollArea,
-    QWidget,
+    QWidget, QMessageBox,
 )
 from prompt_toolkit.key_binding.bindings.named_commands import end_of_file
 from validators import ipv4
@@ -62,6 +62,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
+        self.ui.buttonBox.rejected.connect(self.reject_and_close)
         self.ui.pushButton_selectKeyFile.clicked.connect(self.select_key_file)
         self.ui.pushButton_sekectCertificateKey.clicked.connect(self.select_certificate_file)
         self.ui.lineEdit_ip.textChanged.connect(self.validate)
@@ -133,7 +134,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             self.ui.lineEdit_ip.text(),
             int(self.ui.lineEdit_port.text()),
             list(range(int(self.ui.lineEdit_passive_port_range_start.text()),
-                  int(self.ui.lineEdit_passive_port_range_end.text())+1)),
+                       int(self.ui.lineEdit_passive_port_range_end.text()) + 1)),
             int(self.ui.lineEdit_max_conn.text()),
             int(self.ui.lineEdit_max_conn_ip.text()),
             self.ui.label_certificate_file_path.text(),
@@ -227,6 +228,9 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                             cur_cam_ftp_dir,
                         )
         self.accept()
+
+    def reject_and_close(self):
+        self._stop_ftp_server()
 
     def get_camera_id(self, row):
         """Method to get camera id text from UI programmatically by row number"""
@@ -498,18 +502,25 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 self.ui.label_FTPServer_path.text(),
             )
 
+        self.ui.pushButton_testFTPServer.setEnabled(False)
         self.ui.pushButton_stopFTPServer.setEnabled(True)
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         # Start the thread
         self.ftp_thread = FTPsServer.ftps_server.run()
 
-    def stop_ftp_server(self):
+    def _stop_ftp_server(self):
         """Method to stop FTP server thread"""
-
         if self.ftp_thread and FTPsServer.ftps_server:
             FTPsServer.ftps_server.server.close_all()
             FTPsServer.ftps_server.server.close()
             self.ftp_thread.join()
-            self.ui.pushButton_stopFTPServer.setEnabled(False)
+
+    def stop_ftp_server(self):
+        """Method to stop FTP server thread and to show the appropriate buttons on the UI"""
+        self._stop_ftp_server()
+        self.ui.pushButton_stopFTPServer.setEnabled(False)
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+        self.ui.pushButton_testFTPServer.setEnabled(True)
 
     def _setup_logger(self):
         """Initialize logger for UI logging."""
@@ -518,3 +529,6 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_FTPserver_log)
         logger.setLevel(logging.DEBUG)
         logger.addHandler(log_textbox)
+
+    def closeEvent(self, event):
+        self._stop_ftp_server()
