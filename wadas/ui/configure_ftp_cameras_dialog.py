@@ -163,9 +163,11 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                         f"WADAS_FTP_camera_{camera.id}", ""
                                     )
                                     if credentials and (
-                                        credentials.username != cur_user
-                                        or credentials.password != cur_pass
+                                        credentials.username == cur_user
+                                        or credentials.password == cur_pass
                                     ):
+                                        break
+                                    else:
                                         keyring.set_password(
                                             f"WADAS_FTP_camera_{cur_ui_id}",
                                             cur_user,

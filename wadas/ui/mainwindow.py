@@ -4,6 +4,7 @@ import logging
 import os
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
+from operator import truediv
 
 import keyring
 from PySide6 import QtCore, QtGui
@@ -21,7 +22,7 @@ from PySide6.QtWidgets import (
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
-from wadas.domain.camera import cameras
+from wadas.domain.camera import cameras, Camera
 from wadas.domain.configuration import load_configuration_from_file, save_configuration_to_file
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import initialize_fpts_logger
@@ -278,7 +279,10 @@ class MainWindow(QMainWindow):
             self.ui.actionRun.setEnabled(False)
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
-            valid_configuration = (self.valid_email_keyring) and (self.valid_ftp_keyring)
+            valid_configuration = True
+            if ((self.email_notifier_exists() and not self.valid_email_keyring) or
+                    (self.ftp_camera_exists() and not self.valid_ftp_keyring)):
+                valid_configuration = False
             self.ui.actionRun.setEnabled(valid_configuration)
         self.ui.actionStop.setEnabled(False)
         self.ui.actionSave_configuration_as.setEnabled(self.isWindowModified())
@@ -289,6 +293,24 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration_menu.setEnabled(
             self.isWindowModified() and bool(self.configuration_file_name)
         )
+
+    def ftp_camera_exists(self):
+        """Method that checks if at least one FTP camera exists in camera list."""
+        for camera in cameras:
+            if camera.type == Camera.CameraTypes.FTP_CAMERA:
+                return True
+        return False
+
+    def email_notifier_exists(self):
+        """Method that checks if email notifier is configured."""
+
+        for notifier in Notifier.notifiers:
+            if (
+                Notifier.notifiers[notifier]
+                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
+            ):
+                return True
+        return False
 
     def update_toolbar_status_on_run(self, running):
         """Update toolbar status while running model."""
@@ -514,7 +536,7 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
-            self.valid_email_keyring = True
+            self.valid_ftp_keyring = True
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""
