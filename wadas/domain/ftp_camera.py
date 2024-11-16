@@ -17,8 +17,8 @@ class FTPCamera(Camera):
         super().__init__(id, enabled)
         self.type = Camera.CameraTypes.FTP_CAMERA
         self.ftp_folder = ftp_folder
-        self.actuators = actuators
         self.user = ftp_user
+        self.actuators = actuators
 
     def serialize(self):
         """Method to serialize FTP Camera object into file."""
@@ -26,9 +26,9 @@ class FTPCamera(Camera):
         return {
             "type": self.type.value,
             "id": self.id,
-            "enabled": self.enabled,
             "ftp_folder": self.ftp_folder,
             "ftp_user": self.user,
+            "enabled": self.enabled,
             "actuators": actuators,
         }
 
@@ -40,5 +40,5 @@ class FTPCamera(Camera):
             [Actuator.actuators[key] for key in data["actuators"]] if "actuators" in data else []
         )
         return FTPCamera(
-            data["id"], data["enabled"], data["ftp_folder"], data["ftp_user"], actuators
+            data["id"], data["ftp_folder"], data["ftp_user"], data["enabled"], actuators
         )

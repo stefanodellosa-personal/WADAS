@@ -70,10 +70,23 @@ def load_configuration_from_file(file_path):
                         os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
                     credentials = keyring.get_credential(f"WADAS_FTP_camera_{ftp_camera.id}", "")
                     if credentials:
-                        FTPsServer.ftps_server.add_user(
-                            credentials.username,
-                            credentials.password,
-                            ftp_camera.ftp_folder,
+                        if credentials.username != ftp_camera.user:
+                            logger.error(
+                                "Keyring stored user differs from configuration file one. "
+                                "Please make sure to align system stored credential with"
+                                " configuration file. System credentials will be used."
+                            )
+                        else:
+                            FTPsServer.ftps_server.add_user(
+                                credentials.username,
+                                credentials.password,
+                                ftp_camera.ftp_folder,
+                            )
+                    else:
+                        logger.error(
+                            "Unable to log credentials for %s. "
+                            "Please add credentials manually from FTP Camera configuration dialog.",
+                            ftp_camera.id,
                         )
         Camera.detection_params = wadas_config["camera_detection_params"]
         # FastAPI Actuator Server
