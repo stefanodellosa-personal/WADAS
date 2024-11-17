@@ -66,6 +66,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
+        self.ui.buttonBox.rejected.connect(self.reject_and_close)
         self.ui.pushButton_add_actuator.clicked.connect(self.add_actuator)
         self.ui.pushButton_remove_actuator.clicked.connect(self.remove_actuator)
         self.ui.pushButton_key_file.clicked.connect(self.select_key_file)
@@ -351,6 +352,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                         Actuator.actuators[actuator.id] = actuator
         self.accept()
 
+    def reject_and_close(self):
+        self._stop_actuator_server()
+
     def start_actuator_server(self):
         """Method to start the Actuator server."""
 
@@ -363,21 +367,28 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             )
         self._setup_logger()
         self.ui.pushButton_stop_server.setEnabled(True)
+        self.ui.pushButton_start_server.setEnabled(False)
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         # Start the thread
         self.actuator_server_thread = self.actuator_server.run()
-        self.ui.pushButton_start_server.setEnabled(False)
 
-    def stop_actuator_server(self):
-        """Method to stop the Actuator server."""
-
+    def _stop_actuator_server(self):
+        """Method to stop the Actuator server"""
         if self.actuator_server and self.actuator_server_thread:
             self.actuator_server.stop()
             self.actuator_server_thread.join()
 
+    def stop_actuator_server(self):
+        """Method to stop the Actuator server and to show the appropriate buttons on the UI"""
+        self._stop_actuator_server()
         self.ui.pushButton_stop_server.setEnabled(False)
         self.ui.pushButton_start_server.setEnabled(True)
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
 
     def _setup_logger(self):
         """Initialize fastapi logger for UI logging."""
         log_textbox = QTextEditLogger(self.ui.plainTextEdit_test_server_log)
         initialize_fastapi_logger(handler=log_textbox)
+
+    def closeEvent(self, event):
+        self._stop_actuator_server()
