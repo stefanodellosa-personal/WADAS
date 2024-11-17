@@ -14,10 +14,12 @@ from wadas.domain.configuration import (
 from wadas.domain.email_notifier import EmailNotifier
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.feeder_actuator import FeederActuator
+from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.ftps_server import DummyAuthorizer, FTPsServer, TLS_FTP_WADAS_Handler
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.roadsign_actuator import RoadSignActuator
+from wadas.domain.usb_camera import USBCamera
 
 
 @pytest.fixture
@@ -376,6 +378,230 @@ notification: ''
 operation_mode: ''
 version: {__version__}
 """
+    )
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data=r"""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_treshold: 0
+  ai_detect_treshold: 0
+  ai_language: ''
+cameras:
+- actuators: []
+  enabled: true
+  ftp_folder: /Documents/ftp/Camera1
+  id: Camera1
+  type: FTP Camera
+- actuators: []
+  enabled: false
+  ftp_folder: /Documents/ftp/Camera2
+  id: Camera2
+  type: FTP Camera
+- actuators: []
+  backend: 1400
+  enable_mot_det: true
+  enabled: false
+  id: cvbdfg
+  index: 0
+  name: ASUS USB2.0 Webcam
+  path: {}
+  pid: 10371
+  type: USB Camera
+  vid: 7119
+- actuators: []
+  backend: 1401
+  enable_mot_det: false
+  enabled: true
+  id: cvbdfg2
+  index: 1
+  name: ASUS USB3.1 Webcam
+  path: {}
+  pid: 10372
+  type: USB Camera
+  vid: 7120
+camera_detection_params: []
+ftps_server: []
+notification: []
+operation_mode:
+""".format(
+        r"\\?\usb#vid_1bcf&pid_2883&mi_00#7&e89baf7&0&0000#"
+        r"{e5323777-f976-4f5b-9b55-b94699c46e44}\global",
+        r"\\?\usb#vid_1bd0&pid_2884&mi_00#7&e89baf7&0&0000#"
+        r"{e5323777-f976-4f5b-9b55-b94699c46e4X}\local",
+    ),
+)
+def test_load_cameras_config(mock_file, init):
+    load_configuration_from_file("")
+    assert Notifier.notifiers == {"Email": None}
+    assert FTPsServer.ftps_server is None
+    assert Actuator.actuators == {}
+    assert [type(camera) for camera in cameras] == [FTPCamera, FTPCamera, USBCamera, USBCamera]
+    assert [
+        getattr(cameras[0], name) for name in ("type", "id", "ftp_folder", "enabled", "actuators")
+    ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
+    assert [
+        getattr(cameras[1], name) for name in ("type", "id", "ftp_folder", "enabled", "actuators")
+    ] == [Camera.CameraTypes.FTP_CAMERA, "Camera2", "/Documents/ftp/Camera2", False, []]
+    assert [
+        getattr(cameras[2], name)
+        for name in (
+            "type",
+            "id",
+            "name",
+            "enabled",
+            "index",
+            "backend",
+            "en_wadas_motion_detection",
+            "pid",
+            "vid",
+            "path",
+            "actuators",
+        )
+    ] == [
+        Camera.CameraTypes.USB_CAMERA,
+        "cvbdfg",
+        "ASUS USB2.0 Webcam",
+        False,
+        0,
+        1400,
+        True,
+        10371,
+        7119,
+        r"\\?\usb#vid_1bcf&pid_2883&mi_00#7&e89baf7&0&0000#"
+        r"{e5323777-f976-4f5b-9b55-b94699c46e44}\global",
+        [],
+    ]
+    assert [
+        getattr(cameras[3], name)
+        for name in (
+            "type",
+            "id",
+            "name",
+            "enabled",
+            "index",
+            "backend",
+            "en_wadas_motion_detection",
+            "pid",
+            "vid",
+            "path",
+            "actuators",
+        )
+    ] == [
+        Camera.CameraTypes.USB_CAMERA,
+        "cvbdfg2",
+        "ASUS USB3.1 Webcam",
+        True,
+        1,
+        1401,
+        False,
+        10372,
+        7120,
+        r"\\?\usb#vid_1bd0&pid_2884&mi_00#7&e89baf7&0&0000#"
+        r"{e5323777-f976-4f5b-9b55-b94699c46e4X}\local",
+        [],
+    ]
+    assert Camera.detection_params == []
+    assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.classification_treshold == 0
+    assert AiModel.detection_treshold == 0
+    assert AiModel.language == ""
+    assert OperationMode.cur_operation_mode is None
+    assert OperationMode.cur_operation_mode_type is None
+
+
+@patch("builtins.open", new_callable=OpenStringMock, create=True)
+def test_save_cameras_config(mock_file, init):
+    cameras.extend(
+        (
+            FTPCamera("Camera1", "/Documents/ftp/Camera1", True, []),
+            FTPCamera("Camera2", "/Documents/ftp/Camera2", False, []),
+            USBCamera(
+                "cvbdfg",
+                "ASUS USB2.0 Webcam",
+                False,
+                0,
+                1400,
+                True,
+                10371,
+                7119,
+                r"\\?\usb#vid_1bcf&pid_2883&mi_00#7&e89baf7&0&0000#"
+                r"{e5323777-f976-4f5b-9b55-b94699c46e44}\global",
+                [],
+            ),
+            USBCamera(
+                "cvbdfg2",
+                "ASUS USB3.1 Webcam",
+                True,
+                1,
+                1401,
+                False,
+                10372,
+                7120,
+                r"\\?\usb#vid_1bd0&pid_2884&mi_00#7&e89baf7&0&0000#"
+                r"{e5323777-f976-4f5b-9b55-b94699c46e4X}\local",
+                [],
+            ),
+        )
+    )
+    save_configuration_to_file("")
+    assert (
+        mock_file.dump()
+        == r"""actuator_server: ''
+actuators: []
+ai_model:
+  ai_class_treshold: 0.0
+  ai_detect_treshold: 0.0
+  ai_language: ''
+camera_detection_params: []
+cameras:
+- actuators: []
+  enabled: true
+  ftp_folder: /Documents/ftp/Camera1
+  id: Camera1
+  type: FTP Camera
+- actuators: []
+  enabled: false
+  ftp_folder: /Documents/ftp/Camera2
+  id: Camera2
+  type: FTP Camera
+- actuators: []
+  backend: 1400
+  enable_mot_det: true
+  enabled: false
+  id: cvbdfg
+  index: 0
+  name: ASUS USB2.0 Webcam
+  path: {}
+  pid: 10371
+  type: USB Camera
+  vid: 7119
+- actuators: []
+  backend: 1401
+  enable_mot_det: false
+  enabled: true
+  id: cvbdfg2
+  index: 1
+  name: ASUS USB3.1 Webcam
+  path: {}
+  pid: 10372
+  type: USB Camera
+  vid: 7120
+ftps_server: ''
+notification: ''
+operation_mode: ''
+version: {}
+""".format(
+            r"\\?\usb#vid_1bcf&pid_2883&mi_00#7&e89baf7&0&0000#"
+            r"{e5323777-f976-4f5b-9b55-b94699c46e44}\global",
+            r"\\?\usb#vid_1bd0&pid_2884&mi_00#7&e89baf7&0&0000#"
+            r"{e5323777-f976-4f5b-9b55-b94699c46e4X}\local",
+            __version__,
+        )
     )
 
 
