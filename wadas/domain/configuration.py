@@ -84,9 +84,11 @@ def load_configuration_from_file(file_path):
                     if credentials:
                         if credentials.username != ftp_camera.user:
                             logger.error(
-                                "Keyring stored user differs from configuration file one. "
-                                "Please make sure to align system stored credential with"
-                                " configuration file. System credentials will be used."
+                                "Keyring stored user (%s) differs from configuration file one (%s)."
+                                " Please make sure to align system stored credential with"
+                                " configuration file. System credentials will be used.",
+                                ftp_camera.user,
+                                credentials.username,
                             )
                             valid_ftp_keyring = False
                         else:
@@ -97,7 +99,7 @@ def load_configuration_from_file(file_path):
                             )
                     else:
                         logger.error(
-                            "Unable to log credentials for %s. "
+                            "Unable to find credentials for %s on this system. "
                             "Please add credentials manually from FTP Camera configuration dialog.",
                             ftp_camera.id,
                         )

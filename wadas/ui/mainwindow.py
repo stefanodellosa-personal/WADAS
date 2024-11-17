@@ -271,6 +271,9 @@ class MainWindow(QMainWindow):
         if not OperationMode.cur_operation_mode_type:
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
+        elif OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode:
+            self.ui.actionConfigure_Ai_model.setEnabled(True)
+            self.ui.actionRun.setEnabled(True)
         elif (
             OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode
             and not cameras
@@ -296,21 +299,14 @@ class MainWindow(QMainWindow):
 
     def ftp_camera_exists(self):
         """Method that checks if at least one FTP camera exists in camera list."""
-        for camera in cameras:
-            if camera.type == Camera.CameraTypes.FTP_CAMERA:
-                return True
-        return False
+
+        return any(camera.type == Camera.CameraTypes.FTP_CAMERA for camera in cameras)
 
     def email_notifier_exists(self):
         """Method that checks if email notifier is configured."""
 
-        for notifier in Notifier.notifiers:
-            if (
-                Notifier.notifiers[notifier]
-                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
-            ):
-                return True
-        return False
+        return any(Notifier.notifiers[notifier] and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
+                   for notifier in Notifier.notifiers)
 
     def update_toolbar_status_on_run(self, running):
         """Update toolbar status while running model."""
@@ -364,9 +360,9 @@ class MainWindow(QMainWindow):
 
             credentials = keyring.get_credential("WADAS_email", "")
             logger.info("Saved credentials for %s", credentials.username)
+            self.valid_email_keyring = True
             self.setWindowModified(True)
             self.update_toolbar_status()
-            self.valid_email_keyring = True
         else:
             logger.debug("Email configuration aborted.")
 
@@ -533,10 +529,10 @@ class MainWindow(QMainWindow):
         configure_ftp_cameras_dlg = DialogFTPCameras()
         if configure_ftp_cameras_dlg.exec():
             logger.info("FTP Server and Cameras configured.")
+            self.valid_ftp_keyring = True
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
-            self.valid_ftp_keyring = True
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""

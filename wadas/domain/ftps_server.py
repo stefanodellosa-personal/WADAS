@@ -97,6 +97,10 @@ class FTPsServer:
         """Wrapper method of authorizer to check if a user already exists"""
         return self.authorizer.has_user(username)
 
+    def remove_user(self, username):
+        """Wrapper method of authorizer to remove a user."""
+        return self.authorizer.remove_user(username)
+
     def run(self):
         """Method to create new thread and run a FTPS server."""
         self.server = ThreadedFTPServer((self.ip, self.port), self.handler)
