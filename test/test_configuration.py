@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from mocks import OpenStringMock
@@ -514,6 +514,186 @@ def test_load_cameras_config(mock_file, init):
     assert OperationMode.cur_operation_mode_type is None
 
 
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data=r"""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_treshold: 0
+  ai_detect_treshold: 0
+  ai_language: ''
+cameras:
+- actuators: []
+  enabled: true
+  ftp_folder: /Documents/ftp/Camera1
+  id: Camera1
+  type: FTP Camera
+camera_detection_params: []
+ftps_server:
+  ftp_dir: /Documents/ftp
+  ip: 1.2.3.4
+  max_conn: 50
+  max_conn_per_ip: 5
+  passive_ports: [1234, 5678]
+  port: 567
+  ssl_certificate: /Documents/ssl/eshare_crt.pem
+  ssl_key: /Documents/ssl/eshare_key.pem
+notification: []
+operation_mode:
+""",
+)
+def test_load_cameras_config_with_ftp_and_folder_and_no_credential(mock_file, init):
+    with (
+        patch("os.path.isdir") as is_dir_mock,
+        patch("os.makedirs") as makedirs_mock,
+        patch("keyring.get_credential") as get_credential_mock,
+        patch("wadas.domain.ftps_server.FTPsServer.add_user") as add_user_mock,
+    ):
+        is_dir_mock.return_value = True
+        get_credential_mock.return_value = None
+        load_configuration_from_file("")
+    assert is_dir_mock.call_args == (("/Documents/ftp/Camera1",),)
+    makedirs_mock.assert_not_called()
+    get_credential_mock.assert_called_once_with("WADAS_FTP_camera_Camera1", "")
+    add_user_mock.assert_not_called()
+    assert Notifier.notifiers == {"Email": None}
+    assert FTPsServer.ftps_server is not None
+    assert Actuator.actuators == {}
+    assert type(cameras[0]) is FTPCamera
+    assert [
+        getattr(cameras[0], name) for name in ("type", "id", "ftp_folder", "enabled", "actuators")
+    ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
+    assert Camera.detection_params == []
+    assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.classification_treshold == 0
+    assert AiModel.detection_treshold == 0
+    assert AiModel.language == ""
+    assert OperationMode.cur_operation_mode is None
+    assert OperationMode.cur_operation_mode_type is None
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data=r"""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_treshold: 0
+  ai_detect_treshold: 0
+  ai_language: ''
+cameras:
+- actuators: []
+  enabled: true
+  ftp_folder: /Documents/ftp/Camera1
+  id: Camera1
+  type: FTP Camera
+camera_detection_params: []
+ftps_server:
+  ftp_dir: /Documents/ftp
+  ip: 1.2.3.4
+  max_conn: 50
+  max_conn_per_ip: 5
+  passive_ports: [1234, 5678]
+  port: 567
+  ssl_certificate: /Documents/ssl/eshare_crt.pem
+  ssl_key: /Documents/ssl/eshare_key.pem
+notification: []
+operation_mode:
+""",
+)
+def test_load_cameras_config_with_ftp_and_no_folder_and_no_credential(mock_file, init):
+    with (
+        patch("os.path.isdir") as is_dir_mock,
+        patch("os.makedirs") as makedirs_mock,
+        patch("keyring.get_credential") as get_credential_mock,
+        patch("wadas.domain.ftps_server.FTPsServer.add_user") as add_user_mock,
+    ):
+        is_dir_mock.return_value = False
+        get_credential_mock.return_value = None
+        load_configuration_from_file("")
+    assert is_dir_mock.call_args == (("/Documents/ftp/Camera1",),)
+    makedirs_mock.assert_called_once_with("/Documents/ftp/Camera1", exist_ok=True)
+    get_credential_mock.assert_called_once_with("WADAS_FTP_camera_Camera1", "")
+    add_user_mock.assert_not_called()
+    assert Notifier.notifiers == {"Email": None}
+    assert FTPsServer.ftps_server is not None
+    assert Actuator.actuators == {}
+    assert type(cameras[0]) is FTPCamera
+    assert [
+        getattr(cameras[0], name) for name in ("type", "id", "ftp_folder", "enabled", "actuators")
+    ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
+    assert Camera.detection_params == []
+    assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.classification_treshold == 0
+    assert AiModel.detection_treshold == 0
+    assert AiModel.language == ""
+    assert OperationMode.cur_operation_mode is None
+    assert OperationMode.cur_operation_mode_type is None
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data=r"""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_treshold: 0
+  ai_detect_treshold: 0
+  ai_language: ''
+cameras:
+- actuators: []
+  enabled: true
+  ftp_folder: /Documents/ftp/Camera1
+  id: Camera1
+  type: FTP Camera
+camera_detection_params: []
+ftps_server:
+  ftp_dir: /Documents/ftp
+  ip: 1.2.3.4
+  max_conn: 50
+  max_conn_per_ip: 5
+  passive_ports: [1234, 5678]
+  port: 567
+  ssl_certificate: /Documents/ssl/eshare_crt.pem
+  ssl_key: /Documents/ssl/eshare_key.pem
+notification: []
+operation_mode:
+""",
+)
+def test_load_cameras_config_with_ftp_and_folder_and_credential(mock_file, init):
+    with (
+        patch("os.path.isdir") as is_dir_mock,
+        patch("os.makedirs") as makedirs_mock,
+        patch("keyring.get_credential") as get_credential_mock,
+        patch("wadas.domain.ftps_server.FTPsServer.add_user") as add_user_mock,
+    ):
+        is_dir_mock.return_value = True
+        get_credential_mock.return_value = Mock(username="foo", password="bar")
+        load_configuration_from_file("")
+    assert is_dir_mock.call_args == (("/Documents/ftp/Camera1",),)
+    makedirs_mock.assert_not_called()
+    get_credential_mock.assert_called_once_with("WADAS_FTP_camera_Camera1", "")
+    add_user_mock.assert_called_once_with("foo", "bar", "/Documents/ftp/Camera1")
+    assert Notifier.notifiers == {"Email": None}
+    assert FTPsServer.ftps_server is not None
+    assert Actuator.actuators == {}
+    assert type(cameras[0]) is FTPCamera
+    assert [
+        getattr(cameras[0], name) for name in ("type", "id", "ftp_folder", "enabled", "actuators")
+    ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
+    assert Camera.detection_params == []
+    assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.classification_treshold == 0
+    assert AiModel.detection_treshold == 0
+    assert AiModel.language == ""
+    assert OperationMode.cur_operation_mode is None
+    assert OperationMode.cur_operation_mode_type is None
+
+
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
 def test_save_cameras_config(mock_file, init):
     cameras.extend(
@@ -682,16 +862,12 @@ operation_mode:
 """,
 )
 def test_load_ftps_server_config_with_existing_server(mock_file, init):
-    class ServerMock:
-        pass
-
     FTPsServer.ftps_server = FTPsServer(
         "5.6.7.8", 321, [4321, 8765], 23, 7, "X/Y.pem", "A/B.pem", "/Z"
     )
-    FTPsServer.ftps_server.server = ServerMock()
-    FTPsServer.ftps_server.server.close_all = close_all_mock = MagicMock()
+    FTPsServer.ftps_server.server = old_server = MagicMock()
     load_configuration_from_file("")
-    close_all_mock.assert_called_once_with()
+    old_server.close_all.assert_called_once_with()
     assert Notifier.notifiers == {"Email": None}
     assert FTPsServer.ftps_server is not None
     assert FTPsServer.ftps_server.ip == "1.2.3.4"
