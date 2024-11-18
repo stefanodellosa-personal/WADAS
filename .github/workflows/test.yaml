@@ -29,6 +29,9 @@ jobs:
     - run: |
         conda info
         conda list
+    - name: Login to Hugging Face
+      run: |
+        huggingface-cli login --token ${{ secrets.WADASDEV_HUGGINGF_AUTH }} --add-to-git-credential
     - name: Run tests
       run: |
         python -m pytest test -sv
