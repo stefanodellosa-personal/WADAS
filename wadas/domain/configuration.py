@@ -50,6 +50,16 @@ def load_configuration_from_file(file_path):
                             email_notifier.sender_email,
                         )
                         valid_email_keyring = False
+                    elif credentials and credentials.username != email_notifier.sender_email:
+                        logger.error(
+                            "Email username on the system (%s) does not match with username "
+                            "provided in configuration file (%s). Please make sure valid email "
+                            "credentials are in use by editing them from email configuration "
+                            "dialog.",
+                            credentials.username,
+                            email_notifier.sender_email,
+                        )
+                        valid_email_keyring = False
 
         # FTP Server
         if FTPsServer.ftps_server and FTPsServer.ftps_server.server:

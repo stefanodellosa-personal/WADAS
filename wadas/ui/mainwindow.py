@@ -283,7 +283,7 @@ class MainWindow(QMainWindow):
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             valid_configuration = True
-            if ((self.email_notifier_exists() and not self.valid_email_keyring) or
+            if ((self.enabled_email_notifier_exists() and not self.valid_email_keyring) or
                     (self.ftp_camera_exists() and not self.valid_ftp_keyring)):
                 valid_configuration = False
             self.ui.actionRun.setEnabled(valid_configuration)
@@ -302,11 +302,11 @@ class MainWindow(QMainWindow):
 
         return any(camera.type == Camera.CameraTypes.FTP_CAMERA for camera in cameras)
 
-    def email_notifier_exists(self):
+    def enabled_email_notifier_exists(self):
         """Method that checks if email notifier is configured."""
 
-        return any(Notifier.notifiers[notifier] and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
-                   for notifier in Notifier.notifiers)
+        return any(((Notifier.notifiers[notifier] and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
+                  and Notifier.notifiers[notifier].enabled) for notifier in Notifier.notifiers))
 
     def update_toolbar_status_on_run(self, running):
         """Update toolbar status while running model."""
