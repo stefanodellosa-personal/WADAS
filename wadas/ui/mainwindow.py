@@ -4,7 +4,6 @@ import logging
 import os
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
-from operator import truediv
 
 import keyring
 from PySide6 import QtCore, QtGui
@@ -377,15 +376,16 @@ class MainWindow(QMainWindow):
                 Notifier.notifiers[notifier]
                 and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
             ):
-                credentials = keyring.get_credential("WADAS_email", "")
-                if notifier and credentials.username:
+                credentials = keyring.get_credential("WADAS_email",
+                                                     Notifier.notifiers[notifier].sender_email)
+                if notifier and credentials and credentials.username and credentials.password:
                     notification_cfg = True
                 if Notifier.notifiers[notifier].enabled:
                     notification_enabled = True
         message = ""
         if not notification_cfg:
             logger.warning("No notification protocol set.")
-            message = "No notification protocol set. Do you wish to continue anyway?"
+            message = "No notification protocol properly set. Do you wish to continue anyway?"
         elif not notification_enabled:
             logger.warning("No notification protocol enabled.")
             message = "No enabled notification protocol. Do you wish to continue anyway?"
