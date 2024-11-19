@@ -82,6 +82,7 @@ class DialogInsertEmail(QDialog, Ui_DialogConfigureEmail):
                 recipients,
                 self.ui.checkBox_email_en.isChecked(),
             )
+            self.add_email_credentials(self.ui.lineEdit_senderEmail.text(), self.ui.lineEdit_password.text())
         else:
             self.email_notifier.enabled = self.ui.checkBox_email_en.isChecked()
             self.email_notifier.sender_email = self.ui.lineEdit_senderEmail.text()
@@ -89,13 +90,31 @@ class DialogInsertEmail(QDialog, Ui_DialogConfigureEmail):
             self.email_notifier.smtp_port = self.ui.lineEdit_port.text()
             self.email_notifier.recipients_email = []
             self.email_notifier.recipients_email = recipients
-            keyring.set_password(
-                "WADAS_email",
-                self.ui.lineEdit_senderEmail.text(),
-                self.ui.lineEdit_password.text(),
-            )
+            self.add_email_credentials(self.ui.lineEdit_senderEmail.text(), self.ui.lineEdit_password.text())
+
             Notifier.notifiers[Notifier.NotifierTypes.EMAIL.value] = self.email_notifier
         self.accept()
+
+    def add_email_credentials(self, username, password):
+        """Method to add email credentials to system keyring."""
+
+        # If credentials exist remove them (workaround keyring bug)
+        credentials = keyring.get_credential(
+            f"WADAS_email", ""
+        )
+        if credentials:
+            try:
+                keyring.delete_password(f"WADAS_email", credentials.username)
+            except keyring.errors.PasswordDeleteError:
+                # Credentials not in the system
+                pass
+
+        # Set new/modified credentials for camera
+        keyring.set_password(
+            "WADAS_email",
+            username,
+            password,
+        )
 
     def validate_email_configurations(self):
         """Check if inserted email config is valid."""
@@ -192,9 +211,11 @@ class DialogInsertEmail(QDialog, Ui_DialogConfigureEmail):
             self.ui.lineEdit_port.text(),
             context=context,
         ) as smtp_server:
+            try:
+                smtp_server.login(sender, credentials.password)
 
-            smtp_server.login(sender, credentials.password)
-
-            for recipient in recipients:
-                smtp_server.sendmail(sender, recipient, message.as_string())
+                for recipient in recipients:
+                    smtp_server.sendmail(sender, recipient, message.as_string())
+            except smtplib.SMTPResponseException as e:
+                self.ui.label_status.setText(f"Test email(s) Failed! {e.smtp_code}: {e.smtp_error}")
         self.ui.label_status.setText("Test email(s) sent!")

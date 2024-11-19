@@ -235,6 +235,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             try:
                 keyring.delete_password(f"WADAS_FTP_camera_{camera_id}", credentials.username)
             except keyring.errors.PasswordDeleteError:
+                # Credentials not in the system
                 pass
 
         # Set new/modified credentials for camera
