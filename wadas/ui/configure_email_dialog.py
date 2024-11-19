@@ -216,6 +216,7 @@ class DialogInsertEmail(QDialog, Ui_DialogConfigureEmail):
 
                 for recipient in recipients:
                     smtp_server.sendmail(sender, recipient, message.as_string())
+                self.ui.plainTextEdit_test_log.setPlainText("Test email(s) sent!")
             except smtplib.SMTPResponseException as e:
-                self.ui.label_status.setText(f"Test email(s) Failed! {e.smtp_code}: {e.smtp_error}")
-        self.ui.label_status.setText("Test email(s) sent!")
+                self.ui.label_status.setText(f"Test email(s) Failed!")
+                self.ui.plainTextEdit_test_log.setPlainText(f"{e.smtp_code}: {e.smtp_error}")
