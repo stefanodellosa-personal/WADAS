@@ -8,6 +8,8 @@ import util
 
 from wadas.domain.ftps_server import FTPsServer
 
+FTP_PORT = 8888
+
 
 @pytest.fixture
 def ftps_server():
@@ -17,7 +19,7 @@ def ftps_server():
     util.cert_gen(key_path, cert_path)
     return FTPsServer(
         "127.0.0.1",
-        21,
+        FTP_PORT,
         [65522, 65523],
         50,
         5,
@@ -31,7 +33,7 @@ def test_ftp_server_init(ftps_server):
     assert ftps_server is not None
     assert isinstance(ftps_server, FTPsServer)
     assert ftps_server.ip == "127.0.0.1"
-    assert ftps_server.port == 21
+    assert ftps_server.port == FTP_PORT
     assert ftps_server.passive_ports == [65522, 65523]
 
 
@@ -55,7 +57,7 @@ def ftp_client_connect(host, port, username, password):
     return resp
 
 
-@pytest.mark.skip(reason="Permission denied error on GitHub Actions")
+# @pytest.mark.skip(reason="Permission denied error on GitHub Actions")
 def test_server_working(ftps_server):
     username = "camera1"
     password = "pass1"
@@ -63,12 +65,12 @@ def test_server_working(ftps_server):
     thread = ftps_server.run()
     assert thread is not None
     time.sleep(2)
-    resp = ftp_client_connect("127.0.0.1", 21, username, password)
+    resp = ftp_client_connect("127.0.0.1", FTP_PORT, username, password)
     assert resp == "230 Login successful."
     ftps_server.server.close_all()
 
 
-@pytest.mark.skip(reason="Permission denied error on GitHub Actions")
+# @pytest.mark.skip(reason="Permission denied error on GitHub Actions")
 def test_hot_add_user(ftps_server):
     username = "camera1"
     password = "pass1"
@@ -76,12 +78,12 @@ def test_hot_add_user(ftps_server):
     assert thread is not None
     time.sleep(2)
     add_user(ftps_server, username, password)
-    resp = ftp_client_connect("127.0.0.1", 21, username, password)
+    resp = ftp_client_connect("127.0.0.1", FTP_PORT, username, password)
     assert resp == "230 Login successful."
     ftps_server.server.close_all()
 
 
-@pytest.mark.skip(reason="Permission denied error on GitHub Actions")
+# @pytest.mark.skip(reason="Permission denied error on GitHub Actions")
 def test_server_restart(ftps_server):
     username = "camera1"
     password = "pass1"
@@ -94,6 +96,6 @@ def test_server_restart(ftps_server):
     thread = ftps_server.run()
     assert thread is not None
     time.sleep(2)
-    resp = ftp_client_connect("127.0.0.1", 21, username, password)
+    resp = ftp_client_connect("127.0.0.1", FTP_PORT, username, password)
     assert resp == "230 Login successful."
     ftps_server.server.close_all()
