@@ -33,7 +33,7 @@ def initialize_fpts_logger():
 class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
 
     # .txt is allowed for testing purpose by Reolink cameras
-    ALLOWED_EXTS = (".png", ".jpg", ".jpeg", ".txt")
+    ALLOWED_EXTS = (".mp4", ".png", ".jpg", ".jpeg", ".txt")
 
     def ftp_STOR(self, file, mode="w"):
         cur_ext = pathlib.Path(file.lower()).suffix
