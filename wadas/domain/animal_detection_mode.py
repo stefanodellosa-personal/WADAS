@@ -1,6 +1,7 @@
 """Animal Detection and Classification module."""
 
 import logging
+from queue import Empty
 
 from wadas.domain.camera import Camera, cameras, img_queue
 from wadas.domain.ftps_server import FTPsServer
@@ -53,9 +54,15 @@ class AnimalDetectionAndClassificationMode(OperationMode):
         # Run detection model
         while self.process_queue:
             self.check_for_termination_requests()
-            if not img_queue.empty():
+            # Get image from motion detection notification
+            # Timeout is set to 1 second to avoid blocking the thread
+            try:
+                cur_img = img_queue.get(timeout=1)
+            except Empty:
+                cur_img = None
+
+            if cur_img:
                 logger.debug("Processing image from motion detection notification...")
-                cur_img = img_queue.get()
                 results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
 
                 self.last_detection = detected_img_path
@@ -76,6 +83,8 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                             self.last_classification = classified_img_path
 
                             # Prepare a list of classified animals to print in UI
+                            if self.last_classified_animals:
+                                self.last_classified_animals = ""
                             for animal in classified_animals:
                                 last = animal["classification"][0]
                                 if not self.last_classified_animals:
@@ -101,6 +110,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                         message = "WADAS has detected an animal from camera %s!" % id
                     # Send notification
                     if message and processed_img_path:
+                        self.actuate(cur_img["img_id"])
                         self.send_notification(processed_img_path, message)
 
         self.execution_completed()

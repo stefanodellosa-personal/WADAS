@@ -7,6 +7,7 @@ import time
 
 import cv2
 
+from wadas.domain.actuator import Actuator
 from wadas.domain.camera import Camera, img_queue
 from wadas.domain.utils import get_timestamp
 
@@ -192,6 +193,7 @@ class USBCamera(Camera):
 
     def serialize(self):
         """Method to serialize USB Camera object into file."""
+        actuators = [actuator.id for actuator in self.actuators]
         return {
             "type": self.type.value,
             "id": self.id,
@@ -203,12 +205,15 @@ class USBCamera(Camera):
             "pid": self.pid,
             "vid": self.vid,
             "path": self.path,
-            "actuators": self.actuators,
+            "actuators": actuators,
         }
 
     @staticmethod
     def deserialize(data):
         """Method to deserialize USB Camera object from file."""
+        actuators = (
+            [Actuator.actuators[key] for key in data["actuators"]] if "actuators" in data else []
+        )
         return USBCamera(
             data["id"],
             data["name"],
@@ -219,5 +224,5 @@ class USBCamera(Camera):
             data["pid"],
             data["vid"],
             data["path"],
-            data["actuators"],
+            actuators,
         )

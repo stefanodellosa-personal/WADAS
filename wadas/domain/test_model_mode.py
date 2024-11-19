@@ -50,6 +50,8 @@ class TestModelMode(OperationMode):
             self.last_classification = img_path
 
             # Prepare a list of classified animals to print in UI
+            if self.last_classified_animals:
+                self.last_classified_animals = ""
             for animal in classified_animals:
                 last = animal["classification"][0]
                 if not self.last_classified_animals:

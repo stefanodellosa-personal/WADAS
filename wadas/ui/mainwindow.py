@@ -20,12 +20,16 @@ from PySide6.QtWidgets import (
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
+from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import cameras
 from wadas.domain.configuration import load_configuration_from_file, save_configuration_to_file
+from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.qtextedit_logger import QTextEditLogger
+from wadas.domain.test_model_mode import TestModelMode
+from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.configure_actuators_dialog import DialogConfigureActuators
 from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
 from wadas.ui.configure_camera_actuator_associations_dialog import (
@@ -144,6 +148,8 @@ class MainWindow(QMainWindow):
         logger.addHandler(file_handler)
 
         initialize_fpts_logger()
+        initialize_asyncio_logger()
+
 
     def set_image(self, img):
         """Set image to show in WADAS. This is used for startup, detected and
@@ -163,8 +169,8 @@ class MainWindow(QMainWindow):
 
         dialog = DialogSelectMode()
         if dialog.exec_():
-            if OperationMode.cur_operation_mode:
-                logger.info("Selected mode from dialog: %s", OperationMode.cur_operation_mode.type.value)
+            if OperationMode.cur_operation_mode_type:
+                logger.info("Selected mode from dialog: %s", OperationMode.cur_operation_mode_type.value)
                 self.setWindowModified(True)
             else:
                 logger.debug("No operation mode selected.")
@@ -181,6 +187,7 @@ class MainWindow(QMainWindow):
         if not proceed:
             return
 
+        self.instantiate_selected_model()
         if OperationMode.cur_operation_mode:
             # Satisfy preconditions and required inputs for the selected operation mode
             if OperationMode.cur_operation_mode.type == OperationMode.OperationModeTypes.TestModelMode:
@@ -221,11 +228,33 @@ class MainWindow(QMainWindow):
         else:
             logger.error("Unable to run the selected model.")
 
+    def instantiate_selected_model(self):
+        """Given the selected model from dedicated UI Dialog, instantiate
+        the corresponding object."""
+        if not OperationMode.cur_operation_mode_type:
+            logger.error("No operation mode selected.")
+            return
+        else:
+            if OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode:
+                logger.info("Running test model mode....")
+                OperationMode.cur_operation_mode = TestModelMode()
+            elif (
+                    OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode
+            ):
+                OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode(classification=False)
+            elif (
+                    OperationMode.cur_operation_mode_type
+                    == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
+            ):
+                OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode()
+            # add elif with other operation modes
+
     def on_run_completion(self):
         """Actions performed after a run is completed."""
 
         self.update_toolbar_status_on_run(False)
         self.update_info_widget()
+        self.update_en_actuator_list()
 
     def interrupt_thread(self):
         """Method to interrupt a running thread."""
@@ -236,11 +265,11 @@ class MainWindow(QMainWindow):
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
 
-        if not OperationMode.cur_operation_mode:
+        if not OperationMode.cur_operation_mode_type:
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
         elif (
-            OperationMode.cur_operation_mode == OperationMode.OperationModeTypes.AnimalDetectionMode
+            OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode
             and not cameras
         ):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
@@ -277,8 +306,8 @@ class MainWindow(QMainWindow):
     def update_info_widget(self):
         """Update information widget."""
 
-        if OperationMode.cur_operation_mode:
-            self.ui.label_op_mode.setText(OperationMode.cur_operation_mode.type.value)
+        if OperationMode.cur_operation_mode_type:
+            self.ui.label_op_mode.setText(OperationMode.cur_operation_mode_type.value)
         if OperationMode.cur_operation_mode:
             self.ui.label_last_detection.setText(
                 os.path.basename(OperationMode.cur_operation_mode.last_detection)
@@ -472,25 +501,49 @@ class MainWindow(QMainWindow):
 
     def update_en_actuator_list(self):
         """Method to list enabled actuator(s) in UI"""
-
+        threshold_time = FastAPIActuatorServer.actuator_server.actuator_timeout_threshold if FastAPIActuatorServer.actuator_server else 30
         self.ui.listWidget_en_actuators.clear()
         for actuator in Actuator.actuators.values():
             if actuator.enabled:
-                if actuator.last_update is not None and (
-                    datetime.datetime.now() - actuator.last_update > timedelta(seconds=30)
-                ):
-                    text = f"({actuator.type.value}) {actuator.id} - inactive"
-                    self.ui.listWidget_en_actuators.addItem(text)
-                    item = self.ui.listWidget_en_actuators.item(
-                        self.ui.listWidget_en_actuators.count() - 1
-                    )
-                    item.setForeground(QBrush(QtCore.Qt.GlobalColor.red))
-                    item.setToolTip(
-                        f"Last Activity: {actuator.last_update.strftime('%d %b %Y, %H:%M:%S')}"
-                    )
+                if FastAPIActuatorServer.actuator_server.startup_time:
+                    # inactive actuator: connected at least once but unseen for {threshold_time} seconds
+                    # or never connected within the first {threshold_time} seconds since server startup.
+                    if (actuator.last_update is not None and (
+                            datetime.datetime.now() - actuator.last_update > timedelta(seconds=threshold_time)) or
+                            actuator.last_update is None and (
+                                    datetime.datetime.now() - FastAPIActuatorServer.actuator_server.startup_time > timedelta(
+                                seconds=threshold_time))):
+
+                        text = f"({actuator.type.value}) {actuator.id} - inactive"
+                        color = QtCore.Qt.GlobalColor.red
+                        tooltip_text = f"Last Activity: {actuator.last_update.strftime('%d %b %Y, %H:%M:%S')}" \
+                            if actuator.last_update else "Last Activity: never"
+
+                    # active actuator: connected in the last {threshold_time} seconds
+                    elif actuator.last_update is not None and (
+                            datetime.datetime.now() - actuator.last_update <= timedelta(seconds=threshold_time)):
+                        text = f"({actuator.type.value}) {actuator.id}"
+                        color = QtCore.Qt.GlobalColor.darkGreen
+                        tooltip_text = f"Last Activity: {actuator.last_update.strftime('%d %b %Y, %H:%M:%S')}"
+
+                    # waiting for actuator first connection
+                    else:
+                        text = f"({actuator.type.value}) {actuator.id}"
+                        color = QtCore.Qt.GlobalColor.black
+                        tooltip_text = ""
+
+                # server not started
                 else:
                     text = f"({actuator.type.value}) {actuator.id}"
-                    self.ui.listWidget_en_actuators.addItem(text)
+                    color = QtCore.Qt.GlobalColor.black
+                    tooltip_text = ""
+
+                self.ui.listWidget_en_actuators.addItem(text)
+                item = self.ui.listWidget_en_actuators.item(
+                    self.ui.listWidget_en_actuators.count() - 1
+                )
+                item.setForeground(QBrush(color))
+                item.setToolTip(tooltip_text)
 
     def _init_logging_dropdown(self):
         """Method to initialize logging levels in tooldbar dropdown"""

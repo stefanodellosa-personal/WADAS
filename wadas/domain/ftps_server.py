@@ -55,11 +55,14 @@ class FTPsServer:
 
     ftps_server = None
 
-    def __init__(self, ip_address, port, max_conn, max_conn_per_ip, certificate, key, ftp_dir):
+    def __init__(
+        self, ip_address, port, passive_ports, max_conn, max_conn_per_ip, certificate, key, ftp_dir
+    ):
         super(FTPsServer, self).__init__()
         # Store params to allow serialization
         self.ip = ip_address
         self.port = port
+        self.passive_ports = passive_ports
         self.max_conn = max_conn
         self.max_conn_per_ip = max_conn_per_ip
         self.certificate = certificate
@@ -70,6 +73,7 @@ class FTPsServer:
         self.handler = TLS_FTP_WADAS_Handler
         self.handler.certfile = self.certificate
         self.handler.keyfile = self.key
+        self.handler.passive_ports = self.passive_ports
         # welcome banner
         self.handler.banner = "WADAS FTPS server!"
 
@@ -119,6 +123,7 @@ class FTPsServer:
             "ssl_key": self.key,
             "ip": self.ip,
             "port": self.port,
+            "passive_ports": self.passive_ports,
             "max_conn": self.max_conn,
             "max_conn_per_ip": self.max_conn_per_ip,
             "ftp_dir": self.ftp_dir,
@@ -130,6 +135,7 @@ class FTPsServer:
         return FTPsServer(
             data["ip"],
             data["port"],
+            data["passive_ports"],
             data["max_conn"],
             data["max_conn_per_ip"],
             data["ssl_certificate"],

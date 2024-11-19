@@ -64,3 +64,8 @@ logs/
 
 cache
 
+## SSL Certificates
+*.pem
+
+## Config files
+*.yaml
