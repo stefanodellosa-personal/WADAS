@@ -164,28 +164,37 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                         f"WADAS_FTP_camera_{camera.id}", ""
                                     )
                                     if credentials and (
-                                            credentials.username != cur_user
-                                            or credentials.password != cur_pass
+                                        credentials.username == cur_user
+                                        and credentials.password == cur_pass
                                     ):
-                                        keyring.set_password(
-                                            f"WADAS_FTP_camera_{cur_ui_id}",
+                                        break
+                                    else:
+                                        self.add_camera_credentials(cur_ui_id, cur_user, cur_pass)
+                                        # If user existed in ftp server, remove it.
+                                        if FTPsServer.ftps_server.has_user(cur_user):
+                                            FTPsServer.ftps_server.remove_user(cur_user)
+                                        # add modified/missing user.
+                                        FTPsServer.ftps_server.add_user(
                                             cur_user,
                                             cur_pass,
+                                            camera.ftp_folder,
                                         )
                                         break
                     if not found:
                         # If camera id is not in cameras list, then is new or modified
+                        camera_user = self.get_camera_user(i)
+                        camera_pass = self.get_camera_pass(i)
+                        camera_ftp_path = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id)
                         camera = FTPCamera(
                             cur_ui_id,
-                            os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id),
+                            camera_ftp_path,
+                            camera_user
                         )
                         cameras.append(camera)
                         # Store credentials in keyring
-                        keyring.set_password(
-                            f"WADAS_FTP_camera_{cur_ui_id}",
-                            self.get_camera_user(i),
-                            self.get_camera_pass(i),
-                        )
+                        self.add_camera_credentials(cur_ui_id, camera_user, camera_pass)
+                        # Add FTP Camera to FTP server users list
+                        self.add_camera_to_ftp_server(cur_ui_id, camera_ftp_path, camera_user, camera_pass)
 
             # Check for cameras old id (prior to modification) and remove them
             orphan_cameras = (
@@ -205,24 +214,47 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 cur_camera_id = self.get_camera_id(i)
                 if cur_camera_id:
                     cur_cam_ftp_dir = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id)
-                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir)
+                    camera_user = self.get_camera_user(i)
+                    camera_pass = self.get_camera_pass(i)
+                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir, camera_user)
                     cameras.append(camera)
                     # Store credentials in keyring
-                    keyring.set_password(
-                        f"WADAS_FTP_camera_{cur_camera_id}",
-                        self.get_camera_user(i),
-                        self.get_camera_pass(i),
-                    )
+                    self.add_camera_credentials(cur_camera_id, camera_user, camera_pass)
                     # Add camera user to FTPS server
-                    if not FTPsServer.ftps_server.has_user(cur_camera_id):
-                        if not os.path.isdir(cur_cam_ftp_dir):
-                            os.makedirs(cur_cam_ftp_dir, exist_ok=True)
-                        FTPsServer.ftps_server.add_user(
-                            self.get_camera_user(i),
-                            self.get_camera_pass(i),
-                            cur_cam_ftp_dir,
-                        )
+                    self.add_camera_to_ftp_server(cur_camera_id, cur_cam_ftp_dir, camera_user, camera_pass)
         self.accept()
+
+    def add_camera_credentials(self, camera_id, user, password):
+        """Method to add camera credentials to keyring."""
+
+        # If credentials exist remove them (workaround keyring bug)
+        credentials = keyring.get_credential(
+            f"WADAS_FTP_camera_{camera_id}", ""
+        )
+        if credentials:
+            try:
+                keyring.delete_password(f"WADAS_FTP_camera_{camera_id}", credentials.username)
+            except keyring.errors.PasswordDeleteError:
+                # Credentials not in the system
+                pass
+
+        # Set new/modified credentials for camera
+        keyring.set_password(
+            f"WADAS_FTP_camera_{camera_id}",
+            user,
+            password,
+        )
+
+    def add_camera_to_ftp_server(self, cur_camera_id, cam_ftp_dir, camera_user, camera_pass):
+        """Method to add FTP camera to FTP server"""
+        if not FTPsServer.ftps_server.has_user(cur_camera_id):
+            if not os.path.isdir(cam_ftp_dir):
+                os.makedirs(cam_ftp_dir, exist_ok=True)
+            FTPsServer.ftps_server.add_user(
+                camera_user,
+                camera_pass,
+                cam_ftp_dir,
+            )
 
     def reject_and_close(self):
         self._stop_ftp_server()
