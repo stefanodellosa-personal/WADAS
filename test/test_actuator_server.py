@@ -1,6 +1,7 @@
 import json
 import os
 import tempfile
+import time
 
 import pytest
 import requests
@@ -84,6 +85,7 @@ def test_server_deserialize():
 
 def test_server_working(actuator_server):
     thread = actuator_server.run()
+    time.sleep(3)
     path = app.routes[0].path.format(actuator_id="test_id")
     response = requests.get(f"https://127.0.0.1:{HTTPS_PORT}{path}", verify=False)
     assert response.status_code == 404
