@@ -28,6 +28,8 @@ _OPERATION_MODE_TYPE_VALUE_TO_TYPE = {mode.value: mode for mode in OperationMode
 def load_configuration_from_file(file_path):
     """Load configuration from YAML file."""
 
+    valid_ftp_keyring = True
+    valid_email_keyring = True
     with open(str(file_path)) as file_:
         logging.info("Loading configuration from file...")
 
@@ -35,11 +37,30 @@ def load_configuration_from_file(file_path):
         # Applying configuration to WADAS from config file values
 
         # Notifiers
-        Notifier.notifiers.update(
-            (key, EmailNotifier(**value))
-            for key, value in (wadas_config["notification"] or {}).items()
-            if key in Notifier.notifiers and key == Notifier.NotifierTypes.EMAIL.value
-        )
+        notification = wadas_config["notification"]
+        for key in notification:
+            if key in Notifier.notifiers:
+                if key == Notifier.NotifierTypes.EMAIL.value:
+                    email_notifier = EmailNotifier(**notification[key])
+                    Notifier.notifiers[key] = email_notifier
+                    credentials = keyring.get_credential("WADAS_email", email_notifier.sender_email)
+                    if not credentials:
+                        logger.error(
+                            "Unable to find email credentials for %s stored on the system."
+                            "Please insert them through email configuration dialog.",
+                            email_notifier.sender_email,
+                        )
+                        valid_email_keyring = False
+                    elif credentials and credentials.username != email_notifier.sender_email:
+                        logger.error(
+                            "Email username on the system (%s) does not match with username "
+                            "provided in configuration file (%s). Please make sure valid email "
+                            "credentials are in use by editing them from email configuration "
+                            "dialog.",
+                            credentials.username,
+                            email_notifier.sender_email,
+                        )
+                        valid_email_keyring = False
 
         # FTP Server
         if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
@@ -64,25 +85,39 @@ def load_configuration_from_file(file_path):
         # Camera(s)
         cameras.clear()
         for data in wadas_config["cameras"]:
-            match data["type"]:
-                case Camera.CameraTypes.USB_CAMERA.value:
-                    usb_camera = USBCamera.deserialize(data)
-                    cameras.append(usb_camera)
-                case Camera.CameraTypes.FTP_CAMERA.value:
-                    ftp_camera = FTPCamera.deserialize(data)
-                    cameras.append(ftp_camera)
-                    if FTPsServer.ftps_server:
-                        if not os.path.isdir(ftp_camera.ftp_folder):
-                            os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
-                        credentials = keyring.get_credential(
-                            f"WADAS_FTP_camera_{ftp_camera.id}", ""
-                        )
-                        if credentials:
+            if data["type"] == Camera.CameraTypes.USB_CAMERA.value:
+                usb_camera = USBCamera.deserialize(data)
+                cameras.append(usb_camera)
+            elif data["type"] == Camera.CameraTypes.FTP_CAMERA.value:
+                ftp_camera = FTPCamera.deserialize(data)
+                cameras.append(ftp_camera)
+                if FTPsServer.ftps_server:
+                    if not os.path.isdir(ftp_camera.ftp_folder):
+                        os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
+                    credentials = keyring.get_credential(f"WADAS_FTP_camera_{ftp_camera.id}", "")
+                    if credentials:
+                        if credentials.username != ftp_camera.user:
+                            logger.error(
+                                "Keyring stored user (%s) differs from configuration file one (%s)."
+                                " Please make sure to align system stored credential with"
+                                " configuration file. System credentials will be used.",
+                                ftp_camera.user,
+                                credentials.username,
+                            )
+                            valid_ftp_keyring = False
+                        else:
                             FTPsServer.ftps_server.add_user(
                                 credentials.username,
                                 credentials.password,
                                 ftp_camera.ftp_folder,
                             )
+                    else:
+                        logger.error(
+                            "Unable to find credentials for %s on this system. "
+                            "Please add credentials manually from FTP Camera configuration dialog.",
+                            ftp_camera.id,
+                        )
+                        valid_ftp_keyring = False
         Camera.detection_params = wadas_config["camera_detection_params"]
 
         # FastAPI Actuator Server
@@ -106,6 +141,7 @@ def load_configuration_from_file(file_path):
             OperationMode.cur_operation_mode = None
 
         logger.info("Configuration loaded from file %s.", file_path)
+    return valid_ftp_keyring, valid_email_keyring
 
 
 def save_configuration_to_file(file_):
