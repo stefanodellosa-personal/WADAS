@@ -92,6 +92,7 @@ def test_server_restart(ftps_server):
     assert thread is not None
     time.sleep(2)
     ftps_server.server.close_all()
+    thread.join()
     time.sleep(1)
     thread = ftps_server.run()
     assert thread is not None
