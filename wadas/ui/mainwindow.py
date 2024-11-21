@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
-from wadas.domain.camera import cameras
+from wadas.domain.camera import cameras, Camera
 from wadas.domain.configuration import load_configuration_from_file, save_configuration_to_file
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import initialize_fpts_logger
@@ -68,6 +68,8 @@ class MainWindow(QMainWindow):
         self.configuration_file_name = ""
         self.key_ring = None
         self.ftp_server = None
+        self.valid_email_keyring = False
+        self.valid_ftp_keyring = False
 
         # Connect Actions
         self._connect_actions()
@@ -268,6 +270,9 @@ class MainWindow(QMainWindow):
         if not OperationMode.cur_operation_mode_type:
             self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
+        elif OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode:
+            self.ui.actionConfigure_Ai_model.setEnabled(True)
+            self.ui.actionRun.setEnabled(True)
         elif (
             OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode
             and not cameras
@@ -276,7 +281,11 @@ class MainWindow(QMainWindow):
             self.ui.actionRun.setEnabled(False)
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
-            self.ui.actionRun.setEnabled(True)
+            valid_configuration = True
+            if ((self.enabled_email_notifier_exists() and not self.valid_email_keyring) or
+                    (self.ftp_camera_exists() and not self.valid_ftp_keyring)):
+                valid_configuration = False
+            self.ui.actionRun.setEnabled(valid_configuration)
         self.ui.actionStop.setEnabled(False)
         self.ui.actionSave_configuration_as.setEnabled(self.isWindowModified())
         self.ui.actionSave_configuration_as_menu.setEnabled(self.isWindowModified())
@@ -286,6 +295,17 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration_menu.setEnabled(
             self.isWindowModified() and bool(self.configuration_file_name)
         )
+
+    def ftp_camera_exists(self):
+        """Method that checks if at least one FTP camera exists in camera list."""
+
+        return any(camera.type == Camera.CameraTypes.FTP_CAMERA for camera in cameras)
+
+    def enabled_email_notifier_exists(self):
+        """Method that checks if email notifier is configured."""
+
+        return any(((Notifier.notifiers[notifier] and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
+                  and Notifier.notifiers[notifier].enabled) for notifier in Notifier.notifiers))
 
     def update_toolbar_status_on_run(self, running):
         """Update toolbar status while running model."""
@@ -339,11 +359,11 @@ class MainWindow(QMainWindow):
 
             credentials = keyring.get_credential("WADAS_email", "")
             logger.info("Saved credentials for %s", credentials.username)
+            self.valid_email_keyring = True
             self.setWindowModified(True)
             self.update_toolbar_status()
         else:
             logger.debug("Email configuration aborted.")
-            return
 
     def check_notification_enablement(self):
         """Method to check whether a notification protocol has been set in WADAS.
@@ -356,15 +376,16 @@ class MainWindow(QMainWindow):
                 Notifier.notifiers[notifier]
                 and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
             ):
-                credentials = keyring.get_credential("WADAS_email", "")
-                if notifier and credentials.username:
+                credentials = keyring.get_credential("WADAS_email",
+                                                     Notifier.notifiers[notifier].sender_email)
+                if notifier and credentials and credentials.username and credentials.password:
                     notification_cfg = True
                 if Notifier.notifiers[notifier].enabled:
                     notification_enabled = True
         message = ""
         if not notification_cfg:
             logger.warning("No notification protocol set.")
-            message = "No notification protocol set. Do you wish to continue anyway?"
+            message = "No notification protocol properly set. Do you wish to continue anyway?"
         elif not notification_enabled:
             logger.warning("No notification protocol enabled.")
             message = "No enabled notification protocol. Do you wish to continue anyway?"
@@ -472,7 +493,7 @@ class MainWindow(QMainWindow):
         )
 
         if file_name[0]:
-            load_configuration_from_file(file_name[0])
+            self.valid_ftp_keyring, self.valid_email_keyring = load_configuration_from_file(file_name[0])
             self.configuration_file_name = file_name[0]
             self.setWindowModified(False)
             self.update_toolbar_status()
@@ -480,12 +501,35 @@ class MainWindow(QMainWindow):
             self.update_en_camera_list()
             self.update_en_actuator_list()
 
+            if not self.valid_email_keyring:
+                reply = QMessageBox.question(
+                    self,
+                    "Invalid email credentials.",
+                    "Would you like to edit email configuration to fix credentials issue?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+                if reply == QMessageBox.Yes:
+                    self.configure_email()
+
+            if not self.valid_ftp_keyring:
+                reply = QMessageBox.question(
+                    self,
+                    "Invalid FTP camera credentials",
+                    "Would you like to edit FTP camera configuration to fix credentials issue?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+                if reply == QMessageBox.Yes:
+                    self.configure_ftp_cameras()
+
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
 
         configure_ftp_cameras_dlg = DialogFTPCameras()
         if configure_ftp_cameras_dlg.exec():
             logger.info("FTP Server and Cameras configured.")
+            self.valid_ftp_keyring = True
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
