@@ -28,67 +28,63 @@ _OPERATION_MODE_TYPE_VALUE_TO_TYPE = {mode.value: mode for mode in OperationMode
 def load_configuration_from_file(file_path):
     """Load configuration from YAML file."""
 
-    valid_ftp_keyring = True
-    valid_email_keyring = True
     with open(str(file_path)) as file_:
         logging.info("Loading configuration from file...")
-
         wadas_config = yaml.safe_load(file_)
-        # Applying configuration to WADAS from config file values
 
-        # Notifiers
-        notification = wadas_config["notification"]
-        for key in notification:
-            if key in Notifier.notifiers:
-                if key == Notifier.NotifierTypes.EMAIL.value:
-                    email_notifier = EmailNotifier(**notification[key])
-                    Notifier.notifiers[key] = email_notifier
-                    credentials = keyring.get_credential("WADAS_email", email_notifier.sender_email)
-                    if not credentials:
-                        logger.error(
-                            "Unable to find email credentials for %s stored on the system."
-                            "Please insert them through email configuration dialog.",
-                            email_notifier.sender_email,
-                        )
-                        valid_email_keyring = False
-                    elif credentials and credentials.username != email_notifier.sender_email:
-                        logger.error(
-                            "Email username on the system (%s) does not match with username "
-                            "provided in configuration file (%s). Please make sure valid email "
-                            "credentials are in use by editing them from email configuration "
-                            "dialog.",
-                            credentials.username,
-                            email_notifier.sender_email,
-                        )
-                        valid_email_keyring = False
+    # Applying configuration to WADAS from config file values
+    valid_email_keyring = valid_ftp_keyring = True
 
-        # FTP Server
-        if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
-            FTPsServer.ftps_server.server.close_all()
-        FTPsServer.ftps_server = (
-            FTPsServer.deserialize(wadas_config["ftps_server"])
-            if wadas_config["ftps_server"]
-            else None
-        )
+    # Notifiers
+    for key, value in (wadas_config["notification"] or {}).items():
+        if key in Notifier.notifiers and key == Notifier.NotifierTypes.EMAIL.value:
+            email_notifier = EmailNotifier(**value)
+            Notifier.notifiers[key] = email_notifier
+            credentials = keyring.get_credential("WADAS_email", email_notifier.sender_email)
+            if not credentials:
+                logger.error(
+                    "Unable to find email credentials for %s stored on the system."
+                    "Please insert them through email configuration dialog.",
+                    email_notifier.sender_email,
+                )
+                valid_email_keyring = False
+            elif credentials and credentials.username != email_notifier.sender_email:
+                logger.error(
+                    "Email username on the system (%s) does not match with username "
+                    "provided in configuration file (%s). Please make sure valid email "
+                    "credentials are in use by editing them from email configuration "
+                    "dialog.",
+                    credentials.username,
+                    email_notifier.sender_email,
+                )
+                valid_email_keyring = False
 
-        # Actuators
-        Actuator.actuators.clear()
-        for data in wadas_config["actuators"]:
-            match data["type"]:
-                case Actuator.ActuatorTypes.ROADSIGN.value:
-                    actuator = RoadSignActuator.deserialize(data)
-                    Actuator.actuators[actuator.id] = actuator
-                case Actuator.ActuatorTypes.FEEDER.value:
-                    actuator = FeederActuator.deserialize(data)
-                    Actuator.actuators[actuator.id] = actuator
+    # FTP Server
+    if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
+        FTPsServer.ftps_server.server.close_all()
+    FTPsServer.ftps_server = (
+        FTPsServer.deserialize(wadas_config["ftps_server"]) if wadas_config["ftps_server"] else None
+    )
 
-        # Camera(s)
-        cameras.clear()
-        for data in wadas_config["cameras"]:
-            if data["type"] == Camera.CameraTypes.USB_CAMERA.value:
+    # Actuators
+    Actuator.actuators.clear()
+    for data in wadas_config["actuators"]:
+        match data["type"]:
+            case Actuator.ActuatorTypes.ROADSIGN.value:
+                actuator = RoadSignActuator.deserialize(data)
+                Actuator.actuators[actuator.id] = actuator
+            case Actuator.ActuatorTypes.FEEDER.value:
+                actuator = FeederActuator.deserialize(data)
+                Actuator.actuators[actuator.id] = actuator
+
+    # Camera(s)
+    cameras.clear()
+    for data in wadas_config["cameras"]:
+        match data["type"]:
+            case Camera.CameraTypes.USB_CAMERA.value:
                 usb_camera = USBCamera.deserialize(data)
                 cameras.append(usb_camera)
-            elif data["type"] == Camera.CameraTypes.FTP_CAMERA.value:
+            case Camera.CameraTypes.FTP_CAMERA.value:
                 ftp_camera = FTPCamera.deserialize(data)
                 cameras.append(ftp_camera)
                 if FTPsServer.ftps_server:
@@ -118,29 +114,30 @@ def load_configuration_from_file(file_path):
                             ftp_camera.id,
                         )
                         valid_ftp_keyring = False
-        Camera.detection_params = wadas_config["camera_detection_params"]
+    Camera.detection_params = wadas_config["camera_detection_params"]
 
-        # FastAPI Actuator Server
-        FastAPIActuatorServer.actuator_server = (
-            FastAPIActuatorServer.deserialize(wadas_config["actuator_server"])
-            if wadas_config["actuator_server"]
-            else None
-        )
+    # FastAPI Actuator Server
+    FastAPIActuatorServer.actuator_server = (
+        FastAPIActuatorServer.deserialize(wadas_config["actuator_server"])
+        if wadas_config["actuator_server"]
+        else None
+    )
 
-        # Ai model
-        AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
-        AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
-        AiModel.language = wadas_config["ai_model"]["ai_language"]
+    # Ai model
+    AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
+    AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
+    AiModel.language = wadas_config["ai_model"]["ai_language"]
 
-        # Operation Mode
-        if operation_mode_type := _OPERATION_MODE_TYPE_VALUE_TO_TYPE.get(
-            wadas_config["operation_mode"]
-        ):
-            OperationMode.cur_operation_mode_type = operation_mode_type
-        else:
-            OperationMode.cur_operation_mode = None
+    # Operation Mode
+    if operation_mode_type := _OPERATION_MODE_TYPE_VALUE_TO_TYPE.get(
+        wadas_config["operation_mode"]
+    ):
+        OperationMode.cur_operation_mode_type = operation_mode_type
+    else:
+        OperationMode.cur_operation_mode = None
 
-        logger.info("Configuration loaded from file %s.", file_path)
+    logger.info("Configuration loaded from file %s.", file_path)
+
     return valid_ftp_keyring, valid_email_keyring
 
 

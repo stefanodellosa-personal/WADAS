@@ -47,7 +47,7 @@ ai_model:
   ai_detect_treshold: 0
   ai_language: ''
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server: []
 notification: []
 operation_mode:
@@ -59,7 +59,7 @@ def test_load_empty_config(mock_file, init):
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
     assert cameras == []
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0
     assert AiModel.detection_treshold == 0
@@ -79,7 +79,7 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
@@ -105,7 +105,7 @@ ai_model:
   ai_detect_treshold: 0
   ai_language: ''
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server: []
 notification: []
 operation_mode:
@@ -117,7 +117,7 @@ def test_load_actuator_server_config(mock_file, init):
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
     assert cameras == []
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is not None
     assert FastAPIActuatorServer.actuator_server.actuator_timeout_threshold == 89
     assert FastAPIActuatorServer.actuator_server.ip == "1.2.3.4"
@@ -153,7 +153,7 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
@@ -186,7 +186,7 @@ ai_model:
   ai_detect_treshold: 0.456
   ai_language: xyz
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server: []
 notification: []
 operation_mode:
@@ -207,7 +207,7 @@ def test_load_actuators_config(mock_file, init):
         Actuator.ActuatorTypes.ROADSIGN,
     ]
     assert cameras == []
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0.123
     assert AiModel.detection_treshold == 0.456
@@ -243,7 +243,7 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
@@ -264,7 +264,7 @@ ai_model:
   ai_detect_treshold: 0.76
   ai_language: it
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server: []
 notification: []
 operation_mode:
@@ -276,7 +276,7 @@ def test_load_ai_model_config(mock_file, init):
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
     assert cameras == []
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0.98
     assert AiModel.detection_treshold == 0.76
@@ -299,7 +299,7 @@ ai_model:
   ai_class_treshold: 0.98
   ai_detect_treshold: 0.76
   ai_language: it
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
@@ -395,11 +395,13 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
+  ftp_user: User1
   id: Camera1
   type: FTP Camera
 - actuators: []
   enabled: false
   ftp_folder: /Documents/ftp/Camera2
+  ftp_user: User2
   id: Camera2
   type: FTP Camera
 - actuators: []
@@ -424,7 +426,7 @@ cameras:
   pid: 10372
   type: USB Camera
   vid: 7120
-camera_detection_params: []
+camera_detection_params: {{}}
 ftps_server: []
 notification: []
 operation_mode:
@@ -505,7 +507,7 @@ def test_load_cameras_config(mock_file, init):
         r"{e5323777-f976-4f5b-9b55-b94699c46e4X}\local",
         [],
     ]
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0
     assert AiModel.detection_treshold == 0
@@ -528,9 +530,10 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
+  ftp_user: User1
   id: Camera1
   type: FTP Camera
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -565,7 +568,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_no_credential(mock_file, in
     assert [
         getattr(cameras[0], name) for name in ("type", "id", "ftp_folder", "enabled", "actuators")
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0
     assert AiModel.detection_treshold == 0
@@ -588,9 +591,10 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
+  ftp_user: User1
   id: Camera1
   type: FTP Camera
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -625,7 +629,7 @@ def test_load_cameras_config_with_ftp_and_no_folder_and_no_credential(mock_file,
     assert [
         getattr(cameras[0], name) for name in ("type", "id", "ftp_folder", "enabled", "actuators")
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0
     assert AiModel.detection_treshold == 0
@@ -648,9 +652,10 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
+  ftp_user: User1
   id: Camera1
   type: FTP Camera
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -672,12 +677,12 @@ def test_load_cameras_config_with_ftp_and_folder_and_credential(mock_file, init)
         patch("wadas.domain.ftps_server.FTPsServer.add_user") as add_user_mock,
     ):
         is_dir_mock.return_value = True
-        get_credential_mock.return_value = Mock(username="foo", password="bar")
+        get_credential_mock.return_value = Mock(username="User1", password="123")
         load_configuration_from_file("")
     assert is_dir_mock.call_args == (("/Documents/ftp/Camera1",),)
     makedirs_mock.assert_not_called()
     get_credential_mock.assert_called_once_with("WADAS_FTP_camera_Camera1", "")
-    add_user_mock.assert_called_once_with("foo", "bar", "/Documents/ftp/Camera1")
+    add_user_mock.assert_called_once_with("User1", "123", "/Documents/ftp/Camera1")
     assert Notifier.notifiers == {"Email": None}
     assert FTPsServer.ftps_server is not None
     assert Actuator.actuators == {}
@@ -685,7 +690,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_credential(mock_file, init)
     assert [
         getattr(cameras[0], name) for name in ("type", "id", "ftp_folder", "enabled", "actuators")
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0
     assert AiModel.detection_treshold == 0
@@ -698,8 +703,8 @@ def test_load_cameras_config_with_ftp_and_folder_and_credential(mock_file, init)
 def test_save_cameras_config(mock_file, init):
     cameras.extend(
         (
-            FTPCamera("Camera1", "/Documents/ftp/Camera1", True, []),
-            FTPCamera("Camera2", "/Documents/ftp/Camera2", False, []),
+            FTPCamera("Camera1", "/Documents/ftp/Camera1", "User1", True, []),
+            FTPCamera("Camera2", "/Documents/ftp/Camera2", "User2", False, []),
             USBCamera(
                 "cvbdfg",
                 "ASUS USB2.0 Webcam",
@@ -737,16 +742,18 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
+  ftp_user: User1
   id: Camera1
   type: FTP Camera
 - actuators: []
   enabled: false
   ftp_folder: /Documents/ftp/Camera2
+  ftp_user: User2
   id: Camera2
   type: FTP Camera
 - actuators: []
@@ -796,7 +803,7 @@ ai_model:
   ai_detect_treshold: 0
   ai_language: ''
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -827,7 +834,7 @@ def test_load_ftps_server_config(mock_file, init):
     assert isinstance(FTPsServer.ftps_server.handler.authorizer, DummyAuthorizer)
     assert Actuator.actuators == {}
     assert cameras == []
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0
     assert AiModel.detection_treshold == 0
@@ -847,7 +854,7 @@ ai_model:
   ai_detect_treshold: 0
   ai_language: ''
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -883,7 +890,7 @@ def test_load_ftps_server_config_with_existing_server(mock_file, init):
     assert isinstance(FTPsServer.ftps_server.handler.authorizer, DummyAuthorizer)
     assert Actuator.actuators == {}
     assert cameras == []
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0
     assert AiModel.detection_treshold == 0
@@ -913,7 +920,7 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server:
   ftp_dir: /Documents/ftp
@@ -944,7 +951,7 @@ ai_model:
   ai_detect_treshold: 0
   ai_language: ''
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server: []
 notification:
   Email:
@@ -972,7 +979,7 @@ def test_load_notification_config(mock_file, init):
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
     assert cameras == []
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0
     assert AiModel.detection_treshold == 0
@@ -992,7 +999,7 @@ ai_model:
   ai_detect_treshold: 0
   ai_language: ''
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server: []
 notification:
   Email:
@@ -1027,7 +1034,7 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification:
@@ -1059,7 +1066,7 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification:
@@ -1088,7 +1095,7 @@ ai_model:
   ai_detect_treshold: 0
   ai_language: ''
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server: []
 notification: []
 operation_mode: Test Model Mode
@@ -1100,7 +1107,7 @@ def test_load_test_model_mode_config(mock_file, init):
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
     assert cameras == []
-    assert Camera.detection_params == []
+    assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
     assert AiModel.classification_treshold == 0
     assert AiModel.detection_treshold == 0
@@ -1121,7 +1128,7 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
@@ -1142,7 +1149,7 @@ ai_model:
   ai_detect_treshold: 0
   ai_language: ''
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server: []
 notification: []
 operation_mode: Animal Detection Mode
@@ -1169,7 +1176,7 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
@@ -1190,7 +1197,7 @@ ai_model:
   ai_detect_treshold: 0
   ai_language: ''
 cameras: []
-camera_detection_params: []
+camera_detection_params: {}
 ftps_server: []
 notification: []
 operation_mode: Animal Detection and Classification Mode
@@ -1219,7 +1226,7 @@ ai_model:
   ai_class_treshold: 0.0
   ai_detect_treshold: 0.0
   ai_language: ''
-camera_detection_params: []
+camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
