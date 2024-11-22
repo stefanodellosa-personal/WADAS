@@ -13,7 +13,6 @@ dependencies:
   - pip==24.2
   - pyftpdlib==1.5.10
   - python==3.10.15
-  - requests==2.32.3
   - timm==1.0.9
   - torchaudio==2.4.1
   - torchvision==0.19.1
