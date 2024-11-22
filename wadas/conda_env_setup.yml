@@ -5,6 +5,7 @@ channels:
   - defaults
 dependencies:
   - fastapi==0.115.2
+  - filetype==1.2.0
   - ipykernel==6.29.5
   - keyring==25.4.1
   - onnx==1.16.2

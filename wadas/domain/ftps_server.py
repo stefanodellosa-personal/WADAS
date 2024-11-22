@@ -2,9 +2,11 @@
 
 import logging
 import os
+import pathlib
 import threading
 from logging.handlers import RotatingFileHandler
 
+import filetype
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import TLS_FTPHandler
 from pyftpdlib.servers import ThreadedFTPServer
@@ -29,6 +31,19 @@ def initialize_fpts_logger():
 
 
 class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
+    """Class to handle FTP communications with FTP Server"""
+
+    # .txt is allowed for testing purpose by Reolink cameras
+    ALLOWED_EXTS = frozenset((".mp4", ".png", ".jpg", ".jpeg", ".txt"))
+
+    def ftp_STOR(self, file, mode="w"):
+        cur_ext = pathlib.Path(file.lower()).suffix
+        if cur_ext in self.ALLOWED_EXTS:
+            super().ftp_STOR(file, mode)
+        else:
+            logger.warning("Unsupported file extension for %s. Connection aborted.", file)
+            self.ftp_ABOR(None)
+
     def on_connect(self):
         logger.info("Connected remote camera from %s:%s", self.remote_ip, self.remote_port)
 
@@ -43,7 +58,15 @@ class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
 
     def on_file_received(self, file):
         logger.info("Received %s file from FTPS Camera.", file)
-        img_queue.put({"img": file, "img_id": os.path.basename(os.path.dirname(file))})
+
+        # check if the received file match one of the allowed extensions
+        # (the check relies on an inspection of the file content)
+        ftype = filetype.guess(file)
+        if ftype and f".{ftype.extension}" in self.ALLOWED_EXTS:
+            img_queue.put({"img": file, "img_id": pathlib.PurePath(file).parent.name})
+        else:
+            logger.warning("Unsupported file %s. Removing file.", file)
+            os.remove(file)
 
     def on_incomplete_file_received(self, file):
         logger.info("Partial file received. Removing %s", file)
