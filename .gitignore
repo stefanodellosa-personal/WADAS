@@ -69,3 +69,6 @@ cache
 
 ## Config files
 *.yaml
+
+# Tests execution extra files to support local setups which have issues with PySide
+test/exectests.py

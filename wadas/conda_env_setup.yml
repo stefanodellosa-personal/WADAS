@@ -5,6 +5,7 @@ channels:
   - defaults
 dependencies:
   - fastapi==0.115.2
+  - filetype==1.2.0
   - ipykernel==6.29.5
   - keyring==25.4.1
   - onnx==1.16.2
@@ -20,7 +21,7 @@ dependencies:
   - validators==0.34.0
   - pip:
       - cv2-enumerate-cameras==1.1.15
-      - intel-npu-acceleration-library==1.3.0
+      - intel-npu-acceleration-library==1.4.0
       - pyside6==6.8.0
       - PytorchWildlife==1.0.2.16
       - pytest==8.3.3
