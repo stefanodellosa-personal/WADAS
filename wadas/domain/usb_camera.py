@@ -59,13 +59,13 @@ class USBCamera(Camera):
 
         cap = cv2.VideoCapture(self.index, self.backend)
 
-        # Create Background Subtractor MOG2 object
-        background_sub = cv2.createBackgroundSubtractorMOG2()
-
         # Check if camera opened successfully
         if not cap.isOpened():
             logger.error("Error opening video stream.")
             return
+
+        # Create Background Subtractor MOG2 object
+        background_sub = cv2.createBackgroundSubtractorMOG2()
 
         # Camera info for debug mode
         length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -81,11 +81,16 @@ class USBCamera(Camera):
         )
 
         last_detection_time = 0
+        ms_sample_rate = Camera.detection_params["ms_sample_rate"]
+        treshold = Camera.detection_params["treshold"]
+        min_contour_area = Camera.detection_params["min_contour_area"]
+        detection_per_second = Camera.detection_params["detection_per_second"]
+
         # Read until video is completed
         while cap.isOpened() and not self.stop_thread:
             # Capture frame-by-frame
             ret, frame = cap.read()
-            cap.set(cv2.CAP_PROP_POS_MSEC, Camera.detection_params["ms_sample_rate"])
+            cap.set(cv2.CAP_PROP_POS_MSEC, ms_sample_rate)
 
             if ret:
                 # Apply background subtraction
@@ -94,7 +99,7 @@ class USBCamera(Camera):
                 # apply global threshold to remove shadows
                 retval, mask_thresh = cv2.threshold(
                     foreground_mask,
-                    Camera.detection_params["treshold"],
+                    treshold,
                     255,
                     cv2.THRESH_BINARY,
                 )
@@ -112,17 +117,13 @@ class USBCamera(Camera):
 
                 # filtering contours using list comprehension
                 approved_contours = [
-                    cnt
-                    for cnt in contours
-                    if cv2.contourArea(cnt) > Camera.detection_params["min_contour_area"]
+                    cnt for cnt in contours if cv2.contourArea(cnt) > min_contour_area
                 ]
                 frame_out = frame.copy()
                 if len(approved_contours) > 0:
                     # Limit the amount of frame processed per second
                     current_detection_time = time.time()
-                    if (current_detection_time - last_detection_time) < Camera.detection_params[
-                        "detection_per_second"
-                    ]:
+                    if (current_detection_time - last_detection_time) < detection_per_second:
                         continue
 
                     logger.debug("Motion detected from camera %s!", self.id)

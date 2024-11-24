@@ -1,5 +1,5 @@
 """Module containing logic to instantiate a Motion Detection thread to process video stream
-   integrated with Qt UI."""
+integrated with Qt UI."""
 
 import time
 
@@ -23,12 +23,13 @@ class MotionDetectionThread(QThread):
     def run(self):
         self.running = True
         cap = cv2.VideoCapture(self.camera_index)
-        background_sub = cv2.createBackgroundSubtractorMOG2()
 
         if not cap.isOpened():
             print("Error: Unable to open camera.")
             return
 
+        background_sub = cv2.createBackgroundSubtractorMOG2()
+        min_contour_area = Camera.detection_params["min_contour_area"]
         while self.running:
             ret, frame = cap.read()
             if not ret:
@@ -40,7 +41,7 @@ class MotionDetectionThread(QThread):
                 foreground_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
             for cnt in contours:
-                if cv2.contourArea(cnt) > Camera.detection_params["min_contour_area"]:
+                if cv2.contourArea(cnt) > min_contour_area:
                     x, y, w, h = cv2.boundingRect(cnt)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
 

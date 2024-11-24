@@ -1,7 +1,8 @@
 """Method containing logic to build a video steam test dialog."""
 
 import os
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QPushButton, QLabel)
+
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QLabel
 from PySide6.QtGui import QImage, QPixmap, QIcon
 from PySide6.QtCore import Slot
 
@@ -17,7 +18,7 @@ class MotionDetectionDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Motion Detection Test Dialog")
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 640, 480)
 
         # Layout
         self.layout = QVBoxLayout(self)
@@ -26,7 +27,7 @@ class MotionDetectionDialog(QDialog):
         self.video_label = QLabel(self)
         self.video_label.setText("Starting video stream...")
         self.video_label.setStyleSheet("background-color: black;")
-        self.video_label.setFixedSize(800, 450)
+        self.video_label.setFixedSize(640, 480)
         self.layout.addWidget(self.video_label)
 
         # Stop button
