@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 from wadas.domain.camera import Camera, cameras
 from wadas.domain.usb_camera import USBCamera
 from wadas.ui.qt.ui_select_usb_cameras import Ui_DialogSelectUSBCameras
+from wadas.ui.motion_detection_dialog import MotionDetectionDialog
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -266,4 +267,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
             self.enumerated_usb_cameras[camera_idx].vid,
             self.enumerated_usb_cameras[camera_idx].path,
         )
-        camera.detect_motion_from_video(True)
+        #camera.detect_motion_from_video(True)
+        dialog = MotionDetectionDialog()
+        dialog.exec_()
+

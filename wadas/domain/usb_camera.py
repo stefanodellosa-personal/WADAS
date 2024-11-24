@@ -6,6 +6,7 @@ import threading
 import time
 
 import cv2
+from PySide6.QtGui import QImage
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.camera import Camera, img_queue
@@ -133,22 +134,17 @@ class USBCamera(Camera):
                             x, y, w, h = cv2.boundingRect(cnt)
                             frame_out = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 200), 3)
 
-                        # Display the resulting frame
-                        cv2.putText(
-                            frame_out,
-                            "Press Q on keyboard to exit",
-                            (50, 50),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            1,
-                            (255, 255, 255),
-                            1,
-                            2,
-                        )
-                        cv2.imshow("Frame_final", frame_out)
+                            # Convert frame to QImage
+                            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                            height, width, channel = frame_rgb.shape
+                            bytes_per_line = 3 * width
+                            q_image = QImage(
+                                frame_rgb.data, width, height, bytes_per_line, QImage.Format_RGB888
+                            )
 
-                        # Press Q on keyboard to exit
-                        if cv2.waitKey(30) & 0xFF == ord("q"):
-                            break
+                            self.frame_ready.emit(q_image)
+
+                            time.sleep(0.03)  # Simulate ~30 FPS
                     else:
                         # Adding detected image into the AI queue for animal detection
                         img_path = os.path.join(
