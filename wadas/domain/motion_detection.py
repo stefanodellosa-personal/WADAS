@@ -1,3 +1,6 @@
+"""Module containing logic to instantiate a Motion Detection thread to process video stream
+   integrated with Qt UI."""
+
 import time
 
 import cv2
@@ -8,6 +11,8 @@ from wadas.domain.camera import Camera
 
 
 class MotionDetectionThread(QThread):
+    """Motion Detection QThread to integrate cv video stream into Qt Dialog"""
+
     frame_ready = Signal(QImage)
 
     def __init__(self, camera_index=0, parent=None):

@@ -267,7 +267,8 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
             self.enumerated_usb_cameras[camera_idx].vid,
             self.enumerated_usb_cameras[camera_idx].path,
         )
-        #camera.detect_motion_from_video(True)
+
+        # Open Motion Detection Test Dialog
         dialog = MotionDetectionDialog()
         dialog.exec_()
 

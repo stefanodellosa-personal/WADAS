@@ -6,7 +6,6 @@ import threading
 import time
 
 import cv2
-from PySide6.QtGui import QImage
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.camera import Camera, img_queue
@@ -45,7 +44,7 @@ class USBCamera(Camera):
         self.path = path
         self.actuators = actuators
 
-    def detect_motion_from_video(self, test_mode=False):
+    def detect_motion_from_video(self):
         """Method to run motion detection on camera video stream.
         Only for cameras that are note povided with commercial motion detection feature."""
 
@@ -129,44 +128,23 @@ class USBCamera(Camera):
                     logger.debug("Motion detected from camera %s!", self.id)
                     last_detection_time = current_detection_time
 
-                    if test_mode:
-                        for cnt in approved_contours:
-                            x, y, w, h = cv2.boundingRect(cnt)
-                            frame_out = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 200), 3)
-
-                            # Convert frame to QImage
-                            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                            height, width, channel = frame_rgb.shape
-                            bytes_per_line = 3 * width
-                            q_image = QImage(
-                                frame_rgb.data, width, height, bytes_per_line, QImage.Format_RGB888
-                            )
-
-                            self.frame_ready.emit(q_image)
-
-                            time.sleep(0.03)  # Simulate ~30 FPS
-                    else:
-                        # Adding detected image into the AI queue for animal detection
-                        img_path = os.path.join(
-                            "wadas_motion_detection",
-                            f"camera_{self.id}_{get_timestamp()}.jpg",
-                        )
-                        cv2.imwrite(img_path, frame_out)
-                        img_queue.put(
-                            {
-                                "img": img_path,
-                                "img_id": f"camera_{self.id}_{get_timestamp()}.jpg",
-                            }
-                        )
+                    # Adding detected image into the AI queue for animal detection
+                    img_path = os.path.join(
+                        "wadas_motion_detection",
+                        f"camera_{self.id}_{get_timestamp()}.jpg",
+                    )
+                    cv2.imwrite(img_path, frame_out)
+                    img_queue.put(
+                        {
+                            "img": img_path,
+                            "img_id": f"camera_{self.id}_{get_timestamp()}.jpg",
+                        }
+                    )
             else:
                 break
 
         # When everything done, release the video capture and writer object
         cap.release()
-
-        if test_mode:
-            # Closes all the frames
-            cv2.destroyAllWindows()
 
     def run(self):
         """Method to create new thread for Camera class."""
