@@ -6,12 +6,12 @@ import time
 import pytest
 import requests
 import util
-from domain.roadsign_actuator import RoadSignActuator
 from fastapi.testclient import TestClient
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.actuator_server_app import app
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
+from wadas.domain.roadsign_actuator import RoadSignActuator
 
 client = TestClient(app)
 
