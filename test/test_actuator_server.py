@@ -136,7 +136,7 @@ def test_server_restart(actuator_server):
     assert response.status_code == 404
     actuator_server.stop()
     thread.join()
-    time.sleep(1)
+    time.sleep(3)
     thread = actuator_server.run()
     assert thread is not None
     time.sleep(3)
