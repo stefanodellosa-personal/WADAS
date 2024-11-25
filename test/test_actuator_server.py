@@ -122,7 +122,7 @@ def test_actuator_command(actuator_server, actuator):
     path = app.routes[0].path.format(actuator_id=actuator.id)
     response = requests.get(f"https://127.0.0.1:{HTTPS_PORT}{path}", verify=False)
     assert response.status_code == 200
-    assert response.json() == RoadSignActuator.Commands.DISPLAY_ON.value
+    assert response.json() == json.loads(RoadSignActuator.Commands.DISPLAY_ON.value)
     actuator_server.stop()
     thread.join()
 
