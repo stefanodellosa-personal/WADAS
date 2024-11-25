@@ -6,6 +6,7 @@ import time
 import pytest
 import requests
 import util
+from domain.roadsign_actuator import RoadSignActuator
 from fastapi.testclient import TestClient
 
 from wadas.domain.actuator import Actuator
@@ -39,6 +40,12 @@ def actuator_server():
         cert_path,
         key_path,
     )
+
+
+@pytest.fixture
+def actuator():
+    actuator = RoadSignActuator(id="123", enabled=True)
+    return actuator
 
 
 def test_get_actuator_command_existing(mock_actuators):
@@ -85,6 +92,53 @@ def test_server_deserialize():
 
 def test_server_working(actuator_server):
     thread = actuator_server.run()
+    assert thread is not None
+    time.sleep(3)
+    path = app.routes[0].path.format(actuator_id="test_id")
+    response = requests.get(f"https://127.0.0.1:{HTTPS_PORT}{path}", verify=False)
+    assert response.status_code == 404
+    actuator_server.stop()
+    thread.join()
+
+
+def test_actuator_exists(actuator_server, actuator):
+    thread = actuator_server.run()
+    assert thread is not None
+    Actuator.actuators[actuator.id] = actuator
+    time.sleep(3)
+    path = app.routes[0].path.format(actuator_id=actuator.id)
+    response = requests.get(f"https://127.0.0.1:{HTTPS_PORT}{path}", verify=False)
+    assert response.status_code == 200
+    actuator_server.stop()
+    thread.join()
+
+
+def test_actuator_command(actuator_server, actuator):
+    thread = actuator_server.run()
+    assert thread is not None
+    Actuator.actuators[actuator.id] = actuator
+    actuator.send_command(RoadSignActuator.Commands.DISPLAY_ON)
+    time.sleep(3)
+    path = app.routes[0].path.format(actuator_id=actuator.id)
+    response = requests.get(f"https://127.0.0.1:{HTTPS_PORT}{path}", verify=False)
+    assert response.status_code == 200
+    assert response.json() == RoadSignActuator.Commands.DISPLAY_ON.value
+    actuator_server.stop()
+    thread.join()
+
+
+def test_server_restart(actuator_server):
+    thread = actuator_server.run()
+    assert thread is not None
+    time.sleep(3)
+    path = app.routes[0].path.format(actuator_id="test_id")
+    response = requests.get(f"https://127.0.0.1:{HTTPS_PORT}{path}", verify=False)
+    assert response.status_code == 404
+    actuator_server.stop()
+    thread.join()
+    time.sleep(1)
+    thread = actuator_server.run()
+    assert thread is not None
     time.sleep(3)
     path = app.routes[0].path.format(actuator_id="test_id")
     response = requests.get(f"https://127.0.0.1:{HTTPS_PORT}{path}", verify=False)
