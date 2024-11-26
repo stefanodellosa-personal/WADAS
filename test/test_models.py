@@ -29,7 +29,7 @@ def test_classification_model():
 
 @pytest.fixture
 def detection_pipeline():
-    pipeline = DetectionPipeline(device="cpu")
+    pipeline = DetectionPipeline(detection_device="cpu", classification_device="cpu")
     assert pipeline.check_models()
     return pipeline
 
