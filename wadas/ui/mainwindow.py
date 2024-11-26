@@ -438,8 +438,8 @@ class MainWindow(QMainWindow):
             logger.info("Ai model configured.")
             logger.debug(
                 "Detection treshold: %s. Classification threshold: %s",
-                AiModel.detection_treshold,
-                AiModel.classification_treshold,
+                AiModel.detection_threshold,
+                AiModel.classification_threshold,
             )
             self.setWindowModified(True)
             self.update_toolbar_status()

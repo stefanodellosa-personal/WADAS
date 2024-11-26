@@ -30,8 +30,8 @@ def init():
     cameras.clear()
     Camera.detection_params.clear()
     FastAPIActuatorServer.actuator_server = None
-    AiModel.classification_treshold = 0.0
-    AiModel.detection_treshold = 0.0
+    AiModel.classification_threshold = 0.0
+    AiModel.detection_threshold = 0.0
     AiModel.language = ""
     OperationMode.cur_operation_mode = None
 
@@ -61,8 +61,8 @@ def test_load_empty_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -127,8 +127,8 @@ def test_load_actuator_server_config(mock_file, init):
     assert FastAPIActuatorServer.actuator_server.thread is None
     assert FastAPIActuatorServer.actuator_server.server is None
     assert FastAPIActuatorServer.actuator_server.startup_time is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -209,8 +209,8 @@ def test_load_actuators_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0.123
-    assert AiModel.detection_treshold == 0.456
+    assert AiModel.classification_threshold == 0.123
+    assert AiModel.detection_threshold == 0.456
     assert AiModel.language == "xyz"
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -278,8 +278,8 @@ def test_load_ai_model_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0.98
-    assert AiModel.detection_treshold == 0.76
+    assert AiModel.classification_threshold == 0.98
+    assert AiModel.detection_threshold == 0.76
     assert AiModel.language == "it"
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -287,8 +287,8 @@ def test_load_ai_model_config(mock_file, init):
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
 def test_save_ai_model_config(mock_file, init):
-    AiModel.classification_treshold = 0.98
-    AiModel.detection_treshold = 0.76
+    AiModel.classification_threshold = 0.98
+    AiModel.detection_threshold = 0.76
     AiModel.language = "it"
     save_configuration_to_file("")
     assert (
@@ -343,8 +343,8 @@ def test_load_camera_detection_params_config(mock_file, init):
         "treshold": 89,
     }
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -519,8 +519,8 @@ def test_load_cameras_config(mock_file, init):
     ]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -580,8 +580,8 @@ def test_load_cameras_config_with_ftp_and_folder_and_no_credentials(mock_file, i
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -641,8 +641,8 @@ def test_load_cameras_config_with_ftp_and_no_folder_and_no_credentials(mock_file
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -702,8 +702,8 @@ def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file,
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -763,8 +763,8 @@ def test_load_cameras_config_with_ftp_and_folder_and_different_credentials(mock_
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -907,8 +907,8 @@ def test_load_ftps_server_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -963,8 +963,8 @@ def test_load_ftps_server_config_with_existing_server(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -1055,8 +1055,8 @@ def test_load_notification_config_with_no_credentials(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -1106,8 +1106,8 @@ def test_load_notification_config_with_same_credentials(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -1157,8 +1157,8 @@ def test_load_notification_config_with_different_credentials(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -1288,8 +1288,8 @@ def test_load_test_model_mode_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_treshold == 0
-    assert AiModel.detection_treshold == 0
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode

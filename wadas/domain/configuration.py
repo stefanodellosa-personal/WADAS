@@ -124,8 +124,8 @@ def load_configuration_from_file(file_path):
     )
 
     # Ai model
-    AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
-    AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
+    AiModel.detection_threshold = wadas_config["ai_model"]["ai_detect_treshold"]
+    AiModel.classification_threshold = wadas_config["ai_model"]["ai_class_treshold"]
     AiModel.language = wadas_config["ai_model"]["ai_language"]
 
     # Operation Mode
@@ -169,8 +169,8 @@ def save_configuration_to_file(file_):
         "camera_detection_params": Camera.detection_params,
         "actuators": actuators,
         "ai_model": {
-            "ai_detect_treshold": AiModel.detection_treshold,
-            "ai_class_treshold": AiModel.classification_treshold,
+            "ai_detect_treshold": AiModel.detection_threshold,
+            "ai_class_treshold": AiModel.classification_threshold,
             "ai_language": AiModel.language,
         },
         "operation_mode": (
