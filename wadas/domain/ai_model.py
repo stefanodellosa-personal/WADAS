@@ -30,7 +30,7 @@ class AiModel:
         logger.info(
             "Initializing AI model for image detection on %s and classification on %s device(s)...",
             AiModel.detection_device,
-                  AiModel.classification_device,
+            AiModel.classification_device,
         )
         self.detection_pipeline = DetectionPipeline(
             detection_device=AiModel.detection_device,

@@ -2,9 +2,9 @@
 
 import logging
 import os
-import openvino as ov
 
 import keyring
+import openvino as ov
 import yaml
 
 from wadas._version import __version__
@@ -132,8 +132,12 @@ def load_configuration_from_file(file_path):
     AiModel.language = wadas_config["ai_model"]["ai_language"]
     detection_device = wadas_config["ai_model"]["ai_detection_device"]
     classification_device = wadas_config["ai_model"]["ai_classification_device"]
-    AiModel.detection_device = detection_device if detection_device in available_ai_devices else "auto"
-    AiModel.classification_device = classification_device if classification_device in available_ai_devices else "auto"
+    AiModel.detection_device = (
+        detection_device if detection_device in available_ai_devices else "auto"
+    )
+    AiModel.classification_device = (
+        classification_device if classification_device in available_ai_devices else "auto"
+    )
 
     # Operation Mode
     if operation_mode_type := _OPERATION_MODE_TYPE_VALUE_TO_TYPE.get(
@@ -180,7 +184,7 @@ def save_configuration_to_file(file_):
             "ai_class_threshold": AiModel.classification_threshold,
             "ai_language": AiModel.language,
             "ai_detection_device": AiModel.detection_device,
-            "ai_classification_device": AiModel.classification_device
+            "ai_classification_device": AiModel.classification_device,
         },
         "operation_mode": (
             OperationMode.cur_operation_mode_type.value
