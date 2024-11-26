@@ -11,7 +11,7 @@ from wadas.domain.actuator import Actuator
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
 
