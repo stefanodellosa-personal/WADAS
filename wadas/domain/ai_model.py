@@ -30,7 +30,9 @@ class AiModel:
             "Initializing AI model for image detection and classification to %s...", AiModel.DEVICE
         )
         self.detection_pipeline = DetectionPipeline(
-            device=AiModel.DEVICE, language=AiModel.language
+            detection_device=AiModel.DEVICE,
+            classification_device=AiModel.DEVICE,
+            language=AiModel.language
         )
 
         self.original_image = ""
@@ -58,6 +60,8 @@ class AiModel:
 
     def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
+
+        logger.debug("DEVICE: %s", AiModel.DEVICE)
 
         try:
             img = Image.open(img_path)
@@ -111,6 +115,8 @@ class AiModel:
 
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s)."""
+
+        logger.debug("DEVICE: %s", AiModel.DEVICE)
 
         if not results:
             logger.warning("No results to classify. Skipping classification.")
