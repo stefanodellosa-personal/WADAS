@@ -22,6 +22,6 @@ dependencies:
   - pip:
       - cv2-enumerate-cameras==1.1.15
       - intel-npu-acceleration-library==1.4.0
-      - pyside6==6.8.0
+      - pyside6==6.8.0.2
       - PytorchWildlife==1.0.2.16
       - pytest==8.3.3
