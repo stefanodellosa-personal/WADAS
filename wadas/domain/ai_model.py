@@ -32,7 +32,7 @@ class AiModel:
         self.detection_pipeline = DetectionPipeline(
             detection_device=AiModel.DEVICE,
             classification_device=AiModel.DEVICE,
-            language=AiModel.language
+            language=AiModel.language,
         )
 
         self.original_image = ""
