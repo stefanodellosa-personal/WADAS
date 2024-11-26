@@ -10,7 +10,6 @@ dependencies:
   - keyring==25.4.1
   - onnx==1.16.2
   - opencv==4.10.0
-  - openvino==2024.4.0
   - pip==24.2
   - pyftpdlib==1.5.10
   - python==3.10.15
@@ -25,3 +24,4 @@ dependencies:
       - pyside6==6.8.0.2
       - PytorchWildlife==1.0.2.16
       - pytest==8.3.3
+      - openvino==2024.5.0
