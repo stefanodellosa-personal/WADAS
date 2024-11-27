@@ -30,6 +30,7 @@ from wadas.domain.operation_mode import OperationMode
 from wadas.domain.qtextedit_logger import QTextEditLogger
 from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.utils import initialize_asyncio_logger
+from wadas.ui.about_dialog import AboutDialog
 from wadas.ui.configure_actuators_dialog import DialogConfigureActuators
 from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
 from wadas.ui.configure_camera_actuator_associations_dialog import (
@@ -113,6 +114,7 @@ class MainWindow(QMainWindow):
             self.configure_camera_to_actuators_associations
         )
         self.ui.actionLicense.triggered.connect(self.show_license)
+        self.ui.actionAbout.triggered.connect(self.show_about)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -652,3 +654,9 @@ Are you sure you want to exit?""",
 
         license_dialog = LicenseDialog()
         license_dialog.exec()
+
+    def show_about(self):
+        """Method to show about WADAS UI dialog."""
+
+        about_dialog = AboutDialog()
+        about_dialog.exec_()
