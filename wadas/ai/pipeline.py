@@ -45,7 +45,7 @@ class DetectionPipeline:
         """Method to check if models are initialized."""
         return OVMegaDetectorV5.download_model(force) and Classifier.download_model(force)
 
-    def run_detection(self, img: Image, detection_treshold: float):
+    def run_detection(self, img: Image, detection_threshold: float):
         """Method to run detection model on provided image."""
 
         img_array = np.array(img)
@@ -58,7 +58,7 @@ class DetectionPipeline:
 
         # Performing the detection on the single image
         results = self.detection_model.single_image_detection(
-            transform(img_array), img_array.shape, None, detection_treshold
+            transform(img_array), img_array.shape, None, detection_threshold
         )
 
         # Checks for non animal in results and filter them out
@@ -77,7 +77,7 @@ class DetectionPipeline:
 
         return results
 
-    def classify(self, img, results, classification_treshold):
+    def classify(self, img, results, classification_threshold):
         """Method to perform classification on detection result(s)."""
 
         if not results:
@@ -90,7 +90,7 @@ class DetectionPipeline:
             cropped_image = img.crop(xyxy)
 
             # Performing classification
-            classification_result = self.classify_crop(cropped_image, classification_treshold)
+            classification_result = self.classify_crop(cropped_image, classification_threshold)
             if classification_result[0]:
 
                 classified_animals.append(
@@ -104,14 +104,14 @@ class DetectionPipeline:
 
         return classified_animals
 
-    def classify_crop(self, crop_img, classification_treshold):
+    def classify_crop(self, crop_img, classification_threshold):
         """Classify animal on a crop (portion of original image)"""
 
         tensor_cropped = self.classifier.preprocessImage(crop_img)
         logits = self.classifier.predictOnBatch(tensor_cropped)[0,]
         labels = txt_animalclasses[self.language]
 
-        if max(logits) < classification_treshold:
+        if max(logits) < classification_threshold:
             return ["", 0]
 
         return [labels[np.argmax(logits)], max(logits)]

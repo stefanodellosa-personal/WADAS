@@ -16,7 +16,7 @@ class Camera:
     """Base class of a camera."""
 
     detection_params = {
-        "treshold": 180,
+        "threshold": 180,
         "min_contour_area": 300,
         "detection_per_second": 1,
         "ms_sample_rate": 1000,

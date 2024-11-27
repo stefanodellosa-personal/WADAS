@@ -35,35 +35,35 @@ class Ui_DialogConfigureAi(object):
         self.gridLayout = QGridLayout(self.gridLayoutWidget)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.label_classificationTreshold = QLabel(self.gridLayoutWidget)
-        self.label_classificationTreshold.setObjectName(u"label_classificationTreshold")
+        self.label_classificationThreshold = QLabel(self.gridLayoutWidget)
+        self.label_classificationThreshold.setObjectName(u"label_classificationThreshold")
 
-        self.gridLayout.addWidget(self.label_classificationTreshold, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_classificationThreshold, 1, 0, 1, 1)
 
         self.comboBox_class_lang = QComboBox(self.gridLayoutWidget)
         self.comboBox_class_lang.setObjectName(u"comboBox_class_lang")
 
         self.gridLayout.addWidget(self.comboBox_class_lang, 2, 1, 1, 1)
 
-        self.label_detectionTreshold = QLabel(self.gridLayoutWidget)
-        self.label_detectionTreshold.setObjectName(u"label_detectionTreshold")
+        self.label_detectionThreshold = QLabel(self.gridLayoutWidget)
+        self.label_detectionThreshold.setObjectName(u"label_detectionThreshold")
 
-        self.gridLayout.addWidget(self.label_detectionTreshold, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_detectionThreshold, 0, 0, 1, 1)
 
         self.label_errorMEssage = QLabel(self.gridLayoutWidget)
         self.label_errorMEssage.setObjectName(u"label_errorMEssage")
 
         self.gridLayout.addWidget(self.label_errorMEssage, 6, 1, 1, 1)
 
-        self.lineEdit_detectionTreshold = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_detectionTreshold.setObjectName(u"lineEdit_detectionTreshold")
+        self.lineEdit_detectionThreshold = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_detectionThreshold.setObjectName(u"lineEdit_detectionThreshold")
 
-        self.gridLayout.addWidget(self.lineEdit_detectionTreshold, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_detectionThreshold, 0, 1, 1, 1)
 
-        self.lineEdit_classificationTreshold = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_classificationTreshold.setObjectName(u"lineEdit_classificationTreshold")
+        self.lineEdit_classificationThreshold = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_classificationThreshold.setObjectName(u"lineEdit_classificationThreshold")
 
-        self.gridLayout.addWidget(self.lineEdit_classificationTreshold, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_classificationThreshold, 1, 1, 1, 1)
 
         self.comboBox_detection_dev = QComboBox(self.gridLayoutWidget)
         self.comboBox_detection_dev.setObjectName(u"comboBox_detection_dev")
@@ -101,19 +101,19 @@ class Ui_DialogConfigureAi(object):
     def retranslateUi(self, DialogConfigureAi):
         DialogConfigureAi.setWindowTitle(QCoreApplication.translate("DialogConfigureAi", u"Configure Ai model", None))
 #if QT_CONFIG(tooltip)
-        self.label_classificationTreshold.setToolTip(QCoreApplication.translate("DialogConfigureAi", u"Min classification probability to trigger notification.", None))
+        self.label_classificationThreshold.setToolTip(QCoreApplication.translate("DialogConfigureAi", u"Min classification probability to trigger notification.", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_classificationTreshold.setText(QCoreApplication.translate("DialogConfigureAi", u"Classification accurancy treshold (probablility)", None))
+        self.label_classificationThreshold.setText(QCoreApplication.translate("DialogConfigureAi", u"Classification accuracy threshold (probability)", None))
 #if QT_CONFIG(tooltip)
-        self.label_detectionTreshold.setToolTip(QCoreApplication.translate("DialogConfigureAi", u"Min detection probability to trigger notification.", None))
+        self.label_detectionThreshold.setToolTip(QCoreApplication.translate("DialogConfigureAi", u"Min detection probability to trigger notification.", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_detectionTreshold.setText(QCoreApplication.translate("DialogConfigureAi", u"Detection accurancy treshold (probablility)", None))
+        self.label_detectionThreshold.setText(QCoreApplication.translate("DialogConfigureAi", u"Detection accuracy threshold (probability)", None))
         self.label_errorMEssage.setText("")
 #if QT_CONFIG(tooltip)
-        self.lineEdit_detectionTreshold.setToolTip(QCoreApplication.translate("DialogConfigureAi", u"Min detection probability to trigger notification.", None))
+        self.lineEdit_detectionThreshold.setToolTip(QCoreApplication.translate("DialogConfigureAi", u"Min detection probability to trigger notification.", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        self.lineEdit_classificationTreshold.setToolTip(QCoreApplication.translate("DialogConfigureAi", u"Min classification probability to trigger notification.", None))
+        self.lineEdit_classificationThreshold.setToolTip(QCoreApplication.translate("DialogConfigureAi", u"Min classification probability to trigger notification.", None))
 #endif // QT_CONFIG(tooltip)
         self.label_3.setText(QCoreApplication.translate("DialogConfigureAi", u"Ai classification device", None))
         self.label_2.setText(QCoreApplication.translate("DialogConfigureAi", u"Ai detection device", None))

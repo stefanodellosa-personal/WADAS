@@ -40,12 +40,12 @@
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="1" column="0">
-     <widget class="QLabel" name="label_classificationTreshold">
+     <widget class="QLabel" name="label_classificationThreshold">
       <property name="toolTip">
        <string>Min classification probability to trigger notification.</string>
       </property>
       <property name="text">
-       <string>Classification accurancy treshold (probablility)</string>
+       <string>Classification accuracy threshold (probability)</string>
       </property>
      </widget>
     </item>
@@ -53,12 +53,12 @@
      <widget class="QComboBox" name="comboBox_class_lang"/>
     </item>
     <item row="0" column="0">
-     <widget class="QLabel" name="label_detectionTreshold">
+     <widget class="QLabel" name="label_detectionThreshold">
       <property name="toolTip">
        <string>Min detection probability to trigger notification.</string>
       </property>
       <property name="text">
-       <string>Detection accurancy treshold (probablility)</string>
+       <string>Detection accuracy threshold (probability)</string>
       </property>
      </widget>
     </item>
@@ -70,14 +70,14 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QLineEdit" name="lineEdit_detectionTreshold">
+     <widget class="QLineEdit" name="lineEdit_detectionThreshold">
       <property name="toolTip">
        <string>Min detection probability to trigger notification.</string>
       </property>
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QLineEdit" name="lineEdit_classificationTreshold">
+     <widget class="QLineEdit" name="lineEdit_classificationThreshold">
       <property name="toolTip">
        <string>Min classification probability to trigger notification.</string>
       </property>
