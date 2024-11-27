@@ -38,6 +38,7 @@ from wadas.ui.configure_camera_actuator_associations_dialog import (
 from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.ui.insert_url_dialog import InsertUrlDialog
+from wadas.ui.license_dialog import LicenseDialog
 from wadas.ui.select_mode_dialog import DialogSelectMode
 from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
 from wadas.ui.qt.ui_mainwindow import Ui_MainWindow
@@ -111,6 +112,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_camera_to_actuator_associations.triggered.connect(
             self.configure_camera_to_actuators_associations
         )
+        self.ui.actionLicense.triggered.connect(self.show_license)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -644,3 +646,9 @@ Are you sure you want to exit?""",
                 event.ignore()
         else:
             event.accept()
+
+    def show_license(self):
+        """Method to show WADAS license in UI dialog."""
+
+        license_dialog = LicenseDialog()
+        license_dialog.exec()
