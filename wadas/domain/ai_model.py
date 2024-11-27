@@ -19,18 +19,23 @@ logger = logging.getLogger(__name__)
 class AiModel:
     """Class containing AI Model functionalities (detection & classification)"""
 
-    DEVICE = "auto"
-    classification_treshold = 0.5
-    detection_treshold = 0.5
+    detection_device = "auto"
+    classification_device = "auto"
+    classification_threshold = 0.5
+    detection_threshold = 0.5
     language = "en"
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
         logger.info(
-            "Initializing AI model for image detection and classification to %s...", AiModel.DEVICE
+            "Initializing AI model for image detection on %s and classification on %s device(s)...",
+            AiModel.detection_device,
+            AiModel.classification_device,
         )
         self.detection_pipeline = DetectionPipeline(
-            device=AiModel.DEVICE, language=AiModel.language
+            detection_device=AiModel.detection_device,
+            classification_device=AiModel.classification_device,
+            language=AiModel.language,
         )
 
         self.original_image = ""
@@ -41,9 +46,9 @@ class AiModel:
         os.makedirs("wadas_motion_detection", exist_ok=True)
 
         logger.debug(
-            "Detection treshold: %s, Classification treshod: %s.",
-            self.detection_treshold,
-            self.classification_treshold,
+            "Detection threshold: %s, Classification threshold: %s.",
+            self.detection_threshold,
+            self.classification_threshold,
         )
 
     @staticmethod
@@ -58,6 +63,8 @@ class AiModel:
 
     def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
+
+        logger.debug("Selected detection device: %s", AiModel.detection_device)
 
         try:
             img = Image.open(img_path)
@@ -74,7 +81,7 @@ class AiModel:
         # since .verify() closes the underlying file descriptor we need to re-open the file
         img = Image.open(img_path).convert("RGB")
 
-        results = self.detection_pipeline.run_detection(img, AiModel.detection_treshold)
+        results = self.detection_pipeline.run_detection(img, AiModel.detection_threshold)
 
         detected_img_path = ""
         if len(results["detections"].xyxy) > 0 and save_detection_image:
@@ -112,6 +119,8 @@ class AiModel:
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s)."""
 
+        logger.debug("Selected classification device: %s", AiModel.classification_device)
+
         if not results:
             logger.warning("No results to classify. Skipping classification.")
             return ""
@@ -120,7 +129,7 @@ class AiModel:
         img = Image.open(img_path).convert("RGB")
 
         classified_animals = self.detection_pipeline.classify(
-            img, results, AiModel.classification_treshold
+            img, results, AiModel.classification_threshold
         )
 
         for detection in classified_animals:

@@ -4,6 +4,7 @@ import logging
 import os
 
 import keyring
+import openvino as ov
 import yaml
 
 from wadas._version import __version__
@@ -124,9 +125,19 @@ def load_configuration_from_file(file_path):
     )
 
     # Ai model
-    AiModel.detection_treshold = wadas_config["ai_model"]["ai_detect_treshold"]
-    AiModel.classification_treshold = wadas_config["ai_model"]["ai_class_treshold"]
+    available_ai_devices = ov.Core().get_available_devices()
+    available_ai_devices.append("auto")
+    AiModel.detection_threshold = wadas_config["ai_model"]["ai_detect_threshold"]
+    AiModel.classification_threshold = wadas_config["ai_model"]["ai_class_threshold"]
     AiModel.language = wadas_config["ai_model"]["ai_language"]
+    detection_device = wadas_config["ai_model"]["ai_detection_device"]
+    classification_device = wadas_config["ai_model"]["ai_classification_device"]
+    AiModel.detection_device = (
+        detection_device if detection_device in available_ai_devices else "auto"
+    )
+    AiModel.classification_device = (
+        classification_device if classification_device in available_ai_devices else "auto"
+    )
 
     # Operation Mode
     if operation_mode_type := _OPERATION_MODE_TYPE_VALUE_TO_TYPE.get(
@@ -169,9 +180,11 @@ def save_configuration_to_file(file_):
         "camera_detection_params": Camera.detection_params,
         "actuators": actuators,
         "ai_model": {
-            "ai_detect_treshold": AiModel.detection_treshold,
-            "ai_class_treshold": AiModel.classification_treshold,
+            "ai_detect_threshold": AiModel.detection_threshold,
+            "ai_class_threshold": AiModel.classification_threshold,
             "ai_language": AiModel.language,
+            "ai_detection_device": AiModel.detection_device,
+            "ai_classification_device": AiModel.classification_device,
         },
         "operation_mode": (
             OperationMode.cur_operation_mode_type.value

@@ -14,14 +14,15 @@ logger = logging.getLogger(__name__)
 class DetectionPipeline:
     """Class containing AI Model functionalities (detection & classification)"""
 
-    def __init__(self, device="auto", language="en"):
-        self.device = device
+    def __init__(self, detection_device="auto", classification_device="auto", language="en"):
+        self.detection_device = detection_device
+        self.classification_device = classification_device
         # Initializing the MegaDetectorV5 model for image detection
-        logger.info("Initializing detection model to device %s...", self.device)
-        self.detection_model = OVMegaDetectorV5(device=self.device)
+        logger.info("Initializing detection model to device %s...", self.detection_device)
+        self.detection_model = OVMegaDetectorV5(device=self.detection_device)
         # Load classification model
-        logger.info("Loading classification model to device %s...", self.device)
-        self.classifier = Classifier(self.device)
+        logger.info("Loading classification model to device %s...", self.classification_device)
+        self.classifier = Classifier(self.classification_device)
         # Get the index of the animal class of the detection model
         self.animal_class_idx = next(
             key for key, value in self.detection_model.CLASS_NAMES.items() if value == "animal"

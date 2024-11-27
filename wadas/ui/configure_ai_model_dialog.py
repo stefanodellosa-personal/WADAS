@@ -2,6 +2,7 @@
 
 
 import os
+import openvino as ov
 
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
@@ -25,8 +26,8 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_errorMEssage.setStyleSheet("color: red")
-        self.ui.lineEdit_classificationTreshold.setText(str(AiModel.classification_treshold))
-        self.ui.lineEdit_detectionTreshold.setText(str(AiModel.detection_treshold))
+        self.ui.lineEdit_classificationTreshold.setText(str(AiModel.classification_threshold))
+        self.ui.lineEdit_detectionTreshold.setText(str(AiModel.detection_threshold))
         self.populate_language_dropdown()
 
         # Slots
@@ -35,6 +36,9 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.lineEdit_detectionTreshold.textChanged.connect(self.validate_data)
 
         self.validate_data()
+        self.available_ai_devices = ov.Core().get_available_devices()
+        self.available_ai_devices.append("auto")
+        self.populate_ai_devices_dropdowns()
 
     def populate_language_dropdown(self):
         """Populate the dropdown with the list of available actuators."""
@@ -43,6 +47,24 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
             self.ui.comboBox_class_lang.addItem(language)
         if AiModel.language in txt_animalclasses:
             self.ui.comboBox_class_lang.setCurrentText(AiModel.language)
+
+    def populate_ai_devices_dropdowns(self):
+        """Method to populate Ai devices list dropdowns."""
+
+        self.ui.comboBox_detection_dev.clear()
+        self.ui.comboBox_class_dev.clear()
+
+        for device in self.available_ai_devices:
+            self.ui.comboBox_detection_dev.addItem(device)
+            self.ui.comboBox_class_dev.addItem(device)
+        if AiModel.detection_device in self.available_ai_devices:
+            self.ui.comboBox_detection_dev.setCurrentText(AiModel.detection_device)
+        else:
+            self.ui.comboBox_detection_dev.setCurrentText("auto")
+        if AiModel.classification_device in self.available_ai_devices:
+            self.ui.comboBox_class_dev.setCurrentText(AiModel.classification_device)
+        else:
+            self.ui.comboBox_detection_dev.setCurrentText("auto")
 
     def validate_data(self):
         """Method to validate input values."""
@@ -67,8 +89,10 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
     def accept_and_close(self):
         """When Ok is clicked, save Ai model config info before closing."""
 
-        AiModel.classification_treshold = float(self.ui.lineEdit_classificationTreshold.text())
-        AiModel.detection_treshold = float(self.ui.lineEdit_detectionTreshold.text())
+        AiModel.classification_threshold = float(self.ui.lineEdit_classificationTreshold.text())
+        AiModel.detection_threshold = float(self.ui.lineEdit_detectionTreshold.text())
         AiModel.language = self.ui.comboBox_class_lang.currentText()
+        AiModel.detection_device = self.ui.comboBox_detection_dev.currentText()
+        AiModel.classification_device = self.ui.comboBox_class_dev.currentText()
 
         self.accept()
