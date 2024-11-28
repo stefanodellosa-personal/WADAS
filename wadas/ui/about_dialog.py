@@ -2,8 +2,8 @@
 
 import os
 
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QTextBrowser, QPushButton
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QDialog, QPushButton, QTextBrowser, QVBoxLayout
 
 from wadas._version import __version__
 
@@ -15,17 +15,14 @@ class AboutDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # Set dialog properties
         self.setWindowTitle("About WADAS")
         self.setGeometry(150, 150, 500, 300)
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
 
-        # Create layout
         layout = QVBoxLayout()
 
-        # Add read-only QTextEdit for the about text
         about_text = QTextBrowser(self)
-        about_text.setReadOnly(True)  # Make it read-only
+        about_text.setReadOnly(True)
         about_text.setText(
             f"""<h2>Wild Animal Detection and Alert System</h2>
             <p>Wild Animal Detection and Alert System (WADAS) is a project for
@@ -46,10 +43,8 @@ class AboutDialog(QDialog):
         about_text.setOpenExternalLinks(True)  # Allow opening links in a browser
         layout.addWidget(about_text)
 
-        # Add a close button
         close_button = QPushButton("Close", self)
         close_button.clicked.connect(self.close)
         layout.addWidget(close_button)
 
-        # Set the layout
         self.setLayout(layout)
