@@ -134,9 +134,9 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
     def initialize_detection_params(self):
         """Method to initialize detection parameters in UI."""
 
-        self.ui.lineEdit_treshold.setText(f"{Camera.detection_params['treshold']}")
+        self.ui.lineEdit_threshold.setText(f"{Camera.detection_params['threshold']}")
         self.ui.lineEdit_minContourArea.setText(f"{Camera.detection_params['min_contour_area']}")
-        self.ui.lineEdit_detectionTreshold.setText(
+        self.ui.lineEdit_detectionThreshold.setText(
             f"{Camera.detection_params['detection_per_second']}"
         )
 

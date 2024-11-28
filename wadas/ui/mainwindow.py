@@ -160,7 +160,6 @@ class MainWindow(QMainWindow):
     def set_image(self, img):
         """Set image to show in WADAS. This is used for startup, detected and
         classified images."""
-
         if os.path.isfile(img):
             image_widget = self.ui.label_image
             image_widget.setPixmap(QtGui.QPixmap(img))
@@ -441,7 +440,7 @@ class MainWindow(QMainWindow):
         if configure_ai_model.exec():
             logger.info("Ai model configured.")
             logger.debug(
-                "Detection treshold: %s. Classification threshold: %s",
+                "Detection threshold: %s. Classification threshold: %s",
                 AiModel.detection_threshold,
                 AiModel.classification_threshold,
             )

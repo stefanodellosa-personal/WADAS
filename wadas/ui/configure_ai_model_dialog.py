@@ -26,14 +26,14 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_errorMEssage.setStyleSheet("color: red")
-        self.ui.lineEdit_classificationTreshold.setText(str(AiModel.classification_threshold))
-        self.ui.lineEdit_detectionTreshold.setText(str(AiModel.detection_threshold))
+        self.ui.lineEdit_classificationThreshold.setText(str(AiModel.classification_threshold))
+        self.ui.lineEdit_detectionThreshold.setText(str(AiModel.detection_threshold))
         self.populate_language_dropdown()
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
-        self.ui.lineEdit_classificationTreshold.textChanged.connect(self.validate_data)
-        self.ui.lineEdit_detectionTreshold.textChanged.connect(self.validate_data)
+        self.ui.lineEdit_classificationThreshold.textChanged.connect(self.validate_data)
+        self.ui.lineEdit_detectionThreshold.textChanged.connect(self.validate_data)
 
         self.validate_data()
         self.available_ai_devices = ov.Core().get_available_devices()
@@ -71,15 +71,15 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
 
         valid = True
         if (
-            ctreshold := float(self.ui.lineEdit_classificationTreshold.text())
-        ) > 1 or ctreshold < 0:
+            cthreshold := float(self.ui.lineEdit_classificationThreshold.text())
+        ) > 1 or cthreshold < 0:
             self.ui.label_errorMEssage.setText(
-                "Invalid classification treshold. Please insert a value between 0 and 1."
+                "Invalid classification threshold. Please insert a value between 0 and 1."
             )
             valid = False
-        elif (dtreshold := float(self.ui.lineEdit_detectionTreshold.text())) > 1 or dtreshold < 0:
+        elif (dthreshold := float(self.ui.lineEdit_detectionThreshold.text())) > 1 or dthreshold < 0:
             self.ui.label_errorMEssage.setText(
-                "Invalid detection treshold. Please insert a value between 0 and 1."
+                "Invalid detection threshold. Please insert a value between 0 and 1."
             )
             valid = False
         else:
@@ -89,8 +89,8 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
     def accept_and_close(self):
         """When Ok is clicked, save Ai model config info before closing."""
 
-        AiModel.classification_threshold = float(self.ui.lineEdit_classificationTreshold.text())
-        AiModel.detection_threshold = float(self.ui.lineEdit_detectionTreshold.text())
+        AiModel.classification_threshold = float(self.ui.lineEdit_classificationThreshold.text())
+        AiModel.detection_threshold = float(self.ui.lineEdit_detectionThreshold.text())
         AiModel.language = self.ui.comboBox_class_lang.currentText()
         AiModel.detection_device = self.ui.comboBox_detection_dev.currentText()
         AiModel.classification_device = self.ui.comboBox_class_dev.currentText()

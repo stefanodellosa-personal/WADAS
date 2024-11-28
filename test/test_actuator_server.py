@@ -50,7 +50,6 @@ def actuator():
 
 def test_get_actuator_command_existing(mock_actuators):
     response = client.get("/api/v1/actuators/123")
-    print(response)
     assert response.status_code == 200
     assert response.json() == {"cmd": "test_string"}
 

@@ -55,10 +55,10 @@ class Ui_DialogSelectUSBCameras(object):
         self.gridLayout = QGridLayout(self.gridLayoutWidget)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.lineEdit_treshold = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_treshold.setObjectName(u"lineEdit_treshold")
+        self.lineEdit_threshold = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_threshold.setObjectName(u"lineEdit_threshold")
 
-        self.gridLayout.addWidget(self.lineEdit_treshold, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_threshold, 0, 1, 1, 1)
 
         self.label = QLabel(self.gridLayoutWidget)
         self.label.setObjectName(u"label")
@@ -88,10 +88,10 @@ class Ui_DialogSelectUSBCameras(object):
 
         self.gridLayout.addWidget(self.lineEdit_minContourArea, 1, 1, 1, 1)
 
-        self.lineEdit_detectionTreshold = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_detectionTreshold.setObjectName(u"lineEdit_detectionTreshold")
+        self.lineEdit_detectionThreshold = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_detectionThreshold.setObjectName(u"lineEdit_detectionThreshold")
 
-        self.gridLayout.addWidget(self.lineEdit_detectionTreshold, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_detectionThreshold, 2, 1, 1, 1)
 
         self.tabWidget.addTab(self.tab_camerasList, "")
 
@@ -112,7 +112,7 @@ class Ui_DialogSelectUSBCameras(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_directInputs), QCoreApplication.translate("DialogSelectUSBCameras", u"Local cameras", None))
         self.label.setText(QCoreApplication.translate("DialogSelectUSBCameras", u"Sensitivity (threshold):", None))
         self.label_2.setText(QCoreApplication.translate("DialogSelectUSBCameras", u"Minimum contour area (px):", None))
-        self.label_3.setText(QCoreApplication.translate("DialogSelectUSBCameras", u"Image detection treshold (img/s):", None))
+        self.label_3.setText(QCoreApplication.translate("DialogSelectUSBCameras", u"Image detection threshold (img/s):", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_camerasList), QCoreApplication.translate("DialogSelectUSBCameras", u"Detection params", None))
     # retranslateUi
 

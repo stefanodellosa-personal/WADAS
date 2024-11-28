@@ -82,7 +82,7 @@ class USBCamera(Camera):
 
         last_detection_time = 0
         ms_sample_rate = Camera.detection_params["ms_sample_rate"]
-        treshold = Camera.detection_params["treshold"]
+        threshold = Camera.detection_params["threshold"]
         min_contour_area = Camera.detection_params["min_contour_area"]
         detection_per_second = Camera.detection_params["detection_per_second"]
 
@@ -99,7 +99,7 @@ class USBCamera(Camera):
                 # apply global threshold to remove shadows
                 retval, mask_thresh = cv2.threshold(
                     foreground_mask,
-                    treshold,
+                    threshold,
                     255,
                     cv2.THRESH_BINARY,
                 )
