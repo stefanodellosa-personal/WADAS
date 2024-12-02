@@ -41,7 +41,7 @@ def check_update():
 
 root = Tk()
 root.title("WADAS TRAFFIC SIGN")
-root.maxsize(1000, 1000)
+# root.maxsize(1000, 1000)
 root.config(bg="white")
 
 # Create frames
@@ -62,7 +62,7 @@ image_label.pack(fill="x", expand=True)
 # Add road sign text to the frame
 traffic_sign = Label(
     lower_frame,
-    text="ATTENZIONE ANIMALI\nSELVATICI VAGANTI",
+    text="ATTENZIONE ANIMALI\nIN CARREGGIATA",
     bg="black",
     fg="black",
     font=("Sans-Serif", 32, "bold"),
