@@ -157,6 +157,14 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         if camera.type == Camera.CameraTypes.FTP_CAMERA:
                             if cur_ui_id == camera.id:
                                 found = True
+
+                                # check if ftp folder has been changed
+                                camera_changed = False
+                                if os.path.dirname(camera.ftp_folder) != FTPsServer.ftps_server.ftp_dir:
+                                    camera.ftp_folder = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id)
+                                    camera_changed = True
+
+                                # check if password has been changed
                                 cur_user = self.get_camera_user(i)
                                 cur_pass = self.get_camera_pass(i)
                                 if cur_user and cur_pass:
@@ -164,22 +172,21 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                         f"WADAS_FTP_camera_{camera.id}", ""
                                     )
                                     if credentials and (
-                                        credentials.username == cur_user
-                                        and credentials.password == cur_pass
+                                        credentials.username != cur_user
+                                        or credentials.password != cur_pass
                                     ):
-                                        break
-                                    else:
-                                        self.add_camera_credentials(cur_ui_id, cur_user, cur_pass)
-                                        # If user existed in ftp server, remove it.
-                                        if FTPsServer.ftps_server.has_user(cur_user):
-                                            FTPsServer.ftps_server.remove_user(cur_user)
-                                        # add modified/missing user.
-                                        FTPsServer.ftps_server.add_user(
-                                            cur_user,
-                                            cur_pass,
-                                            camera.ftp_folder,
-                                        )
-                                        break
+                                        camera_changed = True
+
+                                if camera_changed:
+                                    self.add_camera_credentials(cur_ui_id, cur_user, cur_pass)
+                                    # If user existed in ftp server, remove it.
+                                    if FTPsServer.ftps_server.has_user(cur_user):
+                                        FTPsServer.ftps_server.remove_user(cur_user)
+                                    # add modified/missing user.
+                                    # Add FTP Camera to FTP server users list
+                                    self.add_camera_to_ftp_server(cur_ui_id, camera.ftp_folder, cur_user,
+                                                                  cur_pass)
+                                    break
                     if not found:
                         # If camera id is not in cameras list, then is new or modified
                         camera_user = self.get_camera_user(i)
