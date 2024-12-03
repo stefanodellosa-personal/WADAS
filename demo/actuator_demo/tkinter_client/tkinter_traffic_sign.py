@@ -17,7 +17,7 @@ flag = False
 def check_update():
     global count, flag
 
-    if count == 60:
+    if count == 10:
         traffic_sign.config(fg="black")
         count = 0
         flag = False
