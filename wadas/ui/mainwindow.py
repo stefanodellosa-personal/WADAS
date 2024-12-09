@@ -38,6 +38,7 @@ from wadas.ui.configure_camera_actuator_associations_dialog import (
 )
 from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
+from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
 from wadas.ui.insert_url_dialog import InsertUrlDialog
 from wadas.ui.license_dialog import LicenseDialog
 from wadas.ui.select_mode_dialog import DialogSelectMode
@@ -115,6 +116,7 @@ class MainWindow(QMainWindow):
         )
         self.ui.actionLicense.triggered.connect(self.show_license)
         self.ui.actionAbout.triggered.connect(self.show_about)
+        self.ui.actionConfigure_WA.triggered.connect(self.configure_whatsapp)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -325,6 +327,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration.setEnabled(not running)
         self.ui.actionConfigure_actuators.setEnabled(not running)
         self.ui.actionConfigure_camera_to_actuator_associations.setEnabled(not running)
+        self.ui.actionConfigure_WA.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -536,6 +539,15 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
+
+    def configure_whatsapp(self):
+        """Method to trigger WhatsApp configuration dialog"""
+
+        configure_whatsapp_dlg = DialogConfigureWhatsApp()
+        if configure_whatsapp_dlg.exec():
+            logger.info("FTP Server and Cameras configured.")
+            self.setWindowModified(True)
+            self.update_toolbar_status()
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""

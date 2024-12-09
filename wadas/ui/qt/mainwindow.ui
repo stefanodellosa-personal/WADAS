@@ -293,6 +293,7 @@
    <addaction name="actionConfigure_actuators"/>
    <addaction name="actionConfigure_camera_to_actuator_associations"/>
    <addaction name="actionActionConfigureEmail"/>
+   <addaction name="actionConfigure_WA"/>
    <addaction name="actionSelect_Mode"/>
    <addaction name="actionConfigure_Ai_model"/>
    <addaction name="separator"/>
@@ -487,7 +488,7 @@
      <normaloff>wadas/icons/icon-actuator-24.png</normaloff>wadas/icons/icon-actuator-24.png</iconset>
    </property>
    <property name="text">
-    <string>actionConfigure_actuators</string>
+    <string>Configure Actuators</string>
    </property>
    <property name="toolTip">
     <string>Configure actuators</string>
@@ -501,10 +502,25 @@
     <iconset theme="insert-link"/>
    </property>
    <property name="text">
-    <string>actionConfigure_camera_to_actuator_associations</string>
+    <string>Configire Camera to Actuator associations</string>
    </property>
    <property name="toolTip">
     <string>Configure camera to actuator association(s)</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionConfigure_WA">
+   <property name="icon">
+    <iconset>
+     <normaloff>wadas/icons/icon-wa.png</normaloff>wadas/icons/icon-wa.png</iconset>
+   </property>
+   <property name="text">
+    <string>Configure WhatsApp</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure WhatsApp notifications</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

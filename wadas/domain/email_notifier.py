@@ -83,6 +83,20 @@ class EmailNotifier(Notifier):
             smtp_server.quit()
         logger.info("Email notification for %s sent!", img_path)
 
+    def send_notification(self, img_path):
+        """Implementation of send_notification method specific for Email notifier."""
+        self.send_email(img_path)
+
+    def is_configured(self):
+        """Method that returns configuration status as bool value."""
+
+        username = self.sender_email
+        credentials = keyring.get_credential("WADAS_email", username)
+        if self.smtp_hostname and self.smtp_port and self.recipients_email and credentials.username:
+            return True
+        else:
+            return False
+
     def serialize(self):
         """Method to serialize email notifier object into file."""
         return {
