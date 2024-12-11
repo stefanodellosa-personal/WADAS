@@ -13,11 +13,12 @@ logger = logging.getLogger(__name__)
 class WhatsAppNotifier(Notifier):
     """WhatsApp Notifier Class"""
 
-    def __init__(self, sender_id, recipient_numbers, enabled=True):
+    def __init__(self, sender_id, recipient_numbers, enabled=True, allow_images=True):
         super().__init__(enabled)
         self.type = Notifier.NotifierTypes.WHATSAPP
         self.sender_id = sender_id
         self.recipient_numbers = recipient_numbers
+        self.allow_images = allow_images
 
     def is_configured(self):
         """Method that returns configuration status as bool value."""
@@ -63,6 +64,7 @@ class WhatsAppNotifier(Notifier):
             "sender_id": self.sender_id,
             "recipient_numbers": self.recipient_numbers,
             "enabled": self.enabled,
+            "allow_images": self.allow_images,
         }
 
     @staticmethod

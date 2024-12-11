@@ -16,9 +16,10 @@ class Notifier:
 
     notifiers = dict.fromkeys([NotifierTypes.EMAIL.value, NotifierTypes.WHATSAPP.value])
 
-    def __init__(self, enabled=True):
+    def __init__(self, enabled=True, allow_images=True):
         self.type = None
         self.enabled = enabled
+        self.allow_images = allow_images
 
     @staticmethod
     def send_notifications(img_path, message=""):

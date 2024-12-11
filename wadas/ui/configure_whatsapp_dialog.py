@@ -49,6 +49,7 @@ class DialogConfigureWhatsApp(QDialog, Ui_DialogConfigureWhatsApp):
             if recipients_numbers := self.whatsapp_notifier.recipient_numbers:
                 recipients = ", ".join(recipients_numbers)
                 self.ui.textEdit_recipientsNumbers.setText(recipients)
+            self.ui.checkBox_allowImg.setChecked(self.whatsapp_notifier.allow_images)
         else:
             self.ui.checkBox_enableWhatsAppNotifications.setEnabled(True)
 
@@ -104,6 +105,7 @@ class DialogConfigureWhatsApp(QDialog, Ui_DialogConfigureWhatsApp):
                 self.ui.lineEdit_phoneID.text(),
                 recipients,
                 self.ui.checkBox_enableWhatsAppNotifications.isChecked(),
+                self.ui.checkBox_allowImg.isChecked()
             )
             self.add_whatsapp_credentials(self.ui.lineEdit_phoneID.text(), self.ui.lineEdit_accessToken.text())
         else:
@@ -112,6 +114,7 @@ class DialogConfigureWhatsApp(QDialog, Ui_DialogConfigureWhatsApp):
             self.whatsapp_notifier.recipient_numbers = []
             self.whatsapp_notifier.recipient_numbers = recipients
             self.add_whatsapp_credentials(self.ui.lineEdit_phoneID.text(), self.ui.lineEdit_accessToken.text())
+            self.whatsapp_notifier.allow_images = self.ui.checkBox_allowImg.isChecked()
 
             Notifier.notifiers[Notifier.NotifierTypes.WHATSAPP.value] = self.whatsapp_notifier
         self.accept()
