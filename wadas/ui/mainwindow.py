@@ -378,13 +378,8 @@ class MainWindow(QMainWindow):
         notification_cfg = False
         notification_enabled = False
         for notifier in Notifier.notifiers:
-            if (
-                Notifier.notifiers[notifier]
-                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
-            ):
-                credentials = keyring.get_credential("WADAS_email",
-                                                     Notifier.notifiers[notifier].sender_email)
-                if notifier and credentials and credentials.username and credentials.password:
+            if Notifier.notifiers[notifier]:
+                if Notifier.notifiers[notifier].is_configured():
                     notification_cfg = True
                 if Notifier.notifiers[notifier].enabled:
                     notification_enabled = True
@@ -499,7 +494,8 @@ class MainWindow(QMainWindow):
         )
 
         if file_name[0]:
-            self.valid_ftp_keyring, self.valid_email_keyring = load_configuration_from_file(file_name[0])
+            self.valid_ftp_keyring, self.valid_email_keyring, self.valid_whatsapp_keyring =\
+                load_configuration_from_file(file_name[0])
             self.configuration_file_name = file_name[0]
             self.setWindowModified(False)
             self.update_toolbar_status()

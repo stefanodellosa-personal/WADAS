@@ -44,6 +44,18 @@ class Ui_DialogConfigureWhatsApp(object):
         self.gridLayout_2 = QGridLayout(self.gridLayoutWidget)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.checkBox_allowImg = QCheckBox(self.gridLayoutWidget)
+        self.checkBox_allowImg.setObjectName(u"checkBox_allowImg")
+        self.checkBox_allowImg.setChecked(True)
+
+        self.gridLayout_2.addWidget(self.checkBox_allowImg, 4, 0, 1, 2)
+
+        self.plainTextEdit_testMessageLog = QPlainTextEdit(self.gridLayoutWidget)
+        self.plainTextEdit_testMessageLog.setObjectName(u"plainTextEdit_testMessageLog")
+        self.plainTextEdit_testMessageLog.setReadOnly(True)
+
+        self.gridLayout_2.addWidget(self.plainTextEdit_testMessageLog, 6, 1, 1, 1)
+
         self.lineEdit_phoneID = QLineEdit(self.gridLayoutWidget)
         self.lineEdit_phoneID.setObjectName(u"lineEdit_phoneID")
 
@@ -52,35 +64,23 @@ class Ui_DialogConfigureWhatsApp(object):
         self.pushButton_testMessage = QPushButton(self.gridLayoutWidget)
         self.pushButton_testMessage.setObjectName(u"pushButton_testMessage")
 
-        self.gridLayout_2.addWidget(self.pushButton_testMessage, 3, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_testMessage, 5, 1, 1, 1)
 
         self.label_2 = QLabel(self.gridLayoutWidget)
         self.label_2.setObjectName(u"label_2")
 
         self.gridLayout_2.addWidget(self.label_2, 1, 0, 1, 1)
 
-        self.plainTextEdit_testMessageLog = QPlainTextEdit(self.gridLayoutWidget)
-        self.plainTextEdit_testMessageLog.setObjectName(u"plainTextEdit_testMessageLog")
-        self.plainTextEdit_testMessageLog.setReadOnly(True)
-
-        self.gridLayout_2.addWidget(self.plainTextEdit_testMessageLog, 4, 1, 1, 1)
-
         self.label = QLabel(self.gridLayoutWidget)
         self.label.setObjectName(u"label")
 
-        self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.label, 2, 0, 1, 1)
 
         self.lineEdit_accessToken = QLineEdit(self.gridLayoutWidget)
         self.lineEdit_accessToken.setObjectName(u"lineEdit_accessToken")
         self.lineEdit_accessToken.setEchoMode(QLineEdit.EchoMode.Password)
 
-        self.gridLayout_2.addWidget(self.lineEdit_accessToken, 0, 1, 1, 1)
-
-        self.checkBox_allowImg = QCheckBox(self.gridLayoutWidget)
-        self.checkBox_allowImg.setObjectName(u"checkBox_allowImg")
-        self.checkBox_allowImg.setChecked(True)
-
-        self.gridLayout_2.addWidget(self.checkBox_allowImg, 2, 0, 1, 2)
+        self.gridLayout_2.addWidget(self.lineEdit_accessToken, 2, 1, 1, 1)
 
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
@@ -124,10 +124,10 @@ class Ui_DialogConfigureWhatsApp(object):
     def retranslateUi(self, DialogConfigureWhatsApp):
         DialogConfigureWhatsApp.setWindowTitle(QCoreApplication.translate("DialogConfigureWhatsApp", u"Dialog", None))
         self.label_errorMessage.setText("")
+        self.checkBox_allowImg.setText(QCoreApplication.translate("DialogConfigureWhatsApp", u"Enable detection/classification image attachment to the notification message", None))
         self.pushButton_testMessage.setText(QCoreApplication.translate("DialogConfigureWhatsApp", u"Test Message", None))
         self.label_2.setText(QCoreApplication.translate("DialogConfigureWhatsApp", u"Phone number ID:", None))
         self.label.setText(QCoreApplication.translate("DialogConfigureWhatsApp", u"Access token:", None))
-        self.checkBox_allowImg.setText(QCoreApplication.translate("DialogConfigureWhatsApp", u"Enable detection/classification image attachment to the notification message", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("DialogConfigureWhatsApp", u"Sender", None))
         self.label_4.setText(QCoreApplication.translate("DialogConfigureWhatsApp", u"List phone receiver numbers split by commas.", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("DialogConfigureWhatsApp", u"Receivers", None))
