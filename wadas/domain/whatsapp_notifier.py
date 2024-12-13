@@ -60,32 +60,36 @@ class WhatsAppNotifier(Notifier):
             media_id = self.load_image(credentials.password, img_path)
 
         for recipient_number in self.recipient_numbers:
-            data = {
-                "messaging_product": "whatsapp",
-                "to": recipient_number,
-                "type": "text",
-                "text": {"body": message},
-            }
-
-            message_response = requests.post(url, headers=headers, json=data)
-
-            if message_response.status_code == 200:
-                logger.info("WhatsApp notification sent!")
-            else:
-                logger.error(message_response.status_code, message_response.text)
+            failed_txt_n_image = False
 
             if media_id:
+                caption = message
                 image_data = {
                     "messaging_product": "whatsapp",
                     "to": recipient_number,
                     "type": "image",
-                    "image": {"id": media_id},
+                    "image": {"id": media_id, "caption": caption},
                 }
                 response_image = requests.post(url, headers=headers, json=image_data)
                 if response_image.status_code == 200:
                     logger.debug("WhatsApp notification sent!")
                 else:
                     logger.error(response_image.status_code, response_image.text)
+
+            if not media_id or failed_txt_n_image:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "to": recipient_number,
+                    "type": "text",
+                    "text": {"body": message},
+                }
+
+                message_response = requests.post(url, headers=headers, json=data)
+
+                if message_response.status_code == 200:
+                    logger.info("WhatsApp notification sent!")
+                else:
+                    logger.error(message_response.status_code, message_response.text)
 
     def load_image(self, token, img_path):
         """Method to load image to send with notification."""
