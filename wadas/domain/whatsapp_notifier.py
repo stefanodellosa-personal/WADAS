@@ -60,19 +60,6 @@ class WhatsAppNotifier(Notifier):
             media_id = self.load_image(credentials.password, img_path)
 
         for recipient_number in self.recipient_numbers:
-            if media_id:
-                image_data = {
-                    "messaging_product": "whatsapp",
-                    "to": recipient_number,
-                    "type": "image",
-                    "image": {"id": media_id},
-                }
-                response_image = requests.post(url, headers=headers, json=image_data)
-                if response_image.status_code == 200:
-                    logger.debug("WhatsApp notification sent!")
-                else:
-                    logger.error(response_image.status_code, response_image.text)
-
             data = {
                 "messaging_product": "whatsapp",
                 "to": recipient_number,
@@ -87,19 +74,32 @@ class WhatsAppNotifier(Notifier):
             else:
                 logger.error(message_response.status_code, message_response.text)
 
+            if media_id:
+                image_data = {
+                    "messaging_product": "whatsapp",
+                    "to": recipient_number,
+                    "type": "image",
+                    "image": {"id": media_id},
+                }
+                response_image = requests.post(url, headers=headers, json=image_data)
+                if response_image.status_code == 200:
+                    logger.debug("WhatsApp notification sent!")
+                else:
+                    logger.error(response_image.status_code, response_image.text)
+
     def load_image(self, token, img_path):
         """Method to load image to send with notification."""
 
         upload_url = f"https://graph.facebook.com/v17.0/{self.sender_id}/media"
-
         headers = {"Authorization": f"Bearer {token}"}
 
-        logger.debug("image path: %s", img_path)
         with open(img_path, "rb") as image_file:
-            files = {"file": image_file}
+            # files = {"file": image_file}
+            files = {
+                "file": (os.path.basename(img_path), image_file, "image/jpeg", {"Expires": "0"}),
+            }
             params = {"messaging_product": "whatsapp"}
             response_upload = requests.post(upload_url, headers=headers, files=files, params=params)
-            logger.debug("Image file: %s", image_file)
 
         if response_upload.status_code == 200:
             media_id = response_upload.json().get("id")
