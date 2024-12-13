@@ -524,6 +524,16 @@ class MainWindow(QMainWindow):
                 )
                 if reply == QMessageBox.Yes:
                     self.configure_ftp_cameras()
+            if not self.valid_whatsapp_keyring:
+                reply = QMessageBox.question(
+                    self,
+                    "Invalid WhatsApp token.",
+                    "Would you like to edit WhatsApp configuration to fix token issue?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+                if reply == QMessageBox.Yes:
+                    self.configure_whatsapp()
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
