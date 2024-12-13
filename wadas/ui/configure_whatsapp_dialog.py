@@ -3,6 +3,7 @@
 
 import os
 import requests
+
 import keyring
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
@@ -78,11 +79,11 @@ class DialogConfigureWhatsApp(QDialog, Ui_DialogConfigureWhatsApp):
 
         # If credentials exist remove them (workaround keyring bug)
         credentials = keyring.get_credential(
-            f"WADAS_WhatsApp", ""
+            "WADAS_WhatsApp", ""
         )
         if credentials:
             try:
-                keyring.delete_password(f"WADAS_WhatsApp", credentials.username)
+                keyring.delete_password("WADAS_WhatsApp", credentials.username)
             except keyring.errors.PasswordDeleteError:
                 # Credentials not in the system
                 pass
@@ -96,9 +97,8 @@ class DialogConfigureWhatsApp(QDialog, Ui_DialogConfigureWhatsApp):
 
     def accept_and_close(self):
         """When Ok is clicked, save email config info before closing."""
-        recipients = []
-        for recipient in self.ui.textEdit_recipientsNumbers.toPlainText().strip().split(", "):
-            recipients.append(recipient)
+
+        recipients = self.ui.textEdit_recipientsNumbers.toPlainText().strip().split(", ")
 
         if not Notifier.notifiers[Notifier.NotifierTypes.WHATSAPP.value]:
             Notifier.notifiers[Notifier.NotifierTypes.WHATSAPP.value] = WhatsAppNotifier(
@@ -125,9 +125,7 @@ class DialogConfigureWhatsApp(QDialog, Ui_DialogConfigureWhatsApp):
         message = "WADAS Test Message!"
         url = f"https://graph.facebook.com/v17.0/{self.ui.lineEdit_phoneID.text()}/messages"
         access_token = self.ui.lineEdit_accessToken.text()
-        recipients = []
-        for recipient in self.ui.textEdit_recipientsNumbers.toPlainText().strip().split(", "):
-            recipients.append(recipient)
+        recipients = self.ui.textEdit_recipientsNumbers.toPlainText().strip().split(", ")
 
         headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
 

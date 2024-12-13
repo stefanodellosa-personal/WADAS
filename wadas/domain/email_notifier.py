@@ -92,10 +92,9 @@ class EmailNotifier(Notifier):
 
         username = self.sender_email
         credentials = keyring.get_credential("WADAS_email", username)
-        if self.smtp_hostname and self.smtp_port and self.recipients_email and credentials.username:
-            return True
-        else:
-            return False
+        return bool(
+            self.smtp_hostname and self.smtp_port and self.recipients_email and credentials.username
+        )
 
     def serialize(self):
         """Method to serialize email notifier object into file."""

@@ -66,7 +66,7 @@ def load_configuration_from_file(file_path):
             credentials = keyring.get_credential("WADAS_WhatsApp", whatsapp_notifier.sender_id)
             if not credentials:
                 logger.error(
-                    "Unable to find WhatsApp credentials for %s stored on the system."
+                    "Unable to find WhatsApp credentials for %s stored on the system. "
                     "Please insert them through WhatsApp configuration dialog.",
                     whatsapp_notifier.sender_id,
                 )

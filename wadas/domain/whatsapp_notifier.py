@@ -55,9 +55,7 @@ class WhatsAppNotifier(Notifier):
             "Content-Type": "application/json",
         }
 
-        media_id = None
-        if self.allow_images:
-            media_id = self.load_image(credentials.password, img_path)
+        media_id = self.load_image(credentials.password, img_path) if self.allow_images else None
 
         for recipient_number in self.recipient_numbers:
             failed_txt_n_image = False
