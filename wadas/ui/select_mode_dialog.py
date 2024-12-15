@@ -6,8 +6,6 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
 
 from wadas.domain.operation_mode import OperationMode
-from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
-from wadas.domain.test_model_mode import TestModelMode
 from wadas.ui.qt.ui_select_mode import Ui_DialogSelectMode
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -33,7 +31,7 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
         # Set default selection
         self.ui.radioButton_test_model_mode.setChecked(True)
 
-        if  OperationMode.cur_operation_mode_type and OperationMode.cur_operation_mode_type.value:
+        if OperationMode.cur_operation_mode_type and OperationMode.cur_operation_mode_type.value:
             if OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode:
                 self.ui.radioButton_animal_det_mode.setChecked(True)
             elif (
@@ -55,4 +53,6 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
             OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.AnimalDetectionMode
         elif self.ui.radioButton_animal_det_and_class_mode.isChecked():
             OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
+        elif self.ui.radioButton_bear_det_mode.isChecked():
+            OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.BearDetectionMode
         self.accept()

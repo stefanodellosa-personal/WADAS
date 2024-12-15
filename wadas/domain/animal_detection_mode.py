@@ -23,13 +23,14 @@ class AnimalDetectionAndClassificationMode(OperationMode):
             else OperationMode.OperationModeTypes.AnimalDetectionMode
         )
 
-    def run(self):
-        """WADAS animal detection and classification mode"""
-
+    def _initialize_process(self):
         # Initialize ai model
         self.init_model()
         self.check_for_termination_requests()
+        self._initialize_cameras()
+        self.start_actuator_server()
 
+    def _initialize_cameras(self):
         logger.info("Instantiating cameras...")
         camera: Camera
         for camera in cameras:
@@ -46,11 +47,44 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                 ):
                     logger.info("Instantiating FTPS server...")
                     self.ftp_thread = FTPsServer.ftps_server.run()
-
-        self.start_actuator_server()
-
-        self.check_for_termination_requests()
         logger.info("Ready for video stream from Camera(s)...")
+
+    def _detect(self, cur_image_path):
+        results, detected_img_path = self.ai_model.process_image(cur_image_path, True)
+        self.last_detection = detected_img_path
+        return results, detected_img_path
+
+    def _format_classified_animals_string(self, classified_animals):
+        # Prepare a list of classified animals to print in UI
+        if self.last_classified_animals_str:
+            self.last_classified_animals_str = ""
+        for animal in classified_animals:
+            last = animal["classification"][0]
+            if not self.last_classified_animals_str:
+                self.last_classified_animals_str = self.last_classified_animals_str + last
+            else:
+                self.last_classified_animals_str = self.last_classified_animals_str + ", " + last
+
+    def _classify(self, cur_image_path, detection_results):
+        # Classify if detection has identified animals
+        if len(detection_results["detections"].xyxy) > 0:
+            logger.info("Running classification on detection result(s)...")
+            (
+                classified_img_path,
+                classified_animals,
+            ) = self.ai_model.classify(cur_image_path, detection_results)
+            self.last_classification = classified_img_path
+
+            self._format_classified_animals_string(classified_animals)
+            return classified_img_path, classified_animals
+        return None, None
+
+    def run(self):
+        """WADAS animal detection and classification mode"""
+
+        self._initialize_process()
+        self.check_for_termination_requests()
+
         # Run detection model
         while self.process_queue:
             self.check_for_termination_requests()
@@ -63,44 +97,24 @@ class AnimalDetectionAndClassificationMode(OperationMode):
 
             if cur_img:
                 logger.debug("Processing image from motion detection notification...")
-                results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
-
-                self.last_detection = detected_img_path
+                detected_results, detected_img_path = self._detect(cur_img["img"])
                 self.check_for_termination_requests()
-                if results and detected_img_path:
+
+                if detected_results and detected_img_path:
                     # Trigger image update in WADAS mainwindow
                     self.update_image.emit(detected_img_path)
                     self.update_info.emit()
 
                     if self.en_classification:
-                        # Classify if detection has identified animals
-                        if len(results["detections"].xyxy) > 0:
-                            logger.info("Running classification on detection result(s)...")
-                            (
-                                classified_img_path,
-                                classified_animals,
-                            ) = self.ai_model.classify(cur_img["img"], results)
-                            self.last_classification = classified_img_path
-
-                            # Prepare a list of classified animals to print in UI
-                            if self.last_classified_animals:
-                                self.last_classified_animals = ""
-                            for animal in classified_animals:
-                                last = animal["classification"][0]
-                                if not self.last_classified_animals:
-                                    self.last_classified_animals = (
-                                        self.last_classified_animals + last
-                                    )
-                                else:
-                                    self.last_classified_animals = (
-                                        self.last_classified_animals + ", " + last
-                                    )
-
+                        classified_img_path, classified_animals = self._classify(
+                            cur_img["img"], detected_results
+                        )
+                        if classified_img_path:
                             # Trigger image update in WADAS mainwindow
                             self.update_image.emit(classified_img_path)
                             self.update_info.emit()
-                            message = f"WADAS has classified {self.last_classified_animals}"
-                            message += f"animal from camera {id}!"
+                            message = f"WADAS has classified '{self.last_classified_animals_str}' "
+                            message += f"animal from camera {cur_img['img_id']}!"
                             processed_img_path = classified_img_path
                         else:
                             logger.debug("No results to classify.")

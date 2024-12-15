@@ -49,7 +49,7 @@ class OperationMode(QObject):
         self.ai_model = None
         self.last_detection = ""
         self.last_classification = ""
-        self.last_classified_animals = ""
+        self.last_classified_animals_str = ""
         self.url = ""
         self.email_configuration = {}
         self.camera_thread = []
