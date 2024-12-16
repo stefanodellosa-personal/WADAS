@@ -38,6 +38,7 @@ from wadas.ui.configure_camera_actuator_associations_dialog import (
 )
 from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
+from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
 from wadas.ui.insert_url_dialog import InsertUrlDialog
 from wadas.ui.license_dialog import LicenseDialog
 from wadas.ui.select_mode_dialog import DialogSelectMode
@@ -115,6 +116,7 @@ class MainWindow(QMainWindow):
         )
         self.ui.actionLicense.triggered.connect(self.show_license)
         self.ui.actionAbout.triggered.connect(self.show_about)
+        self.ui.actionConfigure_WA.triggered.connect(self.configure_whatsapp)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -325,6 +327,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration.setEnabled(not running)
         self.ui.actionConfigure_actuators.setEnabled(not running)
         self.ui.actionConfigure_camera_to_actuator_associations.setEnabled(not running)
+        self.ui.actionConfigure_WA.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -375,13 +378,8 @@ class MainWindow(QMainWindow):
         notification_cfg = False
         notification_enabled = False
         for notifier in Notifier.notifiers:
-            if (
-                Notifier.notifiers[notifier]
-                and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
-            ):
-                credentials = keyring.get_credential("WADAS_email",
-                                                     Notifier.notifiers[notifier].sender_email)
-                if notifier and credentials and credentials.username and credentials.password:
+            if Notifier.notifiers[notifier]:
+                if Notifier.notifiers[notifier].is_configured():
                     notification_cfg = True
                 if Notifier.notifiers[notifier].enabled:
                     notification_enabled = True
@@ -496,7 +494,8 @@ class MainWindow(QMainWindow):
         )
 
         if file_name[0]:
-            self.valid_ftp_keyring, self.valid_email_keyring = load_configuration_from_file(file_name[0])
+            self.valid_ftp_keyring, self.valid_email_keyring, self.valid_whatsapp_keyring =\
+                load_configuration_from_file(file_name[0])
             self.configuration_file_name = file_name[0]
             self.setWindowModified(False)
             self.update_toolbar_status()
@@ -525,6 +524,16 @@ class MainWindow(QMainWindow):
                 )
                 if reply == QMessageBox.Yes:
                     self.configure_ftp_cameras()
+            if not self.valid_whatsapp_keyring:
+                reply = QMessageBox.question(
+                    self,
+                    "Invalid WhatsApp token.",
+                    "Would you like to edit WhatsApp configuration to fix token issue?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+                if reply == QMessageBox.Yes:
+                    self.configure_whatsapp()
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
@@ -536,6 +545,15 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
+
+    def configure_whatsapp(self):
+        """Method to trigger WhatsApp configuration dialog"""
+
+        configure_whatsapp_dlg = DialogConfigureWhatsApp()
+        if configure_whatsapp_dlg.exec():
+            logger.info("FTP Server and Cameras configured.")
+            self.setWindowModified(True)
+            self.update_toolbar_status()
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""
