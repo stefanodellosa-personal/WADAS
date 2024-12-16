@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 class FTPCamera(Camera):
     """FTP Camera class, specialization of Camera class."""
 
-    def __init__(self, id, ftp_folder, ftp_user, enabled=True, actuators=None):
+    def __init__(self, id, ftp_folder, enabled=True, actuators=None):
         if actuators is None:
             actuators = []
         super().__init__(id, enabled)
         self.type = Camera.CameraTypes.FTP_CAMERA
         self.ftp_folder = ftp_folder
-        self.user = ftp_user
         self.actuators = actuators
+        "Note: Camera ID is also FTP user"
 
     def serialize(self):
         """Method to serialize FTP Camera object into file."""
@@ -27,7 +27,6 @@ class FTPCamera(Camera):
             "type": self.type.value,
             "id": self.id,
             "ftp_folder": self.ftp_folder,
-            "ftp_user": self.user,
             "enabled": self.enabled,
             "actuators": actuators,
         }
@@ -39,6 +38,4 @@ class FTPCamera(Camera):
         actuators = (
             [Actuator.actuators[key] for key in data["actuators"]] if "actuators" in data else []
         )
-        return FTPCamera(
-            data["id"], data["ftp_folder"], data["ftp_user"], data["enabled"], actuators
-        )
+        return FTPCamera(data["id"], data["ftp_folder"], data["enabled"], actuators)
