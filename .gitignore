@@ -52,7 +52,7 @@ url_imgs/
 debug/
 wadas_motion_detection/
 demo_output/
-logs/
+log/
 # Images
 #*.png
 #*.jpg

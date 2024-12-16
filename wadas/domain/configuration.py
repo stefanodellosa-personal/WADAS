@@ -20,6 +20,7 @@ from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.usb_camera import USBCamera
+from wadas.domain.whatsapp_notifier import WhatsAppNotifier
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ def load_configuration_from_file(file_path):
         wadas_config = yaml.safe_load(file_)
 
     # Applying configuration to WADAS from config file values
-    valid_email_keyring = valid_ftp_keyring = True
+    valid_email_keyring = valid_ftp_keyring = valid_whatsapp_keyring = True
 
     # Notifiers
     for key, value in (wadas_config["notification"] or {}).items():
@@ -59,7 +60,27 @@ def load_configuration_from_file(file_path):
                     email_notifier.sender_email,
                 )
                 valid_email_keyring = False
-
+        elif key in Notifier.notifiers and key == Notifier.NotifierTypes.WHATSAPP.value:
+            whatsapp_notifier = WhatsAppNotifier(**value)
+            Notifier.notifiers[key] = whatsapp_notifier
+            credentials = keyring.get_credential("WADAS_WhatsApp", whatsapp_notifier.sender_id)
+            if not credentials:
+                logger.error(
+                    "Unable to find WhatsApp credentials for %s stored on the system. "
+                    "Please insert them through WhatsApp configuration dialog.",
+                    whatsapp_notifier.sender_id,
+                )
+                valid_whatsapp_keyring = False
+            elif credentials and credentials.username != whatsapp_notifier.sender_id:
+                logger.error(
+                    "WhatsApp sender ID on the system (%s) does not match with sender ID "
+                    "provided in configuration file (%s). Please make sure valid WhatsApp "
+                    "credentials are in use by editing them from WhatsApp configuration "
+                    "dialog.",
+                    credentials.username,
+                    whatsapp_notifier.sender_id,
+                )
+                valid_whatsapp_keyring = False
     # FTP Server
     if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
         FTPsServer.ftps_server.server.close_all()
@@ -149,7 +170,7 @@ def load_configuration_from_file(file_path):
 
     logger.info("Configuration loaded from file %s.", file_path)
 
-    return valid_ftp_keyring, valid_email_keyring
+    return valid_ftp_keyring, valid_email_keyring, valid_whatsapp_keyring
 
 
 def save_configuration_to_file(file_):
