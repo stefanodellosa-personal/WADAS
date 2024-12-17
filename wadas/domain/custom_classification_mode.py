@@ -3,6 +3,7 @@
 import logging
 from queue import Empty
 
+from wadas.ai.models import txt_animalclasses
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import img_queue
 
@@ -15,7 +16,11 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
     def __init__(self, target_animal_label="bear"):
         super().__init__()
         self.process_queue = True
-        self.target_animal_label = target_animal_label
+
+        if target_animal_label in txt_animalclasses["en"]:
+            self.target_animal_label = target_animal_label
+        else:
+            raise Exception("The specified animal is not handled by WADAS")
 
     def run(self):
         """WADAS custom classification mode"""
@@ -39,33 +44,36 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
                 self.check_for_termination_requests()
 
                 if detected_results and detected_img_path:
-                    # Trigger image update in WADAS mainwindow
-                    self.update_image.emit(detected_img_path)
-                    self.update_info.emit()
-
                     classified_img_path, classified_animals = self._classify(
                         cur_img["img"], detected_results
                     )
                     if classified_img_path:
-                        # Trigger image update in WADAS mainwindow
-                        self.update_image.emit(classified_img_path)
-                        self.update_info.emit()
-                        message = f"WADAS has classified '{self.last_classified_animals_str}' "
-                        message += f"animal from camera {cur_img['img_id']}!"
-
                         # Send notification and trigger actuators if the target animal is found
                         if any(
                             x["classification"][0] == self.target_animal_label
                             for x in classified_animals
                         ):
+                            # Trigger image update in WADAS mainwindow
+                            self.update_image.emit(classified_img_path)
+                            self.update_info.emit()
+                            message = (
+                                f"WADAS has classified '{self.last_classified_animals_str}' "
+                                f"animal from camera {cur_img['img_id']}!"
+                            )
+
                             logger.info(message)
                             self.actuate(cur_img["img_id"])
                             self.send_notification(classified_img_path, message)
 
                         else:
-                            logger.debug("Target animal '%s' not found", self.target_animal_label)
+                            logger.info(
+                                "Target animal '%s' not found, found '%s' instead. "
+                                "Skipping notification.",
+                                self.target_animal_label,
+                                self.last_classified_animals_str,
+                            )
 
                     else:
-                        logger.debug("No results to classify.")
+                        logger.info("No animals to classify.")
 
         self.execution_completed()
