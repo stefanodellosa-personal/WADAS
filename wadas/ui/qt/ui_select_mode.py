@@ -112,8 +112,6 @@ class Ui_DialogSelectMode(object):
         self.radioButton_bear_det_mode = QRadioButton(self.verticalLayoutWidget)
         self.buttonGroup.addButton(self.radioButton_bear_det_mode)
         self.radioButton_bear_det_mode.setObjectName("radioButton_bear_det_mode")
-        self.radioButton_bear_det_mode.setEnabled(False)
-        self.radioButton_bear_det_mode.setCheckable(False)
         self.radioButton_bear_det_mode.setAutoExclusive(True)
 
         self.verticalLayout.addWidget(self.radioButton_bear_det_mode)
