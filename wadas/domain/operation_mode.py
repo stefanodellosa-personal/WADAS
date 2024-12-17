@@ -10,8 +10,6 @@ from PySide6.QtCore import QObject, Signal
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import cameras
-
-# from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.fastapi_actuator_server import (
     FastAPIActuatorServer,
     initialize_fastapi_logger,
