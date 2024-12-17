@@ -10,7 +10,7 @@ class TestModelMode(OperationMode):
         super(TestModelMode, self).__init__()
         self.modename = "test_model_mode"
         self.url = ""
-        self.last_classified_animals = ""
+        self.last_classified_animals_str = ""
         self.type = OperationMode.OperationModeTypes.TestModelMode
 
     def run(self):
@@ -46,25 +46,19 @@ class TestModelMode(OperationMode):
         # Classify if detection has identified animals
         if len(det_results["detections"].xyxy) > 0:
             logger.info("Running classification on detection result(s)...")
-            img_path, classified_animals = self.ai_model.classify(img_path, det_results)
-            self.last_classification = img_path
 
-            # Prepare a list of classified animals to print in UI
-            if self.last_classified_animals:
-                self.last_classified_animals = ""
-            for animal in classified_animals:
-                last = animal["classification"][0]
-                if not self.last_classified_animals:
-                    self.last_classified_animals = self.last_classified_animals + last
-                else:
-                    self.last_classified_animals = self.last_classified_animals + ", " + last
-
-            # Trigger image update in WADAS mainwindow
-            self.update_image.emit(img_path)
-            self.update_info.emit()
-            message = f"WADAS has classified {self.last_classified_animals} animal(s)!"
-        else:
-            logger.info("No results to classify.")
+            classified_img_path, classified_animals = self._classify(img_path, det_results)
+            if classified_img_path:
+                # Trigger image update in WADAS mainwindow
+                self.update_image.emit(classified_img_path)
+                self.update_info.emit()
+                message = (
+                    f"WADAS has classified '{self.last_classified_animals_str}' "
+                    f"animal from camera {img_path}!"
+                )
+            else:
+                logger.info("No animals to classify.")
+                message = ""
 
         # Send notification
         self.send_notification(img_path, message)

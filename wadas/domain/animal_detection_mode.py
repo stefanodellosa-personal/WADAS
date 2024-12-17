@@ -22,32 +22,6 @@ class AnimalDetectionAndClassificationMode(OperationMode):
             else OperationMode.OperationModeTypes.AnimalDetectionMode
         )
 
-    def _format_classified_animals_string(self, classified_animals):
-        # Prepare a list of classified animals to print in UI
-        self.last_classified_animals_str = ""
-        for animal in classified_animals:
-            last = animal["classification"][0]
-            if not self.last_classified_animals_str:
-                self.last_classified_animals_str = self.last_classified_animals_str + last
-            else:
-                self.last_classified_animals_str = self.last_classified_animals_str + ", " + last
-
-    def _classify(self, cur_image_path, detection_results):
-        """Method to run the animal classification process
-        on a specific image starting from the detection output"""
-        # Classify if detection has identified animals
-        if len(detection_results["detections"].xyxy) > 0:
-            logger.info("Running classification on detection result(s)...")
-            (
-                classified_img_path,
-                classified_animals,
-            ) = self.ai_model.classify(cur_image_path, detection_results)
-            self.last_classification = classified_img_path
-
-            self._format_classified_animals_string(classified_animals)
-            return classified_img_path, classified_animals
-        return None, None
-
     def run(self):
         """WADAS animal detection and classification mode"""
 
