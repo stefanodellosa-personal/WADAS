@@ -25,7 +25,7 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
     def run(self):
         """WADAS custom classification mode"""
 
-        self._initialize_process()
+        self._initialize_processes()
         self.check_for_termination_requests()
 
         # Run detection model

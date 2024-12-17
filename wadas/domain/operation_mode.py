@@ -67,6 +67,8 @@ class OperationMode(QObject):
             logger.debug("Model already initialized, skipping initialization.")
 
     def _initialize_cameras(self):
+        """Method to initialize and run the FTP Server
+        and threads associated to the cameras (both ftp and usb)"""
         logger.info("Instantiating cameras...")
         camera: Camera
         for camera in cameras:
@@ -86,6 +88,7 @@ class OperationMode(QObject):
         logger.info("Ready for video stream from Camera(s)...")
 
     def _detect(self, cur_image_path):
+        """Method to run the animal detection process on a specific image"""
         results, detected_img_path = self.ai_model.process_image(cur_image_path, True)
         self.last_detection = detected_img_path
         return results, detected_img_path
@@ -117,8 +120,8 @@ class OperationMode(QObject):
             self.run_finished.emit()
             return
 
-    def _initialize_process(self):
-        # Initialize ai model
+    def _initialize_processes(self):
+        """Method to initialize the processes needed for the dectection"""
         self.init_model()
         self.check_for_termination_requests()
         self._initialize_cameras()

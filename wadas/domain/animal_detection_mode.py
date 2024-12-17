@@ -33,6 +33,8 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                 self.last_classified_animals_str = self.last_classified_animals_str + ", " + last
 
     def _classify(self, cur_image_path, detection_results):
+        """Method to run the animal classification process
+        on a specific image starting from the detection output"""
         # Classify if detection has identified animals
         if len(detection_results["detections"].xyxy) > 0:
             logger.info("Running classification on detection result(s)...")
@@ -49,7 +51,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
     def run(self):
         """WADAS animal detection and classification mode"""
 
-        self._initialize_process()
+        self._initialize_processes()
         self.check_for_termination_requests()
 
         # Run detection model
