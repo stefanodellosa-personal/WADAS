@@ -431,13 +431,11 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
-  ftp_user: User1
   id: Camera1
   type: FTP Camera
 - actuators: []
   enabled: false
   ftp_folder: /Documents/ftp/Camera2
-  ftp_user: User2
   id: Camera2
   type: FTP Camera
 - actuators: []
@@ -580,7 +578,6 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
-  ftp_user: User1
   id: Camera1
   type: FTP Camera
 camera_detection_params: {}
@@ -645,7 +642,6 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
-  ftp_user: User1
   id: Camera1
   type: FTP Camera
 camera_detection_params: {}
@@ -710,7 +706,6 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
-  ftp_user: User1
   id: Camera1
   type: FTP Camera
 camera_detection_params: {}
@@ -735,12 +730,12 @@ def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file,
         patch("wadas.domain.ftps_server.FTPsServer.add_user") as add_user_mock,
     ):
         is_dir_mock.return_value = True
-        get_credential_mock.return_value = Mock(username="User1", password="123")
+        get_credential_mock.return_value = Mock(username="Camera1", password="123")
         assert load_configuration_from_file("") == (True, True, True)
     assert is_dir_mock.call_args == (("/Documents/ftp/Camera1",),)
     makedirs_mock.assert_not_called()
     get_credential_mock.assert_called_once_with("WADAS_FTP_camera_Camera1", "")
-    add_user_mock.assert_called_once_with("User1", "123", "/Documents/ftp/Camera1")
+    add_user_mock.assert_called_once_with("Camera1", "123", "/Documents/ftp/Camera1")
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is not None
     assert Actuator.actuators == {}
@@ -775,7 +770,6 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
-  ftp_user: User1
   id: Camera1
   type: FTP Camera
 camera_detection_params: {}
@@ -828,8 +822,8 @@ def test_load_cameras_config_with_ftp_and_folder_and_different_credentials(mock_
 def test_save_cameras_config(mock_file, init):
     cameras.extend(
         (
-            FTPCamera("Camera1", "/Documents/ftp/Camera1", "User1", True, []),
-            FTPCamera("Camera2", "/Documents/ftp/Camera2", "User2", False, []),
+            FTPCamera("Camera1", "/Documents/ftp/Camera1", True, []),
+            FTPCamera("Camera2", "/Documents/ftp/Camera2", False, []),
             USBCamera(
                 "cvbdfg",
                 "ASUS USB2.0 Webcam",
@@ -874,13 +868,11 @@ cameras:
 - actuators: []
   enabled: true
   ftp_folder: /Documents/ftp/Camera1
-  ftp_user: User1
   id: Camera1
   type: FTP Camera
 - actuators: []
   enabled: false
   ftp_folder: /Documents/ftp/Camera2
-  ftp_user: User2
   id: Camera2
   type: FTP Camera
 - actuators: []
