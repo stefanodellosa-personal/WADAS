@@ -94,7 +94,11 @@ class WhatsAppNotifier(Notifier):
                 if message_response.status_code == 200:
                     logger.info("WhatsApp notification sent!")
                 else:
-                    logger.error(message_response.status_code, message_response.text)
+                    err_message = (
+                        "Failed to send WhatsApp notification: {message_response.status_code}, "
+                        "{message_response.text}"
+                    )
+                    logger.error(err_message)
 
     def load_image(self, token, img_path):
         """Method to load image to send with notification."""

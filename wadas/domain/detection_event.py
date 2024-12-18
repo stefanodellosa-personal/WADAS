@@ -23,6 +23,7 @@ class DetectionEvent:
         self.time_stamp = time_stamp
         self.original_image = original_image
         self.detection_img_path = detection_img_path
+        self.detected_animals = detected_animals
         self.classification = classification
         self.classification_img_path = classification_img_path
         self.classified_animals = classified_animals

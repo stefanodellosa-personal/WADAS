@@ -73,18 +73,16 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                                 f"WADAS has classified '{self.last_classified_animals_str}' "
                                 f"animal from camera {cur_img['img_id']}!"
                             )
-                            processed_img_path = classified_img_path
 
                             detection_event.classification_img_path = classified_img_path
                             detection_event.classified_animals = classified_animals
                         else:
                             logger.info("No animals to classify.")
-                            message = processed_img_path = ""
+                            message = ""
                     else:
-                        processed_img_path = detected_img_path
                         message = "WADAS has detected an animal from camera %s!" % id
                     # Send notification
-                    if message and processed_img_path:
+                    if message and detection_event:
                         self.actuate(cur_img["img_id"])
                         self.send_notification(detection_event, message)
                 else:

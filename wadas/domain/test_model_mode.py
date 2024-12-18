@@ -1,6 +1,8 @@
 import logging
 
+from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.operation_mode import OperationMode
+from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +26,8 @@ class TestModelMode(OperationMode):
         self.init_model()
 
         self.check_for_termination_requests()
-
         self.run_progress.emit(10)
+
         # Run detection model
         det_data = self.ai_model.process_image_from_url(self.url, "test_model", True)
         img_path = det_data[0]
@@ -38,6 +40,9 @@ class TestModelMode(OperationMode):
             self.execution_completed()
             return
 
+        detection_event = DetectionEvent(
+            "VirtualTestCamera", get_timestamp(), img_path, detected_img_path, det_results, True
+        )
         # Trigger image update in WADAS mainwindow
         self.update_image.emit(detected_img_path)
         message = "WADAS has detected an animal!"
@@ -56,12 +61,14 @@ class TestModelMode(OperationMode):
                     f"WADAS has classified '{self.last_classified_animals_str}' "
                     f"animal from camera {img_path}!"
                 )
+                detection_event.classification_img_path = classified_img_path
+                detection_event.classified_animals = classified_animals
             else:
                 logger.info("No animals to classify.")
                 message = ""
 
         # Send notification
-        self.send_notification(img_path, message)
+        self.send_notification(detection_event, message)
         self.execution_completed()
 
     def check_for_termination_requests(self):
