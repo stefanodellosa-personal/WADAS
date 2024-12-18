@@ -7,6 +7,7 @@ import keyring
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
@@ -16,7 +17,6 @@ from PySide6.QtWidgets import (
     QRadioButton,
     QScrollArea,
     QWidget,
-    QCheckBox
 )
 
 from validators import ipv4

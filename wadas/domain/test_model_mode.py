@@ -49,7 +49,7 @@ class TestModelMode(OperationMode):
         self.check_for_termination_requests()
 
         # Classify if detection has identified animals
-        if len(det_results["detections"].xyxy) > 0:
+        if len(det_results["detections"].xyxy):
             logger.info("Running classification on detection result(s)...")
 
             classified_img_path, classified_animals = self._classify(img_path, det_results)

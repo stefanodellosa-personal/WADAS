@@ -47,7 +47,6 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                 self.check_for_termination_requests()
 
                 if detected_results and detected_img_path:
-                    # Create a detection event
                     detection_event = DetectionEvent(
                         cur_img["camera_id"],
                         get_timestamp(),

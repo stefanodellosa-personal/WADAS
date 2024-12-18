@@ -15,10 +15,10 @@ class FTPCamera(Camera):
         if actuators is None:
             actuators = []
         super().__init__(id, enabled)
+        # NOTE: Camera ID is also FTP user
         self.type = Camera.CameraTypes.FTP_CAMERA
         self.ftp_folder = ftp_folder
         self.actuators = actuators
-        "Note: Camera ID is also FTP user"
 
     def serialize(self):
         """Method to serialize FTP Camera object into file."""

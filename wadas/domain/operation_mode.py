@@ -97,19 +97,15 @@ class OperationMode(QObject):
 
     def _format_classified_animals_string(self, classified_animals):
         # Prepare a list of classified animals to print in UI
-        self.last_classified_animals_str = ""
-        for animal in classified_animals:
-            last = animal["classification"][0]
-            if not self.last_classified_animals_str:
-                self.last_classified_animals_str = self.last_classified_animals_str + last
-            else:
-                self.last_classified_animals_str = self.last_classified_animals_str + ", " + last
+        self.last_classified_animals_str = ", ".join(
+            animal["classification"][0] for animal in classified_animals
+        )
 
     def _classify(self, cur_image_path, detection_results):
         """Method to run the animal classification process
         on a specific image starting from the detection output"""
         # Classify if detection has identified animals
-        if len(detection_results["detections"].xyxy) > 0:
+        if len(detection_results["detections"].xyxy):
             logger.info("Running classification on detection result(s)...")
             (
                 classified_img_path,
