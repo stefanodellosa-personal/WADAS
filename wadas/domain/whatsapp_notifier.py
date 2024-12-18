@@ -77,7 +77,7 @@ class WhatsAppNotifier(Notifier):
                 }
                 response_image = requests.post(url, headers=headers, json=image_data)
                 if response_image.status_code == 200:
-                    logger.debug("WhatsApp notification sent!")
+                    logger.info("WhatsApp notification sent!")
                 else:
                     logger.error(response_image.status_code, response_image.text)
 
@@ -95,8 +95,8 @@ class WhatsAppNotifier(Notifier):
                     logger.info("WhatsApp notification sent!")
                 else:
                     err_message = (
-                        "Failed to send WhatsApp notification: {message_response.status_code}, "
-                        "{message_response.text}"
+                        f"Failed to send WhatsApp notification: "
+                        f"{message_response.status_code}, {message_response.text}"
                     )
                     logger.error(err_message)
 
