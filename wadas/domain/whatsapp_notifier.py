@@ -6,6 +6,7 @@ import os
 import keyring
 import requests
 
+from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.notifier import Notifier
 
 logger = logging.getLogger(__name__)
@@ -34,15 +35,15 @@ class WhatsAppNotifier(Notifier):
             and credentials.password
         )
 
-    def send_notification(self, img_path):
+    def send_notification(self, detection_event: DetectionEvent):
         """Implementation of send_notification method for WhatsApp notifier."""
 
-        self.send_whatsapp_message(img_path)
+        self.send_whatsapp_message(detection_event)
 
-    def send_whatsapp_message(self, img_path):
+    def send_whatsapp_message(self, detection_event):
         """Method to send WhatsApp message notification."""
 
-        message = "WADAS: Animal Detected!"
+        message = f"WADAS: Animal detected from camera {detection_event.camera_id}!"
         url = f"https://graph.facebook.com/v17.0/{self.sender_id}/messages"
 
         credentials = keyring.get_credential("WADAS_WhatsApp", self.sender_id)
@@ -55,6 +56,12 @@ class WhatsAppNotifier(Notifier):
             "Content-Type": "application/json",
         }
 
+        # Select image to attach to the notification: classification (if enabled) or detection image
+        img_path = (
+            detection_event.classification_img_path
+            if detection_event.classification
+            else detection_event.detection_img_path
+        )
         media_id = self.load_image(credentials.password, img_path) if self.allow_images else None
 
         for recipient_number in self.recipient_numbers:

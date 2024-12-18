@@ -11,6 +11,7 @@ from PySide6.QtCore import QObject, Signal
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.fastapi_actuator_server import (
     FastAPIActuatorServer,
     initialize_fastapi_logger,
@@ -154,9 +155,9 @@ class OperationMode(QObject):
         self._initialize_cameras()
         self.start_actuator_server()
 
-    def send_notification(self, img_path, message):
+    def send_notification(self, detection_event: DetectionEvent, message):
         """Method to send notification(s) trough Notifier class (and subclasses)"""
-        Notifier.send_notifications(img_path, message)
+        Notifier.send_notifications(detection_event, message)
 
     def actuate(self, camera_id):
         """Method to trigger actuators associated to the camera, when enabled"""

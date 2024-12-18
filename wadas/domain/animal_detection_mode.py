@@ -4,7 +4,9 @@ import logging
 from queue import Empty
 
 from wadas.domain.camera import img_queue
+from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.operation_mode import OperationMode
+from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +42,21 @@ class AnimalDetectionAndClassificationMode(OperationMode):
 
             if cur_img:
                 logger.debug("Processing image from motion detection notification...")
+
                 detected_results, detected_img_path = self._detect(cur_img["img"])
                 self.check_for_termination_requests()
 
                 if detected_results and detected_img_path:
+                    # Create a detection event
+                    detection_event = DetectionEvent(
+                        cur_img["camera_id"],
+                        get_timestamp(),
+                        cur_img["img"],
+                        detected_img_path,
+                        detected_results,
+                        self.en_classification,
+                    )
+
                     # Trigger image update in WADAS mainwindow
                     self.update_image.emit(detected_img_path)
                     self.update_info.emit()
@@ -61,6 +74,9 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                                 f"animal from camera {cur_img['img_id']}!"
                             )
                             processed_img_path = classified_img_path
+
+                            detection_event.classification_img_path = classified_img_path
+                            detection_event.classified_animals = classified_animals
                         else:
                             logger.info("No animals to classify.")
                             message = processed_img_path = ""
@@ -70,6 +86,8 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                     # Send notification
                     if message and processed_img_path:
                         self.actuate(cur_img["img_id"])
-                        self.send_notification(processed_img_path, message)
+                        self.send_notification(detection_event, message)
+                else:
+                    logger.debug("No animal detected.")
 
         self.execution_completed()

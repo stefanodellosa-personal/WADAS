@@ -12,16 +12,17 @@ class DetectionEvent:
         self,
         camera_id,
         time_stamp,
+        original_image,
         detection_img_path,
-        detection_accuracy,
+        detected_animals,  # List of detected animals
         classification=True,
         classification_img_path=None,
-        classification_accuracy=0.0,
+        classified_animals=None,  # List of classified animals
     ):
         self.camera_id = camera_id
         self.time_stamp = time_stamp
+        self.original_image = original_image
         self.detection_img_path = detection_img_path
-        self.detection_accuracy = detection_accuracy
         self.classification = classification
         self.classification_img_path = classification_img_path
-        self.classification_accuracy = classification_accuracy
+        self.classified_animals = classified_animals
