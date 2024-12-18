@@ -29,6 +29,7 @@ class OperationMode(QObject):
         AnimalDetectionAndClassificationMode = "Animal Detection and Classification Mode"
         TunnelMode = "Tunnel Mode"
         BearDetectionMode = "Bear Detection Mode"
+        CustomSpeciesClassificationMode = "Custom Species Classification Mode"
 
     # Currently selected operation mode
     cur_operation_mode = None
