@@ -1,3 +1,4 @@
+import base64
 import datetime
 import logging
 import os
@@ -24,3 +25,10 @@ def initialize_asyncio_logger(handler=None, level=logging.DEBUG):
         async_logger.setLevel(level)
         async_logger.addHandler(handler)
         async_logger.propagate = False
+
+
+def image_to_base64(image_path):
+    """Convert an image into a Base64 string."""
+    with open(image_path, "rb") as image_file:
+        base64_string = base64.b64encode(image_file.read()).decode("utf-8")
+    return base64_string

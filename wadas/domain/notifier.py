@@ -13,6 +13,7 @@ class Notifier:
     class NotifierTypes(Enum):
         EMAIL = "Email"
         WHATSAPP = "WhatsApp"
+        TELEGRAM = "Telegram"
 
     notifiers = dict.fromkeys([NotifierTypes.EMAIL.value, NotifierTypes.WHATSAPP.value])
 
