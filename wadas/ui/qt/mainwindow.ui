@@ -292,8 +292,11 @@
    <addaction name="actionConfigure_FTP_Cameras"/>
    <addaction name="actionConfigure_actuators"/>
    <addaction name="actionConfigure_camera_to_actuator_associations"/>
+   <addaction name="separator"/>
    <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionConfigure_WA"/>
+   <addaction name="actionConfigure_Telegram"/>
+   <addaction name="separator"/>
    <addaction name="actionSelect_Mode"/>
    <addaction name="actionConfigure_Ai_model"/>
    <addaction name="separator"/>
@@ -521,6 +524,21 @@
    </property>
    <property name="toolTip">
     <string>Configure WhatsApp notifications</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionConfigure_Telegram">
+   <property name="icon">
+    <iconset>
+     <normaloff>wadas/icons/telegram.png</normaloff>wadas/icons/telegram.png</iconset>
+   </property>
+   <property name="text">
+    <string>Configure Telegram</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure Telegram notifications</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
