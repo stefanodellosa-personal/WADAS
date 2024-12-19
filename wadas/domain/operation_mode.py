@@ -3,6 +3,7 @@
 import logging
 import threading
 import time
+from abc import abstractmethod
 from enum import Enum
 
 from PySide6.QtCore import QObject, Signal
@@ -10,6 +11,7 @@ from PySide6.QtCore import QObject, Signal
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.fastapi_actuator_server import (
     FastAPIActuatorServer,
     initialize_fastapi_logger,
@@ -93,6 +95,28 @@ class OperationMode(QObject):
         self.last_detection = detected_img_path
         return results, detected_img_path
 
+    def _format_classified_animals_string(self, classified_animals):
+        # Prepare a list of classified animals to print in UI
+        self.last_classified_animals_str = ", ".join(
+            animal["classification"][0] for animal in classified_animals
+        )
+
+    def _classify(self, cur_image_path, detection_results):
+        """Method to run the animal classification process
+        on a specific image starting from the detection output"""
+        # Classify if detection has identified animals
+        if len(detection_results["detections"].xyxy):
+            logger.info("Running classification on detection result(s)...")
+            (
+                classified_img_path,
+                classified_animals,
+            ) = self.ai_model.classify(cur_image_path, detection_results)
+            self.last_classification = classified_img_path
+
+            self._format_classified_animals_string(classified_animals)
+            return classified_img_path, classified_animals
+        return None, None
+
     def ftp_camera_exist(self):
         for camera in cameras:
             if camera.type == Camera.CameraTypes.FTP_CAMERA:
@@ -127,9 +151,9 @@ class OperationMode(QObject):
         self._initialize_cameras()
         self.start_actuator_server()
 
-    def send_notification(self, img_path, message):
+    def send_notification(self, detection_event: DetectionEvent, message):
         """Method to send notification(s) trough Notifier class (and subclasses)"""
-        Notifier.send_notifications(img_path, message)
+        Notifier.send_notifications(detection_event, message)
 
     def actuate(self, camera_id):
         """Method to trigger actuators associated to the camera, when enabled"""
@@ -195,3 +219,7 @@ class OperationMode(QObject):
             FastAPIActuatorServer.actuator_server.stop()
             if self.actuators_server_thread:
                 self.actuators_server_thread.join()
+
+    @abstractmethod
+    def run(self):
+        """Method to run the specific operation mode."""
