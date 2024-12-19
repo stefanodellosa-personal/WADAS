@@ -95,7 +95,7 @@ class WhatsAppNotifier(Notifier):
                     logger.info("WhatsApp notification sent!")
                 else:
                     err_message = (
-                        f"Failed to send WhatsApp notification: "
+                        "Failed to send WhatsApp notification: "
                         f"{message_response.status_code}, {message_response.text}"
                     )
                     logger.error(err_message)
