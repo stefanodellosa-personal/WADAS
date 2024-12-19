@@ -15,9 +15,9 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QRadioButton,
     QScrollArea,
-    QWidget, QMessageBox,
+    QWidget,
 )
-from prompt_toolkit.key_binding.bindings.named_commands import end_of_file
+
 from validators import ipv4
 
 from wadas.domain.camera import Camera, cameras
