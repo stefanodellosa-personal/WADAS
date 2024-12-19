@@ -417,13 +417,13 @@ class MainWindow(QMainWindow):
             message = "No enabled notification protocol. Do you wish to continue anyway?"
 
         if message:
-            message_box = QMessageBox
-            answer = message_box.question(self, "", message, message_box.Yes | message_box.No)
+            message_box = QMessageBox(self)
+            message_box.setWindowTitle("No enabled notification protocol")
+            message_box.setText(message)
+            message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            answer = message_box.exec()
 
-            if answer == message_box.No:
-                return False
-            else:
-                return True
+            return answer == QMessageBox.Yes
         else:
             return True
 

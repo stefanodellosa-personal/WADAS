@@ -1,6 +1,8 @@
 import logging
 
+from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.operation_mode import OperationMode
+from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +12,7 @@ class TestModelMode(OperationMode):
         super(TestModelMode, self).__init__()
         self.modename = "test_model_mode"
         self.url = ""
-        self.last_classified_animals = ""
+        self.last_classified_animals_str = ""
         self.type = OperationMode.OperationModeTypes.TestModelMode
 
     def run(self):
@@ -24,8 +26,8 @@ class TestModelMode(OperationMode):
         self.init_model()
 
         self.check_for_termination_requests()
-
         self.run_progress.emit(10)
+
         # Run detection model
         det_data = self.ai_model.process_image_from_url(self.url, "test_model", True)
         img_path = det_data[0]
@@ -38,36 +40,35 @@ class TestModelMode(OperationMode):
             self.execution_completed()
             return
 
+        detection_event = DetectionEvent(
+            "VirtualTestCamera", get_timestamp(), img_path, detected_img_path, det_results, True
+        )
         # Trigger image update in WADAS mainwindow
         self.update_image.emit(detected_img_path)
         message = "WADAS has detected an animal!"
         self.check_for_termination_requests()
 
         # Classify if detection has identified animals
-        if len(det_results["detections"].xyxy) > 0:
+        if len(det_results["detections"].xyxy):
             logger.info("Running classification on detection result(s)...")
-            img_path, classified_animals = self.ai_model.classify(img_path, det_results)
-            self.last_classification = img_path
 
-            # Prepare a list of classified animals to print in UI
-            if self.last_classified_animals:
-                self.last_classified_animals = ""
-            for animal in classified_animals:
-                last = animal["classification"][0]
-                if not self.last_classified_animals:
-                    self.last_classified_animals = self.last_classified_animals + last
-                else:
-                    self.last_classified_animals = self.last_classified_animals + ", " + last
-
-            # Trigger image update in WADAS mainwindow
-            self.update_image.emit(img_path)
-            self.update_info.emit()
-            message = f"WADAS has classified {self.last_classified_animals} animal(s)!"
-        else:
-            logger.info("No results to classify.")
+            classified_img_path, classified_animals = self._classify(img_path, det_results)
+            if classified_img_path:
+                # Trigger image update in WADAS mainwindow
+                self.update_image.emit(classified_img_path)
+                self.update_info.emit()
+                message = (
+                    f"WADAS has classified '{self.last_classified_animals_str}' "
+                    f"animal from camera {img_path}!"
+                )
+                detection_event.classification_img_path = classified_img_path
+                detection_event.classified_animals = classified_animals
+            else:
+                logger.info("No animals to classify.")
+                message = ""
 
         # Send notification
-        self.send_notification(img_path, message)
+        self.send_notification(detection_event, message)
         self.execution_completed()
 
     def check_for_termination_requests(self):
