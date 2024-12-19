@@ -404,10 +404,7 @@ class MainWindow(QMainWindow):
             message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             answer = message_box.exec()
 
-            if answer == QMessageBox.No:
-                return False
-            else:
-                return True
+            return answer == QMessageBox.Yes
         else:
             return True
 
