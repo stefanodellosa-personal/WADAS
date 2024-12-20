@@ -1,9 +1,10 @@
 """"Telegram configuration dialog module."""
 
 import os
-
+import requests
 import keyring
-from PySide6.QtCore import Qt
+
+from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QDialog,
@@ -11,6 +12,8 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
+    QProgressBar,
     QRadioButton,
     QScrollArea,
     QWidget,
@@ -22,6 +25,29 @@ from wadas.ui.qt.ui_configure_telegram import Ui_DialogConfigureTelegram
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
+
+class HttpWorker(QThread):
+    progress_updated = Signal(int)  # Emits the progress percentage
+    id_fetched = Signal(str)  # Emits the fetched ID
+
+    def __init__(self, receiver_name):
+        super().__init__()
+        self.receiver_name = receiver_name
+
+    def run(self):
+        try:
+            # Simulate an HTTP request to fetch the receiver ID
+            # Replace this URL with your actual API endpoint
+            response = requests.get(f"http://127.0.0.1:5000/receiver?id=test_receiver")
+            response.raise_for_status()
+            fetched_id = response.json().get("id", "Unknown")
+            self.id_fetched.emit(fetched_id)
+        except requests.RequestException as e:
+            fetched_id = "Error"
+            print(f"Error fetching receiver ID: {e}")
+            self.id_fetched.emit(fetched_id)
+        finally:
+            self.progress_updated.emit(100)
 
 class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
     """Class to insert Telegram configuration data to enable WADAS for Telegram notifications."""
@@ -40,6 +66,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         self.ui_receiver_idx = 0
         self.removed_cameras = []
         self.removed_rows = set()
+        self.worker = None
 
         # Create scrollable area for ftp camera list in Receivers tab
         scroll_area = QScrollArea(self.ui.tab_receivers)
@@ -49,6 +76,12 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         cameras_grid_layout = QGridLayout(scroll_widget)
         cameras_grid_layout.setObjectName("gridLayout_receivers")
         self.ui.verticalLayout_receivers.addWidget(scroll_area)
+
+        # Add a progress bar
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setVisible(False)
+        self.ui.verticalLayout_receivers.addWidget(self.progress_bar)
+
         # Adding first row of receivers form
         self.add_receiver()
 
@@ -75,8 +108,32 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
             self.ui.checkBox_enable_telegram_notifications.setEnabled(True)
 
     def add_receiver(self):
-        """Method to programmatically add receiver input fields"""
+        """Method to programmatically add receiver input fields with progress bar update."""
+        receiver_name = "test_receiver"  # Replace with logic to fetch receiver name dynamically
 
+        # Show the progress bar
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(True)
+
+        # Create and start the worker
+        self.worker = HttpWorker(receiver_name)
+        self.worker.progress_updated.connect(self.update_progress)
+        self.worker.id_fetched.connect(self.on_id_fetched)
+        self.worker.start()
+
+    def update_progress(self, value):
+        """Update the progress bar value."""
+        self.progress_bar.setValue(value)
+
+    def on_id_fetched(self, fetched_id):
+        """Handle the fetched ID and populate the row."""
+        self.progress_bar.setVisible(False)  # Hide progress bar after completion
+
+        if fetched_id == "Error":
+            QMessageBox.critical(self, "Error", "Failed to fetch receiver ID.")
+            return
+
+        # Add the receiver row with the fetched ID
         grid_layout_receivers = self.findChild(QGridLayout, "gridLayout_receivers")
         if grid_layout_receivers:
             row = self.ui_receiver_idx
@@ -92,7 +149,8 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
             grid_layout_receivers.addWidget(label, row, 1)
             id_line_edit = QLineEdit()
             id_line_edit.setObjectName(f"lineEdit_receiver_id_{row}")
-            id_line_edit.textChanged.connect(self.validate)
+            id_line_edit.setText(fetched_id)  # Populate the fetched ID
+            id_line_edit.setReadOnly(True)  # Make the ID field read-only
             grid_layout_receivers.addWidget(id_line_edit, row, 2)
             # Receiver name
             label = QLabel("Name:")
