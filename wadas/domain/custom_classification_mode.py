@@ -7,6 +7,7 @@ from wadas.ai.models import txt_animalclasses
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import img_queue
 from wadas.domain.detection_event import DetectionEvent
+from wadas.domain.operation_mode import OperationMode
 from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,7 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
     def __init__(self, target_animal_label="bear"):
         super().__init__()
         self.process_queue = True
+        self.type = OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
 
         if target_animal_label in txt_animalclasses["en"]:
             self.target_animal_label = target_animal_label

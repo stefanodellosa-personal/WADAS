@@ -32,17 +32,17 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
         self.ui.radioButton_test_model_mode.setChecked(True)
 
         if OperationMode.cur_operation_mode_type and OperationMode.cur_operation_mode_type.value:
-            if OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode:
-                self.ui.radioButton_animal_det_mode.setChecked(True)
-            elif (
-                OperationMode.cur_operation_mode_type
-                == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
-            ):
-                self.ui.radioButton_animal_det_and_class_mode.setChecked(True)
-            elif OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TunnelMode:
-                self.ui.radioButton_tunnel_mode.setChecked(True)
-            elif OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.BearDetectionMode:
-                self.ui.radioButton_bear_det_mode.setChecked(True)
+            match OperationMode.cur_operation_mode_type:
+                case OperationMode.OperationModeTypes.AnimalDetectionMode:
+                    self.ui.radioButton_animal_det_mode.setChecked(True)
+                case OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode:
+                    self.ui.radioButton_animal_det_and_class_mode.setChecked(True)
+                case OperationMode.OperationModeTypes.TunnelMode:
+                    self.ui.radioButton_tunnel_mode.setChecked(True)
+                case OperationMode.OperationModeTypes.BearDetectionMode:
+                    self.ui.radioButton_bear_det_mode.setChecked(True)
+                case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
+                    self.ui.radioButton_custom_species_class_mode.setChecked(True)
 
     def accept_and_close(self):
         """When Ok is clicked, save radio button selection before closing."""
@@ -55,4 +55,6 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
             OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
         elif self.ui.radioButton_bear_det_mode.isChecked():
             OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.BearDetectionMode
+        elif self.ui.radioButton_custom_species_class_mode.isChecked():
+            OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
         self.accept()
