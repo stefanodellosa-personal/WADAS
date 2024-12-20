@@ -206,8 +206,7 @@ class MainWindow(QMainWindow):
                         logger.error("Cannot proceed without a valid URL. Please run again.")
                         return
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
-                    selected_species = self.custom_species_dialog()
-                    if selected_species:
+                    if selected_species:= self.custom_species_dialog():
                         OperationMode.cur_operation_mode.target_animal_label = selected_species
                     else:
                         logger.info("No custom species selected. Aborting Operation Mode execution.")

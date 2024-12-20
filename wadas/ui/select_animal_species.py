@@ -4,9 +4,11 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
 
 from wadas.ai.models import txt_animalclasses
+from wadas.domain.ai_model import AiModel
 from wadas.ui.qt.ui_select_animal_species import Ui_DialogSelectAnimalSpecies
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
+
 
 class DialogSelectAnimalSpecies(QDialog,Ui_DialogSelectAnimalSpecies):
     """Class to create a UI dialog to select animal species to run classification on."""
@@ -24,7 +26,7 @@ class DialogSelectAnimalSpecies(QDialog,Ui_DialogSelectAnimalSpecies):
     def populate_species_dropdown(self):
         """Populate the dropdown with the list of available actuators."""
         self.ui.comboBox_select_species.clear()
-        for species in txt_animalclasses["en"]:
+        for species in txt_animalclasses[AiModel.language]:
             self.ui.comboBox_select_species.addItem(species)
 
     def accept_and_close(self):
