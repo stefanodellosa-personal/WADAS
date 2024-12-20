@@ -1,4 +1,4 @@
-"""Whatsapp configuration module."""
+"""Whatsapp configuration dialog module."""
 
 
 import os
@@ -39,7 +39,7 @@ class DialogConfigureWhatsApp(QDialog, Ui_DialogConfigureWhatsApp):
         self.initialize_form()
 
     def initialize_form(self):
-        """Method to initialize form with existing email configuration data (if any)."""
+        """Method to initialize form with existing WhatsApp configuration data (if any)."""
 
         if Notifier.notifiers[Notifier.NotifierTypes.WHATSAPP.value]:
             self.ui.checkBox_enableWhatsAppNotifications.setEnabled(self.whatsapp_notifier.enabled)
