@@ -17,6 +17,9 @@ class DialogSelectAnimalSpecies(QDialog,Ui_DialogSelectAnimalSpecies):
 
         self.ui.setupUi(self)
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
+        self.ui.buttonBox.accepted.connect(self.accept_and_close)
+
+        self.populate_species_dropdown()
 
     def populate_species_dropdown(self):
         """Populate the dropdown with the list of available actuators."""
@@ -26,4 +29,6 @@ class DialogSelectAnimalSpecies(QDialog,Ui_DialogSelectAnimalSpecies):
 
     def accept_and_close(self):
         """When Ok is clicked, save Ai model config info before closing."""
+
         self.selected_species = self.ui.comboBox_select_species.currentText()
+        self.accept()

@@ -103,13 +103,13 @@
     <item>
      <widget class="QRadioButton" name="radioButton_bear_det_mode">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="text">
        <string>Bear detection mode</string>
       </property>
       <property name="checkable">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="autoExclusive">
        <bool>true</bool>
@@ -124,6 +124,9 @@
       <property name="text">
        <string>Custom species classification mode</string>
       </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup</string>
+      </attribute>
      </widget>
     </item>
     <item>

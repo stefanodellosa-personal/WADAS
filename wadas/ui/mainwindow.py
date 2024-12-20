@@ -197,21 +197,27 @@ class MainWindow(QMainWindow):
             return
 
         self.instantiate_selected_model()
+        # Satisfy preconditions and required inputs for the selected operation mode
         if OperationMode.cur_operation_mode:
-            # Satisfy preconditions and required inputs for the selected operation mode
-            if OperationMode.cur_operation_mode.type == OperationMode.OperationModeTypes.TestModelMode:
-                if not self.check_models():
-                    logger.error("Cannot run this mode without AI models. Aborting.")
-                    return
-                OperationMode.cur_operation_mode.url = self.url_input_dialog()
-                if not OperationMode.cur_operation_mode.url:
-                    logger.error("Cannot proceed without a valid URL. Please run again.")
-                    return
-            elif OperationMode.cur_operation_mode.type == OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
-                selected_species = self.custom_species_dialog()
-                OperationMode.cur_operation_mode.target_animal_label = selected_species
-                #TODO: add check here for empty string
-            elif not cameras:
+            match OperationMode.cur_operation_mode.type:
+                case OperationMode.OperationModeTypes.TestModelMode:
+                    OperationMode.cur_operation_mode.url = self.url_input_dialog()
+                    if not OperationMode.cur_operation_mode.url:
+                        logger.error("Cannot proceed without a valid URL. Please run again.")
+                        return
+                case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
+                    selected_species = self.custom_species_dialog()
+                    if selected_species:
+                        OperationMode.cur_operation_mode.target_animal_label = selected_species
+                    else:
+                        logger.info("No custom species selected. Aborting Operation Mode execution.")
+                        return
+
+            # Satisfy preconditions independently of selected operation mode
+            if not self.check_models():
+                logger.error("Cannot run this mode without AI models. Aborting.")
+                return
+            if OperationMode.cur_operation_mode != OperationMode.OperationModeTypes.TestModelMode and not cameras:
                 logger.error("No camera configured. Please configure input cameras and run again.")
                 return
             else:
