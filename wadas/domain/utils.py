@@ -2,6 +2,7 @@ import base64
 import datetime
 import logging
 import os
+import uuid
 from logging.handlers import RotatingFileHandler
 
 
@@ -32,3 +33,11 @@ def image_to_base64(image_path):
     with open(image_path, "rb") as image_file:
         base64_string = base64.b64encode(image_file.read()).decode("utf-8")
     return base64_string
+
+
+def is_valid_uuid4(val):
+    try:
+        uuid.UUID(str(val), version=4)
+        return True
+    except ValueError:
+        return False

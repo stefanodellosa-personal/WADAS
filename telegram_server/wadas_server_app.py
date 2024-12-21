@@ -2,11 +2,10 @@ import random
 import string
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
-
-from telegram_server.telegram_client import TelegramClient
+from telegram_client import TelegramClient
 
 database = {"2a6d4cd8-8832-458f-bf3b-c3febfa3c33a": []}
 
@@ -53,6 +52,24 @@ async def create_user(organization: Organization):
     else:
         print(f"organization: {organization.org_code} not found")
         raise HTTPException(status_code=404, detail="Organization does not exist")
+
+
+@app.get("/api/v1/telegram/users")
+async def get_users(org_code: str):
+    if org_code in database:
+        return database[org_code]
+    else:
+        print(f"organization: {org_code} not found")
+        raise HTTPException(status_code=404, detail="Organization does not exist")
+
+
+@app.delete("/api/v1/telegram/users", status_code=status.HTTP_204_NO_CONTENT)
+async def del_user(org_code: str, user_id: str):
+    if org_code in database and user_id in database[org_code]:
+        database[org_code].remove(user_id)
+        return
+    else:
+        raise HTTPException(status_code=404, detail="Organization or user not found")
 
 
 @app.post("/api/v1/telegram/notifications")

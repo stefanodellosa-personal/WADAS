@@ -4,9 +4,8 @@ import datetime
 import threading
 
 import uvicorn
-
-from telegram_server.telegram_client import TelegramClient
-from telegram_server.wadas_server_app import app as wadas_app
+from telegram_client import TelegramClient
+from wadas_server_app import app as wadas_app
 
 
 class WADASServer:

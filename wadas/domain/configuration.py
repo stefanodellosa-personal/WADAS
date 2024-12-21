@@ -6,6 +6,7 @@ import os
 import keyring
 import openvino as ov
 import yaml
+from domain.telegram_notifier import TelegramNotifier
 
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
@@ -81,6 +82,10 @@ def load_configuration_from_file(file_path):
                     whatsapp_notifier.sender_id,
                 )
                 valid_whatsapp_keyring = False
+        elif key in Notifier.notifiers and key == Notifier.NotifierTypes.TELEGRAM.value:
+            telegram_notifier = TelegramNotifier.deserialize(value)
+            Notifier.notifiers[key] = telegram_notifier
+
     # FTP Server
     if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
         FTPsServer.ftps_server.server.close_all()

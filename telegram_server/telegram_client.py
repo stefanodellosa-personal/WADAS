@@ -1,5 +1,6 @@
 import asyncio
 import base64
+from typing import List
 
 from telegram import Bot, Update
 from telegram.ext import (
@@ -17,6 +18,7 @@ class TelegramClient:
         self.bot = Bot(self.bot_token)
         self.registered_user = {}
         self.thread = None
+        self.application = None
 
     async def command_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(
@@ -42,7 +44,7 @@ class TelegramClient:
         else:
             await self.bot.send_message(chat_id=self.registered_user[wadas_user_id], text=message)
 
-    async def send_notifications(self, user_ids: list[str], message: str, image_b64=None) -> None:
+    async def send_notifications(self, user_ids: List[str], message: str, image_b64=None) -> None:
         """
         Invia notifiche a una lista di utenti in parallelo.
         """
@@ -58,13 +60,14 @@ class TelegramClient:
         return False
 
     def start(self):
-        application = (
+        self.application = (
             Application.builder().token(self.bot_token).read_timeout(30).write_timeout(30).build()
         )
 
-        application.add_handler(CommandHandler("start", self.command_start))
+        self.application.add_handler(CommandHandler("start", self.command_start))
 
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.register_user))
+        self.application.add_handler(
+            MessageHandler(filters.TEXT & ~filters.COMMAND, self.register_user)
+        )
 
-        # Avvio del bot
-        application.run_polling()
+        self.application.run_polling()

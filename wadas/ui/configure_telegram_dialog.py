@@ -19,35 +19,34 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from domain.telegram_recipient import TelegramRecipient
 from wadas.domain.notifier import Notifier
 from wadas.domain.telegram_notifier import TelegramNotifier
 from wadas.ui.qt.ui_configure_telegram import Ui_DialogConfigureTelegram
+from wadas.domain.utils import is_valid_uuid4
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
-class HttpWorker(QThread):
+class AddReceiverWorker(QThread):
     progress_updated = Signal(int)  # Emits the progress percentage
-    id_fetched = Signal(str)  # Emits the fetched ID
+    recipient_fetched = Signal(TelegramNotifier)  # Emits the fetched TelegramNotifier
 
-    def __init__(self, receiver_name):
+    def __init__(self, telegram_notifier):
         super().__init__()
-        self.receiver_name = receiver_name
+        self.telegram_notifier = telegram_notifier
 
     def run(self):
         try:
-            # Simulate an HTTP request to fetch the receiver ID
-            # Replace this URL with your actual API endpoint
-            response = requests.get(f"http://127.0.0.1:5000/receiver?id=test_receiver")
-            response.raise_for_status()
-            fetched_id = response.json().get("id", "Unknown")
-            self.id_fetched.emit(fetched_id)
+            recipient = self.telegram_notifier.register_new_recipient()
+            self.recipient_fetched.emit(recipient)
         except requests.RequestException as e:
             fetched_id = "Error"
             print(f"Error fetching receiver ID: {e}")
-            self.id_fetched.emit(fetched_id)
+            self.recipient_fetched.emit(fetched_id)
         finally:
             self.progress_updated.emit(100)
+
 
 class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
     """Class to insert Telegram configuration data to enable WADAS for Telegram notifications."""
@@ -68,7 +67,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         self.removed_rows = set()
         self.worker = None
 
-        # Create scrollable area for ftp camera list in Receivers tab
+        # Create scrollable area for receiver list in Receivers tab
         scroll_area = QScrollArea(self.ui.tab_receivers)
         scroll_area.setWidgetResizable(True)
         scroll_widget = QWidget()
@@ -83,56 +82,74 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         self.ui.verticalLayout_receivers.addWidget(self.progress_bar)
 
         # Adding first row of receivers form
-        self.add_receiver()
+        # self.add_receiver()
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
         self.ui.pushButton_test_message.clicked.connect(self.send_telegram_message)
         self.ui.pushButton_add_receiver.clicked.connect(self.add_receiver)
         self.ui.pushButton_remove_receiver.clicked.connect(self.remove_receiver)
-        self.ui.lineEdit_org_code.textChanged.connect(self.validate)
+        self.ui.lineEdit_org_code.textChanged.connect(self.validate_org_code)
+        self.ui.tabWidget.currentChanged.connect(self.check_existing_receivers)
 
         self.initialize_form()
+
+    def check_existing_receivers(self, index):
+
+        if index == 1 and self.telegram_notifier:
+            self.clear_receivers()
+            try:
+                self.telegram_notifier.fetch_registered_recipient()
+                for r in self.telegram_notifier.recipients:
+                    self.add_recipient_to_gridlayout(r)
+            except Exception:
+                self.ui.label_errorMessage.setText("Impossible to retrieve existing recipients")
+
+        if index == 0 and self.telegram_notifier:
+            self.ui.plainTextEdit.setPlainText("")
+            self.update_receiver_name()
 
     def initialize_form(self):
         """Method to initialize form with existing Telegram configuration data (if any)."""
 
-        if Notifier.notifiers[Notifier.NotifierTypes.WHATSAPP.value]:
-            self.ui.checkBox_enable_telegram_notifications.setEnabled(self.telegram_notifier.enabled)
-            credentials = keyring.get_credential("WADAS_Telegram", self.telegram_notifier.sender_id)
-            if credentials and credentials.username == self.telegram_notifier.sender_id:
-                self.ui.lineEdit_org_code.setText(credentials.password)
-            #TODO: initialize other fields
+        if self.telegram_notifier:
+            self.ui.checkBox_enable_telegram_notifications.setChecked(self.telegram_notifier.enabled)
+            self.ui.lineEdit_org_code.setText(self.telegram_notifier.org_code)
             self.ui.checkBox_enable_images.setChecked(self.telegram_notifier.allow_images)
+
         else:
-            self.ui.checkBox_enable_telegram_notifications.setEnabled(True)
+            self.ui.checkBox_enable_telegram_notifications.setChecked(True)
 
     def add_receiver(self):
         """Method to programmatically add receiver input fields with progress bar update."""
-        receiver_name = "test_receiver"  # Replace with logic to fetch receiver name dynamically
+        if self.telegram_notifier:
+            # Show the progress bar
+            self.progress_bar.setValue(0)
+            self.progress_bar.setVisible(True)
 
-        # Show the progress bar
-        self.progress_bar.setValue(0)
-        self.progress_bar.setVisible(True)
-
-        # Create and start the worker
-        self.worker = HttpWorker(receiver_name)
-        self.worker.progress_updated.connect(self.update_progress)
-        self.worker.id_fetched.connect(self.on_id_fetched)
-        self.worker.start()
+            # Create and start the worker
+            self.worker = AddReceiverWorker(self.telegram_notifier)
+            self.worker.progress_updated.connect(self.update_progress)
+            self.worker.recipient_fetched.connect(self.on_id_fetched)
+            self.worker.start()
+        else:
+            self.ui.label_errorMessage.setText("You cannot add new receivers without an organization code")
 
     def update_progress(self, value):
         """Update the progress bar value."""
         self.progress_bar.setValue(value)
 
-    def on_id_fetched(self, fetched_id):
+    def on_id_fetched(self, recipient):
         """Handle the fetched ID and populate the row."""
         self.progress_bar.setVisible(False)  # Hide progress bar after completion
 
-        if fetched_id == "Error":
+        if not recipient:
             QMessageBox.critical(self, "Error", "Failed to fetch receiver ID.")
             return
 
+        self.add_recipient_to_gridlayout(recipient)
+
+    def add_recipient_to_gridlayout(self, recipient):
         # Add the receiver row with the fetched ID
         grid_layout_receivers = self.findChild(QGridLayout, "gridLayout_receivers")
         if grid_layout_receivers:
@@ -149,7 +166,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
             grid_layout_receivers.addWidget(label, row, 1)
             id_line_edit = QLineEdit()
             id_line_edit.setObjectName(f"lineEdit_receiver_id_{row}")
-            id_line_edit.setText(fetched_id)  # Populate the fetched ID
+            id_line_edit.setText(recipient.recipient_id)  # Populate the fetched ID
             id_line_edit.setReadOnly(True)  # Make the ID field read-only
             grid_layout_receivers.addWidget(id_line_edit, row, 2)
             # Receiver name
@@ -159,92 +176,97 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
             grid_layout_receivers.addWidget(label, row, 3)
             user_line_edit = QLineEdit()
             user_line_edit.setObjectName(f"lineEdit_name_{row}")
-            user_line_edit.textChanged.connect(self.validate)
+            if recipient.name:
+                user_line_edit.setText(recipient.name)
             grid_layout_receivers.addWidget(user_line_edit, row, 4)
-
             grid_layout_receivers.setAlignment(Qt.AlignmentFlag.AlignTop)
             self.ui_receiver_idx += 1
 
-            self.validate()
-
     def update_remove_receiver_btn(self):
-        """Method to update remove FTP Camera button enablement logic."""
+        """Method to update remove receiver button enablement logic."""
 
         self.ui.pushButton_remove_receiver.setEnabled(True)
 
+    def clear_receivers(self):
+        grid_layout_receivers = self.findChild(QGridLayout, "gridLayout_receivers")
+        for i in range(0, self.ui_receiver_idx):
+            for j in range(0, 5):
+                item = grid_layout_receivers.itemAtPosition(i, j)
+                if item:
+                    item.widget().deleteLater()
+        self.update()
+
     def remove_receiver(self):
         """Method to programmatically remove receiver input fields"""
-
         for i in range(0, self.ui_receiver_idx):
             radiobtn = self.findChild(QRadioButton, f"radioButton_receiver_{i}")
-            if radiobtn:
-                camera_id_ln = self.findChild(QLineEdit, f"lineEdit_receiver_id_{i}")
-                if radiobtn.isChecked() and camera_id_ln:
-                    self.removed_cameras.append(camera_id_ln.text())
-                    self.removed_rows.add(i)
-                    grid_layout_receivers = self.findChild(QGridLayout, "gridLayout_receivers")
-                    if grid_layout_receivers:
-                        for j in range(0, 5):
-                            grid_layout_receivers.itemAtPosition(i, j).widget().setParent(None)
-        self.ui.pushButton_remove_receiver.setEnabled(False)
+            receiver_id_ln = self.findChild(QLineEdit, f"lineEdit_receiver_id_{i}")
+            if radiobtn and radiobtn.isChecked() and receiver_id_ln:
+                recipient = self.telegram_notifier.get_recipient_by_id(receiver_id_ln.text())
+                self.telegram_notifier.remove_registered_recipient(recipient)
+                break
 
-    def validate(self):
+        self.check_existing_receivers(1)
+
+    def validate_org_code(self):
         """Method to validate form data."""
 
-        if self.ui.lineEdit_org_code.text():
+        # if org_code is not changed
+        if self.telegram_notifier and self.telegram_notifier.org_code == self.ui.lineEdit_org_code.text():
             self.ui.label_errorMessage.setText("")
             self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
             self.ui.pushButton_test_message.setEnabled(True)
+            return
+
+        if self.ui.lineEdit_org_code.text():
+            if is_valid_uuid4(self.ui.lineEdit_org_code.text()):
+                self.ui.label_errorMessage.setText("")
+                self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+                self.ui.pushButton_test_message.setEnabled(True)
+
+                # if the org_code is valid, TelegramNotifier is instantiated
+                self.telegram_notifier = TelegramNotifier(self.ui.lineEdit_org_code.text())
+            else:
+                self.ui.label_errorMessage.setText("Insert a valid organization code")
         else:
             if not self.ui.lineEdit_org_code.text():
                 self.ui.label_errorMessage.setText("Organization code cannot be empty.")
-            #TODO: add other fields validation checks
+
             self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
             self.ui.pushButton_test_message.setEnabled(False)
 
-    def add_telegram_credentials(self):
-        """Method to add WhatsApp credentials to system keyring."""
+    def update_receiver_name(self):
+        for i in range(0, self.ui_receiver_idx):
+            receiver_id_ln = self.findChild(QLineEdit, f"lineEdit_receiver_id_{i}")
+            receiver_name_ln = self.findChild(QLineEdit, f"lineEdit_name_{i}")
 
-        # If credentials exist remove them (workaround keyring bug)
-        #TODO: check if keyring is needed or remove this method
-        """credentials = keyring.get_credential(
-            "WADAS_Telegram", ""
-        )
-        if credentials:
-            try:
-                keyring.delete_password("WADAS_Telegram", "")
-            except keyring.errors.PasswordDeleteError:
-                # Credentials not in the system
-                pass
-
-        # Set new/modified credentials for camera
-        keyring.set_password(
-            "WADAS_Telegram",
-            "",
-            token,
-        )"""
+            if receiver_id_ln:
+                t: TelegramRecipient = self.telegram_notifier.get_recipient_by_id(receiver_id_ln.text())
+                t.name = receiver_name_ln.text() if len(receiver_name_ln.text()) > 0 else None
 
     def accept_and_close(self):
         """When Ok is clicked, save email config info before closing."""
 
-        if not Notifier.notifiers[Notifier.NotifierTypes.TELEGRAM.value]:
-            Notifier.notifiers[Notifier.NotifierTypes.TELEGRAM.value] = TelegramNotifier(
-                self.ui.lineEdit_org_code.text(), #Isn't this something to store in keyring?
-                "", #TODO: fill up with recipients IDs
-                self.telegram_notifier.enabled,
-                self.telegram_notifier.allow_images
-            )
-            self.add_telegram_credentials() #TODO: remove if not needed
-        else:
+        if self.telegram_notifier:
+            self.update_receiver_name()
             self.telegram_notifier.enabled = self.ui.checkBox_enable_telegram_notifications.isChecked()
-            #TODO: add other params initialization
             self.telegram_notifier.allow_images = self.ui.checkBox_enable_images.isChecked()
-
             Notifier.notifiers[Notifier.NotifierTypes.TELEGRAM.value] = self.telegram_notifier
+
         self.accept()
 
     def send_telegram_message(self):
         """Method to send WhatsApp message notification."""
-
-        message = "WADAS Test Message!"
-        #TODO: implement test message functionality
+        self.ui.label_errorMessage.setText("")
+        if self.telegram_notifier.recipients:
+            message = "WADAS Test Message!"
+            try:
+                data = self.telegram_notifier.send_telegram_message(message)
+                if data["status"] == "ok":
+                    self.ui.plainTextEdit.setPlainText("WhatsApp notification sent!")
+                else:
+                    self.ui.plainTextEdit.setPlainText("\n".join(data["error_msgs"]))
+            except Exception:
+                self.ui.plainTextEdit.setPlainText(f"Error sending Test Message!")
+        else:
+            self.ui.label_errorMessage.setText("No recipient configured")
