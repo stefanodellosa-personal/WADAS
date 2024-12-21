@@ -139,6 +139,7 @@ class USBCamera(Camera):
                         {
                             "img": img_path,
                             "img_id": f"camera_{self.id}_{get_timestamp()}.jpg",
+                            "camera_id": self.id,
                         }
                     )
             else:

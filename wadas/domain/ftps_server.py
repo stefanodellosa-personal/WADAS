@@ -45,25 +45,38 @@ class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
             self.ftp_ABOR(None)
 
     def on_connect(self):
-        logger.info("Connected remote camera from %s:%s", self.remote_ip, self.remote_port)
+        logger.info(
+            "Connected remote camera %s from %s:%s", self.username, self.remote_ip, self.remote_port
+        )
 
     def on_disconnect(self):
-        logger.info("Disconnected remote camera from %s:%s", self.remote_ip, self.remote_port)
+        logger.info(
+            "Disconnected remote camera %s from %s:%s",
+            self.username,
+            self.remote_ip,
+            self.remote_port,
+        )
 
     def on_login(self, username):
-        logger.info("%s user logged in.", username)
+        logger.info("%s camera logged in.", username)
 
     def on_logout(self, username):
-        logger.info("%s user logged out.", username)
+        logger.info("%s camera logged out.", username)
 
     def on_file_received(self, file):
-        logger.info("Received %s file from FTPS Camera.", file)
+        logger.info("Received %s file from FTPS camera %s.", file, self.username)
 
         # check if the received file match one of the allowed extensions
         # (the check relies on an inspection of the file content)
         ftype = filetype.guess(file)
         if ftype and f".{ftype.extension}" in self.ALLOWED_EXTS:
-            img_queue.put({"img": file, "img_id": pathlib.PurePath(file).parent.name})
+            img_queue.put(
+                {
+                    "img": file,
+                    "img_id": pathlib.PurePath(file).parent.name,
+                    "camera_id": self.username,
+                }
+            )
         else:
             logger.warning("Unsupported file %s. Removing file.", file)
             os.remove(file)

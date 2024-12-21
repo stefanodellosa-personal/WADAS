@@ -119,12 +119,12 @@ def load_configuration_from_file(file_path):
                         os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
                     credentials = keyring.get_credential(f"WADAS_FTP_camera_{ftp_camera.id}", "")
                     if credentials:
-                        if credentials.username != ftp_camera.user:
+                        if credentials.username != ftp_camera.id:
                             logger.error(
                                 "Keyring stored user (%s) differs from configuration file one (%s)."
                                 " Please make sure to align system stored credential with"
                                 " configuration file. System credentials will be used.",
-                                ftp_camera.user,
+                                ftp_camera.id,
                                 credentials.username,
                             )
                             valid_ftp_keyring = False

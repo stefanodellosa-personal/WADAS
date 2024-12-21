@@ -43,6 +43,7 @@ from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
 from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
 from wadas.ui.insert_url_dialog import InsertUrlDialog
 from wadas.ui.license_dialog import LicenseDialog
+from wadas.ui.select_animal_species import DialogSelectAnimalSpecies
 from wadas.ui.select_mode_dialog import DialogSelectMode
 from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
 from wadas.ui.qt.ui_mainwindow import Ui_MainWindow
@@ -198,17 +199,26 @@ class MainWindow(QMainWindow):
             return
 
         self.instantiate_selected_model()
+        # Satisfy preconditions and required inputs for the selected operation mode
         if OperationMode.cur_operation_mode:
-            # Satisfy preconditions and required inputs for the selected operation mode
-            if OperationMode.cur_operation_mode.type == OperationMode.OperationModeTypes.TestModelMode:
-                if not self.check_models():
-                    logger.error("Cannot run this mode without AI models. Aborting.")
-                    return
-                OperationMode.cur_operation_mode.url = self.url_input_dialog()
-                if not OperationMode.cur_operation_mode.url:
-                    logger.error("Cannot proceed without a valid URL. Please run again.")
-                    return
-            elif not cameras:
+            match OperationMode.cur_operation_mode.type:
+                case OperationMode.OperationModeTypes.TestModelMode:
+                    OperationMode.cur_operation_mode.url = self.url_input_dialog()
+                    if not OperationMode.cur_operation_mode.url:
+                        logger.error("Cannot proceed without a valid URL. Please run again.")
+                        return
+                case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
+                    if selected_species:= self.custom_species_dialog():
+                        OperationMode.cur_operation_mode.target_animal_label = selected_species
+                    else:
+                        logger.info("No custom species selected. Aborting Operation Mode execution.")
+                        return
+
+            # Satisfy preconditions independently of selected operation mode
+            if not self.check_models():
+                logger.error("Cannot run this mode without AI models. Aborting.")
+                return
+            if OperationMode.cur_operation_mode != OperationMode.OperationModeTypes.TestModelMode and not cameras:
                 logger.error("No camera configured. Please configure input cameras and run again.")
                 return
             else:
@@ -262,6 +272,9 @@ class MainWindow(QMainWindow):
                     == OperationMode.OperationModeTypes.BearDetectionMode
             ):
                 OperationMode.cur_operation_mode = CustomClassificationMode(target_animal_label="bear")
+            elif (OperationMode.cur_operation_mode_type
+                    == OperationMode.OperationModeTypes.CustomSpeciesClassificationMode):
+                OperationMode.cur_operation_mode = CustomClassificationMode()
             # add elif with other operation modes
 
     def on_run_completion(self):
@@ -365,6 +378,17 @@ class MainWindow(QMainWindow):
             logger.warning("URL insertion aborted.")
             return ""
 
+    def custom_species_dialog(self):
+        """Method to run a dialog to return selected custom species to classify."""
+
+        species_dialog = DialogSelectAnimalSpecies()
+        if species_dialog.exec_():
+            logger.info("Selected custom species to classify: %s", species_dialog.selected_species)
+            return species_dialog.selected_species
+        else:
+            logger.warning("Custom species selection aborted.")
+            return ""
+
     def configure_email(self):
         """Method to run dialog for insertion of email parameters to enable notifications."""
 
@@ -401,13 +425,13 @@ class MainWindow(QMainWindow):
             message = "No enabled notification protocol. Do you wish to continue anyway?"
 
         if message:
-            message_box = QMessageBox
-            answer = message_box.question(self, "", message, message_box.Yes | message_box.No)
+            message_box = QMessageBox(self)
+            message_box.setWindowTitle("No enabled notification protocol")
+            message_box.setText(message)
+            message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            answer = message_box.exec()
 
-            if answer == message_box.No:
-                return False
-            else:
-                return True
+            return answer == QMessageBox.Yes
         else:
             return True
 

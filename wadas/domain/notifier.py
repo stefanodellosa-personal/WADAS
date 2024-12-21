@@ -25,7 +25,7 @@ class Notifier:
         self.allow_images = allow_images
 
     @staticmethod
-    def send_notifications(img_path, message=""):
+    def send_notifications(detection_event, message=""):
         """Method to send notification through enabled protocols."""
 
         configured_notifier = False
@@ -36,7 +36,7 @@ class Notifier:
                     configured_notifier = True
                     if Notifier.notifiers[notifier].enabled:
                         enabled_notifier = True
-                        Notifier.notifiers[notifier].send_notification(img_path)
+                        Notifier.notifiers[notifier].send_notification(detection_event)
         if not configured_notifier:
             logger.warning("No notification protocol configured. Skipping notification.")
         elif not enabled_notifier:

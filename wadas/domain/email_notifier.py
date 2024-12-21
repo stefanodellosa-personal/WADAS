@@ -10,6 +10,7 @@ from email.mime.text import MIMEText
 
 import keyring
 
+from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.notifier import Notifier
 
 logger = logging.getLogger(__name__)
@@ -26,7 +27,7 @@ class EmailNotifier(Notifier):
         self.smtp_port = smtp_port
         self.recipients_email = recipients_email
 
-    def send_email(self, img_path):
+    def send_email(self, detection_event):
         """Method to build email and send it."""
 
         credentials = keyring.get_credential("WADAS_email", self.sender_email)
@@ -47,17 +48,24 @@ class EmailNotifier(Notifier):
         message["To"] = ", ".join(self.recipients_email)
 
         # HTML content with an image embedded
-        html = """\
+        html = f"""\
         <html>
             <body>
                 <p>Hi,<br>
-                Here is the detection image: <img src="cid:image1">.</p><br>
+                Animal detected from camera {detection_event.camera_id}:
+                <img src="cid:image1"></p><br>
             </body>
         </html>
         """
         # Attach the HTML part
         message.attach(MIMEText(html, "html"))
 
+        # Select image to attach to the notification: classification (if enabled) or detection image
+        img_path = (
+            detection_event.classification_img_path
+            if detection_event.classification
+            else detection_event.detection_img_path
+        )
         # Open the image file in binary mode
         with open(img_path, "rb") as img:
             # Attach the image file
@@ -83,9 +91,9 @@ class EmailNotifier(Notifier):
             smtp_server.quit()
         logger.info("Email notification for %s sent!", img_path)
 
-    def send_notification(self, img_path):
+    def send_notification(self, detection_event: DetectionEvent):
         """Implementation of send_notification method specific for Email notifier."""
-        self.send_email(img_path)
+        self.send_email(detection_event)
 
     def is_configured(self):
         """Method that returns configuration status as bool value."""

@@ -6,6 +6,9 @@ from queue import Empty
 from wadas.ai.models import txt_animalclasses
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import img_queue
+from wadas.domain.detection_event import DetectionEvent
+from wadas.domain.operation_mode import OperationMode
+from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +19,7 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
     def __init__(self, target_animal_label="bear"):
         super().__init__()
         self.process_queue = True
+        self.type = OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
 
         if target_animal_label in txt_animalclasses["en"]:
             self.target_animal_label = target_animal_label
@@ -48,6 +52,16 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
                         cur_img["img"], detected_results
                     )
                     if classified_img_path:
+                        detection_event = DetectionEvent(
+                            cur_img["camera_id"],
+                            get_timestamp(),
+                            cur_img["img"],
+                            detected_img_path,
+                            detected_results,
+                            self.en_classification,
+                            classified_img_path,
+                            classified_animals,
+                        )
                         # Send notification and trigger actuators if the target animal is found
                         if any(
                             x["classification"][0] == self.target_animal_label
@@ -60,11 +74,10 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
                                 f"WADAS has classified '{self.last_classified_animals_str}' "
                                 f"animal from camera {cur_img['img_id']}!"
                             )
-
                             logger.info(message)
-                            self.actuate(cur_img["img_id"])
-                            self.send_notification(classified_img_path, message)
+                            self.send_notification(detection_event, message)
 
+                            self.actuate(cur_img["img_id"])
                         else:
                             logger.info(
                                 "Target animal '%s' not found, found '%s' instead. "
@@ -72,7 +85,6 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
                                 self.target_animal_label,
                                 self.last_classified_animals_str,
                             )
-
                     else:
                         logger.info("No animals to classify.")
 
