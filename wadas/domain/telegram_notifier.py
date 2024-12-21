@@ -4,8 +4,8 @@ import logging
 import os
 
 import requests
-from domain.detection_event import DetectionEvent
 
+from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.notifier import Notifier
 from wadas.domain.telegram_recipient import TelegramRecipient
 from wadas.domain.utils import image_to_base64

@@ -6,7 +6,6 @@ import os
 import keyring
 import openvino as ov
 import yaml
-from domain.telegram_notifier import TelegramNotifier
 
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
@@ -20,6 +19,7 @@ from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.roadsign_actuator import RoadSignActuator
+from wadas.domain.telegram_notifier import TelegramNotifier
 from wadas.domain.usb_camera import USBCamera
 from wadas.domain.whatsapp_notifier import WhatsAppNotifier
 

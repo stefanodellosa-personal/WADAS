@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from domain.telegram_recipient import TelegramRecipient
+from wadas.domain.telegram_recipient import TelegramRecipient
 from wadas.domain.notifier import Notifier
 from wadas.domain.telegram_notifier import TelegramNotifier
 from wadas.ui.qt.ui_configure_telegram import Ui_DialogConfigureTelegram
