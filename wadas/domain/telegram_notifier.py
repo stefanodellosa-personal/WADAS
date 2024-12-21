@@ -4,6 +4,7 @@ import logging
 import os
 
 import requests
+from domain.detection_event import DetectionEvent
 
 from wadas.domain.notifier import Notifier
 from wadas.domain.telegram_recipient import TelegramRecipient
@@ -34,6 +35,7 @@ class TelegramNotifier(Notifier):
         return self.org_code is not None and len(self.recipients) > 0
 
     def get_recipient_by_id(self, recipient_id):
+        """Method to return the TelegramRecipient having the specific recipient_id."""
         if self.recipients is not None:
             for r in self.recipients:
                 if r.recipient_id == recipient_id:
@@ -41,6 +43,7 @@ class TelegramNotifier(Notifier):
         return None
 
     def fetch_registered_recipient(self):
+        """Update the list of the recipients fetching from remote."""
         res = requests.get(f"{self.REGISTRATION_URL}?org_code={self.org_code}", verify=False)
         if res.status_code == 200:
             list_users = res.json()
@@ -77,6 +80,7 @@ class TelegramNotifier(Notifier):
             raise Exception("Organization code is not valid")
 
     def remove_registered_recipient(self, recipient):
+        """Method to remove a registered recipient from remote."""
         res = requests.delete(
             f"{self.REGISTRATION_URL}?org_code={self.org_code}&user_id={recipient.recipient_id}",
             verify=False,
@@ -86,10 +90,30 @@ class TelegramNotifier(Notifier):
         else:
             raise Exception("Impossible to delete the recipient")
 
-    def send_notification(self, img_path):
+    def send_notification(self, detection_event: DetectionEvent):
         """Implementation of send_notification method for Telegram notifier."""
-
-        self.send_telegram_message(img_path)
+        message = f"WADAS: Animal detected from camera {detection_event.camera_id}!"
+        # Select image to attach to the notification: classification (if enabled) or detection image
+        img_path = (
+            detection_event.classification_img_path
+            if detection_event.classification
+            else detection_event.detection_img_path
+        )
+        try:
+            status, data = self.send_telegram_message(message, img_path=img_path)
+            if status == 200:
+                if data["status"] == "ok":
+                    logger.info("Telegram notification sent!")
+                else:
+                    logger.warning("\n".join(data["error_msgs"]))
+            else:
+                logger.error(
+                    "Problem sending Telegram notifications: %s - %s",
+                    str(status),
+                    data,
+                )
+        except Exception as e:
+            logger.error("Problem sending Telegram notifications: %s", str(type(e)))
 
     def send_telegram_message(self, message, img_path=None):
         """Method to send Telegram message notification."""
@@ -103,23 +127,12 @@ class TelegramNotifier(Notifier):
         if img_path:
             data["image_b64"] = image_to_base64(img_path)
 
-        try:
-            res = requests.post(self.NOTIFICATION_URL, json=data, verify=False)
-            if res.status_code == 200:
-                logger.info("Telegram notifications sent!")
-                return res.json()
-            else:
-                logger.error(
-                    "Problem sending Telegram notifications: %s - %s",
-                    str(res.status_code),
-                    res.text,
-                )
-                raise Exception(
-                    f"Problem sending Telegram notifications: {str(res.status_code)} - {res.text}"
-                )
-        except Exception as e:
-            logger.error("Problem sending Telegram notifications: %s", str(type(e)))
-            raise
+        res = requests.post(self.NOTIFICATION_URL, json=data, verify=False)
+        if res.status_code == 200:
+            logger.info("Telegram notifications sent!")
+            return res.status_code, res.json()
+        else:
+            return res.status_code, res.text
 
     def serialize(self):
         """Method to serialize Telegram notifier object into file."""

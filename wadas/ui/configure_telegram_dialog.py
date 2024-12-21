@@ -95,7 +95,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         self.initialize_form()
 
     def check_existing_receivers(self, index):
-
+        """Method to show the receivers list when the user clicks on the tab 'Receivers'"""
         if index == 1 and self.telegram_notifier:
             self.clear_receivers()
             try:
@@ -150,6 +150,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         self.add_recipient_to_gridlayout(recipient)
 
     def add_recipient_to_gridlayout(self, recipient):
+        """Method to add a new receiver row to the gridlayout"""
         # Add the receiver row with the fetched ID
         grid_layout_receivers = self.findChild(QGridLayout, "gridLayout_receivers")
         if grid_layout_receivers:
@@ -188,6 +189,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         self.ui.pushButton_remove_receiver.setEnabled(True)
 
     def clear_receivers(self):
+        """Method to clear the list of the receivers."""
         grid_layout_receivers = self.findChild(QGridLayout, "gridLayout_receivers")
         for i in range(0, self.ui_receiver_idx):
             for j in range(0, 5):
@@ -197,7 +199,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         self.update()
 
     def remove_receiver(self):
-        """Method to programmatically remove receiver input fields"""
+        """Method to programmatically remove receiver input fields."""
         for i in range(0, self.ui_receiver_idx):
             radiobtn = self.findChild(QRadioButton, f"radioButton_receiver_{i}")
             receiver_id_ln = self.findChild(QLineEdit, f"lineEdit_receiver_id_{i}")
@@ -236,6 +238,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
             self.ui.pushButton_test_message.setEnabled(False)
 
     def update_receiver_name(self):
+        """Method to keep tracks of the names chosen for the recipients."""
         for i in range(0, self.ui_receiver_idx):
             receiver_id_ln = self.findChild(QLineEdit, f"lineEdit_receiver_id_{i}")
             receiver_name_ln = self.findChild(QLineEdit, f"lineEdit_name_{i}")
@@ -261,11 +264,14 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         if self.telegram_notifier.recipients:
             message = "WADAS Test Message!"
             try:
-                data = self.telegram_notifier.send_telegram_message(message)
-                if data["status"] == "ok":
-                    self.ui.plainTextEdit.setPlainText("WhatsApp notification sent!")
+                status, data = self.telegram_notifier.send_telegram_message(message)
+                if status == 200:
+                    if data["status"] == "ok":
+                        self.ui.plainTextEdit.setPlainText("Telegram notification sent!")
+                    else:
+                        self.ui.plainTextEdit.setPlainText("\n".join(data["error_msgs"]))
                 else:
-                    self.ui.plainTextEdit.setPlainText("\n".join(data["error_msgs"]))
+                    self.ui.plainTextEdit.setPlainText(f"Error sending Test Message: {str(status)} - {data}")
             except Exception:
                 self.ui.plainTextEdit.setPlainText(f"Error sending Test Message!")
         else:
