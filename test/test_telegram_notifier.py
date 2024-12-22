@@ -25,8 +25,8 @@ def test_serialize(telegram_notifier):
     expected_data = {
         "org_code": "2cc09b9d-e0b2-45c1-80f3-b7265eb3e3d3",
         "recipients": [
-            {"user_id": "user_id1", "name": "first recipient"},
-            {"user_id": "user_id2", "name": "second recipient"},
+            {"recipient_id": "user_id1", "name": "first recipient"},
+            {"recipient_id": "user_id2", "name": "second recipient"},
         ],
         "enabled": True,
         "allow_images": True,
@@ -39,8 +39,8 @@ def test_deserialize():
     data = {
         "org_code": "2cc09b9d-e0b2-45c1-80f3-b7265eb3e3d3",
         "recipients": [
-            {"user_id": "user_id1", "name": "first recipient"},
-            {"user_id": "user_id2", "name": "second recipient"},
+            {"recipient_id": "user_id1", "name": "first recipient"},
+            {"recipient_id": "user_id2", "name": "second recipient"},
         ],
         "enabled": True,
         "allow_images": True,
@@ -49,4 +49,4 @@ def test_deserialize():
     assert notifier.org_code == data["org_code"]
     assert notifier.enabled == data["enabled"]
     assert len(notifier.recipients) == len(data["recipients"])
-    assert notifier.recipients[0].recipient_id == data["recipients"][0]["user_id"]
+    assert notifier.recipients[0].recipient_id == data["recipients"][0]["recipient_id"]

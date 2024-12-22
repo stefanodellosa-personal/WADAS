@@ -82,7 +82,6 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         self.ui.verticalLayout_receivers.addWidget(self.progress_bar)
 
         # Adding first row of receivers form
-        # self.add_receiver()
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
@@ -96,18 +95,19 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
 
     def check_existing_receivers(self, index):
         """Method to show the receivers list when the user clicks on the tab 'Receivers'"""
-        if index == 1 and self.telegram_notifier:
-            self.clear_receivers()
-            try:
-                self.telegram_notifier.fetch_registered_recipient()
-                for r in self.telegram_notifier.recipients:
-                    self.add_recipient_to_gridlayout(r)
-            except Exception:
-                self.ui.label_errorMessage.setText("Impossible to retrieve existing recipients")
+        if self.telegram_notifier:
+            if index == 1:
+                self.clear_receivers()
+                try:
+                    self.telegram_notifier.fetch_registered_recipient()
+                    for r in self.telegram_notifier.recipients:
+                        self.add_recipient_to_gridlayout(r)
+                except Exception:
+                    self.ui.label_errorMessage.setText("Impossible to retrieve existing recipients")
 
-        if index == 0 and self.telegram_notifier:
-            self.ui.plainTextEdit.setPlainText("")
-            self.update_receiver_name()
+            if index == 0:
+                self.ui.plainTextEdit.setPlainText("")
+                self.update_receiver_name()
 
     def initialize_form(self):
         """Method to initialize form with existing Telegram configuration data (if any)."""
@@ -123,11 +123,9 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
     def add_receiver(self):
         """Method to programmatically add receiver input fields with progress bar update."""
         if self.telegram_notifier:
-            # Show the progress bar
             self.progress_bar.setValue(0)
             self.progress_bar.setVisible(True)
 
-            # Create and start the worker
             self.worker = AddReceiverWorker(self.telegram_notifier)
             self.worker.progress_updated.connect(self.update_progress)
             self.worker.recipient_fetched.connect(self.on_id_fetched)
@@ -167,8 +165,8 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
             grid_layout_receivers.addWidget(label, row, 1)
             id_line_edit = QLineEdit()
             id_line_edit.setObjectName(f"lineEdit_receiver_id_{row}")
-            id_line_edit.setText(recipient.recipient_id)  # Populate the fetched ID
-            id_line_edit.setReadOnly(True)  # Make the ID field read-only
+            id_line_edit.setText(recipient.recipient_id)
+            id_line_edit.setReadOnly(True)
             grid_layout_receivers.addWidget(id_line_edit, row, 2)
             # Receiver name
             label = QLabel("Name:")
@@ -193,8 +191,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
         grid_layout_receivers = self.findChild(QGridLayout, "gridLayout_receivers")
         for i in range(0, self.ui_receiver_idx):
             for j in range(0, 5):
-                item = grid_layout_receivers.itemAtPosition(i, j)
-                if item:
+                if item := grid_layout_receivers.itemAtPosition(i, j):
                     item.widget().deleteLater()
         self.update()
 
@@ -244,8 +241,9 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
             receiver_name_ln = self.findChild(QLineEdit, f"lineEdit_name_{i}")
 
             if receiver_id_ln:
+
                 t: TelegramRecipient = self.telegram_notifier.get_recipient_by_id(receiver_id_ln.text())
-                t.name = receiver_name_ln.text() if len(receiver_name_ln.text()) > 0 else None
+                t.name = receiver_name_ln.text() if receiver_name_ln.text() else None
 
     def accept_and_close(self):
         """When Ok is clicked, save email config info before closing."""

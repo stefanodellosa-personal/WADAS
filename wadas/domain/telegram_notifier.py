@@ -27,7 +27,7 @@ class TelegramNotifier(Notifier):
 
         self.type = Notifier.NotifierTypes.TELEGRAM
         self.org_code = org_code
-        self.recipients = recipients if recipients is not None else []
+        self.recipients = recipients or []
         self.allow_images = allow_images
 
     def is_configured(self):
@@ -36,26 +36,21 @@ class TelegramNotifier(Notifier):
 
     def get_recipient_by_id(self, recipient_id):
         """Method to return the TelegramRecipient having the specific recipient_id."""
-        if self.recipients is not None:
-            for r in self.recipients:
-                if r.recipient_id == recipient_id:
-                    return r
-        return None
+        return next((item for item in self.recipients if item.recipient_id == recipient_id), None)
 
     def fetch_registered_recipient(self):
         """Update the list of the recipients fetching from remote."""
-        res = requests.get(f"{self.REGISTRATION_URL}?org_code={self.org_code}", verify=False)
-        if res.status_code == 200:
-            list_users = res.json()
-            updated_receivers = []
-            for user_id in list_users:
-                known_recipient = self.get_recipient_by_id(user_id)
-                if known_recipient:
-                    updated_receivers.append(known_recipient)
-                else:
-                    updated_receivers.append(TelegramRecipient(user_id))
-
-            self.recipients = updated_receivers
+        if (
+            res := requests.get(f"{self.REGISTRATION_URL}?org_code={self.org_code}", verify=False)
+        ).status_code == 200:
+            self.recipients = [
+                (
+                    known_recipient
+                    if (known_recipient := self.get_recipient_by_id(user_id))
+                    else TelegramRecipient(user_id)
+                )
+                for user_id in res.json()
+            ]
         else:
             raise Exception("Impossible to retrieve registered users")
 
@@ -105,11 +100,11 @@ class TelegramNotifier(Notifier):
                 if data["status"] == "ok":
                     logger.info("Telegram notification sent!")
                 else:
-                    logger.warning("\n".join(data["error_msgs"]))
+                    logger.warning("%s", "\n".join(data["error_msgs"]))
             else:
                 logger.error(
                     "Problem sending Telegram notifications: %s - %s",
-                    str(status),
+                    status,
                     data,
                 )
         except Exception as e:
