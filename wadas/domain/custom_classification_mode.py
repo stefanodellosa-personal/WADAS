@@ -16,11 +16,14 @@ logger = logging.getLogger(__name__)
 class CustomClassificationMode(AnimalDetectionAndClassificationMode):
     """Custom Classification Mode class."""
 
-    def __init__(self, target_animal_label="bear"):
+    def __init__(self):
         super().__init__()
         self.process_queue = True
         self.type = OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
+        self.target_animal_label = ""
 
+    def set_animal_class(self, target_animal_label):
+        """Method to select animal to classify according to Ai model availability"""
         if target_animal_label in txt_animalclasses["en"]:
             self.target_animal_label = target_animal_label
         else:

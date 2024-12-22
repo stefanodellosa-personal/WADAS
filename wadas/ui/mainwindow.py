@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
+from wadas.domain.bear_detection_mode import BearDetectionMode
 from wadas.domain.custom_classification_mode import CustomClassificationMode
 from wadas.domain.camera import cameras, Camera
 from wadas.domain.configuration import load_configuration_from_file, save_configuration_to_file
@@ -216,9 +217,13 @@ class MainWindow(QMainWindow):
             if not self.check_models():
                 logger.error("Cannot run this mode without AI models. Aborting.")
                 return
-            if OperationMode.cur_operation_mode != OperationMode.OperationModeTypes.TestModelMode and not cameras:
-                logger.error("No camera configured. Please configure input cameras and run again.")
-                return
+            if OperationMode.cur_operation_mode.type != OperationMode.OperationModeTypes.TestModelMode:
+                if not cameras:
+                    logger.error("No camera configured. Please configure input cameras and run again.")
+                    return
+                elif not self.camera_enabled():
+                    logger.error("No camera enabled. Please enable at least one camera and run again.")
+                    return
             else:
                 # Passing cameras list to the selected operation mode
                 OperationMode.cur_operation_mode.cameras = cameras
@@ -246,6 +251,14 @@ class MainWindow(QMainWindow):
         else:
             logger.error("Unable to run the selected model.")
 
+    def camera_enabled(self):
+        """Method to check whether at least a camera is enabled."""
+
+        for camera in cameras:
+            if camera.enabled:
+                return True
+        return False
+
     def instantiate_selected_model(self):
         """Given the selected model from dedicated UI Dialog, instantiate
         the corresponding object."""
@@ -269,7 +282,7 @@ class MainWindow(QMainWindow):
                     OperationMode.cur_operation_mode_type
                     == OperationMode.OperationModeTypes.BearDetectionMode
             ):
-                OperationMode.cur_operation_mode = CustomClassificationMode(target_animal_label="bear")
+                OperationMode.cur_operation_mode = BearDetectionMode()
             elif (OperationMode.cur_operation_mode_type
                     == OperationMode.OperationModeTypes.CustomSpeciesClassificationMode):
                 OperationMode.cur_operation_mode = CustomClassificationMode()
@@ -298,11 +311,12 @@ class MainWindow(QMainWindow):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(True)
         elif (
-            OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode
+            OperationMode.cur_operation_mode_type != OperationMode.OperationModeTypes.TestModelMode
             and not cameras
         ):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
+            logger.info("No camera configured. Please configure camera(s) to run the selected operation mode.")
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             valid_configuration = True
