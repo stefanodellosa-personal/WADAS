@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
                         return
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
                     if selected_species:= self.custom_species_dialog():
-                        OperationMode.cur_operation_mode.target_animal_label = selected_species
+                        OperationMode.cur_operation_mode.set_animal_species(selected_species)
                     else:
                         logger.info("No custom species selected. Aborting Operation Mode execution.")
                         return

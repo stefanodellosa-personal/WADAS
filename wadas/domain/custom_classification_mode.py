@@ -4,6 +4,7 @@ import logging
 from queue import Empty
 
 from wadas.ai.models import txt_animalclasses
+from wadas.domain.ai_model import AiModel
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import img_queue
 from wadas.domain.detection_event import DetectionEvent
@@ -22,12 +23,15 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
         self.type = OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
         self.target_animal_label = ""
 
-    def set_animal_class(self, target_animal_label):
+    def set_animal_species(self, target_animal_label):
         """Method to select animal to classify according to Ai model availability"""
-        if target_animal_label in txt_animalclasses["en"]:
+        if target_animal_label in txt_animalclasses[AiModel.language]:
             self.target_animal_label = target_animal_label
+            logger.debug("%s species selected.", target_animal_label)
+            return True
         else:
-            raise Exception("The specified animal is not handled by WADAS")
+            logger.error("The specified animal species is not handled by WADAS")
+            return False
 
     def run(self):
         """WADAS custom classification mode"""

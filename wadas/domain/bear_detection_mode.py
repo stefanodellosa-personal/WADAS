@@ -1,4 +1,4 @@
-"""Custom Classification module."""
+"""Bear Detection mode module."""
 
 import logging
 
