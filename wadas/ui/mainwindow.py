@@ -254,10 +254,7 @@ class MainWindow(QMainWindow):
     def camera_enabled(self):
         """Method to check whether at least a camera is enabled."""
 
-        for camera in cameras:
-            if camera.enabled:
-                return True
-        return False
+        return any(camera.enabled for camera in cameras)
 
     def instantiate_selected_model(self):
         """Given the selected model from dedicated UI Dialog, instantiate
@@ -317,6 +314,13 @@ class MainWindow(QMainWindow):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
             logger.info("No camera configured. Please configure camera(s) to run the selected operation mode.")
+        elif (
+            OperationMode.cur_operation_mode_type != OperationMode.OperationModeTypes.TestModelMode
+            and not self.camera_enabled()
+        ):
+            self.ui.actionConfigure_Ai_model.setEnabled(True)
+            self.ui.actionRun.setEnabled(False)
+            logger.info("No camera enabled. Please enable at least a camera to run the selected operation mode.")
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             valid_configuration = True

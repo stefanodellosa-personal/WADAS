@@ -21,7 +21,7 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
         super().__init__()
         self.process_queue = True
         self.type = OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
-        self.target_animal_label = ""
+        self.target_animal_label = None
 
     def set_animal_species(self, target_animal_label):
         """Method to select animal to classify according to Ai model availability"""
