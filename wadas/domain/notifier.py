@@ -13,8 +13,11 @@ class Notifier:
     class NotifierTypes(Enum):
         EMAIL = "Email"
         WHATSAPP = "WhatsApp"
+        TELEGRAM = "Telegram"
 
-    notifiers = dict.fromkeys([NotifierTypes.EMAIL.value, NotifierTypes.WHATSAPP.value])
+    notifiers = dict.fromkeys(
+        [NotifierTypes.EMAIL.value, NotifierTypes.WHATSAPP.value, NotifierTypes.TELEGRAM.value]
+    )
 
     def __init__(self, enabled=True, allow_images=True):
         self.type = None

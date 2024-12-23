@@ -19,6 +19,7 @@ from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.roadsign_actuator import RoadSignActuator
+from wadas.domain.telegram_notifier import TelegramNotifier
 from wadas.domain.usb_camera import USBCamera
 from wadas.domain.whatsapp_notifier import WhatsAppNotifier
 
@@ -81,6 +82,10 @@ def load_configuration_from_file(file_path):
                     whatsapp_notifier.sender_id,
                 )
                 valid_whatsapp_keyring = False
+        elif key in Notifier.notifiers and key == Notifier.NotifierTypes.TELEGRAM.value:
+            telegram_notifier = TelegramNotifier.deserialize(value)
+            Notifier.notifiers[key] = telegram_notifier
+
     # FTP Server
     if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
         FTPsServer.ftps_server.server.close_all()
