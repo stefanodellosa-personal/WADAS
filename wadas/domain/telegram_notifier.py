@@ -90,9 +90,13 @@ class TelegramNotifier(Notifier):
         message = f"WADAS: Animal detected from camera {detection_event.camera_id}!"
         # Select image to attach to the notification: classification (if enabled) or detection image
         img_path = (
-            detection_event.classification_img_path
-            if detection_event.classification
-            else detection_event.detection_img_path
+            (
+                detection_event.classification_img_path
+                if detection_event.classification
+                else detection_event.detection_img_path
+            )
+            if self.allow_images
+            else None
         )
         try:
             status, data = self.send_telegram_message(message, img_path=img_path)
