@@ -18,7 +18,7 @@ module_dir_path = os.path.dirname(os.path.abspath(__file__))
 class TelegramNotifier(Notifier):
     """Telegram Notifier Class"""
 
-    BASE_URL = "https://wadas.hopto.org:8443/api/v1/telegram"
+    BASE_URL = "https://api.wadas.it:8443/api/v1/telegram"
     REGISTRATION_URL = BASE_URL + "/users"
     NOTIFICATION_URL = BASE_URL + "/notifications"
 
