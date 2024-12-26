@@ -2,12 +2,13 @@
 import datetime
 import logging
 import os
+import sys
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 
 import keyring
 from PySide6 import QtCore, QtGui
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QSettings, QThread
 from PySide6.QtGui import QBrush
 from PySide6.QtWidgets import (
     QComboBox,
@@ -47,6 +48,7 @@ from wadas.ui.license_dialog import LicenseDialog
 from wadas.ui.select_animal_species import DialogSelectAnimalSpecies
 from wadas.ui.select_mode_dialog import DialogSelectMode
 from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
+from wadas.ui.terms_n_conditions_dialog import TermsAndConditionsDialog
 from wadas.ui.qt.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
@@ -78,6 +80,8 @@ class MainWindow(QMainWindow):
         self.valid_email_keyring = False
         self.valid_ftp_keyring = False
 
+        self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
+
         # Connect Actions
         self._connect_actions()
 
@@ -98,6 +102,8 @@ class MainWindow(QMainWindow):
         self._init_logging_dropdown()
         self.update_toolbar_status()
         logger.info("Welcome to WADAS!")
+
+        self.show_terms_n_conditions()
 
     def _connect_actions(self):
         """List all actions to connect to MainWindow"""
@@ -737,3 +743,23 @@ Are you sure you want to exit?""",
 
         about_dialog = AboutDialog()
         about_dialog.exec_()
+
+    def show_terms_n_conditions(self):
+        """Method to show terms and conditions of use for WADAS."""
+
+        # Check if the welcome message should be shown
+        if not self.settings.value("show_terms_n_conditions", True, type=bool):
+            return
+
+        terms_n_conditions_dlg = TermsAndConditionsDialog(self.settings.value("terms_n_conditions", False, type=bool))
+        terms_n_conditions_dlg.exec()
+
+        # Save the preference if the user checks "Don't show again"
+        if terms_n_conditions_dlg.terms_accepted:
+            self.settings.setValue("terms_n_conditions", True)
+            if terms_n_conditions_dlg.dont_show:
+                self.settings.setValue("show_terms_n_conditions", False)
+        else:
+            # Force closure if terms and conditions are not accepted
+            self.close()
+            sys.exit()

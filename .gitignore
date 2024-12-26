@@ -72,3 +72,6 @@ cache
 
 # Tests execution extra files to support local setups which have issues with PySide
 test/exectests.py
+
+# Config
+UI_settings.ini
