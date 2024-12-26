@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.configuration_file_name = ""
+        self.configuration_file_name = None
         self.key_ring = None
         self.ftp_server = None
         self.valid_email_keyring = False
@@ -97,6 +97,12 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(
             QtGui.QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg"))
         )
+
+        # Last saved config
+        if (path := self.settings.value("last_saved_config_path", None, str)) and os.path.exists(path):
+            self.set_recent_configuration(path)
+        else:
+            self.ui.actionRecent_configuration.setEnabled(False)
 
         # Update mainwindow UI methods
         self._init_logging_dropdown()
@@ -128,6 +134,7 @@ class MainWindow(QMainWindow):
         self.ui.actionAbout.triggered.connect(self.show_about)
         self.ui.actionConfigure_WA.triggered.connect(self.configure_whatsapp)
         self.ui.actionConfigure_Telegram.triggered.connect(self.configure_telegram)
+        self.ui.actionRecent_configuration.triggered.connect(self.open_last_saved_file)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -511,6 +518,13 @@ class MainWindow(QMainWindow):
         logger.info("AI module found!")
         return True
 
+    def set_recent_configuration(self, cfg_file_path):
+        """Method to set recent configuration file used references"""
+
+        self.ui.actionRecent_configuration.setText(cfg_file_path)
+        self.ui.actionRecent_configuration.setEnabled(True)
+        self.settings.setValue("last_saved_config_path", cfg_file_path)
+
     def save_config_to_file(self):
         """Method to save configuration to file."""
 
@@ -525,6 +539,7 @@ class MainWindow(QMainWindow):
             save_configuration_to_file(self.configuration_file_name)
             self.setWindowModified(False)
             self.update_toolbar_status()
+            self.set_recent_configuration(self.configuration_file_name)
 
     def save_as_to_config_file(self):
         """Method to save configuration file as"""
@@ -559,6 +574,7 @@ class MainWindow(QMainWindow):
             self.update_info_widget()
             self.update_en_camera_list()
             self.update_en_actuator_list()
+            self.set_recent_configuration(self.configuration_file_name)
 
             if not self.valid_email_keyring:
                 reply = QMessageBox.question(
@@ -764,3 +780,18 @@ Are you sure you want to exit?""",
             self.close()
             sys.exit()
 
+    def open_last_saved_file(self):
+        """Method to enable openong of last saved configuration file"""
+        if (path:=self.settings.value("last_saved_config_path", None, str)) and os.path.exists(path):
+            load_configuration_from_file(path)
+            self.configuration_file_name = path
+            self.setWindowModified(False)
+            self.update_toolbar_status()
+            self.update_info_widget()
+            self.update_en_camera_list()
+            self.update_en_actuator_list()
+            self.set_recent_configuration(self.configuration_file_name)
+        else:
+            logger.warning("No last saved file found or file no longer exists.")
+            self.ui.actionRecent_configuration.setEnabled(False)  # Disable if file does not exist
+            self.settings.remove("last_saved_config_path")
