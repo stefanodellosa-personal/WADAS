@@ -763,3 +763,4 @@ Are you sure you want to exit?""",
             # Force closure if terms and conditions are not accepted
             self.close()
             sys.exit()
+

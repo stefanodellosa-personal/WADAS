@@ -19,7 +19,7 @@ class TermsAndConditionsDialog(QDialog):
         self.dont_show = False
 
         # UI
-        self.setWindowTitle("Terms and Conditions of use")
+        self.setWindowTitle("WADAS Terms and Conditions of use")
         self.setGeometry(150, 150, 500, 400)
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
 
