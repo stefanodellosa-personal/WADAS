@@ -262,6 +262,8 @@
     <addaction name="actionOpen_configuration_file_menu"/>
     <addaction name="actionSave_configuration_as_menu"/>
     <addaction name="actionSave_configuration_menu"/>
+    <addaction name="separator"/>
+    <addaction name="actionRecent_configuration"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -539,6 +541,20 @@
    </property>
    <property name="toolTip">
     <string>Configure Telegram notifications</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionRecent_configuration">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentOpenRecent"/>
+   </property>
+   <property name="text">
+    <string>No recent configuration</string>
+   </property>
+   <property name="toolTip">
+    <string>Load last saved configuration</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

@@ -2,12 +2,13 @@
 import datetime
 import logging
 import os
+import sys
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 
 import keyring
 from PySide6 import QtCore, QtGui
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QSettings, QThread
 from PySide6.QtGui import QBrush
 from PySide6.QtWidgets import (
     QComboBox,
@@ -47,6 +48,7 @@ from wadas.ui.license_dialog import LicenseDialog
 from wadas.ui.select_animal_species import DialogSelectAnimalSpecies
 from wadas.ui.select_mode_dialog import DialogSelectMode
 from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
+from wadas.ui.terms_n_conditions_dialog import TermsAndConditionsDialog
 from wadas.ui.qt.ui_mainwindow import Ui_MainWindow
 
 logger = logging.getLogger()
@@ -72,11 +74,13 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.configuration_file_name = ""
+        self.configuration_file_name = None
         self.key_ring = None
         self.ftp_server = None
         self.valid_email_keyring = False
         self.valid_ftp_keyring = False
+
+        self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
 
         # Connect Actions
         self._connect_actions()
@@ -94,10 +98,18 @@ class MainWindow(QMainWindow):
             QtGui.QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg"))
         )
 
+        # Last saved config
+        if (path := self.settings.value("last_saved_config_path", None, str)) and os.path.exists(path):
+            self.set_recent_configuration(path)
+        else:
+            self.ui.actionRecent_configuration.setEnabled(False)
+
         # Update mainwindow UI methods
         self._init_logging_dropdown()
         self.update_toolbar_status()
         logger.info("Welcome to WADAS!")
+
+        self.show_terms_n_conditions()
 
     def _connect_actions(self):
         """List all actions to connect to MainWindow"""
@@ -122,6 +134,7 @@ class MainWindow(QMainWindow):
         self.ui.actionAbout.triggered.connect(self.show_about)
         self.ui.actionConfigure_WA.triggered.connect(self.configure_whatsapp)
         self.ui.actionConfigure_Telegram.triggered.connect(self.configure_telegram)
+        self.ui.actionRecent_configuration.triggered.connect(self.open_last_saved_file)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -505,6 +518,13 @@ class MainWindow(QMainWindow):
         logger.info("AI module found!")
         return True
 
+    def set_recent_configuration(self, cfg_file_path):
+        """Method to set recent configuration file used references"""
+
+        self.ui.actionRecent_configuration.setText(cfg_file_path)
+        self.ui.actionRecent_configuration.setEnabled(True)
+        self.settings.setValue("last_saved_config_path", cfg_file_path)
+
     def save_config_to_file(self):
         """Method to save configuration to file."""
 
@@ -519,6 +539,7 @@ class MainWindow(QMainWindow):
             save_configuration_to_file(self.configuration_file_name)
             self.setWindowModified(False)
             self.update_toolbar_status()
+            self.set_recent_configuration(self.configuration_file_name)
 
     def save_as_to_config_file(self):
         """Method to save configuration file as"""
@@ -553,6 +574,7 @@ class MainWindow(QMainWindow):
             self.update_info_widget()
             self.update_en_camera_list()
             self.update_en_actuator_list()
+            self.set_recent_configuration(self.configuration_file_name)
 
             if not self.valid_email_keyring:
                 reply = QMessageBox.question(
@@ -737,3 +759,39 @@ Are you sure you want to exit?""",
 
         about_dialog = AboutDialog()
         about_dialog.exec_()
+
+    def show_terms_n_conditions(self):
+        """Method to show terms and conditions of use for WADAS."""
+
+        # Check if the welcome message should be shown
+        if not self.settings.value("show_terms_n_conditions", True, type=bool):
+            return
+
+        terms_n_conditions_dlg = TermsAndConditionsDialog(self.settings.value("terms_n_conditions", False, type=bool))
+        terms_n_conditions_dlg.exec()
+
+        # Save the preference if the user checks "Don't show again"
+        if terms_n_conditions_dlg.terms_accepted:
+            self.settings.setValue("terms_n_conditions", True)
+            if terms_n_conditions_dlg.dont_show:
+                self.settings.setValue("show_terms_n_conditions", False)
+        else:
+            # Force closure if terms and conditions are not accepted
+            self.close()
+            sys.exit()
+
+    def open_last_saved_file(self):
+        """Method to enable openong of last saved configuration file"""
+        if (path:=self.settings.value("last_saved_config_path", None, str)) and os.path.exists(path):
+            load_configuration_from_file(path)
+            self.configuration_file_name = path
+            self.setWindowModified(False)
+            self.update_toolbar_status()
+            self.update_info_widget()
+            self.update_en_camera_list()
+            self.update_en_actuator_list()
+            self.set_recent_configuration(self.configuration_file_name)
+        else:
+            logger.warning("No last saved file found or file no longer exists.")
+            self.ui.actionRecent_configuration.setEnabled(False)  # Disable if file does not exist
+            self.settings.remove("last_saved_config_path")
