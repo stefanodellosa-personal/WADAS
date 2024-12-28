@@ -17,16 +17,16 @@ logger = logging.getLogger(__name__)
 class CustomClassificationMode(AnimalDetectionAndClassificationMode):
     """Custom Classification Mode class."""
 
-    def __init__(self):
+    def __init__(self, custom_target_species=None):
         super().__init__()
         self.process_queue = True
         self.type = OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
-        self.target_animal_label = None
+        self.custom_target_species = custom_target_species
 
     def set_animal_species(self, target_animal_label):
         """Method to select animal to classify according to Ai model availability"""
         if target_animal_label in txt_animalclasses[AiModel.language]:
-            self.target_animal_label = target_animal_label
+            self.custom_target_species = target_animal_label
             logger.debug("%s species selected.", target_animal_label)
             return True
         else:
@@ -71,7 +71,7 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
                         )
                         # Send notification and trigger actuators if the target animal is found
                         if any(
-                            x["classification"][0] == self.target_animal_label
+                            x["classification"][0] == self.custom_target_species
                             for x in classified_animals
                         ):
                             # Trigger image update in WADAS mainwindow
@@ -89,10 +89,15 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
                             logger.info(
                                 "Target animal '%s' not found, found '%s' instead. "
                                 "Skipping notification.",
-                                self.target_animal_label,
+                                self.custom_target_species,
                                 self.last_classified_animals_str,
                             )
                     else:
                         logger.info("No animals to classify.")
 
         self.execution_completed()
+
+        def serialize(self):
+            """Method to serialize Operation Mode object into file."""
+
+            return {"type": self.type.value, "custom_target_species": self.custom_target_species}

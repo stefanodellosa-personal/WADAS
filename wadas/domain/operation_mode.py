@@ -36,6 +36,7 @@ class OperationMode(QObject):
     # Currently selected operation mode
     cur_operation_mode = None
     cur_operation_mode_type = None  # We need this separately as object is deleted after op_mode run
+    cur_custom_classification_species = None
 
     # Signals
     update_image = Signal(str)
@@ -54,7 +55,6 @@ class OperationMode(QObject):
         self.last_classification = ""
         self.last_classified_animals_str = ""
         self.url = ""
-        self.email_configuration = {}
         self.camera_thread = []
         self.ftp_thread = None
         self.actuators_server_thread = None
@@ -224,3 +224,11 @@ class OperationMode(QObject):
     @abstractmethod
     def run(self):
         """Method to run the specific operation mode."""
+
+    @abstractmethod
+    def serialize(self):
+        """Method to serialize Operation Mode object into file."""
+
+    @staticmethod
+    def deserialize(data):
+        """Method to deserialize Operation Mode object from file."""

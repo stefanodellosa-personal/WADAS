@@ -88,3 +88,8 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                     logger.debug("No animal detected.")
 
         self.execution_completed()
+
+    def serialize(self):
+        """Method to serialize Test Model Mode object into file."""
+
+        return {"type": self.type.value}

@@ -12,6 +12,10 @@ class BearDetectionMode(CustomClassificationMode):
     """Bear Detection Mode class."""
 
     def __init__(self):
-        super().__init__()
+        super().__init__("bear")
         self.type = OperationMode.OperationModeTypes.BearDetectionMode
-        self.target_animal_label = "bear"
+
+    def serialize(self):
+        """Method to serialize Bear Detection Mode object into file."""
+
+        return {"type": self.type.value, "custom_target_species": self.custom_target_species}
