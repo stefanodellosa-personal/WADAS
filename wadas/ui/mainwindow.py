@@ -30,7 +30,7 @@ from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
-from wadas.domain.qtextedit_logger import QTextEditLogger
+from ui.qtextedit_logger import QTextEditLogger
 from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.about_dialog import AboutDialog
@@ -196,6 +196,10 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             if OperationMode.cur_operation_mode_type:
                 logger.info("Selected operation mode: %s", OperationMode.cur_operation_mode_type.value)
+                if (OperationMode.cur_operation_mode_type ==
+                        OperationMode.OperationModeTypes.CustomSpeciesClassificationMode):
+                    logger.info("Selected custom species to classify: %s",
+                                OperationMode.cur_custom_classification_species)
                 self.setWindowModified(True)
                 self.update_toolbar_status()
                 self.update_info_widget()
@@ -220,6 +224,12 @@ class MainWindow(QMainWindow):
                     if not OperationMode.cur_operation_mode.url:
                         logger.error("Cannot proceed without a valid URL. Please run again.")
                         return
+                case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
+                    if not OperationMode.cur_custom_classification_species:
+                        return
+                    else:
+                        OperationMode.cur_operation_mode.custom_target_species = (
+                            OperationMode.cur_custom_classification_species)
 
             # Satisfy preconditions independently of selected operation mode
             if not self.check_models():

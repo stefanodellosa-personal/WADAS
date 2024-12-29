@@ -24,7 +24,7 @@ from validators import ipv4
 from wadas.domain.camera import Camera, cameras
 from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.ftps_server import FTPsServer
-from wadas.domain.qtextedit_logger import QTextEditLogger
+from ui.qtextedit_logger import QTextEditLogger
 from wadas.ui.qt.ui_configure_ftp_cameras import Ui_DialogFTPCameras
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
