@@ -1355,7 +1355,8 @@ cameras: []
 camera_detection_params: {}
 ftps_server: []
 notification: []
-operation_mode: Test Model Mode
+operation_mode:
+    type: Test Model Mode
 """,
 )
 def test_load_test_model_mode_config(mock_file, init):
@@ -1393,7 +1394,8 @@ camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
-operation_mode: Test Model Mode
+operation_mode:
+  type: Test Model Mode
 version: {__version__}
 """
     )
@@ -1415,7 +1417,8 @@ cameras: []
 camera_detection_params: {}
 ftps_server: []
 notification: []
-operation_mode: Animal Detection Mode
+operation_mode:
+    type: Animal Detection Mode
 """,
 )
 def test_load_animal_detection_mode_config(mock_file, init):
@@ -1445,7 +1448,8 @@ camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
-operation_mode: Animal Detection Mode
+operation_mode:
+  type: Animal Detection Mode
 version: {__version__}
 """
     )
@@ -1467,7 +1471,8 @@ cameras: []
 camera_detection_params: {}
 ftps_server: []
 notification: []
-operation_mode: Animal Detection and Classification Mode
+operation_mode:
+    type: Animal Detection and Classification Mode
 """,
 )
 def test_load_animal_detection_and_classification_mode_config(mock_file, init):
@@ -1499,7 +1504,8 @@ camera_detection_params: {{}}
 cameras: []
 ftps_server: ''
 notification: ''
-operation_mode: Animal Detection and Classification Mode
+operation_mode:
+  type: Animal Detection and Classification Mode
 version: {__version__}
 """
     )

@@ -266,6 +266,7 @@ class MainWindow(QMainWindow):
 
     def instantiate_selected_model(self):
         """Given the selected model from dedicated UI Dialog, instantiate the corresponding object."""
+
         if not OperationMode.cur_operation_mode_type:
             logger.error("No operation mode selected.")
             return
