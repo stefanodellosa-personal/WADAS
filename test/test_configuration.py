@@ -1509,3 +1509,63 @@ operation_mode:
 version: {__version__}
 """
     )
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data="""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_threshold: 0
+  ai_classification_device: auto
+  ai_detect_threshold: 0
+  ai_detection_device: auto
+  ai_language: ''
+cameras: []
+camera_detection_params: {}
+ftps_server: []
+notification: []
+operation_mode:
+    type: Custom Species Classification Mode
+    custom_target_species: chamois
+""",
+)
+def test_load_custom_species_classification_mode_config(mock_file, init):
+    assert load_configuration_from_file("") == (True, True, True)
+    assert OperationMode.cur_operation_mode is None
+    assert (
+        OperationMode.cur_operation_mode_type
+        == OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
+    )
+    assert OperationMode.cur_custom_classification_species == "chamois"
+
+
+@patch("builtins.open", new_callable=OpenStringMock, create=True)
+def test_save_custom_species_classification_mode_config(mock_file, init):
+    OperationMode.cur_operation_mode_type = (
+        OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
+    )
+    OperationMode.cur_custom_classification_species = "chamois"
+    save_configuration_to_file("")
+    assert (
+        mock_file.dump()
+        == f"""actuator_server: ''
+actuators: []
+ai_model:
+  ai_class_threshold: 0
+  ai_classification_device: auto
+  ai_detect_threshold: 0
+  ai_detection_device: auto
+  ai_language: ''
+camera_detection_params: {{}}
+cameras: []
+ftps_server: ''
+notification: ''
+operation_mode:
+  custom_target_species: chamois
+  type: Custom Species Classification Mode
+version: {__version__}
+"""
+    )

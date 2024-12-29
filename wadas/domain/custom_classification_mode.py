@@ -96,8 +96,3 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
                         logger.info("No animals to classify.")
 
         self.execution_completed()
-
-        def serialize(self):
-            """Method to serialize Operation Mode object into file."""
-
-            return {"type": self.type.value, "custom_target_species": self.custom_target_species}
