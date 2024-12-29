@@ -220,12 +220,6 @@ class MainWindow(QMainWindow):
                     if not OperationMode.cur_operation_mode.url:
                         logger.error("Cannot proceed without a valid URL. Please run again.")
                         return
-                case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
-                    if selected_species:= self.custom_species_dialog():
-                        OperationMode.cur_operation_mode.set_animal_species(selected_species)
-                    else:
-                        logger.info("No custom species selected. Aborting Operation Mode execution.")
-                        return
 
             # Satisfy preconditions independently of selected operation mode
             if not self.check_models():

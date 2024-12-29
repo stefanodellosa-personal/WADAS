@@ -78,8 +78,3 @@ class TestModelMode(OperationMode):
             self.run_finished.emit()
             logger.info("Request to stop received. Aborting...")
             return
-
-    def serialize(self):
-        """Method to serialize Test Model Mode object into file."""
-
-        return {"type": self.type.value}

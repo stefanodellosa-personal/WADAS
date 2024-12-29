@@ -224,11 +224,3 @@ class OperationMode(QObject):
     @abstractmethod
     def run(self):
         """Method to run the specific operation mode."""
-
-    @abstractmethod
-    def serialize(self):
-        """Method to serialize Operation Mode object into file."""
-
-    @staticmethod
-    def deserialize(data):
-        """Method to deserialize Operation Mode object from file."""
