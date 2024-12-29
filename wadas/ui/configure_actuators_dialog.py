@@ -23,9 +23,9 @@ from wadas.domain.actuator import Actuator
 from wadas.domain.camera import cameras
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer, initialize_fastapi_logger
 from wadas.domain.feeder_actuator import FeederActuator
-from ui.qtextedit_logger import QTextEditLogger
 from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.ui.qt.ui_configure_actuators import Ui_DialogConfigureActuators
+from wadas.ui.qtextedit_logger import QTextEditLogger
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 

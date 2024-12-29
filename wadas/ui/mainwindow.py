@@ -30,7 +30,6 @@ from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
-from ui.qtextedit_logger import QTextEditLogger
 from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.about_dialog import AboutDialog
@@ -50,6 +49,7 @@ from wadas.ui.select_mode_dialog import DialogSelectMode
 from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
 from wadas.ui.terms_n_conditions_dialog import TermsAndConditionsDialog
 from wadas.ui.qt.ui_mainwindow import Ui_MainWindow
+from wadas.ui.qtextedit_logger import QTextEditLogger
 
 logger = logging.getLogger()
 
