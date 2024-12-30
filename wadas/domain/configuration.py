@@ -183,10 +183,17 @@ def load_configuration_from_file(file_path):
     )
 
     # Operation Mode
-    if operation_mode_type := _OPERATION_MODE_TYPE_VALUE_TO_TYPE.get(
-        wadas_config["operation_mode"]
-    ):
+    if operation_mode := wadas_config["operation_mode"]:
+        operation_mode_type = _OPERATION_MODE_TYPE_VALUE_TO_TYPE.get(operation_mode["type"])
         OperationMode.cur_operation_mode_type = operation_mode_type
+        if (
+            operation_mode_type
+            == OperationMode.cur_operation_mode_type.CustomSpeciesClassificationMode
+            and operation_mode["custom_target_species"]
+        ):
+            OperationMode.cur_custom_classification_species = operation_mode[
+                "custom_target_species"
+            ]
     else:
         OperationMode.cur_operation_mode = None
 
@@ -215,6 +222,17 @@ def save_configuration_to_file(file_):
     # Prepare serialization for actuators per class type
     actuators = [value.serialize() for key, value in Actuator.actuators.items() if key and value]
 
+    # Prepare serialization for operation mode
+    operation_mode = ""
+    if OperationMode.cur_operation_mode_type:
+        if OperationMode.cur_custom_classification_species:
+            operation_mode = {
+                "type": OperationMode.cur_operation_mode_type.value,
+                "custom_target_species": OperationMode.cur_custom_classification_species,
+            }
+        else:
+            operation_mode = {"type": OperationMode.cur_operation_mode_type.value}
+
     # Build data structure to serialize
     data = {
         "version": __version__,
@@ -229,11 +247,7 @@ def save_configuration_to_file(file_):
             "ai_detection_device": AiModel.detection_device,
             "ai_classification_device": AiModel.classification_device,
         },
-        "operation_mode": (
-            OperationMode.cur_operation_mode_type.value
-            if OperationMode.cur_operation_mode_type
-            else ""
-        ),
+        "operation_mode": operation_mode,
         "ftps_server": FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else "",
         "actuator_server": (
             FastAPIActuatorServer.actuator_server.serialize()

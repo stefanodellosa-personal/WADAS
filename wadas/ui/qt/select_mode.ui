@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>221</height>
+    <width>431</width>
+    <height>251</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>190</y>
-     <width>381</width>
+     <y>210</y>
+     <width>411</width>
      <height>32</height>
     </rect>
    </property>
@@ -32,14 +32,27 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
      <y>20</y>
-     <width>351</width>
-     <height>158</height>
+     <width>411</width>
+     <height>181</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0">
+     <widget class="QRadioButton" name="radioButton_animal_det_mode">
+      <property name="text">
+       <string>Animal detection mode</string>
+      </property>
+      <property name="autoExclusive">
+       <bool>true</bool>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup</string>
+      </attribute>
+     </widget>
+    </item>
+    <item row="0" column="0">
      <widget class="QRadioButton" name="radioButton_test_model_mode">
       <property name="text">
        <string>Test model mode</string>
@@ -55,20 +68,7 @@
       </attribute>
      </widget>
     </item>
-    <item>
-     <widget class="QRadioButton" name="radioButton_animal_det_mode">
-      <property name="text">
-       <string>Animal detection mode</string>
-      </property>
-      <property name="autoExclusive">
-       <bool>true</bool>
-      </property>
-      <attribute name="buttonGroup">
-       <string notr="true">buttonGroup</string>
-      </attribute>
-     </widget>
-    </item>
-    <item>
+    <item row="2" column="0">
      <widget class="QRadioButton" name="radioButton_animal_det_and_class_mode">
       <property name="text">
        <string>Animal detection and classification mode</string>
@@ -81,26 +81,7 @@
       </attribute>
      </widget>
     </item>
-    <item>
-     <widget class="QRadioButton" name="radioButton_tunnel_mode">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Tunnel mode</string>
-      </property>
-      <property name="checkable">
-       <bool>false</bool>
-      </property>
-      <property name="autoExclusive">
-       <bool>true</bool>
-      </property>
-      <attribute name="buttonGroup">
-       <string notr="true">buttonGroup</string>
-      </attribute>
-     </widget>
-    </item>
-    <item>
+    <item row="4" column="0">
      <widget class="QRadioButton" name="radioButton_bear_det_mode">
       <property name="enabled">
        <bool>true</bool>
@@ -119,7 +100,29 @@
       </attribute>
      </widget>
     </item>
-    <item>
+    <item row="5" column="1">
+     <widget class="QComboBox" name="comboBox_select_species"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QRadioButton" name="radioButton_tunnel_mode">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Tunnel mode</string>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+      <property name="autoExclusive">
+       <bool>true</bool>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup</string>
+      </attribute>
+     </widget>
+    </item>
+    <item row="5" column="0">
      <widget class="QRadioButton" name="radioButton_custom_species_class_mode">
       <property name="text">
        <string>Custom species classification mode</string>
@@ -128,19 +131,6 @@
        <string notr="true">buttonGroup</string>
       </attribute>
      </widget>
-    </item>
-    <item>
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Orientation::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
     </item>
    </layout>
   </widget>

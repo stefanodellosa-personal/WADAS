@@ -17,4 +17,4 @@
 # Date: 2024-08-14
 # Description: WhatsApp notifier module
 
-__version__ = "v0.2.0"
+__version__ = "v0.4.0"

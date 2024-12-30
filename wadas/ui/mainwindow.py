@@ -49,7 +49,6 @@ from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
-from ui.qtextedit_logger import QTextEditLogger
 from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.about_dialog import AboutDialog
@@ -69,6 +68,7 @@ from wadas.ui.select_mode_dialog import DialogSelectMode
 from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
 from wadas.ui.terms_n_conditions_dialog import TermsAndConditionsDialog
 from wadas.ui.qt.ui_mainwindow import Ui_MainWindow
+from wadas.ui.qtextedit_logger import QTextEditLogger
 
 logger = logging.getLogger()
 
@@ -212,15 +212,18 @@ class MainWindow(QMainWindow):
         """Slot for mode selection (toolbar button)"""
 
         dialog = DialogSelectMode()
-        if dialog.exec_():
+        if dialog.exec():
             if OperationMode.cur_operation_mode_type:
-                logger.info("Selected mode from dialog: %s", OperationMode.cur_operation_mode_type.value)
+                logger.info("Selected operation mode: %s", OperationMode.cur_operation_mode_type.value)
+                if (OperationMode.cur_operation_mode_type ==
+                        OperationMode.OperationModeTypes.CustomSpeciesClassificationMode):
+                    logger.info("Selected custom species to classify: %s",
+                                OperationMode.cur_custom_classification_species)
                 self.setWindowModified(True)
+                self.update_toolbar_status()
+                self.update_info_widget()
             else:
                 logger.debug("No operation mode selected.")
-
-        self.update_toolbar_status()
-        self.update_info_widget()
 
     def run(self):
         """Slot to run selected mode once run button is clicked.
@@ -241,11 +244,11 @@ class MainWindow(QMainWindow):
                         logger.error("Cannot proceed without a valid URL. Please run again.")
                         return
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
-                    if selected_species:= self.custom_species_dialog():
-                        OperationMode.cur_operation_mode.set_animal_species(selected_species)
-                    else:
-                        logger.info("No custom species selected. Aborting Operation Mode execution.")
+                    if not OperationMode.cur_custom_classification_species:
                         return
+                    else:
+                        OperationMode.cur_operation_mode.custom_target_species = (
+                            OperationMode.cur_custom_classification_species)
 
             # Satisfy preconditions independently of selected operation mode
             if not self.check_models():
@@ -291,33 +294,24 @@ class MainWindow(QMainWindow):
         return any(camera.enabled for camera in cameras)
 
     def instantiate_selected_model(self):
-        """Given the selected model from dedicated UI Dialog, instantiate
-        the corresponding object."""
+        """Given the selected model from dedicated UI Dialog, instantiate the corresponding object."""
+
         if not OperationMode.cur_operation_mode_type:
             logger.error("No operation mode selected.")
             return
         else:
-            if OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode:
-                logger.info("Running test model mode....")
-                OperationMode.cur_operation_mode = TestModelMode()
-            elif (
-                    OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.AnimalDetectionMode
-            ):
-                OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode(classification=False)
-            elif (
-                    OperationMode.cur_operation_mode_type
-                    == OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
-            ):
-                OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode()
-            elif (
-                    OperationMode.cur_operation_mode_type
-                    == OperationMode.OperationModeTypes.BearDetectionMode
-            ):
-                OperationMode.cur_operation_mode = BearDetectionMode()
-            elif (OperationMode.cur_operation_mode_type
-                    == OperationMode.OperationModeTypes.CustomSpeciesClassificationMode):
-                OperationMode.cur_operation_mode = CustomClassificationMode()
-            # add elif with other operation modes
+            match OperationMode.cur_operation_mode_type:
+                case OperationMode.OperationModeTypes.TestModelMode:
+                    OperationMode.cur_operation_mode = TestModelMode()
+                case OperationMode.OperationModeTypes.AnimalDetectionMode:
+                    OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode(classification=False)
+                case OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode:
+                    OperationMode.cur_operation_mode = AnimalDetectionAndClassificationMode()
+                case OperationMode.OperationModeTypes.BearDetectionMode:
+                    OperationMode.cur_operation_mode = BearDetectionMode()
+                case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
+                    OperationMode.cur_operation_mode = CustomClassificationMode()
+                # add case for new operation modes
 
     def on_run_completion(self):
         """Actions performed after a run is completed."""

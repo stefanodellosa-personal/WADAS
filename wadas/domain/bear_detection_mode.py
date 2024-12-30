@@ -29,6 +29,5 @@ class BearDetectionMode(CustomClassificationMode):
     """Bear Detection Mode class."""
 
     def __init__(self):
-        super().__init__()
+        super().__init__("bear")
         self.type = OperationMode.OperationModeTypes.BearDetectionMode
-        self.target_animal_label = "bear"
