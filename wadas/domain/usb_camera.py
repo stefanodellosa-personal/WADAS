@@ -15,9 +15,8 @@
 #
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2024-08-14
-# Description: Module containing MainWindow class and methods.
+# Description: USB Camera module
 
-"""USB Camera module"""
 
 import logging
 import os
