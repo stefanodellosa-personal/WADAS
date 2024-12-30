@@ -16,7 +16,7 @@ MODEL_FILES = [
     "classification_model.bin"
 ]
 REPO_ID = "alespalla/wadas"
-SAVE_DIRECTORY = os.path.join(module_dir_path, "..", "model")
+SAVE_DIRECTORY = os.path.join(module_dir_path, "..", "..", "model")
 MODEL_PATHS = [os.path.join(SAVE_DIRECTORY, f) for f in MODEL_FILES]
 
 def check_model_files(model_paths):
@@ -92,6 +92,7 @@ class AiModelDownloadDialog(QDialog):
                 return
 
         QMessageBox.information(self, "Success!", "All model files have been successfully downloaded.")
+        self.download_success = True
         self.accept()
 
     def cancel_download(self):
