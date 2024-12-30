@@ -44,6 +44,7 @@ from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
 from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
 from wadas.ui.insert_url_dialog import InsertUrlDialog
 from wadas.ui.license_dialog import LicenseDialog
+from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
 from wadas.ui.select_animal_species import DialogSelectAnimalSpecies
 from wadas.ui.select_mode_dialog import DialogSelectMode
 from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
@@ -210,12 +211,27 @@ class MainWindow(QMainWindow):
         """Slot to run selected mode once run button is clicked.
         Since image processing is heavy task, new thread is created."""
 
+        self.instantiate_selected_model()
+        # Satisfy preconditions independently of selected operation mode
+        if not self.check_models():
+            logger.error("Cannot run this mode without AI models. Aborting.")
+            return
+        if OperationMode.cur_operation_mode.type != OperationMode.OperationModeTypes.TestModelMode:
+            if not cameras:
+                logger.error("No camera configured. Please configure input cameras and run again.")
+                return
+            elif not self.camera_enabled():
+                logger.error("No camera enabled. Please enable at least one camera and run again.")
+                return
+        else:
+            # Passing cameras list to the selected operation mode
+            OperationMode.cur_operation_mode.cameras = cameras
+
         # Check if notifications have been configured
         proceed = self.check_notification_enablement()
         if not proceed:
             return
 
-        self.instantiate_selected_model()
         # Satisfy preconditions and required inputs for the selected operation mode
         if OperationMode.cur_operation_mode:
             match OperationMode.cur_operation_mode.type:
@@ -230,21 +246,6 @@ class MainWindow(QMainWindow):
                     else:
                         OperationMode.cur_operation_mode.custom_target_species = (
                             OperationMode.cur_custom_classification_species)
-
-            # Satisfy preconditions independently of selected operation mode
-            if not self.check_models():
-                logger.error("Cannot run this mode without AI models. Aborting.")
-                return
-            if OperationMode.cur_operation_mode.type != OperationMode.OperationModeTypes.TestModelMode:
-                if not cameras:
-                    logger.error("No camera configured. Please configure input cameras and run again.")
-                    return
-                elif not self.camera_enabled():
-                    logger.error("No camera enabled. Please enable at least one camera and run again.")
-                    return
-            else:
-                # Passing cameras list to the selected operation mode
-                OperationMode.cur_operation_mode.cameras = cameras
 
             # Connect slots to update UI from operation mode
             self._connect_mode_ui_slots()
@@ -506,11 +507,16 @@ class MainWindow(QMainWindow):
     def check_models(self):
         """Method to initialize classification model."""
         if not AiModel.check_model():
-            logger.error("AI module not found. Downloading...")
-            AiModel.download_models()
-            return self.check_models()
-        logger.info("AI module found!")
-        return True
+            logger.warning("AI module not found. Downloading...")
+            ai_download_dialog = AiModelDownloadDialog()
+            if ai_download_dialog.exec():
+                return ai_download_dialog.download_success and AiModel.check_model()
+            else:
+                logger.error("Ai models files download cancelled by user. Aborting.")
+                return False
+        else:
+            logger.info("AI module found!")
+            return True
 
     def set_recent_configuration(self, cfg_file_path):
         """Method to set recent configuration file used references"""
