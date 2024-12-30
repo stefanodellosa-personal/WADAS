@@ -49,7 +49,7 @@ from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
-from wadas.domain.qtextedit_logger import QTextEditLogger
+from ui.qtextedit_logger import QTextEditLogger
 from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.about_dialog import AboutDialog

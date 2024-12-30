@@ -14,26 +14,31 @@
 # along with WADAS. If not, see <https://www.gnu.org/licenses/>.
 #
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
-# Date: 2024-12-23
-# Description: Module containing MainWindow class and methods.
+# Date: 2024-08-14
+# Description: QTextEdit module.
+
+import logging
+
+from PySide6 import QtGui
+from PySide6.QtCore import QObject, Signal
 
 
-class TelegramRecipient:
+class QTextEditLogger(logging.Handler):
+    """Class to enable logging in QTextEdit widget within mainwindow"""
 
-    def __init__(self, recipient_id, name=None):
-        self.recipient_id = recipient_id
-        self.name = name
+    class Emitter(QObject):
+        log = Signal(str)
 
-    def __eq__(self, other):
-        if not hasattr(other, "recipient_id"):
-            return False
-        return self.recipient_id == other.recipient_id
+    def __init__(self, parent):
+        super().__init__()
+        self.widget = parent
+        self.widget.setReadOnly(True)
+        self.widget.ensureCursorVisible()
+        self.widget.moveCursor(QtGui.QTextCursor.End)
 
-    def serialize(self):
-        """Method to serialize TelegramRecipient object into file."""
-        return {"recipient_id": self.recipient_id, "name": self.name}
+        self.emitter = QTextEditLogger.Emitter()
+        self.emitter.log.connect(self.widget.appendPlainText)
 
-    @staticmethod
-    def deserialize(data):
-        """Method to deserialize TelegramRecipient object from file."""
-        return TelegramRecipient(**data)
+    def emit(self, record):
+        msg = self.format(record)
+        self.emitter.log.emit(msg)
