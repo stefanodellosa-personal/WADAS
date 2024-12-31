@@ -2,9 +2,12 @@ import os
 import shutil
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QProgressBar, QMessageBox
+    QDialog,
+    QMessageBox
 )
 from huggingface_hub import hf_hub_download
+
+from wadas.ui.qt.ui_ai_model_download import Ui_AiModelDownloadDialog
 
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -18,11 +21,6 @@ MODEL_FILES = [
 REPO_ID = "alespalla/wadas"
 SAVE_DIRECTORY = os.path.join(module_dir_path, "..", "..", "model")
 MODEL_PATHS = [os.path.join(SAVE_DIRECTORY, f) for f in MODEL_FILES]
-
-def check_model_files(model_paths):
-    """Function to check if all AI model files exist"""
-
-    return all(os.path.isfile(path) for path in model_paths)
 
 def download_and_move(repo_id, filename, token, target_directory):
     """Function to download and move files"""
@@ -40,55 +38,50 @@ def download_and_move(repo_id, filename, token, target_directory):
 
     return target_file_path
 
-class AiModelDownloadDialog(QDialog):
+class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
+    """Class to implement AI model download dialog."""
+
     def __init__(self):
         super().__init__()
+        self.ui = Ui_AiModelDownloadDialog()
         self.setWindowTitle("Download AI Models")
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
-        self.setLayout(QVBoxLayout())
 
-        self.model_files = MODEL_FILES
-        self.repo_id = REPO_ID
-        self.save_directory = SAVE_DIRECTORY
-        self.stop_flag = [False]
+        self.stop_flag = False
         self.download_success = False
 
-        self.label = QLabel("Insert your Hugging Face access token:")
-        self.layout().addWidget(self.label)
-
-        self.token_input = QLineEdit()
-        self.token_input.setEchoMode(QLineEdit.Password)
-        self.layout().addWidget(self.token_input)
-
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, len(self.model_files))
-        self.layout().addWidget(self.progress_bar)
-
-        self.download_button = QPushButton("Download Models")
-        self.download_button.clicked.connect(self.download_models)
-        self.layout().addWidget(self.download_button)
-
-        self.cancel_button = QPushButton("Cancel")
-        self.cancel_button.clicked.connect(self.cancel_download)
-        self.layout().addWidget(self.cancel_button)
+        self.ui.setupUi(self)
+        self.ui.progressBar.setRange(0, len(MODEL_FILES))
+        self.ui.progressBar.setEnabled(False)
+        self.ui.pushButton_download.setEnabled(False)
+        self.ui.lineEdit_token.textChanged.connect(self.validate)
+        self.ui.pushButton_download.clicked.connect(self.download_models)
+        self.ui.pushButton_cancel.clicked.connect(self.cancel_download)
 
     def download_models(self):
-        token = self.token_input.text().strip()
+        """Method to trigger the model download"""
+        #TODO: move this into separate thread
+
+        self.ui.progressBar.setEnabled(True)
+        self.ui.pushButton_download.setEnabled(False)
+
+        token = self.ui.lineEdit_token.text().strip()
         if not token:
             QMessageBox.critical(self, "Error", "Token field cannot be empty.")
             return
 
-        self.progress_bar.setValue(0)
-        self.stop_flag[0] = False
-        for i, file_name in enumerate(self.model_files):
-            if self.stop_flag[0]:
+        self.ui.progressBar.setValue(0)
+        self.stop_flag = False
+        for i, file_name in enumerate(MODEL_FILES):
+            if self.stop_flag:
                 QMessageBox.information(self, "Cancelled by the user", "Download cancelled by user.")
                 return
             try:
-                download_and_move(self.repo_id, file_name, token, self.save_directory)
-                self.progress_bar.setValue(i + 1)
+                download_and_move(REPO_ID, file_name, token, SAVE_DIRECTORY)
+                self.ui.progressBar.setValue(i + 1)
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Error happened while downloading {file_name}: {str(e)}")
+                self.ui.pushButton_download.setEnabled(True)
                 return
 
         QMessageBox.information(self, "Success!", "All model files have been successfully downloaded.")
@@ -96,4 +89,14 @@ class AiModelDownloadDialog(QDialog):
         self.accept()
 
     def cancel_download(self):
-        self.stop_flag[0] = True
+        """Method to cancel Ai Model download"""
+        self.stop_flag = True
+        self.reject()
+
+    def validate(self):
+        """Method to validate the dialog input fields"""
+
+        if self.ui.lineEdit_token.text():
+            self.ui.pushButton_download.setEnabled(True)
+        else:
+            self.ui.pushButton_download.setEnabled(False)
