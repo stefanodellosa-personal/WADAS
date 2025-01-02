@@ -23,6 +23,7 @@ import os
 import keyring
 import openvino as ov
 import yaml
+from packaging.version import Version
 
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
@@ -45,8 +46,30 @@ logger = logging.getLogger(__name__)
 _OPERATION_MODE_TYPE_VALUE_TO_TYPE = {mode.value: mode for mode in OperationMode.OperationModeTypes}
 
 
+def check_version_compatibility(config_file_version):
+    wadas_version = Version(__version__.lstrip("v"))
+
+    if wadas_version == config_file_version:
+        return True
+    if wadas_version < config_file_version:
+        return False
+    if wadas_version > config_file_version:
+        # Add here conversion logic for older versions to support (if any)
+        return False
+
+
 def load_configuration_from_file(file_path):
     """Load configuration from YAML file."""
+
+    load_status = dict.fromkeys(
+        [
+            "config_version",
+            "compatible_config",
+            "valid_ftp_keyring",
+            "valid_email_keyring",
+            "valid_whatsapp_keyring",
+        ]
+    )
 
     with open(str(file_path)) as file_:
         logging.info("Loading configuration from file...")
@@ -54,6 +77,11 @@ def load_configuration_from_file(file_path):
 
     # Applying configuration to WADAS from config file values
     valid_email_keyring = valid_ftp_keyring = valid_whatsapp_keyring = True
+
+    # Version
+    config_file_version = Version(wadas_config["version"].lstrip("v"))
+    load_status["config_version"] = config_file_version
+    load_status["compatible_config"] = check_version_compatibility()
 
     # Notifiers
     for key, value in (wadas_config["notification"] or {}).items():
@@ -102,6 +130,8 @@ def load_configuration_from_file(file_path):
         elif key in Notifier.notifiers and key == Notifier.NotifierTypes.TELEGRAM.value:
             telegram_notifier = TelegramNotifier.deserialize(value)
             Notifier.notifiers[key] = telegram_notifier
+    load_status["valid_email_keyring"] = valid_email_keyring
+    load_status["valid_whatsapp_keyring"] = valid_whatsapp_keyring
 
     # FTP Server
     if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
@@ -159,6 +189,7 @@ def load_configuration_from_file(file_path):
                         )
                         valid_ftp_keyring = False
     Camera.detection_params = wadas_config["camera_detection_params"]
+    load_status["valid_ftp_keyring"] = valid_ftp_keyring
 
     # FastAPI Actuator Server
     FastAPIActuatorServer.actuator_server = (
@@ -199,7 +230,7 @@ def load_configuration_from_file(file_path):
 
     logger.info("Configuration loaded from file %s.", file_path)
 
-    return valid_ftp_keyring, valid_email_keyring, valid_whatsapp_keyring
+    return load_status
 
 
 def save_configuration_to_file(file_):

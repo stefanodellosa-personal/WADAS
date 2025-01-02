@@ -98,6 +98,7 @@ class MainWindow(QMainWindow):
         self.ftp_server = None
         self.valid_email_keyring = False
         self.valid_ftp_keyring = False
+        self.load_status = None
 
         self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
 
@@ -580,7 +581,8 @@ class MainWindow(QMainWindow):
 
         if file_name[0]:
             self.valid_ftp_keyring, self.valid_email_keyring, self.valid_whatsapp_keyring =\
-                load_configuration_from_file(file_name[0])
+            self.load_status = load_configuration_from_file(file_name[0])
+
             self.configuration_file_name = file_name[0]
             self.setWindowModified(False)
             self.update_toolbar_status()
@@ -794,7 +796,7 @@ Are you sure you want to exit?""",
             sys.exit()
 
     def open_last_saved_file(self):
-        """Method to enable openong of last saved configuration file"""
+        """Method to enable openning of last saved configuration file"""
         if (path:=self.settings.value("last_saved_config_path", None, str)) and os.path.exists(path):
             load_configuration_from_file(path)
             self.configuration_file_name = path
