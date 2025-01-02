@@ -33,6 +33,7 @@ from wadas.domain.operation_mode import OperationMode
 from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.about_dialog import AboutDialog
+from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
 from wadas.ui.configure_actuators_dialog import DialogConfigureActuators
 from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
 from wadas.ui.configure_camera_actuator_associations_dialog import (
@@ -44,7 +45,6 @@ from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
 from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
 from wadas.ui.insert_url_dialog import InsertUrlDialog
 from wadas.ui.license_dialog import LicenseDialog
-from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
 from wadas.ui.select_animal_species import DialogSelectAnimalSpecies
 from wadas.ui.select_mode_dialog import DialogSelectMode
 from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
@@ -228,8 +228,7 @@ class MainWindow(QMainWindow):
             OperationMode.cur_operation_mode.cameras = cameras
 
         # Check if notifications have been configured
-        proceed = self.check_notification_enablement()
-        if not proceed:
+        if not self.check_notification_enablement():
             return
 
         # Satisfy preconditions and required inputs for the selected operation mode
@@ -334,9 +333,14 @@ class MainWindow(QMainWindow):
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             valid_configuration = True
-            if ((self.enabled_email_notifier_exists() and not self.valid_email_keyring) or
-                    (self.ftp_camera_exists() and not self.valid_ftp_keyring)):
+            if self.enabled_email_notifier_exists() and not self.valid_email_keyring:
                 valid_configuration = False
+                logger.info("Enabled email notifier exists but not valid credentials in keyring are stored."
+                            "Please edit email configuration to fix the issue and to be able to run.")
+            if self.ftp_camera_exists() and not self.valid_ftp_keyring:
+                valid_configuration = False
+                logger.info("FTP camera(s) configured but not valid credentials in keyring are stored."
+                            "Please edit FTP Camera(s) configuration to fix the issue and to be able to run.")
             self.ui.actionRun.setEnabled(valid_configuration)
         self.ui.actionStop.setEnabled(False)
         self.ui.actionSave_configuration_as.setEnabled(self.isWindowModified())

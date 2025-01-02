@@ -1,42 +1,16 @@
 import os
-import shutil
+
+from PySide6.QtCore import QThread
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QDialog,
     QMessageBox
 )
-from huggingface_hub import hf_hub_download
 
+from wadas.domain.ai_model_downloader import AiModelsDownloader
 from wadas.ui.qt.ui_ai_model_download import Ui_AiModelDownloadDialog
 
-
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
-
-MODEL_FILES = [
-    "detection_model.xml",
-    "detection_model.bin",
-    "classification_model.xml",
-    "classification_model.bin"
-]
-REPO_ID = "alespalla/wadas"
-SAVE_DIRECTORY = os.path.join(module_dir_path, "..", "..", "model")
-MODEL_PATHS = [os.path.join(SAVE_DIRECTORY, f) for f in MODEL_FILES]
-
-def download_and_move(repo_id, filename, token, target_directory):
-    """Function to download and move files"""
-
-    # Temporary download to the Hugging Face cache
-    cached_file_path = hf_hub_download(repo_id=repo_id, filename=filename, use_auth_token=token)
-
-    # Ensure the target directory exists
-    os.makedirs(target_directory, exist_ok=True)
-
-    target_file_path = os.path.join(target_directory, filename)
-
-    # Move the file from the cache to the target directory
-    shutil.move(cached_file_path, target_file_path)
-
-    return target_file_path
 
 class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
     """Class to implement AI model download dialog."""
@@ -47,11 +21,14 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         self.setWindowTitle("Download AI Models")
         self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
 
+        self.thread = None
+        self.downloader = None
         self.stop_flag = False
         self.download_success = False
 
         self.ui.setupUi(self)
-        self.ui.progressBar.setRange(0, len(MODEL_FILES))
+        self.ui.progressBar.setRange(0, 100)
+        self.ui.progressBar.setValue(0)
         self.ui.progressBar.setEnabled(False)
         self.ui.pushButton_download.setEnabled(False)
         self.ui.lineEdit_token.textChanged.connect(self.validate)
@@ -60,43 +37,76 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
 
     def download_models(self):
         """Method to trigger the model download"""
-        #TODO: move this into separate thread
-
-        self.ui.progressBar.setEnabled(True)
-        self.ui.pushButton_download.setEnabled(False)
 
         token = self.ui.lineEdit_token.text().strip()
         if not token:
             QMessageBox.critical(self, "Error", "Token field cannot be empty.")
             return
 
-        self.ui.progressBar.setValue(0)
-        self.stop_flag = False
-        for i, file_name in enumerate(MODEL_FILES):
-            if self.stop_flag:
-                QMessageBox.information(self, "Cancelled by the user", "Download cancelled by user.")
-                return
-            try:
-                download_and_move(REPO_ID, file_name, token, SAVE_DIRECTORY)
-                self.ui.progressBar.setValue(i + 1)
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"Error happened while downloading {file_name}: {str(e)}")
-                self.ui.pushButton_download.setEnabled(True)
-                return
+        self.ui.progressBar.setEnabled(True)
+        self.ui.pushButton_download.setEnabled(False)
+        self.ui.pushButton_cancel.setEnabled(True)
+        self.ui.lineEdit_token.setEnabled(False)
 
-        QMessageBox.information(self, "Success!", "All model files have been successfully downloaded.")
+        # Initialize thread
+        self.thread = QThread()
+
+        # Move downloader to a dedicated thread
+        self.downloader = AiModelsDownloader(token)
+        self.downloader.moveToThread(self.thread)
+
+        # Connect signals
+        self.thread.started.connect(self.downloader.run)
+        self.downloader.run_finished.connect(self.on_download_complete)
+        self.downloader.run_progress.connect(self.update_progress_bar)
+        self.downloader.error_happened.connect(self.handle_error)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.finished.connect(self.downloader.deleteLater)
+
+        # Start the thread
+        self.thread.start()
+
+    def update_progress_bar(self, percentage):
+        """Update the progress bar safely from any thread."""
+
+        self.ui.progressBar.setValue(percentage)
+
+    def handle_error(self, error_message):
+        """Method to handle download errors"""
+
+        QMessageBox.critical(self, "Error", f"An error occurred: {error_message}")
+        self.ui.pushButton_download.setEnabled(True)
+        self.ui.progressBar.setEnabled(False)
+        self.ui.lineEdit_token.setEnabled(True)
+
+    def on_download_complete(self):
+        """Handle successful download"""
+
+        QMessageBox.information(self, "Success", "All model files have been successfully downloaded.")
+        if self.thread:
+            self.thread.quit()
+            self.thread.wait()  # Aspetta che il thread termini
         self.download_success = True
         self.accept()
 
     def cancel_download(self):
-        """Method to cancel Ai Model download"""
-        self.stop_flag = True
+        """Method to cancel AI Model download"""
+        if self.downloader:
+            self.downloader.stop_flag = True
+        if self.thread and self.thread.isRunning():
+            self.thread.quit()
+            self.thread.wait()
+
         self.reject()
 
     def validate(self):
         """Method to validate the dialog input fields"""
 
-        if self.ui.lineEdit_token.text():
-            self.ui.pushButton_download.setEnabled(True)
-        else:
-            self.ui.pushButton_download.setEnabled(False)
+        self.ui.pushButton_download.setEnabled(bool(self.ui.lineEdit_token.text()))
+
+    def closeEvent(self, event):
+        """Handle the dialog close event."""
+        if self.thread and self.thread.isRunning():
+            self.downloader.stop_flag = True
+            self.thread.quit()
+            self.thread.wait()
