@@ -14,7 +14,7 @@ MODEL_FILES = [
     "classification_model.xml",
     "classification_model.bin",
 ]
-REPO_ID = "alespalla/wadas"
+REPO_ID = "wadas-it/wadas"
 SAVE_DIRECTORY = os.path.join(module_dir_path, "..", "..", "model")
 MODEL_PATHS = [os.path.join(SAVE_DIRECTORY, f) for f in MODEL_FILES]
 
