@@ -80,6 +80,7 @@ class MainWindow(QMainWindow):
         self.ftp_server = None
         self.valid_email_keyring = False
         self.valid_ftp_keyring = False
+        self.valid_whatsapp_keyring = False
 
         self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
 
@@ -580,37 +581,40 @@ class MainWindow(QMainWindow):
             self.update_en_actuator_list()
             self.set_recent_configuration(self.configuration_file_name)
 
-            if not self.valid_email_keyring:
-                reply = QMessageBox.question(
-                    self,
-                    "Invalid email credentials.",
-                    "Would you like to edit email configuration to fix credentials issue?",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.No
-                )
-                if reply == QMessageBox.Yes:
-                    self.configure_email()
+            self.check_keyrings_status()
 
-            if not self.valid_ftp_keyring:
-                reply = QMessageBox.question(
-                    self,
-                    "Invalid FTP camera credentials",
-                    "Would you like to edit FTP camera configuration to fix credentials issue?",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.No
-                )
-                if reply == QMessageBox.Yes:
-                    self.configure_ftp_cameras()
-            if not self.valid_whatsapp_keyring:
-                reply = QMessageBox.question(
-                    self,
-                    "Invalid WhatsApp token.",
-                    "Would you like to edit WhatsApp configuration to fix token issue?",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.No
-                )
-                if reply == QMessageBox.Yes:
-                    self.configure_whatsapp()
+    def check_keyrings_status(self):
+        """Method to check keyring status returned after load from config"""
+        if not self.valid_email_keyring:
+            reply = QMessageBox.question(
+                self,
+                "Invalid email credentials.",
+                "Would you like to edit email configuration to fix credentials issue?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                self.configure_email()
+        if not self.valid_ftp_keyring:
+            reply = QMessageBox.question(
+                self,
+                "Invalid FTP camera credentials",
+                "Would you like to edit FTP camera configuration to fix credentials issue?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                self.configure_ftp_cameras()
+        if not self.valid_whatsapp_keyring:
+            reply = QMessageBox.question(
+                self,
+                "Invalid WhatsApp token.",
+                "Would you like to edit WhatsApp configuration to fix token issue?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                self.configure_whatsapp()
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
@@ -787,7 +791,9 @@ Are you sure you want to exit?""",
     def open_last_saved_file(self):
         """Method to enable openong of last saved configuration file"""
         if (path:=self.settings.value("last_saved_config_path", None, str)) and os.path.exists(path):
-            load_configuration_from_file(path)
+            self.valid_ftp_keyring, self.valid_email_keyring, self.valid_whatsapp_keyring =\
+                load_configuration_from_file(path)
+            self.check_keyrings_status()
             self.configuration_file_name = path
             self.setWindowModified(False)
             self.update_toolbar_status()
