@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from mocks import OpenStringMock
+from packaging.version import Version
 
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
@@ -55,10 +56,64 @@ camera_detection_params: {}
 ftps_server: []
 notification: []
 operation_mode:
+version: v0.1.0
+""",
+)
+def test_load_incompatible_older_version_config(mock_file, init):
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version("v0.1.0"),
+        "compatible_config": False,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
+    assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
+    assert FTPsServer.ftps_server is None
+    assert Actuator.actuators == {}
+    assert cameras == []
+    assert Camera.detection_params == {}
+    assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
+    assert AiModel.detection_device == "auto"
+    assert AiModel.classification_device == "auto"
+    assert AiModel.language == ""
+    assert OperationMode.cur_operation_mode is None
+    assert OperationMode.cur_operation_mode_type is None
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data=f"""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_threshold: 0
+  ai_classification_device: auto
+  ai_detect_threshold: 0
+  ai_detection_device: auto
+  ai_language: ''
+cameras: []
+camera_detection_params: {{}}
+ftps_server: []
+notification: []
+operation_mode:
+version: {__version__}
 """,
 )
 def test_load_empty_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
@@ -102,11 +157,6 @@ version: {__version__}
     new_callable=OpenStringMock,
     read_data="""
 actuator_server:
-  actuator_timeout_threshold: 89
-  ip: 1.2.3.4
-  port: 567
-  ssl_certificate: eshare_crt.pem
-  ssl_key: eshare_key.pem
 actuators: []
 ai_model:
   ai_class_threshold: 0
@@ -121,8 +171,66 @@ notification: []
 operation_mode:
 """,
 )
+def test_load_wrong_format_config(mock_file, init):
+    result = load_configuration_from_file("")
+    assert result["errors_on_load"] is True
+    assert isinstance(result["errors_log"], KeyError)
+    assert repr(result["errors_log"]) == "KeyError('version')"
+    assert result["config_version"] is None
+    assert result["compatible_config"] is True
+    assert result["valid_ftp_keyring"] is True
+    assert result["valid_email_keyring"] is True
+    assert result["valid_whatsapp_keyring"] is True
+    assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
+    assert FTPsServer.ftps_server is None
+    assert Actuator.actuators == {}
+    assert cameras == []
+    assert Camera.detection_params == {}
+    assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
+    assert AiModel.detection_device == "auto"
+    assert AiModel.classification_device == "auto"
+    assert AiModel.language == ""
+    assert OperationMode.cur_operation_mode is None
+    assert OperationMode.cur_operation_mode_type is None
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data=f"""
+actuator_server:
+  actuator_timeout_threshold: 89
+  ip: 1.2.3.4
+  port: 567
+  ssl_certificate: eshare_crt.pem
+  ssl_key: eshare_key.pem
+actuators: []
+ai_model:
+  ai_class_threshold: 0
+  ai_classification_device: auto
+  ai_detect_threshold: 0
+  ai_detection_device: auto
+  ai_language: ''
+cameras: []
+camera_detection_params: {{}}
+ftps_server: []
+notification: []
+operation_mode:
+version: {__version__}
+""",
+)
 def test_load_actuator_server_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
@@ -180,7 +288,7 @@ version: {__version__}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators:
 - enabled: true
@@ -202,14 +310,23 @@ ai_model:
   ai_detection_device: auto
   ai_classification_device: auto
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification: []
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_actuators_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is None
     actuators = ["Actuator1", "Actuator2", "Actuator3", "Actuator4"]
@@ -276,7 +393,7 @@ version: {__version__}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -286,14 +403,23 @@ ai_model:
   ai_detection_device: auto
   ai_classification_device: auto
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification: []
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_ai_model_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
@@ -340,7 +466,7 @@ version: {__version__}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -358,10 +484,19 @@ camera_detection_params:
 ftps_server: []
 notification: []
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_camera_detection_params_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
@@ -464,11 +599,13 @@ camera_detection_params: {{}}
 ftps_server: []
 notification: []
 operation_mode:
+version: {}
 """.format(
         r"\\?\usb#vid_1bcf&pid_2883&mi_00#7&e89baf7&0&0000#"
         r"{e5323777-f976-4f5b-9b55-b94699c46e44}\global",
         r"\\?\usb#vid_1bd0&pid_2884&mi_00#7&e89baf7&0&0000#"
         r"{e5323777-f976-4f5b-9b55-b94699c46e4X}\local",
+        __version__,
     ),
 )
 def test_load_cameras_config(mock_file, init):
@@ -478,7 +615,15 @@ def test_load_cameras_config(mock_file, init):
         patch("keyring.get_credential") as get_credential_mock,
         patch("wadas.domain.ftps_server.FTPsServer.add_user") as add_user_mock,
     ):
-        assert load_configuration_from_file("") == (True, True, True)
+        assert load_configuration_from_file("") == {
+            "errors_on_load": False,
+            "errors_log": "",
+            "config_version": Version(__version__),
+            "compatible_config": True,
+            "valid_ftp_keyring": True,
+            "valid_email_keyring": True,
+            "valid_whatsapp_keyring": True,
+        }
     is_dir_mock.assert_not_called()
     makedirs_mock.assert_not_called()
     get_credential_mock.assert_not_called()
@@ -565,7 +710,7 @@ def test_load_cameras_config(mock_file, init):
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data=r"""
+    read_data=rf"""
 actuator_server:
 actuators: []
 ai_model:
@@ -580,7 +725,7 @@ cameras:
   ftp_folder: /Documents/ftp/Camera1
   id: Camera1
   type: FTP Camera
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -592,6 +737,7 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: []
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_cameras_config_with_ftp_and_folder_and_no_credentials(mock_file, init):
@@ -603,7 +749,15 @@ def test_load_cameras_config_with_ftp_and_folder_and_no_credentials(mock_file, i
     ):
         is_dir_mock.return_value = True
         get_credential_mock.return_value = None
-        assert load_configuration_from_file("") == (False, True, True)
+        assert load_configuration_from_file("") == {
+            "errors_on_load": False,
+            "errors_log": "",
+            "config_version": Version(__version__),
+            "compatible_config": True,
+            "valid_ftp_keyring": False,
+            "valid_email_keyring": True,
+            "valid_whatsapp_keyring": True,
+        }
     assert is_dir_mock.call_args == (("/Documents/ftp/Camera1",),)
     makedirs_mock.assert_not_called()
     get_credential_mock.assert_called_once_with("WADAS_FTP_camera_Camera1", "")
@@ -629,7 +783,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_no_credentials(mock_file, i
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data=r"""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -644,7 +798,7 @@ cameras:
   ftp_folder: /Documents/ftp/Camera1
   id: Camera1
   type: FTP Camera
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -656,6 +810,7 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: []
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_cameras_config_with_ftp_and_no_folder_and_no_credentials(mock_file, init):
@@ -667,7 +822,15 @@ def test_load_cameras_config_with_ftp_and_no_folder_and_no_credentials(mock_file
     ):
         is_dir_mock.return_value = False
         get_credential_mock.return_value = None
-        assert load_configuration_from_file("") == (False, True, True)
+        assert load_configuration_from_file("") == {
+            "errors_on_load": False,
+            "errors_log": "",
+            "config_version": Version(__version__),
+            "compatible_config": True,
+            "valid_ftp_keyring": False,
+            "valid_email_keyring": True,
+            "valid_whatsapp_keyring": True,
+        }
     assert is_dir_mock.call_args == (("/Documents/ftp/Camera1",),)
     makedirs_mock.assert_called_once_with("/Documents/ftp/Camera1", exist_ok=True)
     get_credential_mock.assert_called_once_with("WADAS_FTP_camera_Camera1", "")
@@ -693,7 +856,7 @@ def test_load_cameras_config_with_ftp_and_no_folder_and_no_credentials(mock_file
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data=r"""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -708,7 +871,7 @@ cameras:
   ftp_folder: /Documents/ftp/Camera1
   id: Camera1
   type: FTP Camera
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -720,6 +883,7 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: []
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file, init):
@@ -731,7 +895,15 @@ def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file,
     ):
         is_dir_mock.return_value = True
         get_credential_mock.return_value = Mock(username="Camera1", password="123")
-        assert load_configuration_from_file("") == (True, True, True)
+        assert load_configuration_from_file("") == {
+            "errors_on_load": False,
+            "errors_log": "",
+            "config_version": Version(__version__),
+            "compatible_config": True,
+            "valid_ftp_keyring": True,
+            "valid_email_keyring": True,
+            "valid_whatsapp_keyring": True,
+        }
     assert is_dir_mock.call_args == (("/Documents/ftp/Camera1",),)
     makedirs_mock.assert_not_called()
     get_credential_mock.assert_called_once_with("WADAS_FTP_camera_Camera1", "")
@@ -757,7 +929,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file,
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data=r"""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -772,7 +944,7 @@ cameras:
   ftp_folder: /Documents/ftp/Camera1
   id: Camera1
   type: FTP Camera
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -784,6 +956,7 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: []
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_cameras_config_with_ftp_and_folder_and_different_credentials(mock_file, init):
@@ -795,7 +968,15 @@ def test_load_cameras_config_with_ftp_and_folder_and_different_credentials(mock_
     ):
         is_dir_mock.return_value = True
         get_credential_mock.return_value = Mock(username="UnknownUser", password="123")
-        assert load_configuration_from_file("") == (False, True, True)
+        assert load_configuration_from_file("") == {
+            "errors_on_load": False,
+            "errors_log": "",
+            "config_version": Version(__version__),
+            "compatible_config": True,
+            "valid_ftp_keyring": False,
+            "valid_email_keyring": True,
+            "valid_whatsapp_keyring": True,
+        }
     assert is_dir_mock.call_args == (("/Documents/ftp/Camera1",),)
     makedirs_mock.assert_not_called()
     get_credential_mock.assert_called_once_with("WADAS_FTP_camera_Camera1", "")
@@ -914,7 +1095,7 @@ version: {}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -924,7 +1105,7 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -936,10 +1117,19 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: []
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_ftps_server_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is not None
     assert FTPsServer.ftps_server.ip == "1.2.3.4"
@@ -969,7 +1159,7 @@ def test_load_ftps_server_config(mock_file, init):
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -979,7 +1169,7 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -991,6 +1181,7 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: []
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_ftps_server_config_with_existing_server(mock_file, init):
@@ -998,7 +1189,15 @@ def test_load_ftps_server_config_with_existing_server(mock_file, init):
         "5.6.7.8", 321, [4321, 8765], 23, 7, "X/Y.pem", "A/B.pem", "/Z"
     )
     FTPsServer.ftps_server.server = old_server = MagicMock()
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     old_server.close_all.assert_called_once_with()
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is not None
@@ -1072,7 +1271,7 @@ version: {__version__}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -1082,7 +1281,7 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification:
   Email:
@@ -1094,12 +1293,21 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_notification_config_with_no_credentials(mock_file, init):
     with patch("keyring.get_credential") as get_credential_mock:
         get_credential_mock.return_value = None
-        assert load_configuration_from_file("") == (True, False, True)
+        assert load_configuration_from_file("") == {
+            "errors_on_load": False,
+            "errors_log": "",
+            "config_version": Version(__version__),
+            "compatible_config": True,
+            "valid_ftp_keyring": True,
+            "valid_email_keyring": False,
+            "valid_whatsapp_keyring": True,
+        }
     get_credential_mock.assert_called_once_with("WADAS_email", "development@wadas.org")
     assert sorted(Notifier.notifiers.keys()) == ["Email", "WhatsApp"]
     notifier = Notifier.notifiers["Email"]
@@ -1127,7 +1335,7 @@ def test_load_notification_config_with_no_credentials(mock_file, init):
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -1137,7 +1345,7 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification:
   Email:
@@ -1149,12 +1357,21 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_notification_config_with_same_credentials(mock_file, init):
     with patch("keyring.get_credential") as get_credential_mock:
         get_credential_mock.return_value = Mock(username="development@wadas.org", password="123")
-        assert load_configuration_from_file("") == (True, True, True)
+        assert load_configuration_from_file("") == {
+            "errors_on_load": False,
+            "errors_log": "",
+            "config_version": Version(__version__),
+            "compatible_config": True,
+            "valid_ftp_keyring": True,
+            "valid_email_keyring": True,
+            "valid_whatsapp_keyring": True,
+        }
     get_credential_mock.assert_called_once_with("WADAS_email", "development@wadas.org")
     assert sorted(Notifier.notifiers.keys()) == ["Email", "WhatsApp"]
     notifier = Notifier.notifiers["Email"]
@@ -1182,7 +1399,7 @@ def test_load_notification_config_with_same_credentials(mock_file, init):
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -1192,7 +1409,7 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification:
   Email:
@@ -1204,12 +1421,21 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_notification_config_with_different_credentials(mock_file, init):
     with patch("keyring.get_credential") as get_credential_mock:
         get_credential_mock.return_value = Mock(username="UnknownEmail", password="123")
-        assert load_configuration_from_file("") == (True, False, True)
+        assert load_configuration_from_file("") == {
+            "errors_on_load": False,
+            "errors_log": "",
+            "config_version": Version(__version__),
+            "compatible_config": True,
+            "valid_ftp_keyring": True,
+            "valid_email_keyring": False,
+            "valid_whatsapp_keyring": True,
+        }
     get_credential_mock.assert_called_once_with("WADAS_email", "development@wadas.org")
     assert sorted(Notifier.notifiers.keys()) == ["Email", "WhatsApp"]
     notifier = Notifier.notifiers["Email"]
@@ -1237,7 +1463,7 @@ def test_load_notification_config_with_different_credentials(mock_file, init):
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -1247,7 +1473,7 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification:
   Email:
@@ -1259,12 +1485,21 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+version: {__version__}
 """,
 )
 def test_load_enabled_notification_config(mock_file, init):
     with patch("keyring.get_credential") as get_credential_mock:
         get_credential_mock.return_value = None
-        assert load_configuration_from_file("") == (True, False, True)
+        assert load_configuration_from_file("") == {
+            "errors_on_load": False,
+            "errors_log": "",
+            "config_version": Version(__version__),
+            "compatible_config": True,
+            "valid_ftp_keyring": True,
+            "valid_email_keyring": False,
+            "valid_whatsapp_keyring": True,
+        }
     get_credential_mock.assert_called_once_with("WADAS_email", "development@wadas.org")
     assert sorted(Notifier.notifiers.keys()) == ["Email", "WhatsApp"]
     notifier = Notifier.notifiers["Email"]
@@ -1342,7 +1577,7 @@ version: {__version__}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -1352,15 +1587,24 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification: []
 operation_mode:
     type: Test Model Mode
+version: {__version__}
 """,
 )
 def test_load_test_model_mode_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is None
     assert Actuator.actuators == {}
@@ -1404,7 +1648,7 @@ version: {__version__}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -1414,15 +1658,24 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification: []
 operation_mode:
     type: Animal Detection Mode
+version: {__version__}
 """,
 )
 def test_load_animal_detection_mode_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert OperationMode.cur_operation_mode is None
     assert (
         OperationMode.cur_operation_mode_type
@@ -1458,7 +1711,7 @@ version: {__version__}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -1468,15 +1721,24 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification: []
 operation_mode:
     type: Animal Detection and Classification Mode
+version: {__version__}
 """,
 )
 def test_load_animal_detection_and_classification_mode_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert OperationMode.cur_operation_mode is None
     assert (
         OperationMode.cur_operation_mode_type
@@ -1514,7 +1776,7 @@ version: {__version__}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
-    read_data="""
+    read_data=f"""
 actuator_server:
 actuators: []
 ai_model:
@@ -1524,16 +1786,25 @@ ai_model:
   ai_detection_device: auto
   ai_language: ''
 cameras: []
-camera_detection_params: {}
+camera_detection_params: {{}}
 ftps_server: []
 notification: []
 operation_mode:
     type: Custom Species Classification Mode
     custom_target_species: chamois
+version: {__version__}
 """,
 )
 def test_load_custom_species_classification_mode_config(mock_file, init):
-    assert load_configuration_from_file("") == (True, True, True)
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
     assert OperationMode.cur_operation_mode is None
     assert (
         OperationMode.cur_operation_mode_type
