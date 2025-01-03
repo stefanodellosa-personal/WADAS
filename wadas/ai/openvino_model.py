@@ -68,7 +68,7 @@ class OVModel:
     def download_model(model_name, force: bool = False):
         """Check if model is initialized"""
         return snapshot_download(
-            repo_id="alespalla/wadas",
+            repo_id="wadas-it/wadas",
             repo_type="model",
             revision="main",
             local_dir=__model_folder__,

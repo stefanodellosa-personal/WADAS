@@ -52,6 +52,7 @@ from wadas.domain.operation_mode import OperationMode
 from wadas.domain.test_model_mode import TestModelMode
 from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.about_dialog import AboutDialog
+from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
 from wadas.ui.configure_actuators_dialog import DialogConfigureActuators
 from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
 from wadas.ui.configure_camera_actuator_associations_dialog import (
@@ -98,6 +99,7 @@ class MainWindow(QMainWindow):
         self.ftp_server = None
         self.valid_email_keyring = False
         self.valid_ftp_keyring = False
+        self.valid_whatsapp_keyring = False
 
         self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
 
@@ -229,12 +231,26 @@ class MainWindow(QMainWindow):
         """Slot to run selected mode once run button is clicked.
         Since image processing is heavy task, new thread is created."""
 
-        # Check if notifications have been configured
-        proceed = self.check_notification_enablement()
-        if not proceed:
+        self.instantiate_selected_model()
+        # Satisfy preconditions independently of selected operation mode
+        if not self.check_models():
+            logger.error("Cannot run this mode without AI models. Aborting.")
+            return
+        if OperationMode.cur_operation_mode.type != OperationMode.OperationModeTypes.TestModelMode:
+            if not cameras:
+                logger.error("No camera configured. Please configure input cameras and run again.")
+                return
+            elif not self.camera_enabled():
+                logger.error("No camera enabled. Please enable at least one camera and run again.")
+                return
+        else:
+            # Passing cameras list to the selected operation mode
+            OperationMode.cur_operation_mode.cameras = cameras
+
+        # Check if notifications have been configured, if not warn the user
+        if not self.check_notification_enablement():
             return
 
-        self.instantiate_selected_model()
         # Satisfy preconditions and required inputs for the selected operation mode
         if OperationMode.cur_operation_mode:
             match OperationMode.cur_operation_mode.type:
@@ -249,21 +265,6 @@ class MainWindow(QMainWindow):
                     else:
                         OperationMode.cur_operation_mode.custom_target_species = (
                             OperationMode.cur_custom_classification_species)
-
-            # Satisfy preconditions independently of selected operation mode
-            if not self.check_models():
-                logger.error("Cannot run this mode without AI models. Aborting.")
-                return
-            if OperationMode.cur_operation_mode.type != OperationMode.OperationModeTypes.TestModelMode:
-                if not cameras:
-                    logger.error("No camera configured. Please configure input cameras and run again.")
-                    return
-                elif not self.camera_enabled():
-                    logger.error("No camera enabled. Please enable at least one camera and run again.")
-                    return
-            else:
-                # Passing cameras list to the selected operation mode
-                OperationMode.cur_operation_mode.cameras = cameras
 
             # Connect slots to update UI from operation mode
             self._connect_mode_ui_slots()
@@ -352,9 +353,14 @@ class MainWindow(QMainWindow):
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             valid_configuration = True
-            if ((self.enabled_email_notifier_exists() and not self.valid_email_keyring) or
-                    (self.ftp_camera_exists() and not self.valid_ftp_keyring)):
+            if self.enabled_email_notifier_exists() and not self.valid_email_keyring:
                 valid_configuration = False
+                logger.info("Enabled email notifier exists but not valid credentials in keyring are stored. "
+                            "Please edit email configuration to fix the issue and to be able to run.")
+            if self.ftp_camera_exists() and not self.valid_ftp_keyring:
+                valid_configuration = False
+                logger.info("FTP camera(s) configured but not valid credentials in keyring are stored."
+                            "Please edit FTP Camera(s) configuration to fix the issue and to be able to run.")
             self.ui.actionRun.setEnabled(valid_configuration)
         self.ui.actionStop.setEnabled(False)
         self.ui.actionSave_configuration_as.setEnabled(self.isWindowModified())
@@ -525,11 +531,16 @@ class MainWindow(QMainWindow):
     def check_models(self):
         """Method to initialize classification model."""
         if not AiModel.check_model():
-            logger.error("AI module not found. Downloading...")
-            AiModel.download_models()
-            return self.check_models()
-        logger.info("AI module found!")
-        return True
+            logger.warning("AI module not found. Downloading...")
+            ai_download_dialog = AiModelDownloadDialog()
+            if ai_download_dialog.exec():
+                return ai_download_dialog.download_success and AiModel.check_model()
+            else:
+                logger.error("Ai models files download cancelled by user. Aborting.")
+                return False
+        else:
+            logger.info("AI module found!")
+            return True
 
     def set_recent_configuration(self, cfg_file_path):
         """Method to set recent configuration file used references"""
@@ -589,37 +600,43 @@ class MainWindow(QMainWindow):
             self.update_en_actuator_list()
             self.set_recent_configuration(self.configuration_file_name)
 
-            if not self.valid_email_keyring:
-                reply = QMessageBox.question(
-                    self,
-                    "Invalid email credentials.",
-                    "Would you like to edit email configuration to fix credentials issue?",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.No
-                )
-                if reply == QMessageBox.Yes:
-                    self.configure_email()
+            self.check_keyrings_status()
 
-            if not self.valid_ftp_keyring:
-                reply = QMessageBox.question(
-                    self,
-                    "Invalid FTP camera credentials",
-                    "Would you like to edit FTP camera configuration to fix credentials issue?",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.No
-                )
-                if reply == QMessageBox.Yes:
-                    self.configure_ftp_cameras()
-            if not self.valid_whatsapp_keyring:
-                reply = QMessageBox.question(
-                    self,
-                    "Invalid WhatsApp token.",
-                    "Would you like to edit WhatsApp configuration to fix token issue?",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.No
-                )
-                if reply == QMessageBox.Yes:
-                    self.configure_whatsapp()
+    def check_keyrings_status(self):
+        """Method to check keyring status returned after load from config"""
+
+        if not self.valid_email_keyring:
+            reply = QMessageBox.question(
+                self,
+                "Invalid email credentials. ",
+                "Would you like to edit email configuration to fix credentials issue?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                self.configure_email()
+
+        if not self.valid_ftp_keyring:
+            reply = QMessageBox.question(
+                self,
+                "Invalid FTP camera credentials. ",
+                "Would you like to edit FTP camera configuration to fix credentials issue?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                self.configure_ftp_cameras()
+
+        if not self.valid_whatsapp_keyring:
+            reply = QMessageBox.question(
+                self,
+                "Invalid WhatsApp token. ",
+                "Would you like to edit WhatsApp configuration to fix token issue?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                self.configure_whatsapp()
 
     def configure_ftp_cameras(self):
         """Method to trigger ftp cameras configuration dialog"""
@@ -795,8 +812,11 @@ Are you sure you want to exit?""",
 
     def open_last_saved_file(self):
         """Method to enable openong of last saved configuration file"""
+
         if (path:=self.settings.value("last_saved_config_path", None, str)) and os.path.exists(path):
-            load_configuration_from_file(path)
+            self.valid_ftp_keyring, self.valid_email_keyring, self.valid_whatsapp_keyring =\
+                load_configuration_from_file(path)
+            self.check_keyrings_status()
             self.configuration_file_name = path
             self.setWindowModified(False)
             self.update_toolbar_status()
