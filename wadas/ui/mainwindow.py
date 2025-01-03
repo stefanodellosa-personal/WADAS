@@ -247,7 +247,7 @@ class MainWindow(QMainWindow):
             # Passing cameras list to the selected operation mode
             OperationMode.cur_operation_mode.cameras = cameras
 
-        # Check if notifications have been configured
+        # Check if notifications have been configured, if not warn the user
         if not self.check_notification_enablement():
             return
 
@@ -355,7 +355,7 @@ class MainWindow(QMainWindow):
             valid_configuration = True
             if self.enabled_email_notifier_exists() and not self.valid_email_keyring:
                 valid_configuration = False
-                logger.info("Enabled email notifier exists but not valid credentials in keyring are stored."
+                logger.info("Enabled email notifier exists but not valid credentials in keyring are stored. "
                             "Please edit email configuration to fix the issue and to be able to run.")
             if self.ftp_camera_exists() and not self.valid_ftp_keyring:
                 valid_configuration = False
@@ -604,30 +604,33 @@ class MainWindow(QMainWindow):
 
     def check_keyrings_status(self):
         """Method to check keyring status returned after load from config"""
+
         if not self.valid_email_keyring:
             reply = QMessageBox.question(
                 self,
-                "Invalid email credentials.",
+                "Invalid email credentials. ",
                 "Would you like to edit email configuration to fix credentials issue?",
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No
             )
             if reply == QMessageBox.Yes:
                 self.configure_email()
+
         if not self.valid_ftp_keyring:
             reply = QMessageBox.question(
                 self,
-                "Invalid FTP camera credentials",
+                "Invalid FTP camera credentials. ",
                 "Would you like to edit FTP camera configuration to fix credentials issue?",
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No
             )
             if reply == QMessageBox.Yes:
                 self.configure_ftp_cameras()
+
         if not self.valid_whatsapp_keyring:
             reply = QMessageBox.question(
                 self,
-                "Invalid WhatsApp token.",
+                "Invalid WhatsApp token. ",
                 "Would you like to edit WhatsApp configuration to fix token issue?",
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No
@@ -809,6 +812,7 @@ Are you sure you want to exit?""",
 
     def open_last_saved_file(self):
         """Method to enable openong of last saved configuration file"""
+
         if (path:=self.settings.value("last_saved_config_path", None, str)) and os.path.exists(path):
             self.valid_ftp_keyring, self.valid_email_keyring, self.valid_whatsapp_keyring =\
                 load_configuration_from_file(path)

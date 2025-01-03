@@ -67,7 +67,6 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         self.ui.pushButton_cancel.setEnabled(True)
         self.ui.lineEdit_token.setEnabled(False)
 
-        # Initialize thread
         self.thread = QThread()
 
         # Move downloader to a dedicated thread
@@ -82,7 +81,6 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.downloader.deleteLater)
 
-        # Start the thread
         self.thread.start()
 
     def update_progress_bar(self, percentage):
@@ -104,7 +102,7 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         QMessageBox.information(self, "Success", "All model files have been successfully downloaded.")
         if self.thread:
             self.thread.quit()
-            self.thread.wait()  # Aspetta che il thread termini
+            self.thread.wait()
         self.download_success = True
         self.accept()
 
