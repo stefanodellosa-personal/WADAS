@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
+    <width>425</width>
     <height>414</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <rect>
      <x>10</x>
      <y>380</y>
-     <width>531</width>
+     <width>401</width>
      <height>32</height>
     </rect>
    </property>
@@ -34,7 +34,7 @@
     <rect>
      <x>8</x>
      <y>360</y>
-     <width>531</width>
+     <width>401</width>
      <height>20</height>
     </rect>
    </property>
@@ -42,195 +42,102 @@
     <string/>
    </property>
   </widget>
-  <widget class="QTabWidget" name="tabWidget">
+  <widget class="QWidget" name="gridLayoutWidget_2">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>531</width>
+     <width>401</width>
      <height>341</height>
     </rect>
    </property>
-   <property name="currentIndex">
-    <number>1</number>
-   </property>
-   <widget class="QWidget" name="tab_sqlite">
-    <attribute name="title">
-     <string>SQLite</string>
-    </attribute>
-    <widget class="QWidget" name="gridLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>501</width>
-       <height>291</height>
-      </rect>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_sqlite">
-      <item row="0" column="0" colspan="3">
-       <widget class="QCheckBox" name="checkBox_enable_sqlite_db">
-        <property name="text">
-         <string>Enable SQLite DB</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>OR</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0" colspan="3">
-       <widget class="QPlainTextEdit" name="plainTextEdit"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="pushButton_sqlite_create_db">
-        <property name="text">
-         <string>Create new DB</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QPushButton" name="pushButton_sqlite_open_db">
-        <property name="text">
-         <string>Open existing DB file</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_db_path">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" colspan="3">
-       <widget class="QPushButton" name="pushButton_sqlite_test">
-        <property name="text">
-         <string>Test DB connection</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Database file:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="3">
-       <widget class="Line" name="line_2">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_mysql">
-    <attribute name="title">
-     <string>MySQL</string>
-    </attribute>
-    <widget class="QWidget" name="gridLayoutWidget_2">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>501</width>
-       <height>291</height>
-      </rect>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_mysql">
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="lineEdit_db_password">
-        <property name="echoMode">
-         <enum>QLineEdit::EchoMode::Password</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QCheckBox" name="checkBox">
-        <property name="text">
-         <string>Enable MySQL SB</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Password</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0" colspan="2">
-       <widget class="QPlainTextEdit" name="plainTextEdit_mysql_test"/>
-      </item>
-      <item row="8" column="0" colspan="2">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0" colspan="2">
-       <widget class="QPushButton" name="pushButton_mysql_test_connection">
-        <property name="text">
-         <string>Test DB connection</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Username:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="lineEdit_db_host"/>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Database host:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="lineEdit_db_username"/>
-      </item>
-      <item row="1" column="0">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="pushButton_mysql_create_db">
-        <property name="text">
-         <string>Create new DB</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
+   <layout class="QGridLayout" name="gridLayout_mysql">
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Password</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QCheckBox" name="checkBox">
+      <property name="text">
+       <string>Enable database</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLineEdit" name="lineEdit_db_host"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="pushButton_create_db">
+      <property name="text">
+       <string>Create new DB</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QLineEdit" name="lineEdit_db_username"/>
+    </item>
+    <item row="12" column="0" colspan="2">
+     <widget class="QPlainTextEdit" name="plainTextEdit_db_test"/>
+    </item>
+    <item row="10" column="0" colspan="2">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Username:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QRadioButton" name="radioButton_SQLite">
+      <property name="text">
+       <string>SQLite</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup</string>
+      </attribute>
+     </widget>
+    </item>
+    <item row="11" column="0" colspan="2">
+     <widget class="QPushButton" name="pushButton_test_db">
+      <property name="text">
+       <string>Test database connection</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLineEdit" name="lineEdit_db_password">
+      <property name="echoMode">
+       <enum>QLineEdit::EchoMode::Password</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Database host:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QRadioButton" name="radioButton_MySQL">
+      <property name="text">
+       <string>MySQL</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup</string>
+      </attribute>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>
@@ -268,4 +175,7 @@
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

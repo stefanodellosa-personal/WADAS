@@ -38,5 +38,32 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.label_error.setStyleSheet("color: red")
 
         # Slots
+        self.ui.buttonBox.accepted.connect(self.accept_and_close)
+        self.ui.pushButton_create_db.clicked.connect(self.create_db)
+        self.ui.pushButton_test_db.clicked.connect(self.test_db)
 
+    def init_dialog(self):
+        """Method to initialize dialog with saved configuration data"""
+
+        pass #TODO: implement logic and remove
+
+    def accept_and_close(self):
+        """When Ok is clicked, save db config info before closing."""
+
+        self.accept()
+
+    def create_db(self):
+        """Method to trigger new db creation"""
+
+        pass #TODO: implement logic and remove
+
+    def validate(self):
+        """Method to validate db parameters"""
+
+        pass #TODO: implement logic and remove
+
+    def test_db(self):
+        """Method to test db connection"""
+
+        pass #TODO: implement logic and remove
 
