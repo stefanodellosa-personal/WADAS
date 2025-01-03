@@ -59,6 +59,7 @@ from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
 from wadas.ui.configure_camera_actuator_associations_dialog import (
     DialogConfigureCameraToActuatorAssociations,
 )
+from wadas.ui.configure_db_dialog import ConfigureDBDialog
 from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
@@ -156,6 +157,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_WA.triggered.connect(self.configure_whatsapp)
         self.ui.actionConfigure_Telegram.triggered.connect(self.configure_telegram)
         self.ui.actionRecent_configuration.triggered.connect(self.open_last_saved_file)
+        self.ui.actionConfigure_database.triggered.connect(self.configure_database)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -708,6 +710,14 @@ class MainWindow(QMainWindow):
         configure_telegram_dlg = DialogConfigureTelegram()
         if configure_telegram_dlg.exec():
             logger.info("Telegram notification configured.")
+            self.setWindowModified(True)
+            self.update_toolbar_status()
+
+    def configure_database(self):
+        """Method to trigger DB configuration dialog"""
+        configure_db_dlg = ConfigureDBDialog()
+        if configure_db_dlg.exec_():
+            logger.info("Database configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
 
