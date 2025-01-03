@@ -64,7 +64,7 @@ def load_configuration_from_file(file_path):
 
     load_status = {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": None,
         "compatible_config": True,
         "valid_ftp_keyring": True,

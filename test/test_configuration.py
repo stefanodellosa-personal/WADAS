@@ -62,7 +62,7 @@ version: {__version__}
 def test_load_empty_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -110,6 +110,50 @@ version: {__version__}
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
+    read_data="""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_threshold: 0
+  ai_classification_device: auto
+  ai_detect_threshold: 0
+  ai_detection_device: auto
+  ai_language: ''
+cameras: []
+camera_detection_params: {}
+ftps_server: []
+notification: []
+operation_mode:
+""",
+)
+def test_load_wrong_format_config(mock_file, init):
+    result = load_configuration_from_file("")
+    assert result["errors_on_load"] is True
+    assert isinstance(result["errors_log"], KeyError)
+    assert repr(result["errors_log"]) == "KeyError('version')"
+    assert result["config_version"] is None
+    assert result["compatible_config"] is True
+    assert result["valid_ftp_keyring"] is True
+    assert result["valid_email_keyring"] is True
+    assert result["valid_whatsapp_keyring"] is True
+    assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
+    assert FTPsServer.ftps_server is None
+    assert Actuator.actuators == {}
+    assert cameras == []
+    assert Camera.detection_params == {}
+    assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
+    assert AiModel.detection_device == "auto"
+    assert AiModel.classification_device == "auto"
+    assert AiModel.language == ""
+    assert OperationMode.cur_operation_mode is None
+    assert OperationMode.cur_operation_mode_type is None
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
     read_data=f"""
 actuator_server:
   actuator_timeout_threshold: 89
@@ -135,7 +179,7 @@ version: {__version__}
 def test_load_actuator_server_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -231,7 +275,7 @@ version: {__version__}
 def test_load_actuators_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -324,7 +368,7 @@ version: {__version__}
 def test_load_ai_model_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -401,7 +445,7 @@ version: {__version__}
 def test_load_camera_detection_params_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -528,7 +572,7 @@ def test_load_cameras_config(mock_file, init):
     ):
         assert load_configuration_from_file("") == {
             "errors_on_load": False,
-            "error_log": "",
+            "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
             "valid_ftp_keyring": True,
@@ -662,7 +706,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_no_credentials(mock_file, i
         get_credential_mock.return_value = None
         assert load_configuration_from_file("") == {
             "errors_on_load": False,
-            "error_log": "",
+            "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
             "valid_ftp_keyring": False,
@@ -735,7 +779,7 @@ def test_load_cameras_config_with_ftp_and_no_folder_and_no_credentials(mock_file
         get_credential_mock.return_value = None
         assert load_configuration_from_file("") == {
             "errors_on_load": False,
-            "error_log": "",
+            "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
             "valid_ftp_keyring": False,
@@ -808,7 +852,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file,
         get_credential_mock.return_value = Mock(username="Camera1", password="123")
         assert load_configuration_from_file("") == {
             "errors_on_load": False,
-            "error_log": "",
+            "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
             "valid_ftp_keyring": True,
@@ -881,7 +925,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_different_credentials(mock_
         get_credential_mock.return_value = Mock(username="UnknownUser", password="123")
         assert load_configuration_from_file("") == {
             "errors_on_load": False,
-            "error_log": "",
+            "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
             "valid_ftp_keyring": False,
@@ -1034,7 +1078,7 @@ version: {__version__}
 def test_load_ftps_server_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -1102,7 +1146,7 @@ def test_load_ftps_server_config_with_existing_server(mock_file, init):
     FTPsServer.ftps_server.server = old_server = MagicMock()
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -1212,7 +1256,7 @@ def test_load_notification_config_with_no_credentials(mock_file, init):
         get_credential_mock.return_value = None
         assert load_configuration_from_file("") == {
             "errors_on_load": False,
-            "error_log": "",
+            "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
             "valid_ftp_keyring": True,
@@ -1276,7 +1320,7 @@ def test_load_notification_config_with_same_credentials(mock_file, init):
         get_credential_mock.return_value = Mock(username="development@wadas.org", password="123")
         assert load_configuration_from_file("") == {
             "errors_on_load": False,
-            "error_log": "",
+            "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
             "valid_ftp_keyring": True,
@@ -1340,7 +1384,7 @@ def test_load_notification_config_with_different_credentials(mock_file, init):
         get_credential_mock.return_value = Mock(username="UnknownEmail", password="123")
         assert load_configuration_from_file("") == {
             "errors_on_load": False,
-            "error_log": "",
+            "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
             "valid_ftp_keyring": True,
@@ -1404,7 +1448,7 @@ def test_load_enabled_notification_config(mock_file, init):
         get_credential_mock.return_value = None
         assert load_configuration_from_file("") == {
             "errors_on_load": False,
-            "error_log": "",
+            "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
             "valid_ftp_keyring": True,
@@ -1509,7 +1553,7 @@ version: {__version__}
 def test_load_test_model_mode_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -1580,7 +1624,7 @@ version: {__version__}
 def test_load_animal_detection_mode_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -1643,7 +1687,7 @@ version: {__version__}
 def test_load_animal_detection_and_classification_mode_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -1709,7 +1753,7 @@ version: {__version__}
 def test_load_custom_species_classification_mode_config(mock_file, init):
     assert load_configuration_from_file("") == {
         "errors_on_load": False,
-        "error_log": "",
+        "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
         "valid_ftp_keyring": True,
@@ -1751,3 +1795,48 @@ operation_mode:
 version: {__version__}
 """
     )
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data="""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_threshold: 0
+  ai_classification_device: auto
+  ai_detect_threshold: 0
+  ai_detection_device: auto
+  ai_language: ''
+cameras: []
+camera_detection_params: {}
+ftps_server: []
+notification: []
+operation_mode:
+version: v0.1.0
+""",
+)
+def test_load_incompatible_older_version_config(mock_file, init):
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version("v0.1.0"),
+        "compatible_config": False,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
+    assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
+    assert FTPsServer.ftps_server is None
+    assert Actuator.actuators == {}
+    assert cameras == []
+    assert Camera.detection_params == {}
+    assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
+    assert AiModel.detection_device == "auto"
+    assert AiModel.classification_device == "auto"
+    assert AiModel.language == ""
+    assert OperationMode.cur_operation_mode is None
+    assert OperationMode.cur_operation_mode_type is None
