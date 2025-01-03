@@ -42,6 +42,51 @@ def init():
 @patch(
     "builtins.open",
     new_callable=OpenStringMock,
+    read_data="""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_threshold: 0
+  ai_classification_device: auto
+  ai_detect_threshold: 0
+  ai_detection_device: auto
+  ai_language: ''
+cameras: []
+camera_detection_params: {}
+ftps_server: []
+notification: []
+operation_mode:
+version: v0.1.0
+""",
+)
+def test_load_incompatible_older_version_config(mock_file, init):
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version("v0.1.0"),
+        "compatible_config": False,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
+    assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
+    assert FTPsServer.ftps_server is None
+    assert Actuator.actuators == {}
+    assert cameras == []
+    assert Camera.detection_params == {}
+    assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.classification_threshold == 0
+    assert AiModel.detection_threshold == 0
+    assert AiModel.detection_device == "auto"
+    assert AiModel.classification_device == "auto"
+    assert AiModel.language == ""
+    assert OperationMode.cur_operation_mode is None
+    assert OperationMode.cur_operation_mode_type is None
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
     read_data=f"""
 actuator_server:
 actuators: []
@@ -1795,48 +1840,3 @@ operation_mode:
 version: {__version__}
 """
     )
-
-
-@patch(
-    "builtins.open",
-    new_callable=OpenStringMock,
-    read_data="""
-actuator_server:
-actuators: []
-ai_model:
-  ai_class_threshold: 0
-  ai_classification_device: auto
-  ai_detect_threshold: 0
-  ai_detection_device: auto
-  ai_language: ''
-cameras: []
-camera_detection_params: {}
-ftps_server: []
-notification: []
-operation_mode:
-version: v0.1.0
-""",
-)
-def test_load_incompatible_older_version_config(mock_file, init):
-    assert load_configuration_from_file("") == {
-        "errors_on_load": False,
-        "errors_log": "",
-        "config_version": Version("v0.1.0"),
-        "compatible_config": False,
-        "valid_ftp_keyring": True,
-        "valid_email_keyring": True,
-        "valid_whatsapp_keyring": True,
-    }
-    assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
-    assert FTPsServer.ftps_server is None
-    assert Actuator.actuators == {}
-    assert cameras == []
-    assert Camera.detection_params == {}
-    assert FastAPIActuatorServer.actuator_server is None
-    assert AiModel.classification_threshold == 0
-    assert AiModel.detection_threshold == 0
-    assert AiModel.detection_device == "auto"
-    assert AiModel.classification_device == "auto"
-    assert AiModel.language == ""
-    assert OperationMode.cur_operation_mode is None
-    assert OperationMode.cur_operation_mode_type is None
