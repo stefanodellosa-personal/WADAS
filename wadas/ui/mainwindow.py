@@ -412,6 +412,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_camera_to_actuator_associations.setEnabled(not running)
         self.ui.actionConfigure_WA.setEnabled(not running)
         self.ui.actionConfigure_Telegram.setEnabled(not running)
+        self.ui.actionconfigure_database.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
