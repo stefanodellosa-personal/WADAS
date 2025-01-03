@@ -24,6 +24,7 @@ import os
 import sys
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
+from packaging.version import Version
 
 import keyring
 from PySide6 import QtCore, QtGui
@@ -31,13 +32,13 @@ from PySide6.QtCore import QSettings, QThread
 from PySide6.QtGui import QBrush
 from PySide6.QtWidgets import (
     QComboBox,
-    QErrorMessage,
     QFileDialog,
     QLabel,
     QMainWindow,
     QMessageBox,
 )
 
+from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
@@ -62,6 +63,7 @@ from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
 from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
+from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.insert_url_dialog import InsertUrlDialog
 from wadas.ui.license_dialog import LicenseDialog
 from wadas.ui.select_animal_species import DialogSelectAnimalSpecies
@@ -97,9 +99,6 @@ class MainWindow(QMainWindow):
         self.configuration_file_name = None
         self.key_ring = None
         self.ftp_server = None
-        self.valid_email_keyring = False
-        self.valid_ftp_keyring = False
-        self.valid_whatsapp_keyring = False
         self.load_status = None
 
         self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
@@ -343,25 +342,30 @@ class MainWindow(QMainWindow):
         ):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
-            logger.info("No camera configured. Please configure camera(s) to run the selected operation mode.")
+            logger.warning("No camera configured. Please configure camera(s) to run the selected operation mode.")
         elif (
             OperationMode.cur_operation_mode_type != OperationMode.OperationModeTypes.TestModelMode
             and not self.camera_enabled()
         ):
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
-            logger.info("No camera enabled. Please enable at least a camera to run the selected operation mode.")
+            logger.warning("No camera enabled. Please enable at least a camera to run the selected operation mode.")
         else:
             self.ui.actionConfigure_Ai_model.setEnabled(True)
             valid_configuration = True
-            if self.enabled_email_notifier_exists() and not self.valid_email_keyring:
+            if self.enabled_email_notifier_exists() and not self.load_status["valid_email_keyring"]:
                 valid_configuration = False
                 logger.info("Enabled email notifier exists but not valid credentials in keyring are stored. "
                             "Please edit email configuration to fix the issue and to be able to run.")
-            if self.ftp_camera_exists() and not self.valid_ftp_keyring:
+            if self.ftp_camera_exists() and not self.load_status["valid_ftp_keyring"]:
                 valid_configuration = False
                 logger.info("FTP camera(s) configured but not valid credentials in keyring are stored."
                             "Please edit FTP Camera(s) configuration to fix the issue and to be able to run.")
+            if self.enabled_whatsapp_notifier_exists() and not self.load_status["valid_whatsapp_keyring"]:
+                valid_configuration = False
+                logger.info("WhatsApp notifications configured but not valid token in keyring is stored."
+                            "Please edit WhatsApp configuration to fix the issue and to be able to run.")
+
             self.ui.actionRun.setEnabled(valid_configuration)
         self.ui.actionStop.setEnabled(False)
         self.ui.actionSave_configuration_as.setEnabled(self.isWindowModified())
@@ -383,6 +387,13 @@ class MainWindow(QMainWindow):
 
         return any(((Notifier.notifiers[notifier] and Notifier.notifiers[notifier].type == Notifier.NotifierTypes.EMAIL
                   and Notifier.notifiers[notifier].enabled) for notifier in Notifier.notifiers))
+
+    def enabled_whatsapp_notifier_exists(self):
+        """Method that checks if whatsapp notifier is configured"""
+
+        return any(((Notifier.notifiers[notifier] and
+                     Notifier.notifiers[notifier].type == Notifier.NotifierTypes.WHATSAPP and
+                     Notifier.notifiers[notifier].enabled) for notifier in Notifier.notifiers))
 
     def update_toolbar_status_on_run(self, running):
         """Update toolbar status while running model."""
@@ -449,7 +460,7 @@ class MainWindow(QMainWindow):
 
             credentials = keyring.get_credential("WADAS_email", "")
             logger.info("Saved credentials for %s", credentials.username)
-            self.valid_email_keyring = True
+            self.load_status["valid_email_keyring"] = True
             self.setWindowModified(True)
             self.update_toolbar_status()
         else:
@@ -554,10 +565,9 @@ class MainWindow(QMainWindow):
         """Method to save configuration to file."""
 
         if not self.configuration_file_name:
-            error_dialog = QErrorMessage()
-            error_dialog.showMessage(
-                "No configuration file provided. Please specify file name and path."
-            )
+            error_dialog = WADASErrorMessage("No configuration file provided",
+            "No configuration file provided. Please specify file name and path.")
+            error_dialog.exec()
             logger.error("No configuration file provided. Aborting save.")
             return
         else:
@@ -591,8 +601,9 @@ class MainWindow(QMainWindow):
         )
 
         if file_name[0]:
-            self.valid_ftp_keyring, self.valid_email_keyring, self.valid_whatsapp_keyring =\
             self.load_status = load_configuration_from_file(file_name[0])
+            if not self.compatible_version() or self.errors_on_load():
+                return
 
             self.configuration_file_name = file_name[0]
             self.setWindowModified(False)
@@ -604,10 +615,40 @@ class MainWindow(QMainWindow):
 
             self.check_keyrings_status()
 
+    def compatible_version(self):
+        """Method to check if version of loaded config is compatible with WADAS one"""
+
+        if self.load_status["compatible_config"]:
+            if self.load_status["config_version"] < Version(__version__.lstrip("v")):
+                logger.debug("Older WADAS version configuration loaded.")
+            return True
+        else:
+            error_dialog = WADASErrorMessage("Incompatible configuration file provided",
+                "Provided WADAS configuration version is not compatible with current version of WADAS therefore cannot "
+                "be loaded."
+            )
+            error_dialog.exec()
+            return False
+
+    def errors_on_load(self):
+        """Method to check if error(s) occurred while loading the config file."""
+
+        if self.load_status["errors_on_load"]:
+            if self.load_status["errors_on_load"]:
+                error_dlg = WADASErrorMessage("Error occurred while loading configuration file",
+                                              repr(self.load_status["errors_log"]))
+            else:
+                error_dlg = WADASErrorMessage("Error occurred while loading configuration file",
+                                              "Please check logs for error detail.")
+            error_dlg.exec()
+            return True
+        else:
+            return False
+
     def check_keyrings_status(self):
         """Method to check keyring status returned after load from config"""
 
-        if not self.valid_email_keyring:
+        if not self.load_status["valid_email_keyring"]:
             reply = QMessageBox.question(
                 self,
                 "Invalid email credentials. ",
@@ -618,7 +659,7 @@ class MainWindow(QMainWindow):
             if reply == QMessageBox.Yes:
                 self.configure_email()
 
-        if not self.valid_ftp_keyring:
+        if not self.load_status["valid_ftp_keyring"]:
             reply = QMessageBox.question(
                 self,
                 "Invalid FTP camera credentials. ",
@@ -629,7 +670,7 @@ class MainWindow(QMainWindow):
             if reply == QMessageBox.Yes:
                 self.configure_ftp_cameras()
 
-        if not self.valid_whatsapp_keyring:
+        if not self.load_status["valid_whatsapp_keyring"]:
             reply = QMessageBox.question(
                 self,
                 "Invalid WhatsApp token. ",
@@ -646,7 +687,7 @@ class MainWindow(QMainWindow):
         configure_ftp_cameras_dlg = DialogFTPCameras()
         if configure_ftp_cameras_dlg.exec():
             logger.info("FTP Server and Cameras configured.")
-            self.valid_ftp_keyring = True
+            self.load_status["valid_ftp_keyring"] = True
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
@@ -749,6 +790,7 @@ class MainWindow(QMainWindow):
         self.log_txtedt_handler.setLevel(new_level)
 
     def closeEvent(self, event):
+        """Method to hadle proper thread closure when close window action is triggered"""
 
         if not self.ui.actionRun.isEnabled() and self.ui.actionStop.isEnabled():
             reply = QMessageBox.question(
@@ -813,11 +855,13 @@ Are you sure you want to exit?""",
             sys.exit()
 
     def open_last_saved_file(self):
-        """Method to enable openning of last saved configuration file"""
+        """Method to enable opening of last saved configuration file"""
+
         if (path:=self.settings.value("last_saved_config_path", None, str)) and os.path.exists(path):
-            self.valid_ftp_keyring, self.valid_email_keyring, self.valid_whatsapp_keyring =\
-                load_configuration_from_file(path)
-            self.check_keyrings_status()
+            self.load_status = load_configuration_from_file(path)
+            if not self.compatible_version() or self.errors_on_load():
+                return
+
             self.configuration_file_name = path
             self.setWindowModified(False)
             self.update_toolbar_status()
@@ -825,6 +869,8 @@ Are you sure you want to exit?""",
             self.update_en_camera_list()
             self.update_en_actuator_list()
             self.set_recent_configuration(self.configuration_file_name)
+
+            self.check_keyrings_status()
         else:
             logger.warning("No last saved file found or file no longer exists.")
             self.ui.actionRecent_configuration.setEnabled(False)  # Disable if file does not exist

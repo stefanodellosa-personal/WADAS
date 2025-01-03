@@ -19,6 +19,7 @@
 
 import logging
 import os
+import traceback
 
 import keyring
 import openvino as ov
@@ -61,172 +62,192 @@ def check_version_compatibility(config_file_version):
 def load_configuration_from_file(file_path):
     """Load configuration from YAML file."""
 
-    load_status = dict.fromkeys(
-        [
-            "config_version",
-            "compatible_config",
-            "valid_ftp_keyring",
-            "valid_email_keyring",
-            "valid_whatsapp_keyring",
-        ]
-    )
+    load_status = {
+        "errors_on_load": False,
+        "error_log": "",
+        "config_version": None,
+        "compatible_config": True,
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
 
     with open(str(file_path)) as file_:
         logging.info("Loading configuration from file...")
         wadas_config = yaml.safe_load(file_)
 
     # Applying configuration to WADAS from config file values
-    valid_email_keyring = valid_ftp_keyring = valid_whatsapp_keyring = True
+    try:
+        # Version
+        config_file_version = Version(wadas_config["version"].lstrip("v"))
+        load_status["config_version"] = config_file_version
+        load_status["compatible_config"] = check_version_compatibility(config_file_version)
 
-    # Version
-    config_file_version = Version(wadas_config["version"].lstrip("v"))
-    load_status["config_version"] = config_file_version
-    load_status["compatible_config"] = check_version_compatibility()
+        # If version of provided configuration file is not compatible we return aborting
+        # deserialization process.
+        if not load_status["compatible_config"]:
+            logger.error(
+                "Provided WADAS configuration version is not compatible with current "
+                "version of WADAS. "
+                "Aborting configuration load."
+            )
+            return load_status
 
-    # Notifiers
-    for key, value in (wadas_config["notification"] or {}).items():
-        if key in Notifier.notifiers and key == Notifier.NotifierTypes.EMAIL.value:
-            email_notifier = EmailNotifier(**value)
-            Notifier.notifiers[key] = email_notifier
-            credentials = keyring.get_credential("WADAS_email", email_notifier.sender_email)
-            if not credentials:
-                logger.error(
-                    "Unable to find email credentials for %s stored on the system."
-                    "Please insert them through email configuration dialog.",
-                    email_notifier.sender_email,
-                )
-                valid_email_keyring = False
-            elif credentials and credentials.username != email_notifier.sender_email:
-                logger.error(
-                    "Email username on the system (%s) does not match with username "
-                    "provided in configuration file (%s). Please make sure valid email "
-                    "credentials are in use by editing them from email configuration "
-                    "dialog.",
-                    credentials.username,
-                    email_notifier.sender_email,
-                )
-                valid_email_keyring = False
-        elif key in Notifier.notifiers and key == Notifier.NotifierTypes.WHATSAPP.value:
-            whatsapp_notifier = WhatsAppNotifier(**value)
-            Notifier.notifiers[key] = whatsapp_notifier
-            credentials = keyring.get_credential("WADAS_WhatsApp", whatsapp_notifier.sender_id)
-            if not credentials:
-                logger.error(
-                    "Unable to find WhatsApp credentials for %s stored on the system. "
-                    "Please insert them through WhatsApp configuration dialog.",
-                    whatsapp_notifier.sender_id,
-                )
-                valid_whatsapp_keyring = False
-            elif credentials and credentials.username != whatsapp_notifier.sender_id:
-                logger.error(
-                    "WhatsApp sender ID on the system (%s) does not match with sender ID "
-                    "provided in configuration file (%s). Please make sure valid WhatsApp "
-                    "credentials are in use by editing them from WhatsApp configuration "
-                    "dialog.",
-                    credentials.username,
-                    whatsapp_notifier.sender_id,
-                )
-                valid_whatsapp_keyring = False
-        elif key in Notifier.notifiers and key == Notifier.NotifierTypes.TELEGRAM.value:
-            telegram_notifier = TelegramNotifier.deserialize(value)
-            Notifier.notifiers[key] = telegram_notifier
-    load_status["valid_email_keyring"] = valid_email_keyring
-    load_status["valid_whatsapp_keyring"] = valid_whatsapp_keyring
+        # Notifiers
+        for key, value in (wadas_config["notification"] or {}).items():
+            if key in Notifier.notifiers and key == Notifier.NotifierTypes.EMAIL.value:
+                email_notifier = EmailNotifier(**value)
+                Notifier.notifiers[key] = email_notifier
+                credentials = keyring.get_credential("WADAS_email", email_notifier.sender_email)
+                if not credentials:
+                    logger.error(
+                        "Unable to find email credentials for %s stored on the system."
+                        "Please insert them through email configuration dialog.",
+                        email_notifier.sender_email,
+                    )
+                    load_status["valid_email_keyring"] = False
+                elif credentials and credentials.username != email_notifier.sender_email:
+                    logger.error(
+                        "Email username on the system (%s) does not match with username "
+                        "provided in configuration file (%s). Please make sure valid email "
+                        "credentials are in use by editing them from email configuration "
+                        "dialog.",
+                        credentials.username,
+                        email_notifier.sender_email,
+                    )
+                    load_status["valid_email_keyring"] = False
+            elif key in Notifier.notifiers and key == Notifier.NotifierTypes.WHATSAPP.value:
+                whatsapp_notifier = WhatsAppNotifier(**value)
+                Notifier.notifiers[key] = whatsapp_notifier
+                credentials = keyring.get_credential("WADAS_WhatsApp", whatsapp_notifier.sender_id)
+                if not credentials:
+                    logger.error(
+                        "Unable to find WhatsApp credentials for %s stored on the system. "
+                        "Please insert them through WhatsApp configuration dialog.",
+                        whatsapp_notifier.sender_id,
+                    )
+                    load_status["valid_whatsapp_keyring"] = False
+                elif credentials and credentials.username != whatsapp_notifier.sender_id:
+                    logger.error(
+                        "WhatsApp sender ID on the system (%s) does not match with sender ID "
+                        "provided in configuration file (%s). Please make sure valid WhatsApp "
+                        "credentials are in use by editing them from WhatsApp configuration "
+                        "dialog.",
+                        credentials.username,
+                        whatsapp_notifier.sender_id,
+                    )
+                    load_status["valid_whatsapp_keyring"] = False
+            elif key in Notifier.notifiers and key == Notifier.NotifierTypes.TELEGRAM.value:
+                telegram_notifier = TelegramNotifier.deserialize(value)
+                Notifier.notifiers[key] = telegram_notifier
 
-    # FTP Server
-    if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
-        FTPsServer.ftps_server.server.close_all()
-    FTPsServer.ftps_server = (
-        FTPsServer.deserialize(wadas_config["ftps_server"]) if wadas_config["ftps_server"] else None
-    )
+        # FTP Server
+        if FTPsServer.ftps_server and FTPsServer.ftps_server.server:
+            FTPsServer.ftps_server.server.close_all()
+        FTPsServer.ftps_server = (
+            FTPsServer.deserialize(wadas_config["ftps_server"])
+            if wadas_config["ftps_server"]
+            else None
+        )
 
-    # Actuators
-    Actuator.actuators.clear()
-    for data in wadas_config["actuators"]:
-        match data["type"]:
-            case Actuator.ActuatorTypes.ROADSIGN.value:
-                actuator = RoadSignActuator.deserialize(data)
-                Actuator.actuators[actuator.id] = actuator
-            case Actuator.ActuatorTypes.FEEDER.value:
-                actuator = FeederActuator.deserialize(data)
-                Actuator.actuators[actuator.id] = actuator
+        # Actuators
+        Actuator.actuators.clear()
+        for data in wadas_config["actuators"]:
+            match data["type"]:
+                case Actuator.ActuatorTypes.ROADSIGN.value:
+                    actuator = RoadSignActuator.deserialize(data)
+                    Actuator.actuators[actuator.id] = actuator
+                case Actuator.ActuatorTypes.FEEDER.value:
+                    actuator = FeederActuator.deserialize(data)
+                    Actuator.actuators[actuator.id] = actuator
 
-    # Camera(s)
-    cameras.clear()
-    for data in wadas_config["cameras"]:
-        match data["type"]:
-            case Camera.CameraTypes.USB_CAMERA.value:
-                usb_camera = USBCamera.deserialize(data)
-                cameras.append(usb_camera)
-            case Camera.CameraTypes.FTP_CAMERA.value:
-                ftp_camera = FTPCamera.deserialize(data)
-                cameras.append(ftp_camera)
-                if FTPsServer.ftps_server:
-                    if not os.path.isdir(ftp_camera.ftp_folder):
-                        os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
-                    credentials = keyring.get_credential(f"WADAS_FTP_camera_{ftp_camera.id}", "")
-                    if credentials:
-                        if credentials.username != ftp_camera.id:
-                            logger.error(
-                                "Keyring stored user (%s) differs from configuration file one (%s)."
-                                " Please make sure to align system stored credential with"
-                                " configuration file. System credentials will be used.",
-                                ftp_camera.id,
-                                credentials.username,
-                            )
-                            valid_ftp_keyring = False
-                        else:
-                            FTPsServer.ftps_server.add_user(
-                                credentials.username,
-                                credentials.password,
-                                ftp_camera.ftp_folder,
-                            )
-                    else:
-                        logger.error(
-                            "Unable to find credentials for %s on this system. "
-                            "Please add credentials manually from FTP Camera configuration dialog.",
-                            ftp_camera.id,
+        # Camera(s)
+        cameras.clear()
+        for data in wadas_config["cameras"]:
+            match data["type"]:
+                case Camera.CameraTypes.USB_CAMERA.value:
+                    usb_camera = USBCamera.deserialize(data)
+                    cameras.append(usb_camera)
+                case Camera.CameraTypes.FTP_CAMERA.value:
+                    ftp_camera = FTPCamera.deserialize(data)
+                    cameras.append(ftp_camera)
+                    if FTPsServer.ftps_server:
+                        if not os.path.isdir(ftp_camera.ftp_folder):
+                            os.makedirs(ftp_camera.ftp_folder, exist_ok=True)
+                        credentials = keyring.get_credential(
+                            f"WADAS_FTP_camera_{ftp_camera.id}", ""
                         )
-                        valid_ftp_keyring = False
-    Camera.detection_params = wadas_config["camera_detection_params"]
-    load_status["valid_ftp_keyring"] = valid_ftp_keyring
+                        if credentials:
+                            if credentials.username != ftp_camera.id:
+                                logger.error(
+                                    "Keyring stored user (%s) differs from configuration "
+                                    "file one (%s)."
+                                    " Please make sure to align system stored credential with"
+                                    " configuration file. System credentials will be used.",
+                                    ftp_camera.id,
+                                    credentials.username,
+                                )
+                                load_status["valid_ftp_keyring"] = False
+                            else:
+                                FTPsServer.ftps_server.add_user(
+                                    credentials.username,
+                                    credentials.password,
+                                    ftp_camera.ftp_folder,
+                                )
+                        else:
+                            logger.error(
+                                "Unable to find credentials for %s on this system. "
+                                "Please add credentials manually from FTP Camera configuration "
+                                "dialog.",
+                                ftp_camera.id,
+                            )
+                            load_status["valid_ftp_keyring"] = False
+        Camera.detection_params = wadas_config["camera_detection_params"]
 
-    # FastAPI Actuator Server
-    FastAPIActuatorServer.actuator_server = (
-        FastAPIActuatorServer.deserialize(wadas_config["actuator_server"])
-        if wadas_config["actuator_server"]
-        else None
-    )
+        # FastAPI Actuator Server
+        FastAPIActuatorServer.actuator_server = (
+            FastAPIActuatorServer.deserialize(wadas_config["actuator_server"])
+            if wadas_config["actuator_server"]
+            else None
+        )
 
-    # Ai model
-    available_ai_devices = ov.Core().get_available_devices()
-    available_ai_devices.append("auto")
-    AiModel.detection_threshold = wadas_config["ai_model"]["ai_detect_threshold"]
-    AiModel.classification_threshold = wadas_config["ai_model"]["ai_class_threshold"]
-    AiModel.language = wadas_config["ai_model"]["ai_language"]
-    detection_device = wadas_config["ai_model"]["ai_detection_device"]
-    classification_device = wadas_config["ai_model"]["ai_classification_device"]
-    AiModel.detection_device = (
-        detection_device if detection_device in available_ai_devices else "auto"
-    )
-    AiModel.classification_device = (
-        classification_device if classification_device in available_ai_devices else "auto"
-    )
+        # Ai model
+        available_ai_devices = ov.Core().get_available_devices()
+        available_ai_devices.append("auto")
+        AiModel.detection_threshold = wadas_config["ai_model"]["ai_detect_threshold"]
+        AiModel.classification_threshold = wadas_config["ai_model"]["ai_class_threshold"]
+        AiModel.language = wadas_config["ai_model"]["ai_language"]
+        detection_device = wadas_config["ai_model"]["ai_detection_device"]
+        classification_device = wadas_config["ai_model"]["ai_classification_device"]
+        AiModel.detection_device = (
+            detection_device if detection_device in available_ai_devices else "auto"
+        )
+        AiModel.classification_device = (
+            classification_device if classification_device in available_ai_devices else "auto"
+        )
 
-    # Operation Mode
-    if operation_mode := wadas_config["operation_mode"]:
-        operation_mode_type = _OPERATION_MODE_TYPE_VALUE_TO_TYPE.get(operation_mode["type"])
-        OperationMode.cur_operation_mode_type = operation_mode_type
-        if (
-            operation_mode_type
-            == OperationMode.cur_operation_mode_type.CustomSpeciesClassificationMode
-            and operation_mode["custom_target_species"]
-        ):
-            OperationMode.cur_custom_classification_species = operation_mode[
-                "custom_target_species"
-            ]
-    else:
-        OperationMode.cur_operation_mode = None
+        # Operation Mode
+        if operation_mode := wadas_config["operation_mode"]:
+            operation_mode_type = _OPERATION_MODE_TYPE_VALUE_TO_TYPE.get(operation_mode["type"])
+            OperationMode.cur_operation_mode_type = operation_mode_type
+            if (
+                operation_mode_type
+                == OperationMode.cur_operation_mode_type.CustomSpeciesClassificationMode
+            ):
+                if operation_mode["custom_target_species"]:
+                    OperationMode.cur_custom_classification_species = operation_mode[
+                        "custom_target_species"
+                    ]
+                else:
+                    logger.error("Custom target species not specified.")
+                    load_status["errors_on_load"] = True
+        else:
+            OperationMode.cur_operation_mode = None
+    except Exception as e:
+        load_status["errors_on_load"] = True
+        load_status["errors_log"] = e
+        logger.debug("Error occurred while loading configuration file. %s", traceback.format_exc())
+        return load_status
 
     logger.info("Configuration loaded from file %s.", file_path)
 
