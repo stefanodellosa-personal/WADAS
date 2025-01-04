@@ -22,6 +22,8 @@ import json
 import logging
 from enum import Enum
 
+from domain.actuation_event import ActuationEvent
+
 from wadas.domain.actuator import Actuator
 
 logger = logging.getLogger(__name__)
@@ -40,8 +42,11 @@ class FeederActuator(Actuator):
 
     def send_command(self, cmd):
         """Method to send the specific command to the Actuator superclass."""
+
+        command_sent = False
         if isinstance(cmd, FeederActuator.Commands):
             super().send_command(cmd)
+            command_sent = True
         else:
             logger.error(
                 "Actuator %s with ID %s received an unknown command: %s.",
@@ -50,10 +55,14 @@ class FeederActuator(Actuator):
                 cmd,
             )
             raise Exception("Unknown command")
+        return command_sent
 
-    def actuate(self):
+    def actuate(self, actuation_event: ActuationEvent):
         """Method to trigger the FeederActuator sending it the CLOSE Command"""
-        self.send_command(self.Commands.CLOSE)
+
+        cmd = self.Commands.CLOSE
+        if self.send_command(cmd):
+            actuation_event.command = cmd
 
     def serialize(self):
         """Method to serialize Actuator object into file."""

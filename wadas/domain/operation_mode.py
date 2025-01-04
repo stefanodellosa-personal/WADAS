@@ -25,6 +25,7 @@ from enum import Enum
 
 from PySide6.QtCore import QObject, Signal
 
+from wadas.domain.actuation_event import ActuationEvent
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
@@ -35,6 +36,7 @@ from wadas.domain.fastapi_actuator_server import (
 )
 from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
+from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +78,7 @@ class OperationMode(QObject):
         self.ftp_thread = None
         self.actuators_server_thread = None
         self.actuators_view_thread = None
+        self.en_classification = False
 
     def init_model(self):
         """Method to run the selected WADAS operation mode"""
@@ -107,11 +110,24 @@ class OperationMode(QObject):
                     self.ftp_thread = FTPsServer.ftps_server.run()
         logger.info("Ready for video stream from Camera(s)...")
 
-    def _detect(self, cur_image_path):
+    def _detect(self, cur_img):
         """Method to run the animal detection process on a specific image"""
-        results, detected_img_path = self.ai_model.process_image(cur_image_path, True)
-        self.last_detection = detected_img_path
-        return results, detected_img_path
+
+        results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
+
+        if results and detected_img_path:
+            detection_event = DetectionEvent(
+                cur_img["camera_id"],
+                get_timestamp(),
+                cur_img["img"],
+                detected_img_path,
+                results,
+                self.en_classification,
+            )
+            self.last_detection = detected_img_path
+            return detection_event
+        else:
+            return None
 
     def _format_classified_animals_string(self, classified_animals):
         # Prepare a list of classified animals to print in UI
@@ -119,23 +135,27 @@ class OperationMode(QObject):
             animal["classification"][0] for animal in classified_animals
         )
 
-    def _classify(self, cur_image_path, detection_results):
+    def _classify(self, detection_event: DetectionEvent):
         """Method to run the animal classification process
         on a specific image starting from the detection output"""
+
         # Classify if detection has identified animals
-        if len(detection_results["detections"].xyxy):
+        if len(detection_event.detected_animals["detections"].xyxy):
             logger.info("Running classification on detection result(s)...")
             (
                 classified_img_path,
                 classified_animals,
-            ) = self.ai_model.classify(cur_image_path, detection_results)
-            self.last_classification = classified_img_path
-
-            self._format_classified_animals_string(classified_animals)
-            return classified_img_path, classified_animals
-        return None, None
+            ) = self.ai_model.classify(
+                detection_event.original_image, detection_event.detected_animals
+            )
+            if classified_img_path and classified_animals:
+                self.last_classification = classified_img_path
+                self._format_classified_animals_string(classified_animals)
+                detection_event.classified_animals = classified_animals
+                detection_event.classification_img_path = classified_img_path
 
     def ftp_camera_exist(self):
+        """Method that returns True if at least an FTP camera exists, False otherwise."""
         for camera in cameras:
             if camera.type == Camera.CameraTypes.FTP_CAMERA:
                 return True
@@ -173,16 +193,17 @@ class OperationMode(QObject):
         """Method to send notification(s) trough Notifier class (and subclasses)"""
         Notifier.send_notifications(detection_event, message)
 
-    def actuate(self, camera_id):
+    def actuate(self, detection_event: DetectionEvent):
         """Method to trigger actuators associated to the camera, when enabled"""
         cur_camera = None
         for cur_camera in cameras:
-            if cur_camera.id == camera_id:
+            if cur_camera.id == detection_event.camera_id:
                 break
         if cur_camera:
             for actuator in cur_camera.actuators:
                 if actuator.enabled:
-                    actuator.actuate()
+                    actuation_event = ActuationEvent(actuator.id, get_timestamp(), detection_event)
+                    actuator.actuate(actuation_event)
 
     def execution_completed(self):
         """Method to perform end of execution steps."""
