@@ -14,7 +14,7 @@
 # along with WADAS. If not, see <https://www.gnu.org/licenses/>.
 #
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
-# Date: 2025-04-01
+# Date: 2025-01-04
 # Description: Actuation event module.
 
 import logging

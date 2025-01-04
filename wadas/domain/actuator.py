@@ -59,7 +59,7 @@ class Actuator:
             return None  # if there are no commands, return None
 
     @abstractmethod
-    def actuate(self, actuator_event: ActuationEvent):
+    def actuate(self, actuation_event: ActuationEvent):
         """Method to trigger the actuator sending the appropriate command"""
         pass
 
