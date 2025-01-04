@@ -17,6 +17,7 @@
 # Date: 2025-01-04
 # Description: database module.
 
+from abc import abstractmethod
 from enum import Enum
 
 import keyring
@@ -28,46 +29,91 @@ class DBTypes(Enum):
 
 
 class DataBase:
-    """Class to handle DB object."""
+    """Base Class to handle DB object."""
 
-    def __init__(self, host, username=None, database_name=None, db_type=DBTypes.SQLITE):
+    def __init__(self, host):
         """
         Initialize the database connection object.
 
         :param host: The database host (e.g., file path for SQLite or hostname for MySQL).
-        :param username: The username for database authentication (optional for SQLite).
-        :param database: The name of the database (optional for SQLite).
-        :param db_type: The type of database ('sqlite' or 'mysql').
-        :param keyring_service: The keyring service name for storing/retrieving the password.
         """
-        if not isinstance(db_type, DBTypes):
-            raise TypeError(f"Expected 'DBTypes', got {type(db_type).__name__}")
         self.host = host
+        self.db_type = None
+
+    @abstractmethod
+    def get_connection_string(self):
+        """Generate the connection string based on the database type."""
+
+    @abstractmethod
+    def serialize(self):
+        """Method to serialize DataBase object into file."""
+
+    @staticmethod
+    def deserialize(data):
+        """Method to deserialize DataBase object from file."""
+
+
+class MySQLDataBase(DataBase):
+    """
+    MySQL DataBase class
+    :param username: The username for database authentication (optional for SQLite).
+    :param database: The name of the database (optional for SQLite).
+    """
+
+    def __init__(self, host, username, database_name):
+        super().__init__(host)
+        self.db_type = DBTypes.MYSQL
         self.username = username
         self.database_name = database_name
-        self.db_type = db_type
-        self.keyring_service = "WADAS_DB_SQLite" if db_type == DBTypes else "WADAS_DB_MySQL"
 
     def get_password(self):
         """Retrieve the password from the keyring."""
 
-        if not self.keyring_service or not self.username:
-            raise ValueError(
-                "Keyring service and username must be defined to retrieve the password."
-            )
-        return keyring.get_password(self.keyring_service, self.username)
+        if not self.username:
+            raise ValueError("Username must be defined to retrieve the password.")
+        return keyring.get_password("WADAS_DB_MySQL", self.username)
 
     def get_connection_string(self):
         """Generate the connection string based on the database type."""
 
-        if self.db_type == DBTypes.SQLITE:
-            return f"sqlite:///{self.host}"
-        elif self.db_type == DBTypes.MYSQL:
-            password = self.get_password()
-            if not self.database_name:
-                raise ValueError("Database name is required for MySQL.")
-            return f"mysql+pymysql://{self.username}:{password}@{self.host}/{self.database_name}"
-        else:
-            raise ValueError(f"Unsupported database type: {self.db_type}")
+        password = self.get_password()
+        if not self.database_name:
+            raise ValueError("Database name is required for MySQL.")
+        return f"mysql+pymysql://{self.username}:{password}@{self.host}/{self.database_name}"
 
-    # TODO: add serialization/deserialization methods
+    def serialize(self):
+        """Method to serialize MySQL DataBase object into file."""
+
+        return {
+            "host": self.host,
+            "db_type": self.db_type.value,
+            "username": self.username,
+            "database_name": self.database_name,
+        }
+
+    def deserialize(data):
+        """Method to deserialize MySQL DataBase object from file."""
+
+        return MySQLDataBase(**data)
+
+
+class SQLiteDataBase(DataBase):
+    """SQLite DataBase class"""
+
+    def __init__(self, host):
+        super().__init__(host)
+
+    def get_connection_string(self):
+        """Generate the connection string based on the database type."""
+
+        return f"sqlite:///{self.host}"
+
+    def serialize(self):
+        """Method to serialize SQLite DataBase object into file."""
+
+        return {"host": self.host, "db_type": self.db_type.value}
+
+    def deserialize(data):
+        """Method to deserialize SQLite DataBase object from file."""
+
+        return SQLiteDataBase(**data)
