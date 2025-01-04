@@ -31,6 +31,8 @@ class DBTypes(Enum):
 class DataBase:
     """Base Class to handle DB object."""
 
+    WADAS_DB = None
+
     def __init__(self, host):
         """
         Initialize the database connection object.
@@ -39,6 +41,7 @@ class DataBase:
         """
         self.host = host
         self.db_type = None
+        self.enabled = True
 
     @abstractmethod
     def get_connection_string(self):
@@ -57,14 +60,15 @@ class MySQLDataBase(DataBase):
     """
     MySQL DataBase class
     :param username: The username for database authentication (optional for SQLite).
-    :param database: The name of the database (optional for SQLite).
+    :param database_name: The name of the database (optional for SQLite).
     """
 
-    def __init__(self, host, username, database_name):
+    def __init__(self, host, username, database_name, enabled=False):
         super().__init__(host)
         self.db_type = DBTypes.MYSQL
         self.username = username
         self.database_name = database_name
+        self.enabled = enabled
 
     def get_password(self):
         """Retrieve the password from the keyring."""
@@ -100,8 +104,10 @@ class MySQLDataBase(DataBase):
 class SQLiteDataBase(DataBase):
     """SQLite DataBase class"""
 
-    def __init__(self, host):
+    def __init__(self, host, enabled=True):
         super().__init__(host)
+        self.db_type = DBTypes.SQLITE
+        self.enabled = enabled
 
     def get_connection_string(self):
         """Generate the connection string based on the database type."""

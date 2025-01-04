@@ -52,6 +52,23 @@
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_mysql">
+    <item row="12" column="0" colspan="3">
+     <widget class="QPushButton" name="pushButton_test_db">
+      <property name="text">
+       <string>Test database connection</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QRadioButton" name="radioButton_MySQL">
+      <property name="text">
+       <string>MySQL</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup</string>
+      </attribute>
+     </widget>
+    </item>
     <item row="7" column="0">
      <widget class="QLabel" name="label_4">
       <property name="text">
@@ -59,40 +76,37 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QCheckBox" name="checkBox">
-      <property name="text">
-       <string>Enable database</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QLineEdit" name="lineEdit_db_host"/>
-    </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="pushButton_create_db">
-      <property name="text">
-       <string>Create new DB</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QLineEdit" name="lineEdit_db_username"/>
-    </item>
-    <item row="12" column="0" colspan="2">
-     <widget class="QPlainTextEdit" name="plainTextEdit_db_test"/>
-    </item>
-    <item row="10" column="0" colspan="2">
-     <widget class="Line" name="line">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
     <item row="6" column="0">
      <widget class="QLabel" name="label_3">
       <property name="text">
        <string>Username:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="0" colspan="3">
+     <widget class="QPlainTextEdit" name="plainTextEdit_db_test"/>
+    </item>
+    <item row="7" column="2">
+     <widget class="QLineEdit" name="lineEdit_db_password">
+      <property name="echoMode">
+       <enum>QLineEdit::EchoMode::Password</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Database name:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="2">
+     <widget class="QLineEdit" name="lineEdit_db_host"/>
+    </item>
+    <item row="11" column="0" colspan="3">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
     </item>
@@ -106,19 +120,22 @@
       </attribute>
      </widget>
     </item>
-    <item row="11" column="0" colspan="2">
-     <widget class="QPushButton" name="pushButton_test_db">
+    <item row="0" column="0" colspan="3">
+     <widget class="QCheckBox" name="checkBox">
       <property name="text">
-       <string>Test database connection</string>
+       <string>Enable database</string>
       </property>
      </widget>
     </item>
-    <item row="7" column="1">
-     <widget class="QLineEdit" name="lineEdit_db_password">
-      <property name="echoMode">
-       <enum>QLineEdit::EchoMode::Password</enum>
+    <item row="3" column="2">
+     <widget class="QPushButton" name="pushButton_create_db">
+      <property name="text">
+       <string>Create new DB</string>
       </property>
      </widget>
+    </item>
+    <item row="6" column="2">
+     <widget class="QLineEdit" name="lineEdit_db_username"/>
     </item>
     <item row="5" column="0">
      <widget class="QLabel" name="label_2">
@@ -127,19 +144,24 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
-     <widget class="QRadioButton" name="radioButton_MySQL">
-      <property name="text">
-       <string>MySQL</string>
-      </property>
-      <attribute name="buttonGroup">
-       <string notr="true">buttonGroup</string>
-      </attribute>
-     </widget>
+    <item row="8" column="2">
+     <widget class="QLineEdit" name="lineEdit_db_name"/>
     </item>
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>checkBox</tabstop>
+  <tabstop>radioButton_SQLite</tabstop>
+  <tabstop>radioButton_MySQL</tabstop>
+  <tabstop>pushButton_create_db</tabstop>
+  <tabstop>lineEdit_db_host</tabstop>
+  <tabstop>lineEdit_db_username</tabstop>
+  <tabstop>lineEdit_db_password</tabstop>
+  <tabstop>lineEdit_db_name</tabstop>
+  <tabstop>pushButton_test_db</tabstop>
+  <tabstop>plainTextEdit_db_test</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
