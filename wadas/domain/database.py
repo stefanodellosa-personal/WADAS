@@ -95,6 +95,7 @@ class MySQLDataBase(DataBase):
             "database_name": self.database_name,
         }
 
+    @staticmethod
     def deserialize(data):
         """Method to deserialize MySQL DataBase object from file."""
 
@@ -119,6 +120,7 @@ class SQLiteDataBase(DataBase):
 
         return {"host": self.host, "db_type": self.db_type.value}
 
+    @staticmethod
     def deserialize(data):
         """Method to deserialize SQLite DataBase object from file."""
 

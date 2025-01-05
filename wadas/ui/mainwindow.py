@@ -715,8 +715,8 @@ class MainWindow(QMainWindow):
 
     def configure_database(self):
         """Method to trigger DB configuration dialog"""
-        configure_db_dlg = ConfigureDBDialog()
-        if configure_db_dlg.exec_():
+
+        if (configure_db_dlg := ConfigureDBDialog()).exec():
             logger.info("Database configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
