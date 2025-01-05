@@ -31,7 +31,7 @@ class DBTypes(Enum):
 class DataBase:
     """Base Class to handle DB object."""
 
-    WADAS_DB = None
+    wadas_db = None
 
     def __init__(self, host):
         """
