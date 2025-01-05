@@ -18,7 +18,7 @@
 # Description: database module.
 
 import logging
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from enum import Enum
 
 import keyring
@@ -31,24 +31,19 @@ logger = logging.getLogger(__name__)
 DB_VERSION = 0.1
 
 
-class DataBase:
+class DataBase(ABC):
     """Base Class to handle DB object."""
+
+    wadas_db = None  # Singleton instance of the database
+    wadas_db_engine = None  # Singleton engine associated with the database
 
     class DBTypes(Enum):
         SQLITE = "SQLite"
         MYSQL = "MySQL"
 
-    wadas_db = None
-    wadas_db_engine = None
-
     def __init__(self, host):
-        """
-        Initialize the database connection object.
-
-        :param host: The database host (e.g., file path for SQLite or hostname for MySQL).
-        """
         self.host = host
-        self.db_type = None
+        self.type = None
         self.enabled = True
         self.version = None
 
@@ -56,17 +51,63 @@ class DataBase:
     def get_connection_string(self):
         """Generate the connection string based on the database type."""
 
-    @staticmethod
-    def create_db_engine(self):
-        """Method to create an engine to handle db sessions"""
+    @classmethod
+    def initialize(cls, db_instance):
+        """
+        Initialize the singleton database instance and its engine.
 
-        DataBase.wadas_db_engine = create_engine(self.get_connection_string())
+        :param db_instance: An instance of a subclass of DataBase
+        (e.g., MySQLDataBase or SQLiteDataBase).
+        """
+        if cls.wadas_db is not None:
+            raise RuntimeError("The database has already been initialized.")
+
+        cls.wadas_db = db_instance
+        cls.wadas_db_engine = create_engine(db_instance.get_connection_string())
+        return cls.wadas_db_engine
+
+    @classmethod
+    def get_engine(cls):
+        """
+        Retrieve the singleton engine. If not initialized, raise an exception.
+
+        :return: SQLAlchemy engine instance.
+        """
+        if cls.wadas_db_engine is None:
+            raise RuntimeError(
+                "The database engine has not been initialized. Call 'initialize' first."
+            )
+        return cls.wadas_db_engine
+
+    @classmethod
+    def get_instance(cls):
+        """
+        Retrieve the singleton database instance.
+
+        :return: The current database instance.
+        """
+        if cls.wadas_db is None:
+            logger.debug("The database has not been initialized. Call 'initialize' first.")
+        return cls.wadas_db
+
+    @classmethod
+    def destroy_instance(cls):
+        """Destroy the current database instance and release resources."""
+
+        if cls.wadas_db_engine:
+            try:
+                cls.wadas_db_engine.dispose()
+            except Exception:
+                logger.warning("Failed to dispose the database engine.")
+        cls.wadas_db_engine = None
+        cls.wadas_db = None
 
     @abstractmethod
     def serialize(self):
         """Method to serialize DataBase object into file."""
 
     @staticmethod
+    @abstractmethod
     def deserialize(data):
         """Method to deserialize DataBase object from file."""
 
@@ -80,7 +121,7 @@ class MySQLDataBase(DataBase):
 
     def __init__(self, host, port, username, database_name, enabled=False, version=DB_VERSION):
         super().__init__(host)
-        self.db_type = DataBase.DBTypes.MYSQL
+        self.type = DataBase.DBTypes.MYSQL
         self.port = port
         self.username = username
         self.database_name = database_name
@@ -120,18 +161,16 @@ class MySQLDataBase(DataBase):
                 conn.execute(f"CREATE DATABASE {self.database_name}")
             logger.info("Database '%s' successfully created.", self.database_name)
 
-    # Create db if not already existing
-    create_database()
-
-    # Create all tables
-    Base.metadata.create_all(DataBase.wadas_db_engine)
+        # Create all tables
+        Base.metadata.create_all(DataBase.wadas_db_engine)
 
     def serialize(self):
         """Method to serialize MySQL DataBase object into file."""
 
         return {
             "host": self.host,
-            "db_type": self.db_type.value,
+            "port": self.port,
+            "type": self.type.value,
             "username": self.username,
             "database_name": self.database_name,
             "enabled": self.enabled,
@@ -157,7 +196,7 @@ class SQLiteDataBase(DataBase):
 
     def __init__(self, host, enabled=True, version=DB_VERSION):
         super().__init__(host)
-        self.db_type = DataBase.DBTypes.SQLITE
+        self.type = DataBase.DBTypes.SQLITE
         self.enabled = enabled
         self.version = version
 
@@ -169,14 +208,18 @@ class SQLiteDataBase(DataBase):
     def create_database(self):
         """Method to create database by creating all tables"""
 
-        Base.metadata.create_all(DataBase.wadas_db_engine)
+        if DataBase.wadas_db_engine:
+            Base.metadata.create_all(DataBase.wadas_db_engine)
+            return True
+        else:
+            return False
 
     def serialize(self):
         """Method to serialize SQLite DataBase object into file."""
 
         return {
             "host": self.host,
-            "db_type": self.db_type.value,
+            "type": self.type.value,
             "enabled": self.enabled,
             "version": self.version,
         }

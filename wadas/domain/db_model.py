@@ -22,8 +22,8 @@ from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import declarative_base, relationship
 
-from wadas.domain.actuator import Actuator
-from wadas.domain.camera import Camera
+from wadas.domain.actuator import Actuator as DomainActuator
+from wadas.domain.camera import Camera as DomainCamera
 
 Base = declarative_base()
 
@@ -33,7 +33,7 @@ class Camera(Base):
     __tablename__ = "cameras"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    type = Column(SqlEnum(Camera.CameraTypes), nullable=False)
+    type = Column(SqlEnum(DomainCamera.CameraTypes), nullable=False)
     name = Column(String, nullable=True)
     enabled = Column(Boolean, default=False)
     actuators = relationship("Actuator", back_populates="camera")
@@ -49,18 +49,18 @@ class Camera(Base):
 
 
 class USBCamera(Camera):
-    __mapper_args__ = {"polymorphic_identity": Camera.CameraTypes.USB_CAMERA.value}
+    __mapper_args__ = {"polymorphic_identity": DomainCamera.CameraTypes.USB_CAMERA.value}
 
 
 class FTPCamera(Camera):
-    __mapper_args__ = {"polymorphic_identity": Camera.CameraTypes.FTP_CAMERA.value}
+    __mapper_args__ = {"polymorphic_identity": DomainCamera.CameraTypes.FTP_CAMERA.value}
 
 
 class Actuator(Base):
     __tablename__ = "actuators"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    type = Column(SqlEnum(Actuator.ActuatorTypes), nullable=False)
+    type = Column(SqlEnum(DomainActuator.ActuatorTypes), nullable=False)
     enabled = Column(Boolean, default=False)
     last_update = Column(Text, nullable=True)  # To handle date type
     camera_id = Column(Integer, ForeignKey("cameras.id"), nullable=True)  # Relationship with Camera
@@ -75,13 +75,13 @@ class Actuator(Base):
 
 class RoadSignActuator(Actuator):
     __mapper_args__ = {
-        "polymorphic_identity": Actuator.ActuatorTypes.ROADSIGN.value,
+        "polymorphic_identity": DomainActuator.ActuatorTypes.ROADSIGN.value,
     }
 
 
 class FeederActuator(Actuator):
     __mapper_args__ = {
-        "polymorphic_identity": Actuator.ActuatorTypes.FEEDER.value,
+        "polymorphic_identity": DomainActuator.ActuatorTypes.FEEDER.value,
     }
 
 

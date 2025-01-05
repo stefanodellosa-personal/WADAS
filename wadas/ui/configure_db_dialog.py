@@ -20,7 +20,7 @@
 import os
 
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QDialogButtonBox
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 
 from wadas.domain.database import DataBase, SQLiteDataBase, MySQLDataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
@@ -56,19 +56,20 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def init_dialog(self):
         """Method to initialize dialog with saved configuration data"""
 
-        if not DataBase.wadas_db:
+        wadas_db = DataBase.get_instance()
+        if not wadas_db:
             self.ui.checkBox.setChecked(True)
             self.ui.radioButton_SQLite.setChecked(True)
         else:
-            self.ui.checkBox.setChecked(DataBase.wadas_db.enabled)
-            self.ui.lineEdit_db_host.setText(DataBase.wadas_db.host)
-            if DataBase.wadas_db.db_type:
-                if DataBase.wadas_db.db_type == DataBase.DBTypes.MYSQL:
+            self.ui.checkBox.setChecked(wadas_db.enabled)
+            self.ui.lineEdit_db_host.setText(wadas_db.host)
+            if wadas_db.type:
+                if wadas_db.type == DataBase.DBTypes.MYSQL:
                     self.ui.radioButton_MySQL.setChecked(True)
-                    self.ui.lineEdit_db_port.setText()
-                    self.ui.lineEdit_db_username.setText(DataBase.wadas_db.username)
-                    self.ui.lineEdit_db_name.setText(DataBase.wadas_db.database_name)
-                elif DataBase.wadas_db.db_type == DataBase.DBTypes.SQLITE:
+                    self.ui.lineEdit_db_port.setText(str(wadas_db.port))
+                    self.ui.lineEdit_db_username.setText(wadas_db.username)
+                    self.ui.lineEdit_db_name.setText(wadas_db.database_name)
+                elif wadas_db.type == DataBase.DBTypes.SQLITE:
                     self.ui.radioButton_SQLite.setChecked(True)
                 else:
                     unrecognized_db_type_dlg = WADASErrorMessage("Unrecognized DB type",
@@ -83,6 +84,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def on_radioButton_checked(self):
         """Method to update dialog fields depending on DB selection"""
 
+        self.ui.lineEdit_db_port.setEnabled(not self.ui.radioButton_SQLite.isChecked())
         self.ui.lineEdit_db_username.setEnabled(not self.ui.radioButton_SQLite.isChecked())
         self.ui.lineEdit_db_password.setEnabled(not self.ui.radioButton_SQLite.isChecked())
         self.ui.lineEdit_db_name.setEnabled(not self.ui.radioButton_SQLite.isChecked())
@@ -91,46 +93,95 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         elif not self.ui.radioButton_SQLite.isChecked():
             self.ui.lineEdit_db_name.setPlaceholderText("")
 
-    def _update_common_params(self):
-        DataBase.wadas_db.host = self.ui.lineEdit_db_host.text()
-        DataBase.wadas_db.enabled = self.ui.checkBox.isChecked()
+    def _update_common_params(self, wadas_db):
+        """Method to update params common to MySQL and SQLite db types"""
 
-    def _update_mysql_params(self):
-        self._update_common_params()
-        DataBase.wadas_db.username = self.ui.lineEdit_db_username.text()
-        DataBase.wadas_db.database_name = self.ui.lineEdit_db_name.text()
+        wadas_db.host = self.ui.lineEdit_db_host.text()
+        wadas_db.enabled = self.ui.checkBox.isChecked()
+
+    def _update_mysql_params(self, wadas_db):
+        """Method to update params specific to MySQL db type"""
+
+        self._update_common_params(wadas_db)
+        wadas_db.port = int(self.ui.lineEdit_db_port.text())
+        wadas_db.username = self.ui.lineEdit_db_username.text()
+        wadas_db.database_name = self.ui.lineEdit_db_name.text()
 
     def accept_and_close(self):
         """When Ok is clicked, save db config info before closing."""
+
+        wadas_db = DataBase.get_instance()
         if self.ui.radioButton_SQLite.isChecked():
-            if not DataBase.wadas_db or DataBase.wadas_db.db_type != DataBase.DBTypes.SQLITE:
+            if not wadas_db:
                 self.new_sqlite_db()
+            elif wadas_db.type != DataBase.DBTypes.SQLITE:
+                if self.ask_db_type_change():
+                    DataBase.destroy_instance()
+                    self.new_sqlite_db()
             else:
-                self._update_common_params()
+                self._update_common_params(wadas_db)
         else:
-            if not DataBase.wadas_db or DataBase.wadas_db.db_type != DataBase.DBTypes.MYSQL:
+            if not wadas_db:
                 self.new_mysql_db()
+            elif wadas_db.type != DataBase.DBTypes.MYSQL:
+                if self.ask_db_type_change():
+                    DataBase.destroy_instance()
+                    self.new_mysql_db()
             else:
-                self._update_mysql_params()
+                self._update_mysql_params(wadas_db)
 
         self.accept()
 
+    def ask_db_type_change(self):
+        reply = QMessageBox.question(
+            self,
+            "Confirm Replace Database",
+            "Changing the database type will replace the existing database. Do you want to continue?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if reply == QMessageBox.No:
+            return False
+        return True
+
     def new_mysql_db(self):
-        """Method to create new MySQL DB with dialog input fields"""
-        DataBase.wadas_db = MySQLDataBase(self.ui.lineEdit_db_host.text(),
-                                          self.ui.lineEdit_db_username.text(),
-                                          self.ui.lineEdit_db_name.text(),
-                                          self.ui.checkBox.isChecked())
+        """Method to create and initialize a new MySQL DB with dialog input fields"""
+        mysql_db = MySQLDataBase(self.ui.lineEdit_db_host.text(),
+                                 int(self.ui.lineEdit_db_port.text()),
+                                  self.ui.lineEdit_db_username.text(),
+                                  self.ui.lineEdit_db_name.text(),
+                                  self.ui.checkBox.isChecked())
+        #TODO: store password in keyring
+        DataBase.initialize(mysql_db)
 
     def new_sqlite_db(self):
-        """Method to create new SQLite DB with dialog input fields"""
+        """Method to create and initialize a new SQLite DB with dialog input fields"""
 
-        DataBase.wadas_db = SQLiteDataBase(self.ui.lineEdit_db_host.text(), self.ui.checkBox.isChecked())
+        sqlite_db = SQLiteDataBase(self.ui.lineEdit_db_host.text(), self.ui.checkBox.isChecked())
+        DataBase.initialize(sqlite_db)
 
     def create_db(self):
         """Method to trigger new db creation"""
 
-        pass #TODO: implement logic and remove
+        if self.ui.radioButton_SQLite.isChecked():
+            self.new_sqlite_db()
+            DataBase.get_instance().create_database()
+
+        pass #TODO: implement MySQL logic and remove
+
+    def validate_port(self, port):
+        """Validate port method"""
+
+        try:
+            port_to_int = int(port)
+        except  ValueError:
+            self.ui.label_error.setText(f"Invalid port type. Shall be an integer value!")
+            return False
+
+        if port_to_int < 1 or port_to_int > 65535:
+            self.ui.label_error.setText(f"Invalid port provided!")
+            return False
+        else:
+            return True
 
     def validate(self):
         """Method to validate db parameters"""
@@ -147,6 +198,13 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                 valid = False
             if not self.ui.lineEdit_db_password.text():
                 self.ui.label_error.setText("Database password field cannot be empty.")
+                valid = False
+
+            if port := self.ui.lineEdit_db_port.text():
+                if not self.validate_port(port):
+                    valid = False
+            else:
+                self.ui.label_error.setText("No server port provided!")
                 valid = False
 
         if valid:

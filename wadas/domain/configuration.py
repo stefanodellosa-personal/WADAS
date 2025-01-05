@@ -251,9 +251,9 @@ def load_configuration_from_file(file_path):
 
         # DataBase
         if database := wadas_config["database"]:
-            if database["db_type"] == DataBase.DBTypes.SQLITE.value:
+            if database["type"] == DataBase.DBTypes.SQLITE.value:
                 DataBase.wadas_db = SQLiteDataBase.deserialize(database)
-            elif database["db_type"] == DataBase.DBTypes.MYSQL.value:
+            elif database["type"] == DataBase.DBTypes.MYSQL.value:
                 DataBase.wadas_db = MySQLDataBase.deserialize(database)
             else:
                 logger.error("Unrecognized Database Type")

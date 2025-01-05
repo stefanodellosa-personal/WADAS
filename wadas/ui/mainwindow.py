@@ -38,6 +38,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
+from domain.database import DataBase
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
@@ -801,7 +802,7 @@ class MainWindow(QMainWindow):
         self.log_txtedt_handler.setLevel(new_level)
 
     def closeEvent(self, event):
-        """Method to hadle proper thread closure when close window action is triggered"""
+        """Method to handle proper thread closure when close window action is triggered"""
 
         if not self.ui.actionRun.isEnabled() and self.ui.actionStop.isEnabled():
             reply = QMessageBox.question(
@@ -814,6 +815,8 @@ class MainWindow(QMainWindow):
             if reply == QMessageBox.Yes:
                 # Terminate running mode for safe shutdown
                 self.interrupt_thread()
+                # Terminate DB object, engine and active session(s)
+                DataBase.destroy_instance()
                 event.accept()
             else:
                 event.ignore()
