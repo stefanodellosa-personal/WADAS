@@ -28,7 +28,7 @@ description = (
 
 setup(
     name="wadas",
-    version="0.5.0",
+    version="0.5.1",
     packages=find_packages(),
     package_data={"": ["*.ui", "*.png", "*.jpg"]},
     include_package_data=True,

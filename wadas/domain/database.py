@@ -23,13 +23,12 @@ from enum import Enum
 import keyring
 
 
-class DBTypes(Enum):
-    SQLITE = "SQLite"
-    MYSQL = "MySQL"
-
-
 class DataBase:
     """Base Class to handle DB object."""
+
+    class DBTypes(Enum):
+        SQLITE = "SQLite"
+        MYSQL = "MySQL"
 
     wadas_db = None
 
@@ -65,7 +64,7 @@ class MySQLDataBase(DataBase):
 
     def __init__(self, host, username, database_name, enabled=False):
         super().__init__(host)
-        self.db_type = DBTypes.MYSQL
+        self.db_type = DataBase.DBTypes.MYSQL
         self.username = username
         self.database_name = database_name
         self.enabled = enabled
@@ -93,13 +92,14 @@ class MySQLDataBase(DataBase):
             "db_type": self.db_type.value,
             "username": self.username,
             "database_name": self.database_name,
+            "enabled": self.enabled,
         }
 
     @staticmethod
     def deserialize(data):
         """Method to deserialize MySQL DataBase object from file."""
 
-        return MySQLDataBase(**data)
+        return MySQLDataBase(data["host"], data["username"], data["database_name"], data["enabled"])
 
 
 class SQLiteDataBase(DataBase):
@@ -107,7 +107,7 @@ class SQLiteDataBase(DataBase):
 
     def __init__(self, host, enabled=True):
         super().__init__(host)
-        self.db_type = DBTypes.SQLITE
+        self.db_type = DataBase.DBTypes.SQLITE
         self.enabled = enabled
 
     def get_connection_string(self):
@@ -118,10 +118,10 @@ class SQLiteDataBase(DataBase):
     def serialize(self):
         """Method to serialize SQLite DataBase object into file."""
 
-        return {"host": self.host, "db_type": self.db_type.value}
+        return {"host": self.host, "db_type": self.db_type.value, "enabled": self.enabled}
 
     @staticmethod
     def deserialize(data):
         """Method to deserialize SQLite DataBase object from file."""
 
-        return SQLiteDataBase(**data)
+        return SQLiteDataBase(data["host"], data["enabled"])

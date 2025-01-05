@@ -156,10 +156,8 @@ class OperationMode(QObject):
 
     def ftp_camera_exist(self):
         """Method that returns True if at least an FTP camera exists, False otherwise."""
-        for camera in cameras:
-            if camera.type == Camera.CameraTypes.FTP_CAMERA:
-                return True
-        return False
+
+        return any(camera.type == Camera.CameraTypes.FTP_CAMERA for camera in cameras)
 
     def check_for_termination_requests(self):
         """Terminate current thread if interrupt request comes from Mainwindow."""

@@ -30,6 +30,7 @@ from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.database import DataBase, MySQLDataBase, SQLiteDataBase
 from wadas.domain.email_notifier import EmailNotifier
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.feeder_actuator import FeederActuator
@@ -55,7 +56,11 @@ def check_version_compatibility(config_file_version):
     if wadas_version < config_file_version:
         return False
     if wadas_version > config_file_version:
-        # Add here conversion logic for older versions to support (if any)
+        # Example of compatibility check to list here:
+        # if config_file_version == Version("0.5.0") and wadas_version == Version("0.5.1"):
+        #    return True
+        # NOTE: prerequisite to this is that new yaml keys, absent in previous version, are handled
+        # at load_configuration_from_file() time.
         return False
 
 
@@ -243,6 +248,19 @@ def load_configuration_from_file(file_path):
                     load_status["errors_on_load"] = True
         else:
             OperationMode.cur_operation_mode = None
+
+        # DataBase
+        if database := wadas_config["database"]:
+            if database["db_type"] == DataBase.DBTypes.SQLITE.value:
+                DataBase.wadas_db = SQLiteDataBase.deserialize(database)
+            elif database["db_type"] == DataBase.DBTypes.MYSQL.value:
+                DataBase.wadas_db = MySQLDataBase.deserialize(database)
+            else:
+                logger.error("Unrecognized Database Type")
+                load_status["errors_on_load"] = True
+                load_status["errors_log"] = "Unrecognized Database Type"
+                return load_status
+
     except Exception as e:
         load_status["errors_on_load"] = True
         load_status["errors_log"] = e
@@ -306,6 +324,7 @@ def save_configuration_to_file(file_):
             if FastAPIActuatorServer.actuator_server
             else ""
         ),
+        "database": DataBase.wadas_db.serialize() if DataBase.wadas_db else "",
     }
 
     with open(file_, "w") as yaml_file:

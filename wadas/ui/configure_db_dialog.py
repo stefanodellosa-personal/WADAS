@@ -22,7 +22,7 @@ import os
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
-from wadas.domain.database import DataBase, SQLiteDataBase, MySQLDataBase, DBTypes
+from wadas.domain.database import DataBase, SQLiteDataBase, MySQLDataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_db_dialog import Ui_ConfigureDBDialog
 
@@ -62,11 +62,11 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.checkBox.setChecked(DataBase.wadas_db.enabled)
             self.ui.lineEdit_db_host.setText(DataBase.wadas_db.host)
             if DataBase.wadas_db.db_type:
-                if DataBase.wadas_db.db_type == DBTypes.MYSQL:
+                if DataBase.wadas_db.db_type == DataBase.DBTypes.MYSQL:
                     self.ui.radioButton_MySQL.setChecked(True)
                     self.ui.lineEdit_db_username.setText(DataBase.wadas_db.username)
                     self.ui.lineEdit_db_name.setText(DataBase.wadas_db.database_name)
-                elif DataBase.wadas_db.db_type is DBTypes.SQLITE:
+                elif DataBase.wadas_db.db_type == DataBase.DBTypes.SQLITE:
                     self.ui.radioButton_SQLite.setChecked(True)
                 else:
                     unrecognized_db_type_dlg = WADASErrorMessage("Unrecognized DB type",
@@ -101,12 +101,12 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def accept_and_close(self):
         """When Ok is clicked, save db config info before closing."""
         if self.ui.radioButton_SQLite.isChecked():
-            if not DataBase.wadas_db or DataBase.wadas_db.db_type != DBTypes.SQLITE:
+            if not DataBase.wadas_db or DataBase.wadas_db.db_type != DataBase.DBTypes.SQLITE:
                 self.new_sqlite_db()
             else:
                 self._update_common_params()
         else:
-            if not DataBase.wadas_db or DataBase.wadas_db.db_type != DBTypes.MYSQL:
+            if not DataBase.wadas_db or DataBase.wadas_db.db_type != DataBase.DBTypes.MYSQL:
                 self.new_mysql_db()
             else:
                 self._update_mysql_params()
