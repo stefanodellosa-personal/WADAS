@@ -47,6 +47,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.radioButton_MySQL.clicked.connect(self.on_radioButton_checked)
         self.ui.radioButton_SQLite.clicked.connect(self.on_radioButton_checked)
         self.ui.lineEdit_db_host.textChanged.connect(self.validate)
+        self.ui.lineEdit_db_port.textChanged.connect(self.validate)
         self.ui.lineEdit_db_username.textChanged.connect(self.validate)
         self.ui.lineEdit_db_password.textChanged.connect(self.validate)
 
@@ -64,6 +65,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             if DataBase.wadas_db.db_type:
                 if DataBase.wadas_db.db_type == DataBase.DBTypes.MYSQL:
                     self.ui.radioButton_MySQL.setChecked(True)
+                    self.ui.lineEdit_db_port.setText()
                     self.ui.lineEdit_db_username.setText(DataBase.wadas_db.username)
                     self.ui.lineEdit_db_name.setText(DataBase.wadas_db.database_name)
                 elif DataBase.wadas_db.db_type == DataBase.DBTypes.SQLITE:

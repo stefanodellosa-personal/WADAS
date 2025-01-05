@@ -52,10 +52,48 @@
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_mysql">
-    <item row="12" column="0" colspan="3">
+    <item row="7" column="2">
+     <widget class="QLineEdit" name="lineEdit_db_username"/>
+    </item>
+    <item row="13" column="0" colspan="3">
      <widget class="QPushButton" name="pushButton_test_db">
       <property name="text">
        <string>Test database connection</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QPushButton" name="pushButton_create_db">
+      <property name="text">
+       <string>Create new DB</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Database name:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="3">
+     <widget class="QCheckBox" name="checkBox">
+      <property name="text">
+       <string>Enable database</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Host:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Username:</string>
       </property>
      </widget>
     </item>
@@ -69,44 +107,26 @@
       </attribute>
      </widget>
     </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>Password</string>
-      </property>
-     </widget>
+    <item row="5" column="2">
+     <widget class="QLineEdit" name="lineEdit_db_host"/>
     </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>Username:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="13" column="0" colspan="3">
+    <item row="14" column="0" colspan="3">
      <widget class="QPlainTextEdit" name="plainTextEdit_db_test"/>
     </item>
-    <item row="7" column="2">
+    <item row="8" column="2">
      <widget class="QLineEdit" name="lineEdit_db_password">
       <property name="echoMode">
        <enum>QLineEdit::EchoMode::Password</enum>
       </property>
      </widget>
     </item>
+    <item row="9" column="2">
+     <widget class="QLineEdit" name="lineEdit_db_name"/>
+    </item>
     <item row="8" column="0">
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="label_4">
       <property name="text">
-       <string>Database name:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="2">
-     <widget class="QLineEdit" name="lineEdit_db_host"/>
-    </item>
-    <item row="11" column="0" colspan="3">
-     <widget class="Line" name="line">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
+       <string>Password</string>
       </property>
      </widget>
     </item>
@@ -120,32 +140,22 @@
       </attribute>
      </widget>
     </item>
-    <item row="0" column="0" colspan="3">
-     <widget class="QCheckBox" name="checkBox">
-      <property name="text">
-       <string>Enable database</string>
+    <item row="12" column="0" colspan="3">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
     </item>
-    <item row="3" column="2">
-     <widget class="QPushButton" name="pushButton_create_db">
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_5">
       <property name="text">
-       <string>Create new DB</string>
+       <string>Port:</string>
       </property>
      </widget>
     </item>
     <item row="6" column="2">
-     <widget class="QLineEdit" name="lineEdit_db_username"/>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Database host:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="2">
-     <widget class="QLineEdit" name="lineEdit_db_name"/>
+     <widget class="QLineEdit" name="lineEdit_db_port"/>
     </item>
    </layout>
   </widget>

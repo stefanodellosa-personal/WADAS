@@ -28,6 +28,7 @@ from wadas.domain.camera import Camera
 Base = declarative_base()
 
 
+# Classes
 class Camera(Base):
     __tablename__ = "cameras"
 

@@ -39,10 +39,40 @@ class Ui_ConfigureDBDialog(object):
         self.gridLayout_mysql = QGridLayout(self.gridLayoutWidget_2)
         self.gridLayout_mysql.setObjectName(u"gridLayout_mysql")
         self.gridLayout_mysql.setContentsMargins(0, 0, 0, 0)
+        self.lineEdit_db_username = QLineEdit(self.gridLayoutWidget_2)
+        self.lineEdit_db_username.setObjectName(u"lineEdit_db_username")
+
+        self.gridLayout_mysql.addWidget(self.lineEdit_db_username, 7, 2, 1, 1)
+
         self.pushButton_test_db = QPushButton(self.gridLayoutWidget_2)
         self.pushButton_test_db.setObjectName(u"pushButton_test_db")
 
-        self.gridLayout_mysql.addWidget(self.pushButton_test_db, 12, 0, 1, 3)
+        self.gridLayout_mysql.addWidget(self.pushButton_test_db, 13, 0, 1, 3)
+
+        self.pushButton_create_db = QPushButton(self.gridLayoutWidget_2)
+        self.pushButton_create_db.setObjectName(u"pushButton_create_db")
+
+        self.gridLayout_mysql.addWidget(self.pushButton_create_db, 3, 2, 1, 1)
+
+        self.label = QLabel(self.gridLayoutWidget_2)
+        self.label.setObjectName(u"label")
+
+        self.gridLayout_mysql.addWidget(self.label, 9, 0, 1, 1)
+
+        self.checkBox = QCheckBox(self.gridLayoutWidget_2)
+        self.checkBox.setObjectName(u"checkBox")
+
+        self.gridLayout_mysql.addWidget(self.checkBox, 0, 0, 1, 3)
+
+        self.label_2 = QLabel(self.gridLayoutWidget_2)
+        self.label_2.setObjectName(u"label_2")
+
+        self.gridLayout_mysql.addWidget(self.label_2, 5, 0, 1, 1)
+
+        self.label_3 = QLabel(self.gridLayoutWidget_2)
+        self.label_3.setObjectName(u"label_3")
+
+        self.gridLayout_mysql.addWidget(self.label_3, 7, 0, 1, 1)
 
         self.radioButton_MySQL = QRadioButton(self.gridLayoutWidget_2)
         self.buttonGroup = QButtonGroup(ConfigureDBDialog)
@@ -52,43 +82,31 @@ class Ui_ConfigureDBDialog(object):
 
         self.gridLayout_mysql.addWidget(self.radioButton_MySQL, 2, 2, 1, 1)
 
-        self.label_4 = QLabel(self.gridLayoutWidget_2)
-        self.label_4.setObjectName(u"label_4")
-
-        self.gridLayout_mysql.addWidget(self.label_4, 7, 0, 1, 1)
-
-        self.label_3 = QLabel(self.gridLayoutWidget_2)
-        self.label_3.setObjectName(u"label_3")
-
-        self.gridLayout_mysql.addWidget(self.label_3, 6, 0, 1, 1)
-
-        self.plainTextEdit_db_test = QPlainTextEdit(self.gridLayoutWidget_2)
-        self.plainTextEdit_db_test.setObjectName(u"plainTextEdit_db_test")
-
-        self.gridLayout_mysql.addWidget(self.plainTextEdit_db_test, 13, 0, 1, 3)
-
-        self.lineEdit_db_password = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_db_password.setObjectName(u"lineEdit_db_password")
-        self.lineEdit_db_password.setEchoMode(QLineEdit.EchoMode.Password)
-
-        self.gridLayout_mysql.addWidget(self.lineEdit_db_password, 7, 2, 1, 1)
-
-        self.label = QLabel(self.gridLayoutWidget_2)
-        self.label.setObjectName(u"label")
-
-        self.gridLayout_mysql.addWidget(self.label, 8, 0, 1, 1)
-
         self.lineEdit_db_host = QLineEdit(self.gridLayoutWidget_2)
         self.lineEdit_db_host.setObjectName(u"lineEdit_db_host")
 
         self.gridLayout_mysql.addWidget(self.lineEdit_db_host, 5, 2, 1, 1)
 
-        self.line = QFrame(self.gridLayoutWidget_2)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.Shape.HLine)
-        self.line.setFrameShadow(QFrame.Shadow.Sunken)
+        self.plainTextEdit_db_test = QPlainTextEdit(self.gridLayoutWidget_2)
+        self.plainTextEdit_db_test.setObjectName(u"plainTextEdit_db_test")
 
-        self.gridLayout_mysql.addWidget(self.line, 11, 0, 1, 3)
+        self.gridLayout_mysql.addWidget(self.plainTextEdit_db_test, 14, 0, 1, 3)
+
+        self.lineEdit_db_password = QLineEdit(self.gridLayoutWidget_2)
+        self.lineEdit_db_password.setObjectName(u"lineEdit_db_password")
+        self.lineEdit_db_password.setEchoMode(QLineEdit.EchoMode.Password)
+
+        self.gridLayout_mysql.addWidget(self.lineEdit_db_password, 8, 2, 1, 1)
+
+        self.lineEdit_db_name = QLineEdit(self.gridLayoutWidget_2)
+        self.lineEdit_db_name.setObjectName(u"lineEdit_db_name")
+
+        self.gridLayout_mysql.addWidget(self.lineEdit_db_name, 9, 2, 1, 1)
+
+        self.label_4 = QLabel(self.gridLayoutWidget_2)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout_mysql.addWidget(self.label_4, 8, 0, 1, 1)
 
         self.radioButton_SQLite = QRadioButton(self.gridLayoutWidget_2)
         self.buttonGroup.addButton(self.radioButton_SQLite)
@@ -96,30 +114,22 @@ class Ui_ConfigureDBDialog(object):
 
         self.gridLayout_mysql.addWidget(self.radioButton_SQLite, 2, 0, 1, 1)
 
-        self.checkBox = QCheckBox(self.gridLayoutWidget_2)
-        self.checkBox.setObjectName(u"checkBox")
+        self.line = QFrame(self.gridLayoutWidget_2)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.Shape.HLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.gridLayout_mysql.addWidget(self.checkBox, 0, 0, 1, 3)
+        self.gridLayout_mysql.addWidget(self.line, 12, 0, 1, 3)
 
-        self.pushButton_create_db = QPushButton(self.gridLayoutWidget_2)
-        self.pushButton_create_db.setObjectName(u"pushButton_create_db")
+        self.label_5 = QLabel(self.gridLayoutWidget_2)
+        self.label_5.setObjectName(u"label_5")
 
-        self.gridLayout_mysql.addWidget(self.pushButton_create_db, 3, 2, 1, 1)
+        self.gridLayout_mysql.addWidget(self.label_5, 6, 0, 1, 1)
 
-        self.lineEdit_db_username = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_db_username.setObjectName(u"lineEdit_db_username")
+        self.lineEdit_db_port = QLineEdit(self.gridLayoutWidget_2)
+        self.lineEdit_db_port.setObjectName(u"lineEdit_db_port")
 
-        self.gridLayout_mysql.addWidget(self.lineEdit_db_username, 6, 2, 1, 1)
-
-        self.label_2 = QLabel(self.gridLayoutWidget_2)
-        self.label_2.setObjectName(u"label_2")
-
-        self.gridLayout_mysql.addWidget(self.label_2, 5, 0, 1, 1)
-
-        self.lineEdit_db_name = QLineEdit(self.gridLayoutWidget_2)
-        self.lineEdit_db_name.setObjectName(u"lineEdit_db_name")
-
-        self.gridLayout_mysql.addWidget(self.lineEdit_db_name, 8, 2, 1, 1)
+        self.gridLayout_mysql.addWidget(self.lineEdit_db_port, 6, 2, 1, 1)
 
         QWidget.setTabOrder(self.checkBox, self.radioButton_SQLite)
         QWidget.setTabOrder(self.radioButton_SQLite, self.radioButton_MySQL)
@@ -142,13 +152,14 @@ class Ui_ConfigureDBDialog(object):
         ConfigureDBDialog.setWindowTitle(QCoreApplication.translate("ConfigureDBDialog", u"Configure Database", None))
         self.label_error.setText("")
         self.pushButton_test_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"Test database connection", None))
+        self.pushButton_create_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"Create new DB", None))
+        self.label.setText(QCoreApplication.translate("ConfigureDBDialog", u"Database name:", None))
+        self.checkBox.setText(QCoreApplication.translate("ConfigureDBDialog", u"Enable database", None))
+        self.label_2.setText(QCoreApplication.translate("ConfigureDBDialog", u"Host:", None))
+        self.label_3.setText(QCoreApplication.translate("ConfigureDBDialog", u"Username:", None))
         self.radioButton_MySQL.setText(QCoreApplication.translate("ConfigureDBDialog", u"MySQL", None))
         self.label_4.setText(QCoreApplication.translate("ConfigureDBDialog", u"Password", None))
-        self.label_3.setText(QCoreApplication.translate("ConfigureDBDialog", u"Username:", None))
-        self.label.setText(QCoreApplication.translate("ConfigureDBDialog", u"Database name:", None))
         self.radioButton_SQLite.setText(QCoreApplication.translate("ConfigureDBDialog", u"SQLite", None))
-        self.checkBox.setText(QCoreApplication.translate("ConfigureDBDialog", u"Enable database", None))
-        self.pushButton_create_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"Create new DB", None))
-        self.label_2.setText(QCoreApplication.translate("ConfigureDBDialog", u"Database host:", None))
+        self.label_5.setText(QCoreApplication.translate("ConfigureDBDialog", u"Port:", None))
     # retranslateUi
 
