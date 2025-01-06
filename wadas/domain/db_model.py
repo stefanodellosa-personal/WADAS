@@ -116,5 +116,5 @@ class ActuationEvent(Base):
 
 
 # Indexes
-Index("ix_detection_events_camera_id", DetectionEvent.camera_id)
-Index("ix_actuation_events_actuator_id", ActuationEvent.actuator_id)
+Index("ix_detection_events_camera_time", DetectionEvent.camera_id, DetectionEvent.time_stamp)
+Index("ix_actuation_events_actuator_time", ActuationEvent.actuator_id, ActuationEvent.time_stamp)

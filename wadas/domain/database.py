@@ -24,6 +24,8 @@ from enum import Enum
 import keyring
 from pymysql import OperationalError
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError as SQLiteOperationalError
+from sqlalchemy.exc import SQLAlchemyError
 
 from wadas.domain.db_model import Base
 
@@ -74,9 +76,11 @@ class DataBase(ABC):
         :return: SQLAlchemy engine instance.
         """
         if cls.wadas_db_engine is None:
-            raise RuntimeError(
-                "The database engine has not been initialized. Call 'initialize' first."
-            )
+            if cls.wadas_db is None:
+                raise RuntimeError("The database and db engine have not been initialized.")
+            else:
+                logger.debug("Initializing engine...")
+                cls.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
         return cls.wadas_db_engine
 
     @classmethod
@@ -209,9 +213,22 @@ class SQLiteDataBase(DataBase):
         """Method to create database by creating all tables"""
 
         if DataBase.wadas_db_engine:
-            Base.metadata.create_all(DataBase.wadas_db_engine)
-            return True
+            try:
+                Base.metadata.create_all(DataBase.wadas_db_engine)
+            except SQLiteOperationalError:
+                logger.exception("OperationalError during database creation.")
+                return False
+            except SQLAlchemyError:
+                logger.exception("SQLAlchemyError during database creation:.")
+                return False
+            except Exception:
+                logger.exception("Unexpected error during database creation.")
+                return False
+            else:
+                logger.info("SQLite Database created successfully.")
+                return True
         else:
+            logger.warning("Database engine is not initialized.")
             return False
 
     def serialize(self):

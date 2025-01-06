@@ -163,7 +163,9 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         """Method to trigger new db creation"""
 
         if self.ui.radioButton_SQLite.isChecked():
-            self.new_sqlite_db()
+            if not DataBase.get_instance():
+                self.new_sqlite_db()
+                DataBase.initialize()
             DataBase.get_instance().create_database()
 
         pass #TODO: implement MySQL logic and remove
