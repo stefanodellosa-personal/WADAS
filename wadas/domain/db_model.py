@@ -22,6 +22,7 @@ from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import declarative_base, relationship
 
+from wadas._version import __dbversion__
 from wadas.domain.actuator import Actuator as DomainActuator
 from wadas.domain.camera import Camera as DomainCamera
 
@@ -37,9 +38,6 @@ class Camera(Base):
     name = Column(String, nullable=True)
     enabled = Column(Boolean, default=False)
     actuators = relationship("Actuator", back_populates="camera")
-    ftp_folder = Column(Text, nullable=True)  # FTPCamera specific
-    index = Column(Integer, nullable=True)  # USBCamera specific
-    backend = Column(Integer, nullable=True)  # USBCamera specific
     en_wadas_motion_detection = Column(Boolean, default=False)  # USBCamera specific
     pid = Column(String, nullable=True)  # USBCamera specific
     vid = Column(String, nullable=True)  # USBCamera specific
@@ -113,6 +111,26 @@ class ActuationEvent(Base):
     command = Column(Text, nullable=True)  # Use JSON if needed
 
     detection_event = relationship("DetectionEvent", back_populates="actuation_events")
+
+
+# Database service tables, not mapped with any WADAS class
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True)
+    username = Column(String, nullable=False, unique=True)
+    email = Column(String, nullable=False, unique=True)
+    role = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False)
+
+
+class DBMetadata(Base):
+    __tablename__ = "db_metadata"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    version = Column(String, nullable=False, default=lambda: __dbversion__)
+    applied_at = Column(DateTime(timezone=True), nullable=False)
+    description = Column(Text, nullable=True)
 
 
 # Indexes

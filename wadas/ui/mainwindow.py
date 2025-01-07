@@ -101,7 +101,16 @@ class MainWindow(QMainWindow):
         self.configuration_file_name = None
         self.key_ring = None
         self.ftp_server = None
-        self.load_status = None
+        self.load_status = dict.fromkeys(
+            ["errors_on_load",
+            "errors_log",
+            "config_version",
+            "compatible_config",
+            "valid_ftp_keyring",
+            "valid_email_keyring",
+            "valid_whatsapp_keyring"
+             ]
+        )
 
         self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
 

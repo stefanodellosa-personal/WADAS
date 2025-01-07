@@ -15,6 +15,7 @@
 #
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2024-08-14
-# Description: WhatsApp notifier module
+# Description: module to keep track of WADAS version
 
 __version__ = "v0.5.1"
+__dbversion__ = __version__

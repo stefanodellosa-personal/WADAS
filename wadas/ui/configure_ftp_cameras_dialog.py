@@ -239,8 +239,8 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 if cur_camera_id:
                     cur_cam_ftp_dir = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id)
                     camera_pass = self.get_camera_pass(i)
-                    camera_user = cur_camera_id
-                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir, camera_user)
+                    camera_enabled = self.get_camera_enablement(i)
+                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir, camera_enabled)
                     cameras.append(camera)
                     # Store credentials in keyring
                     self.add_camera_credentials(cur_camera_id, camera_pass)

@@ -24,9 +24,7 @@ from wadas.ai.models import txt_animalclasses
 from wadas.domain.ai_model import AiModel
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
 from wadas.domain.camera import img_queue
-from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.operation_mode import OperationMode
-from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -68,40 +66,28 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
 
             if cur_img:
                 logger.debug("Processing image from motion detection notification...")
-                detected_results, detected_img_path = self._detect(cur_img["img"])
+                detection_event = self._detect(cur_img)
                 self.check_for_termination_requests()
 
-                if detected_results and detected_img_path:
-                    classified_img_path, classified_animals = self._classify(
-                        cur_img["img"], detected_results
-                    )
-                    if classified_img_path:
-                        detection_event = DetectionEvent(
-                            cur_img["camera_id"],
-                            get_timestamp(),
-                            cur_img["img"],
-                            detected_img_path,
-                            detected_results,
-                            self.en_classification,
-                            classified_img_path,
-                            classified_animals,
-                        )
+                if detection_event and self.en_classification:
+                    self._classify(detection_event)
+                    if detection_event.classification_img_path:
                         # Send notification and trigger actuators if the target animal is found
                         if any(
-                            x["classification"][0] == self.custom_target_species
-                            for x in classified_animals
+                            classified_animal["classification"][0] == self.custom_target_species
+                            for classified_animal in detection_event.classified_animals
                         ):
                             # Trigger image update in WADAS mainwindow
-                            self.update_image.emit(classified_img_path)
+                            self.update_image.emit(detection_event.classification_img_path)
                             self.update_info.emit()
                             message = (
                                 f"WADAS has classified '{self.last_classified_animals_str}' "
-                                f"animal from camera {cur_img['img_id']}!"
+                                f"animal from camera {detection_event.camera_id}!"
                             )
                             logger.info(message)
                             self.send_notification(detection_event, message)
 
-                            self.actuate(cur_img["img_id"])
+                            self.actuate(detection_event)
                         else:
                             logger.info(
                                 "Target animal '%s' not found, found '%s' instead. "

@@ -59,29 +59,29 @@ class TestModelMode(OperationMode):
             self.execution_completed()
             return
 
+        # Since we don't have cameras in Test Model Mode,
+        # we create dummy detection event with VirtualTestCamera
         detection_event = DetectionEvent(
             "VirtualTestCamera", get_timestamp(), img_path, detected_img_path, det_results, True
         )
         # Trigger image update in WADAS mainwindow
-        self.update_image.emit(detected_img_path)
+        self.update_image.emit(detection_event.detection_img_path)
         message = "WADAS has detected an animal!"
         self.check_for_termination_requests()
 
         # Classify if detection has identified animals
-        if len(det_results["detections"].xyxy):
+        if len(detection_event.detected_animals["detections"].xyxy):
             logger.info("Running classification on detection result(s)...")
 
-            classified_img_path, classified_animals = self._classify(img_path, det_results)
-            if classified_img_path:
+            self._classify(detection_event)
+            if detection_event.classification_img_path:
                 # Trigger image update in WADAS mainwindow
-                self.update_image.emit(classified_img_path)
+                self.update_image.emit(detection_event.classification_img_path)
                 self.update_info.emit()
                 message = (
                     f"WADAS has classified '{self.last_classified_animals_str}' "
-                    f"animal from camera {img_path}!"
+                    f"animal from camera {detection_event.classification_img_path}!"
                 )
-                detection_event.classification_img_path = classified_img_path
-                detection_event.classified_animals = classified_animals
             else:
                 logger.info("No animals to classify.")
                 message = ""

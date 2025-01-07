@@ -27,10 +27,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError as SQLiteOperationalError
 from sqlalchemy.exc import SQLAlchemyError
 
+from wadas._version import __dbversion__
 from wadas.domain.db_model import Base
 
 logger = logging.getLogger(__name__)
-DB_VERSION = 0.1
 
 
 class DataBase(ABC):
@@ -123,7 +123,7 @@ class MySQLDataBase(DataBase):
     :param database_name: The name of the database.
     """
 
-    def __init__(self, host, port, username, database_name, enabled=False, version=DB_VERSION):
+    def __init__(self, host, port, username, database_name, enabled=False, version=__dbversion__):
         super().__init__(host)
         self.type = DataBase.DBTypes.MYSQL
         self.port = port
@@ -198,7 +198,7 @@ class MySQLDataBase(DataBase):
 class SQLiteDataBase(DataBase):
     """SQLite DataBase class"""
 
-    def __init__(self, host, enabled=True, version=DB_VERSION):
+    def __init__(self, host, enabled=True, version=__dbversion__):
         super().__init__(host)
         self.type = DataBase.DBTypes.SQLITE
         self.enabled = enabled
