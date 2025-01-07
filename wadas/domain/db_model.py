@@ -33,11 +33,15 @@ Base = declarative_base()
 class Camera(Base):
     __tablename__ = "cameras"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    local_id = Column(Integer, primary_key=True, autoincrement=True)  # DB id and primary key
+    id = Column(String, nullable=False, unique=True)  # External (Camera class) unique identifier
     type = Column(SqlEnum(DomainCamera.CameraTypes), nullable=False)
     name = Column(String, nullable=True)
     enabled = Column(Boolean, default=False)
     actuators = relationship("Actuator", back_populates="camera")
+    detection_events = relationship(
+        "DetectionEvent", back_populates="camera", cascade="all, delete-orphan"
+    )
     en_wadas_motion_detection = Column(Boolean, default=False)  # USBCamera specific
     pid = Column(String, nullable=True)  # USBCamera specific
     vid = Column(String, nullable=True)  # USBCamera specific
@@ -57,13 +61,19 @@ class FTPCamera(Camera):
 class Actuator(Base):
     __tablename__ = "actuators"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    local_id = Column(Integer, primary_key=True, autoincrement=True)  # DB id and primary key
+    id = Column(String, nullable=False, unique=True)  # DB unique identifier
     type = Column(SqlEnum(DomainActuator.ActuatorTypes), nullable=False)
     enabled = Column(Boolean, default=False)
     last_update = Column(Text, nullable=True)  # To handle date type
-    camera_id = Column(Integer, ForeignKey("cameras.id"), nullable=True)  # Relationship with Camera
+    camera_id = Column(
+        Integer, ForeignKey("cameras.local_id"), nullable=True
+    )  # Relationship with Camera
 
     camera = relationship("Camera", back_populates="actuators")
+    actuation_events = relationship(
+        "ActuationEvent", back_populates="actuator", cascade="all, delete-orphan"
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": "actuator",
@@ -87,7 +97,7 @@ class DetectionEvent(Base):
     __tablename__ = "detection_events"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    camera_id = Column(String, nullable=False, index=True)
+    camera_id = Column(Integer, ForeignKey("cameras.local_id"), nullable=False)
     time_stamp = Column(DateTime(timezone=True), nullable=False)
     original_image = Column(Text, nullable=False)
     detection_img_path = Column(Text, nullable=False)
@@ -96,6 +106,7 @@ class DetectionEvent(Base):
     classification_img_path = Column(Text, nullable=True)
     classified_animals = Column(Text, nullable=True)  # Use JSON if supported
 
+    camera = relationship("Camera", back_populates="detection_events")
     actuation_events = relationship(
         "ActuationEvent", back_populates="detection_event", cascade="all, delete-orphan"
     )
@@ -105,11 +116,12 @@ class ActuationEvent(Base):
     __tablename__ = "actuation_events"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    actuator_id = Column(String, nullable=False, index=True)
+    actuator_id = Column(Integer, ForeignKey("actuators.local_id"), nullable=False)
     time_stamp = Column(DateTime(timezone=True), nullable=False)
     detection_event_id = Column(Integer, ForeignKey("detection_events.id"), nullable=False)
     command = Column(Text, nullable=True)  # Use JSON if needed
 
+    actuator = relationship("Actuator", back_populates="actuation_events")
     detection_event = relationship("DetectionEvent", back_populates="actuation_events")
 
 
