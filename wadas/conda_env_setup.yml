@@ -18,6 +18,8 @@ dependencies:
   - torchaudio==2.4.1
   - torchvision==0.19.1
   - validators==0.34.0
+  - pymysql==1.1.1
+  - sqlalchemy==2.0.34
   - pip:
       - cv2-enumerate-cameras==1.1.15
       - intel-npu-acceleration-library==1.4.0
