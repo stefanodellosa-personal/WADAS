@@ -24,11 +24,13 @@ from enum import Enum
 import keyring
 from pymysql import OperationalError
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import OperationalError as SQLiteOperationalError
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import sessionmaker
 
 from wadas._version import __dbversion__
-from wadas.domain.db_model import Base
+from wadas.domain.db_model import Base, Camera
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +107,52 @@ class DataBase(ABC):
                 logger.warning("Failed to dispose the database engine.")
         cls.wadas_db_engine = None
         cls.wadas_db = None
+
+    @staticmethod
+    def create_session():
+        """Method to create a session to perform operation with the db"""
+
+        engine = DataBase.get_engine()
+        if engine:
+            Session = sessionmaker(bind=engine)
+            return Session()
+        else:
+            logger.error("Unable to create a session as DB engin is not initialized.")
+            return None
+
+    @classmethod
+    def insert_camera(self, camera):
+        """Method to insert a camera object into the db."""
+
+        session = DataBase.create_session()
+        if session:
+            try:
+                session.add(camera)
+                session.commit()
+                logger.debug("Camera '%s' successfully added to the db!", camera.id)
+            except IntegrityError:
+                session.rollback()  # Cancel modifications in case of error
+                logger.exception("Error while inserting camera ''%s'' into db.", camera.id)
+
+    @classmethod
+    def insert_detection_event(cls, detection_event):
+        session = DataBase.create_session()
+        if session:
+            # Make sure the camera exists in the db before adding the detection_event
+            camera = session.query(Camera).filter_by(id=detection_event.camera_id).first()
+            if camera:
+                try:
+                    session.add(detection_event)
+                    session.commit()
+                    logger.debug("DetectionEvent successfuly added into db!")
+                except IntegrityError:
+                    session.rollback()  # Cancel modifications in case of error
+                    logger.exception("Error while inserting detection_event into db.")
+            else:
+                logger.error(
+                    "No camera with id '%s' found. Aborting db insertion of detection_event",
+                    detection_event.camera_id,
+                )
 
     @abstractmethod
     def serialize(self):
