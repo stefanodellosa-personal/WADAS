@@ -22,8 +22,7 @@ import json
 import logging
 from enum import Enum
 
-from domain.actuation_event import ActuationEvent
-
+from wadas.domain.actuation_event import ActuationEvent
 from wadas.domain.actuator import Actuator
 
 logger = logging.getLogger(__name__)

@@ -53,6 +53,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -98,6 +99,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -144,6 +146,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
@@ -166,6 +169,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -215,6 +219,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -277,6 +282,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
@@ -311,6 +317,7 @@ ai_model:
   ai_classification_device: auto
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -382,6 +389,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
@@ -404,6 +412,7 @@ ai_model:
   ai_classification_device: auto
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -455,6 +464,7 @@ ai_model:
   ai_language: it
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
@@ -481,6 +491,7 @@ camera_detection_params:
   min_contour_area: 345
   ms_sample_rate: 67
   threshold: 89
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -542,6 +553,7 @@ camera_detection_params:
   ms_sample_rate: 67
   threshold: 89
 cameras: []
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
@@ -596,6 +608,7 @@ cameras:
   type: USB Camera
   vid: 7120
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -735,6 +748,7 @@ ftps_server:
   port: 567
   ssl_certificate: /Documents/ssl/eshare_crt.pem
   ssl_key: /Documents/ssl/eshare_key.pem
+database: ''
 notification: []
 operation_mode:
 version: {__version__}
@@ -808,6 +822,7 @@ ftps_server:
   port: 567
   ssl_certificate: /Documents/ssl/eshare_crt.pem
   ssl_key: /Documents/ssl/eshare_key.pem
+database: ''
 notification: []
 operation_mode:
 version: {__version__}
@@ -881,6 +896,7 @@ ftps_server:
   port: 567
   ssl_certificate: /Documents/ssl/eshare_crt.pem
   ssl_key: /Documents/ssl/eshare_key.pem
+database: ''
 notification: []
 operation_mode:
 version: {__version__}
@@ -954,6 +970,7 @@ ftps_server:
   port: 567
   ssl_certificate: /Documents/ssl/eshare_crt.pem
   ssl_key: /Documents/ssl/eshare_key.pem
+database: ''
 notification: []
 operation_mode:
 version: {__version__}
@@ -1078,6 +1095,7 @@ cameras:
   pid: 10372
   type: USB Camera
   vid: 7120
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
@@ -1115,6 +1133,7 @@ ftps_server:
   port: 567
   ssl_certificate: /Documents/ssl/eshare_crt.pem
   ssl_key: /Documents/ssl/eshare_key.pem
+database: ''
 notification: []
 operation_mode:
 version: {__version__}
@@ -1170,6 +1189,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -1250,6 +1270,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server:
   ftp_dir: /Documents/ftp
   ip: 1.2.3.4
@@ -1282,6 +1303,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification:
   Email:
@@ -1346,6 +1368,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification:
   Email:
@@ -1410,6 +1433,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification:
   Email:
@@ -1474,6 +1498,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification:
   Email:
@@ -1524,6 +1549,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification:
   Email:
@@ -1558,6 +1584,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification:
   Email:
@@ -1588,6 +1615,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -1636,6 +1664,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode:
@@ -1659,6 +1688,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -1699,6 +1729,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode:
@@ -1722,6 +1753,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -1764,6 +1796,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode:
@@ -1787,6 +1820,7 @@ ai_model:
   ai_language: ''
 cameras: []
 camera_detection_params: {{}}
+database: ''
 ftps_server: []
 notification: []
 operation_mode:
@@ -1832,6 +1866,7 @@ ai_model:
   ai_language: ''
 camera_detection_params: {{}}
 cameras: []
+database: ''
 ftps_server: ''
 notification: ''
 operation_mode:
