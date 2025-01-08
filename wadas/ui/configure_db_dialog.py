@@ -22,6 +22,7 @@ import os
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 
+from wadas.domain.camera import cameras
 from wadas.domain.database import DataBase, SQLiteDataBase, MySQLDataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_db_dialog import Ui_ConfigureDBDialog
@@ -166,6 +167,10 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             if not DataBase.get_instance():
                 self.new_sqlite_db()
             DataBase.get_instance().create_database()
+            # Populate DB with existing cameras and actuators
+            if cameras:
+                for camera in cameras:
+                    DataBase.insert_camera(camera)
 
         pass #TODO: implement MySQL logic and remove
 

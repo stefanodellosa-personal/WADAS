@@ -30,7 +30,13 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from wadas._version import __dbversion__
-from wadas.domain.db_model import Base, Camera
+from wadas.domain.camera import Camera as DomainCamera
+from wadas.domain.db_model import Base
+from wadas.domain.db_model import Camera as DBCamera
+from wadas.domain.db_model import FTPCamera as ORMFTPCamera
+from wadas.domain.db_model import USBCamera as ORMUSBCamera
+from wadas.domain.ftp_camera import FTPCamera
+from wadas.domain.usb_camera import USBCamera
 
 logger = logging.getLogger(__name__)
 
@@ -120,26 +126,27 @@ class DataBase(ABC):
             logger.error("Unable to create a session as DB engin is not initialized.")
             return None
 
-    @classmethod
-    def insert_camera(self, camera):
+    @staticmethod
+    def insert_camera(camera):
         """Method to insert a camera object into the db."""
 
         session = DataBase.create_session()
         if session:
             try:
-                session.add(camera)
+                orm_camera = DataBase.domain_to_orm(camera)
+                session.add(orm_camera)
                 session.commit()
                 logger.debug("Camera '%s' successfully added to the db!", camera.id)
             except IntegrityError:
                 session.rollback()  # Cancel modifications in case of error
                 logger.exception("Error while inserting camera ''%s'' into db.", camera.id)
 
-    @classmethod
-    def insert_detection_event(cls, detection_event):
+    @staticmethod
+    def insert_detection_event(detection_event):
         session = DataBase.create_session()
         if session:
             # Make sure the camera exists in the db before adding the detection_event
-            camera = session.query(Camera).filter_by(id=detection_event.camera_id).first()
+            camera = session.query(DBCamera).filter_by(id=detection_event.camera_id).first()
             if camera:
                 try:
                     session.add(detection_event)
@@ -153,6 +160,52 @@ class DataBase(ABC):
                     "No camera with id '%s' found. Aborting db insertion of detection_event",
                     detection_event.camera_id,
                 )
+
+    @staticmethod
+    def domain_to_orm(camera):
+        """Convert a domain camera instance to an ORM camera instance."""
+        if isinstance(camera, FTPCamera):  # Camera dominio FTP
+            return ORMFTPCamera(
+                id=camera.id,
+                enabled=camera.enabled,
+                ftp_folder=camera.ftp_folder,
+            )
+        elif isinstance(camera, USBCamera):  # Camera dominio USB
+            return ORMUSBCamera(
+                id=camera.id,
+                name=camera.name,
+                enabled=camera.enabled,
+                pid=camera.pid,
+                vid=camera.vid,
+                path=camera.path,
+            )
+        else:
+            raise ValueError("Unsupported camera type")
+
+    @staticmethod
+    def orm_to_domain(camera_orm):
+        """Convert an ORM camera instance to a domain camera instance."""
+        try:
+            if camera_orm.type == DomainCamera.CameraTypes.FTP_CAMERA:
+                return FTPCamera(
+                    id=camera_orm.id,
+                    ftp_folder=camera_orm.ftp_folder,  # Usa il campo corretto del modello ORM
+                    enabled=camera_orm.enabled,
+                )
+            elif camera_orm.type == DomainCamera.CameraTypes.USB_CAMERA:
+                return USBCamera(
+                    id=camera_orm.id,
+                    name=camera_orm.name,
+                    enabled=camera_orm.enabled,
+                    pid=camera_orm.pid,
+                    vid=camera_orm.vid,
+                    path=camera_orm.path,
+                )
+            else:
+                raise ValueError(f"Unsupported camera type: {camera_orm.type}")
+        except AttributeError:
+            logger.exception("Error mapping ORM camera to domain.")
+            raise
 
     @abstractmethod
     def serialize(self):

@@ -30,32 +30,47 @@ Base = declarative_base()
 
 
 # Classes
+Base = declarative_base()
+
+
 class Camera(Base):
     __tablename__ = "cameras"
 
-    local_id = Column(Integer, primary_key=True, autoincrement=True)  # DB id and primary key
-    id = Column(String, nullable=False, unique=True)  # External (Camera class) unique identifier
+    local_id = Column(Integer, primary_key=True, autoincrement=True)  # DB id
+    id = Column(String, nullable=False, unique=True)  # Unique external ID
     type = Column(SqlEnum(DomainCamera.CameraTypes), nullable=False)
-    name = Column(String, nullable=True)
     enabled = Column(Boolean, default=False)
     actuators = relationship("Actuator", back_populates="camera")
     detection_events = relationship(
         "DetectionEvent", back_populates="camera", cascade="all, delete-orphan"
     )
-    en_wadas_motion_detection = Column(Boolean, default=False)  # USBCamera specific
-    pid = Column(String, nullable=True)  # USBCamera specific
-    vid = Column(String, nullable=True)  # USBCamera specific
-    path = Column(Text, nullable=True)  # USBCamera specific
 
-    __mapper_args__ = {"polymorphic_identity": "camera", "polymorphic_on": type}
+    __mapper_args__ = {
+        "polymorphic_identity": "camera",
+        "polymorphic_on": type,
+    }
 
 
 class USBCamera(Camera):
-    __mapper_args__ = {"polymorphic_identity": DomainCamera.CameraTypes.USB_CAMERA.value}
+    __tablename__ = "usb_cameras"
+
+    local_id = Column(Integer, ForeignKey("cameras.local_id"), primary_key=True)
+    name = Column(String, nullable=True)
+    en_wadas_motion_detection = Column(Boolean, default=False)
+    pid = Column(String, nullable=True)
+    vid = Column(String, nullable=True)
+    path = Column(Text, nullable=True)
+
+    __mapper_args__ = {"polymorphic_identity": DomainCamera.CameraTypes.USB_CAMERA}
 
 
 class FTPCamera(Camera):
-    __mapper_args__ = {"polymorphic_identity": DomainCamera.CameraTypes.FTP_CAMERA.value}
+    __tablename__ = "ftp_cameras"
+
+    local_id = Column(Integer, ForeignKey("cameras.local_id"), primary_key=True)
+    ftp_folder = Column(Text, nullable=False)
+
+    __mapper_args__ = {"polymorphic_identity": DomainCamera.CameraTypes.FTP_CAMERA}
 
 
 class Actuator(Base):
@@ -83,13 +98,13 @@ class Actuator(Base):
 
 class RoadSignActuator(Actuator):
     __mapper_args__ = {
-        "polymorphic_identity": DomainActuator.ActuatorTypes.ROADSIGN.value,
+        "polymorphic_identity": DomainActuator.ActuatorTypes.ROADSIGN,
     }
 
 
 class FeederActuator(Actuator):
     __mapper_args__ = {
-        "polymorphic_identity": DomainActuator.ActuatorTypes.FEEDER.value,
+        "polymorphic_identity": DomainActuator.ActuatorTypes.FEEDER,
     }
 
 
