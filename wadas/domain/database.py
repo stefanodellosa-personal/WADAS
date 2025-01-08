@@ -124,20 +124,18 @@ class DataBase(ABC):
     def create_session():
         """Method to create a session to perform operation with the db"""
 
-        engine = DataBase.get_engine()
-        if engine:
+        if engine := DataBase.get_engine():
             Session = sessionmaker(bind=engine)
             return Session()
         else:
-            logger.error("Unable to create a session as DB engin is not initialized.")
+            logger.error("Unable to create a session as DB engine is not initialized.")
             return None
 
     @staticmethod
     def insert_into_db(domain_object):
         """Method to insert a WADAS object into the db."""
 
-        session = DataBase.create_session()
-        if session:
+        if session := DataBase.create_session():
             if isinstance(domain_object, DetectionEvent):
                 # If Camera associated to the detection event is not in db abort insertion
                 if not session.query(ORMCamera).filter_by(id=domain_object.camera_id).first():
@@ -261,7 +259,7 @@ class MySQLDataBase(DataBase):
         """Method to create a new database."""
 
         try:
-            # PTry to connect to db to check whether it exists
+            # Try to connect to db to check whether it exists
             with DataBase.wadas_db_engine.connect() as conn:
                 logger.debug("Database exists.")
         except OperationalError:
@@ -326,7 +324,7 @@ class SQLiteDataBase(DataBase):
                 logger.exception("OperationalError during database creation.")
                 return False
             except SQLAlchemyError:
-                logger.exception("SQLAlchemyError during database creation:.")
+                logger.exception("SQLAlchemyError during database creation.")
                 return False
             except Exception:
                 logger.exception("Unexpected error during database creation.")

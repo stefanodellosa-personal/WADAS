@@ -58,8 +58,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def init_dialog(self):
         """Method to initialize dialog with saved configuration data"""
 
-        wadas_db = DataBase.get_instance()
-        if not wadas_db:
+        if not (wadas_db := DataBase.get_instance()):
             self.ui.checkBox.setChecked(True)
             self.ui.radioButton_SQLite.setChecked(True)
         else:
@@ -86,13 +85,14 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def on_radioButton_checked(self):
         """Method to update dialog fields depending on DB selection"""
 
-        self.ui.lineEdit_db_port.setEnabled(not self.ui.radioButton_SQLite.isChecked())
-        self.ui.lineEdit_db_username.setEnabled(not self.ui.radioButton_SQLite.isChecked())
-        self.ui.lineEdit_db_password.setEnabled(not self.ui.radioButton_SQLite.isChecked())
-        self.ui.lineEdit_db_name.setEnabled(not self.ui.radioButton_SQLite.isChecked())
-        if not self.ui.radioButton_SQLite.isChecked() and not self.ui.lineEdit_db_name.text():
+        mysql_db_selected = self.ui.radioButton_MySQL.isChecked()
+        self.ui.lineEdit_db_port.setEnabled(mysql_db_selected)
+        self.ui.lineEdit_db_username.setEnabled(mysql_db_selected)
+        self.ui.lineEdit_db_password.setEnabled(mysql_db_selected)
+        self.ui.lineEdit_db_name.setEnabled(mysql_db_selected)
+        if mysql_db_selected and not self.ui.lineEdit_db_name.text():
             self.ui.lineEdit_db_name.setPlaceholderText("wadas")
-        elif not self.ui.radioButton_SQLite.isChecked():
+        elif mysql_db_selected:
             self.ui.lineEdit_db_name.setPlaceholderText("")
 
     def _update_common_params(self, wadas_db):
@@ -141,9 +141,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             "Changing the database type will replace the existing database. Do you want to continue?",
             QMessageBox.Yes | QMessageBox.No
         )
-        if reply == QMessageBox.No:
-            return False
-        return True
+        return reply != QMessageBox.No
 
     def new_mysql_db(self):
         """Method to create and initialize a new MySQL DB with dialog input fields"""
@@ -185,11 +183,11 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         try:
             port_to_int = int(port)
         except  ValueError:
-            self.ui.label_error.setText(f"Invalid port type. Shall be an integer value!")
+            self.ui.label_error.setText("Invalid port type. Shall be an integer value!")
             return False
 
         if port_to_int < 1 or port_to_int > 65535:
-            self.ui.label_error.setText(f"Invalid port provided!")
+            self.ui.label_error.setText("Invalid port provided!")
             return False
         else:
             return True
