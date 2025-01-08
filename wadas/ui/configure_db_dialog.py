@@ -22,6 +22,7 @@ import os
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 
+from wadas.domain.actuator import Actuator
 from wadas.domain.camera import cameras
 from wadas.domain.database import DataBase, SQLiteDataBase, MySQLDataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
@@ -166,13 +167,17 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         if self.ui.radioButton_SQLite.isChecked():
             if not DataBase.get_instance():
                 self.new_sqlite_db()
-            DataBase.get_instance().create_database()
-            # Populate DB with existing cameras and actuators
-            if cameras:
-                for camera in cameras:
-                    DataBase.insert_camera(camera)
+            elif self.ui.radioButton_MySQL.isChecked():
+                self.new_mysql_db()
 
-        pass #TODO: implement MySQL logic and remove
+        DataBase.get_instance().create_database()
+        # Populate DB with existing cameras and actuators
+        if cameras:
+            for camera in cameras:
+                DataBase.insert_into_db(camera)
+        if Actuator.actuators:
+            for actuator_id in Actuator.actuators:
+                DataBase.insert_into_db(Actuator.actuators[actuator_id])
 
     def validate_port(self, port):
         """Validate port method"""

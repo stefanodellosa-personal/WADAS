@@ -30,12 +30,18 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from wadas._version import __dbversion__
-from wadas.domain.camera import Camera as DomainCamera
+from wadas.domain.actuation_event import ActuationEvent
+from wadas.domain.db_model import Actuator as ORMActuator
 from wadas.domain.db_model import Base
-from wadas.domain.db_model import Camera as DBCamera
+from wadas.domain.db_model import Camera as ORMCamera
+from wadas.domain.db_model import FeederActuator as ORMFeederActuator
 from wadas.domain.db_model import FTPCamera as ORMFTPCamera
+from wadas.domain.db_model import RoadSignActuator as ORMRoadSignActuator
 from wadas.domain.db_model import USBCamera as ORMUSBCamera
+from wadas.domain.detection_event import DetectionEvent
+from wadas.domain.feeder_actuator import FeederActuator
 from wadas.domain.ftp_camera import FTPCamera
+from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.usb_camera import USBCamera
 
 logger = logging.getLogger(__name__)
@@ -127,84 +133,84 @@ class DataBase(ABC):
             return None
 
     @staticmethod
-    def insert_camera(camera):
-        """Method to insert a camera object into the db."""
+    def insert_into_db(domain_object):
+        """Method to insert a WADAS object into the db."""
 
         session = DataBase.create_session()
         if session:
+            if isinstance(domain_object, DetectionEvent):
+                # If Camera associated to the detection event is not in db abort insertion
+                if not session.query(ORMCamera).filter_by(id=domain_object.camera_id).first():
+                    return
+            if isinstance(domain_object, ActuationEvent):
+                # If Actuator associated to the actuation event is not in db abort insertion
+                if not session.query(ORMActuator).filter_by(id=domain_object.actuator_id).first():
+                    return
             try:
-                orm_camera = DataBase.domain_to_orm(camera)
-                session.add(orm_camera)
+                orm_object = DataBase.domain_to_orm(domain_object)
+                session.add(orm_object)
                 session.commit()
-                logger.debug("Camera '%s' successfully added to the db!", camera.id)
+                logger.debug(
+                    "Object '%s' successfully added to the db!", type(domain_object).__name__
+                )
             except IntegrityError:
                 session.rollback()  # Cancel modifications in case of error
-                logger.exception("Error while inserting camera ''%s'' into db.", camera.id)
-
-    @staticmethod
-    def insert_detection_event(detection_event):
-        session = DataBase.create_session()
-        if session:
-            # Make sure the camera exists in the db before adding the detection_event
-            camera = session.query(DBCamera).filter_by(id=detection_event.camera_id).first()
-            if camera:
-                try:
-                    session.add(detection_event)
-                    session.commit()
-                    logger.debug("DetectionEvent successfuly added into db!")
-                except IntegrityError:
-                    session.rollback()  # Cancel modifications in case of error
-                    logger.exception("Error while inserting detection_event into db.")
-            else:
-                logger.error(
-                    "No camera with id '%s' found. Aborting db insertion of detection_event",
-                    detection_event.camera_id,
+                logger.exception(
+                    "Error while inserting object ''%s'' into db.", type(domain_object).__name__
                 )
 
     @staticmethod
-    def domain_to_orm(camera):
-        """Convert a domain camera instance to an ORM camera instance."""
-        if isinstance(camera, FTPCamera):  # Camera dominio FTP
+    def domain_to_orm(domain_object):
+        """Convert a domain object to an ORM object."""
+        if isinstance(domain_object, FTPCamera):
             return ORMFTPCamera(
-                id=camera.id,
-                enabled=camera.enabled,
-                ftp_folder=camera.ftp_folder,
+                id=domain_object.id,
+                enabled=domain_object.enabled,
+                ftp_folder=domain_object.ftp_folder,
             )
-        elif isinstance(camera, USBCamera):  # Camera dominio USB
+        elif isinstance(domain_object, USBCamera):
             return ORMUSBCamera(
-                id=camera.id,
-                name=camera.name,
-                enabled=camera.enabled,
-                pid=camera.pid,
-                vid=camera.vid,
-                path=camera.path,
+                id=domain_object.id,
+                name=domain_object.name,
+                enabled=domain_object.enabled,
+                pid=domain_object.pid,
+                vid=domain_object.vid,
+                path=domain_object.path,
             )
+        elif isinstance(domain_object, RoadSignActuator):
+            return ORMRoadSignActuator(id=domain_object.id, enabled=domain_object.enabled)
+        elif isinstance(domain_object, FeederActuator):
+            return ORMFeederActuator(id=domain_object.id, enabled=domain_object.enabled)
         else:
-            raise ValueError("Unsupported camera type")
+            raise ValueError(f"Unsupported domain object type: {type(domain_object).__name__}")
 
     @staticmethod
-    def orm_to_domain(camera_orm):
-        """Convert an ORM camera instance to a domain camera instance."""
+    def orm_to_domain(orm_object):
+        """Convert an ORM object to a domain object."""
         try:
-            if camera_orm.type == DomainCamera.CameraTypes.FTP_CAMERA:
+            if isinstance(orm_object, ORMFTPCamera):
                 return FTPCamera(
-                    id=camera_orm.id,
-                    ftp_folder=camera_orm.ftp_folder,  # Usa il campo corretto del modello ORM
-                    enabled=camera_orm.enabled,
+                    id=orm_object.id,
+                    ftp_folder=orm_object.ftp_folder,
+                    enabled=orm_object.enabled,
                 )
-            elif camera_orm.type == DomainCamera.CameraTypes.USB_CAMERA:
+            elif isinstance(orm_object, ORMUSBCamera):
                 return USBCamera(
-                    id=camera_orm.id,
-                    name=camera_orm.name,
-                    enabled=camera_orm.enabled,
-                    pid=camera_orm.pid,
-                    vid=camera_orm.vid,
-                    path=camera_orm.path,
+                    id=orm_object.id,
+                    name=orm_object.name,
+                    enabled=orm_object.enabled,
+                    pid=orm_object.pid,
+                    vid=orm_object.vid,
+                    path=orm_object.path,
                 )
+            elif isinstance(orm_object, ORMRoadSignActuator):
+                return RoadSignActuator(id=orm_object.id, enabled=orm_object.enabled)
+            elif isinstance(orm_object, ORMFeederActuator):
+                return FeederActuator(id=orm_object.id, enabled=orm_object.enabled)
             else:
-                raise ValueError(f"Unsupported camera type: {camera_orm.type}")
+                raise ValueError(f"Unsupported ORM object type: {type(orm_object).__name__}")
         except AttributeError:
-            logger.exception("Error mapping ORM camera to domain.")
+            logger.exception("Error mapping ORM object to domain.")
             raise
 
     @abstractmethod
