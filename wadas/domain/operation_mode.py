@@ -29,6 +29,7 @@ from wadas.domain.actuation_event import ActuationEvent
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.database import DataBase
 from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.fastapi_actuator_server import (
     FastAPIActuatorServer,
@@ -125,6 +126,9 @@ class OperationMode(QObject):
                 self.en_classification,
             )
             self.last_detection = detected_img_path
+            # Insert detection event into db, if enabled
+            if db := DataBase.get_instance():
+                db.insert_into_db(detection_event)
             return detection_event
         else:
             return None
@@ -153,6 +157,9 @@ class OperationMode(QObject):
                 self._format_classified_animals_string(classified_animals)
                 detection_event.classified_animals = classified_animals
                 detection_event.classification_img_path = classified_img_path
+                # Update detection event into db, if enabled
+                if db := DataBase.get_instance():
+                    db.update_detection_event(detection_event)
 
     def ftp_camera_exist(self):
         """Method that returns True if at least an FTP camera exists, False otherwise."""
@@ -202,6 +209,9 @@ class OperationMode(QObject):
                 if actuator.enabled:
                     actuation_event = ActuationEvent(actuator.id, get_timestamp(), detection_event)
                     actuator.actuate(actuation_event)
+                    # Insert actuation event into db, if enabled
+                    if db := DataBase.get_instance():
+                        db.insert_into_db(actuation_event)
 
     def execution_completed(self):
         """Method to perform end of execution steps."""

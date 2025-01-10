@@ -37,7 +37,7 @@ class Camera(Base):
     __tablename__ = "cameras"
 
     local_id = Column(Integer, primary_key=True, autoincrement=True)  # DB id
-    id = Column(String, nullable=False, unique=True)  # Unique external ID
+    camera_id = Column(String, nullable=False, unique=True)  # Unique external ID
     type = Column(SqlEnum(DomainCamera.CameraTypes), nullable=False)
     enabled = Column(Boolean, default=False)
     actuators = relationship("Actuator", back_populates="camera")
@@ -77,7 +77,7 @@ class Actuator(Base):
     __tablename__ = "actuators"
 
     local_id = Column(Integer, primary_key=True, autoincrement=True)  # DB id and primary key
-    id = Column(String, nullable=False, unique=True)  # DB unique identifier
+    actuator_id = Column(String, nullable=False, unique=True)  # DB unique identifier
     type = Column(SqlEnum(DomainActuator.ActuatorTypes), nullable=False)
     enabled = Column(Boolean, default=False)
     last_update = Column(Text, nullable=True)  # To handle date type
@@ -111,7 +111,7 @@ class FeederActuator(Actuator):
 class DetectionEvent(Base):
     __tablename__ = "detection_events"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    local_id = Column(Integer, primary_key=True, autoincrement=True)  # db ID
     camera_id = Column(Integer, ForeignKey("cameras.local_id"), nullable=False)
     time_stamp = Column(DateTime(timezone=True), nullable=False)
     original_image = Column(Text, nullable=False)
@@ -130,10 +130,10 @@ class DetectionEvent(Base):
 class ActuationEvent(Base):
     __tablename__ = "actuation_events"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    local_id = Column(Integer, primary_key=True, autoincrement=True)  # db ID
     actuator_id = Column(Integer, ForeignKey("actuators.local_id"), nullable=False)
     time_stamp = Column(DateTime(timezone=True), nullable=False)
-    detection_event_id = Column(Integer, ForeignKey("detection_events.id"), nullable=False)
+    detection_event_id = Column(Integer, ForeignKey("detection_events.local_id"), nullable=False)
     command = Column(Text, nullable=True)  # Use JSON if needed
 
     actuator = relationship("Actuator", back_populates="actuation_events")
@@ -144,7 +144,7 @@ class ActuationEvent(Base):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True)
+    local_id = Column(String, primary_key=True)
     username = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False, unique=True)
     role = Column(String, nullable=False)
@@ -154,7 +154,7 @@ class User(Base):
 class DBMetadata(Base):
     __tablename__ = "db_metadata"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    local_id = Column(Integer, primary_key=True, autoincrement=True)
     version = Column(String, nullable=False, default=lambda: __dbversion__)
     applied_at = Column(DateTime(timezone=True), nullable=False)
     description = Column(Text, nullable=True)

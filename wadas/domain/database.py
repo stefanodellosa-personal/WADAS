@@ -16,14 +16,14 @@
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2025-01-04
 # Description: database module.
-
+import json
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 
 import keyring
 from pymysql import OperationalError
-from sqlalchemy import create_engine
+from sqlalchemy import and_, create_engine, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import OperationalError as SQLiteOperationalError
 from sqlalchemy.exc import SQLAlchemyError
@@ -31,9 +31,11 @@ from sqlalchemy.orm import sessionmaker
 
 from wadas._version import __dbversion__
 from wadas.domain.actuation_event import ActuationEvent
+from wadas.domain.db_model import ActuationEvent as ORMActuationEvent
 from wadas.domain.db_model import Actuator as ORMActuator
 from wadas.domain.db_model import Base
 from wadas.domain.db_model import Camera as ORMCamera
+from wadas.domain.db_model import DetectionEvent as ORMDetectionEvent
 from wadas.domain.db_model import FeederActuator as ORMFeederActuator
 from wadas.domain.db_model import FTPCamera as ORMFTPCamera
 from wadas.domain.db_model import RoadSignActuator as ORMRoadSignActuator
@@ -43,6 +45,7 @@ from wadas.domain.feeder_actuator import FeederActuator
 from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.usb_camera import USBCamera
+from wadas.domain.utils import convert_to_datetime
 
 logger = logging.getLogger(__name__)
 
@@ -138,11 +141,19 @@ class DataBase(ABC):
         if session := DataBase.create_session():
             if isinstance(domain_object, DetectionEvent):
                 # If Camera associated to the detection event is not in db abort insertion
-                if not session.query(ORMCamera).filter_by(id=domain_object.camera_id).first():
+                if (
+                    not session.query(ORMCamera)
+                    .filter_by(camera_id=domain_object.camera_id)
+                    .first()
+                ):
                     return
             if isinstance(domain_object, ActuationEvent):
                 # If Actuator associated to the actuation event is not in db abort insertion
-                if not session.query(ORMActuator).filter_by(id=domain_object.actuator_id).first():
+                if (
+                    not session.query(ORMActuator)
+                    .filter_by(actuator_id=domain_object.actuator_id)
+                    .first()
+                ):
                     return
             try:
                 orm_object = DataBase.domain_to_orm(domain_object)
@@ -158,17 +169,56 @@ class DataBase(ABC):
                 )
 
     @staticmethod
+    def update_detection_event(detection_event: DetectionEvent):
+        """Update fields of a detection_events record in db.
+        This is typically the case when classification
+        details into an existing detection event object."""
+
+        if session := DataBase.create_session():
+            try:
+                stmt = (
+                    update(ORMDetectionEvent)
+                    .where(
+                        and_(
+                            ORMDetectionEvent.camera_id == detection_event.camera_id,
+                            ORMDetectionEvent.time_stamp
+                            == convert_to_datetime(detection_event.time_stamp),
+                        )
+                    )
+                    .values(
+                        classification=detection_event.classification,
+                        classified_animals=json.dumps(
+                            detection_event.serialize_classified_animals()
+                        ),
+                        classification_img_path=detection_event.classification_img_path,
+                    )
+                )
+                session.execute(stmt)
+                session.commit()
+            except SQLAlchemyError:
+                # Rollback the transaction in case of an error
+                session.rollback()
+                logger.exception("An error occurred while updating detection event into db.")
+            except Exception:
+                # Handle other unexpected errors
+                session.rollback()
+                logger.exception(
+                    "Unexpected error occurred while updating detection event into db.."
+                )
+
+    @staticmethod
     def domain_to_orm(domain_object):
         """Convert a domain object to an ORM object."""
+
         if isinstance(domain_object, FTPCamera):
             return ORMFTPCamera(
-                id=domain_object.id,
+                camera_id=domain_object.id,
                 enabled=domain_object.enabled,
                 ftp_folder=domain_object.ftp_folder,
             )
         elif isinstance(domain_object, USBCamera):
             return ORMUSBCamera(
-                id=domain_object.id,
+                camera_id=domain_object.id,
                 name=domain_object.name,
                 enabled=domain_object.enabled,
                 pid=domain_object.pid,
@@ -176,25 +226,46 @@ class DataBase(ABC):
                 path=domain_object.path,
             )
         elif isinstance(domain_object, RoadSignActuator):
-            return ORMRoadSignActuator(id=domain_object.id, enabled=domain_object.enabled)
+            return ORMRoadSignActuator(actuator_id=domain_object.id, enabled=domain_object.enabled)
         elif isinstance(domain_object, FeederActuator):
-            return ORMFeederActuator(id=domain_object.id, enabled=domain_object.enabled)
+            return ORMFeederActuator(actuator_id=domain_object.id, enabled=domain_object.enabled)
+        elif isinstance(domain_object, ActuationEvent):
+            return ORMActuationEvent(
+                actuator_id=domain_object.actuator_id,
+                time_stamp=convert_to_datetime(domain_object.time_stamp),
+                detection_event=domain_object.detection_event,
+                command=domain_object.command,
+            )
+        elif isinstance(domain_object, DetectionEvent):
+            return ORMDetectionEvent(
+                camera_id=domain_object.camera_id,
+                time_stamp=convert_to_datetime(domain_object.time_stamp),
+                original_image=domain_object.original_image,
+                detection_img_path=domain_object.detection_img_path,
+                detected_animals=json.dumps(
+                    domain_object.serialize_detected_animals()
+                ),  # detected_animals is a dict
+                classification=domain_object.classification,
+                classification_img_path=domain_object.classification_img_path,
+                classified_animals=json.dumps(domain_object.serialize_classified_animals()),
+            )
         else:
             raise ValueError(f"Unsupported domain object type: {type(domain_object).__name__}")
 
     @staticmethod
     def orm_to_domain(orm_object):
         """Convert an ORM object to a domain object."""
+
         try:
             if isinstance(orm_object, ORMFTPCamera):
                 return FTPCamera(
-                    id=orm_object.id,
+                    id=orm_object.camera_id,
                     ftp_folder=orm_object.ftp_folder,
                     enabled=orm_object.enabled,
                 )
             elif isinstance(orm_object, ORMUSBCamera):
                 return USBCamera(
-                    id=orm_object.id,
+                    id=orm_object.camera_id,
                     name=orm_object.name,
                     enabled=orm_object.enabled,
                     pid=orm_object.pid,
@@ -202,9 +273,9 @@ class DataBase(ABC):
                     path=orm_object.path,
                 )
             elif isinstance(orm_object, ORMRoadSignActuator):
-                return RoadSignActuator(id=orm_object.id, enabled=orm_object.enabled)
+                return RoadSignActuator(id=orm_object.actuator_id, enabled=orm_object.enabled)
             elif isinstance(orm_object, ORMFeederActuator):
-                return FeederActuator(id=orm_object.id, enabled=orm_object.enabled)
+                return FeederActuator(id=orm_object.actuator_id, enabled=orm_object.enabled)
             else:
                 raise ValueError(f"Unsupported ORM object type: {type(orm_object).__name__}")
         except AttributeError:
