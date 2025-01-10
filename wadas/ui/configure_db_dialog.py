@@ -19,9 +19,11 @@
 
 import os
 
+import keyring
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 
+from domain.database import MariaDBDataBase
 from wadas.domain.actuator import Actuator
 from wadas.domain.camera import cameras
 from wadas.domain.database import DataBase, SQLiteDataBase, MySQLDataBase
@@ -48,6 +50,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.pushButton_test_db.clicked.connect(self.test_db)
         self.ui.radioButton_MySQL.clicked.connect(self.on_radioButton_checked)
         self.ui.radioButton_SQLite.clicked.connect(self.on_radioButton_checked)
+        self.ui.radioButton_MariaDB.clicked.connect(self.on_radioButton_checked)
         self.ui.lineEdit_db_host.textChanged.connect(self.validate)
         self.ui.lineEdit_db_port.textChanged.connect(self.validate)
         self.ui.lineEdit_db_username.textChanged.connect(self.validate)
@@ -67,8 +70,16 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             if wadas_db.type:
                 if wadas_db.type == DataBase.DBTypes.MYSQL:
                     self.ui.radioButton_MySQL.setChecked(True)
+                    pwd = keyring.get_password("WADAS_DB_MySQL", wadas_db.username)
                     self.ui.lineEdit_db_port.setText(str(wadas_db.port))
                     self.ui.lineEdit_db_username.setText(wadas_db.username)
+                    self.ui.lineEdit_db_password.setText(pwd)
+                    self.ui.lineEdit_db_name.setText(wadas_db.database_name)
+                elif wadas_db.type == DataBase.DBTypes.MARIADB:
+                    pwd = keyring.get_password("WADAS_DB_MariaDB", wadas_db.username)
+                    self.ui.lineEdit_db_port.setText(str(wadas_db.port))
+                    self.ui.lineEdit_db_username.setText(wadas_db.username)
+                    self.ui.lineEdit_db_password.setText(pwd)
                     self.ui.lineEdit_db_name.setText(wadas_db.database_name)
                 elif wadas_db.type == DataBase.DBTypes.SQLITE:
                     self.ui.radioButton_SQLite.setChecked(True)
@@ -85,14 +96,14 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def on_radioButton_checked(self):
         """Method to update dialog fields depending on DB selection"""
 
-        mysql_db_selected = self.ui.radioButton_MySQL.isChecked()
-        self.ui.lineEdit_db_port.setEnabled(mysql_db_selected)
-        self.ui.lineEdit_db_username.setEnabled(mysql_db_selected)
-        self.ui.lineEdit_db_password.setEnabled(mysql_db_selected)
-        self.ui.lineEdit_db_name.setEnabled(mysql_db_selected)
-        if mysql_db_selected and not self.ui.lineEdit_db_name.text():
+        auth_db_selected = self.ui.radioButton_MySQL.isChecked() or self.ui.radioButton_MariaDB.isChecked()
+        self.ui.lineEdit_db_port.setEnabled(auth_db_selected)
+        self.ui.lineEdit_db_username.setEnabled(auth_db_selected)
+        self.ui.lineEdit_db_password.setEnabled(auth_db_selected)
+        self.ui.lineEdit_db_name.setEnabled(auth_db_selected)
+        if auth_db_selected and not self.ui.lineEdit_db_name.text():
             self.ui.lineEdit_db_name.setPlaceholderText("wadas")
-        elif mysql_db_selected:
+        elif self.ui.radioButton_SQLite.isChecked():
             self.ui.lineEdit_db_name.setPlaceholderText("")
 
     def _update_common_params(self, wadas_db):
@@ -102,7 +113,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         wadas_db.enabled = self.ui.checkBox.isChecked()
 
     def _update_mysql_params(self, wadas_db):
-        """Method to update params specific to MySQL db type"""
+        """Method to update params specific to MySQL or MariaDB db type"""
 
         self._update_common_params(wadas_db)
         wadas_db.port = int(self.ui.lineEdit_db_port.text())
@@ -122,13 +133,22 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                     self.new_sqlite_db()
             else:
                 self._update_common_params(wadas_db)
-        else:
+        elif self.ui.radioButton_MySQL.isChecked():
             if not wadas_db:
                 self.new_mysql_db()
             elif wadas_db.type != DataBase.DBTypes.MYSQL:
                 if self.ask_db_type_change():
                     DataBase.destroy_instance()
                     self.new_mysql_db()
+            else:
+                self._update_mysql_params(wadas_db)
+        elif self.ui.radioButton_MariaDB.isChecked():
+            if not wadas_db:
+                self.new_mariadb_db()
+            elif wadas_db.type != DataBase.DBTypes.MARIADB:
+                if self.ask_db_type_change():
+                    DataBase.destroy_instance()
+                    self.new_mariadb_db()
             else:
                 self._update_mysql_params(wadas_db)
 
@@ -150,7 +170,11 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                                   self.ui.lineEdit_db_username.text(),
                                   self.ui.lineEdit_db_name.text(),
                                   self.ui.checkBox.isChecked())
-        #TODO: store password in keyring
+        keyring.set_password(
+            f"WADAS_DB_MySQL",
+            self.ui.lineEdit_db_username.text(),
+            self.ui.lineEdit_db_password.text(),
+        )
         DataBase.initialize(mysql_db)
 
     def new_sqlite_db(self):
@@ -158,6 +182,21 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
 
         sqlite_db = SQLiteDataBase(self.ui.lineEdit_db_host.text(), self.ui.checkBox.isChecked())
         DataBase.initialize(sqlite_db)
+
+    def new_mariadb_db(self):
+        """Method to create and initialize a new MariaDB with dialog input fields"""
+
+        maria_db = MariaDBDataBase(self.ui.lineEdit_db_host.text(),
+                                 int(self.ui.lineEdit_db_port.text()),
+                                  self.ui.lineEdit_db_username.text(),
+                                  self.ui.lineEdit_db_name.text(),
+                                  self.ui.checkBox.isChecked())
+        keyring.set_password(
+            f"WADAS_DB_MariaDB",
+            self.ui.lineEdit_db_username.text(),
+            self.ui.lineEdit_db_password.text(),
+        )
+        DataBase.initialize(maria_db)
 
     def create_db(self):
         """Method to trigger new db creation"""
@@ -167,15 +206,37 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                 self.new_sqlite_db()
             elif self.ui.radioButton_MySQL.isChecked():
                 self.new_mysql_db()
+            elif self.ui.radioButton_MariaDB.isChecked():
+                self.new_mariadb_db()
 
-        DataBase.get_instance().create_database()
-        # Populate DB with existing cameras and actuators
-        if cameras:
-            for camera in cameras:
-                DataBase.insert_into_db(camera)
-        if Actuator.actuators:
-            for actuator_id in Actuator.actuators:
-                DataBase.insert_into_db(Actuator.actuators[actuator_id])
+        if db := DataBase.get_instance():
+            db.create_database()
+            # Populate DB with existing cameras and actuators
+            if cameras:
+                for camera in cameras:
+                    db.insert_into_db(camera)
+            if Actuator.actuators:
+                for actuator_id in Actuator.actuators:
+                    db.insert_into_db(Actuator.actuators[actuator_id])
+            self.show_create_status(True)
+        else:
+            self.show_create_status(False)
+
+        DataBase.destroy_instance()
+
+    def show_create_status(self, success: bool):
+        """Method to show message with db creation status"""
+
+        message = "Database successfully created!" if success else "Failed to create the db!"
+        icon = QMessageBox.Information if success else QMessageBox.Critical
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Database creation status")
+        msg_box.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
+        msg_box.setText(message)
+        msg_box.setIcon(icon)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+
+        msg_box.exec()
 
     def validate_port(self, port):
         """Validate port method"""

@@ -39,6 +39,7 @@ from PySide6.QtWidgets import (
 from validators import ipv4
 
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.database import DataBase
 from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.ftps_server import FTPsServer
 from wadas.ui.qt.ui_configure_ftp_cameras import Ui_DialogFTPCameras
@@ -246,6 +247,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                     self.add_camera_credentials(cur_camera_id, camera_pass)
                     # Add camera user to FTPS server
                     self.add_camera_to_ftp_server(cur_camera_id, cur_cam_ftp_dir, camera_pass)
+
+                    # Insert camera into db if enabled
+                    if DataBase.get_instance():
+                        DataBase.insert_into_db(camera)
         self.accept()
 
     def add_camera_credentials(self, camera_id, password):

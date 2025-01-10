@@ -159,6 +159,7 @@ class User(Base):
 
     local_id = Column(String, primary_key=True)
     username = Column(String, nullable=False, unique=True)
+    password = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True)
     role = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False)

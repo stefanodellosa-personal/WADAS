@@ -59,6 +59,7 @@ class DataBase(ABC):
     class DBTypes(Enum):
         SQLITE = "SQLite"
         MYSQL = "MySQL"
+        MARIADB = "MariaDB"
 
     def __init__(self, host):
         self.host = host
@@ -134,8 +135,7 @@ class DataBase(ABC):
             logger.error("Unable to create a session as DB engine is not initialized.")
             return None
 
-    @staticmethod
-    def insert_into_db(domain_object):
+    def insert_into_db(self, domain_object):
         """Method to insert a WADAS object into the db."""
 
         if session := DataBase.create_session():
@@ -314,11 +314,7 @@ class DataBase(ABC):
 
 
 class MySQLDataBase(DataBase):
-    """
-    MySQL DataBase class
-    :param username: The username for database authentication.
-    :param database_name: The name of the database.
-    """
+    """MySQL DataBase class"""
 
     def __init__(self, host, port, username, database_name, enabled=False, version=__dbversion__):
         super().__init__(host)
@@ -357,7 +353,7 @@ class MySQLDataBase(DataBase):
         except OperationalError:
             # If db does not exist, creates it
             logger.info("Creating Database...")
-            temp_engine = self.create_db_engine()
+            temp_engine = create_engine(self.get_connection_string())
             with temp_engine.connect() as conn:
                 conn.execute(f"CREATE DATABASE {self.database_name}")
             logger.info("Database '%s' successfully created.", self.database_name)
@@ -381,6 +377,81 @@ class MySQLDataBase(DataBase):
     @staticmethod
     def deserialize(data):
         """Method to deserialize MySQL DataBase object from file."""
+
+        return MySQLDataBase(
+            data["host"],
+            data["port"],
+            data["username"],
+            data["database_name"],
+            data["enabled"],
+            data["version"],
+        )
+
+
+class MariaDBDataBase(DataBase):
+    """MariaDB DataBase class"""
+
+    def __init__(self, host, port, username, database_name, enabled=False, version=__dbversion__):
+        super().__init__(host)
+        self.type = DataBase.DBTypes.MARIADB
+        self.port = port
+        self.username = username
+        self.database_name = database_name
+        self.enabled = enabled
+        self.version = version
+
+    def get_password(self):
+        """Retrieve the password from the keyring."""
+
+        if not self.username:
+            raise ValueError("Username must be defined to retrieve the password.")
+        return keyring.get_password("WADAS_DB_MariaDB", self.username)
+
+    def get_connection_string(self):
+        """Generate the connection string based on the database type."""
+
+        password = self.get_password()
+        if not self.database_name:
+            raise ValueError("Database name is required for MariaDB.")
+        return (
+            f"mariadb+mariadbconnector://"
+            f"{self.username}:{password}@{self.host}:{self.port}/{self.database_name}"
+        )
+
+    def create_database(self):
+        """Method to create a new database."""
+
+        try:
+            # Try to connect to db to check whether it exists
+            with DataBase.wadas_db_engine.connect() as conn:
+                logger.debug("Database exists.")
+        except OperationalError:
+            # If db does not exist, creates it
+            logger.info("Creating Database...")
+            temp_engine = create_engine(self.get_connection_string())
+            with temp_engine.connect() as conn:
+                conn.execute(f"CREATE DATABASE {self.database_name}")
+            logger.info("Database '%s' successfully created.", self.database_name)
+
+        # Create all tables
+        Base.metadata.create_all(DataBase.wadas_db_engine)
+
+    def serialize(self):
+        """Method to serialize MariaDB DataBase object into file."""
+
+        return {
+            "host": self.host,
+            "port": self.port,
+            "type": self.type.value,
+            "username": self.username,
+            "database_name": self.database_name,
+            "enabled": self.enabled,
+            "version": self.version,
+        }
+
+    @staticmethod
+    def deserialize(data):
+        """Method to deserialize MariaDB DataBase object from file."""
 
         return MySQLDataBase(
             data["host"],
