@@ -37,7 +37,7 @@ from wadas.domain.fastapi_actuator_server import (
 )
 from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
-from wadas.domain.utils import get_timestamp
+from wadas.domain.utils import get_precise_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +119,7 @@ class OperationMode(QObject):
         if results and detected_img_path:
             detection_event = DetectionEvent(
                 cur_img["camera_id"],
-                get_timestamp(),
+                get_precise_timestamp(),
                 cur_img["img"],
                 detected_img_path,
                 results,
@@ -207,7 +207,9 @@ class OperationMode(QObject):
         if cur_camera:
             for actuator in cur_camera.actuators:
                 if actuator.enabled:
-                    actuation_event = ActuationEvent(actuator.id, get_timestamp(), detection_event)
+                    actuation_event = ActuationEvent(
+                        actuator.id, get_precise_timestamp(), detection_event
+                    )
                     actuator.actuate(actuation_event)
                     # Insert actuation event into db, if enabled
                     if db := DataBase.get_instance():

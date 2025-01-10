@@ -19,7 +19,7 @@
 
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as SqlEnum
-from sqlalchemy import ForeignKey, Index, Integer, String, Text
+from sqlalchemy import Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import declarative_base, relationship
 
 from wadas._version import __dbversion__
@@ -119,12 +119,25 @@ class DetectionEvent(Base):
     detected_animals = Column(Text, nullable=False)  # Use JSON if supported
     classification = Column(Boolean, default=True)
     classification_img_path = Column(Text, nullable=True)
-    classified_animals = Column(Text, nullable=True)  # Use JSON if supported
 
     camera = relationship("Camera", back_populates="detection_events")
     actuation_events = relationship(
         "ActuationEvent", back_populates="detection_event", cascade="all, delete-orphan"
     )
+    classified_animals = relationship(
+        "ClassifiedAnimals", back_populates="detection_event", cascade="all, delete-orphan"
+    )
+
+
+class ClassifiedAnimals(Base):
+    __tablename__ = "classified_animals"
+
+    local_id = Column(Integer, primary_key=True, autoincrement=True)  # db ID
+    detection_event_id = Column(Integer, ForeignKey("detection_events.local_id"), nullable=False)
+    classified_animal = Column(Text, nullable=True)
+    probability = Column(Float, nullable=True)
+
+    detection_event = relationship("DetectionEvent", back_populates="classified_animals")
 
 
 class ActuationEvent(Base):

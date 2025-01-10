@@ -35,6 +35,7 @@ from wadas.domain.db_model import ActuationEvent as ORMActuationEvent
 from wadas.domain.db_model import Actuator as ORMActuator
 from wadas.domain.db_model import Base
 from wadas.domain.db_model import Camera as ORMCamera
+from wadas.domain.db_model import ClassifiedAnimals as ORMClassifiedAnimals
 from wadas.domain.db_model import DetectionEvent as ORMDetectionEvent
 from wadas.domain.db_model import FeederActuator as ORMFeederActuator
 from wadas.domain.db_model import FTPCamera as ORMFTPCamera
@@ -45,7 +46,6 @@ from wadas.domain.feeder_actuator import FeederActuator
 from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.usb_camera import USBCamera
-from wadas.domain.utils import convert_to_datetime
 
 logger = logging.getLogger(__name__)
 
@@ -171,30 +171,52 @@ class DataBase(ABC):
     @staticmethod
     def update_detection_event(detection_event: DetectionEvent):
         """Update fields of a detection_events record in db.
-        This is typically the case when classification
-        details into an existing detection event object."""
+        This is typically the case when classification details
+        into an existing detection event object.
+        """
 
         if session := DataBase.create_session():
             try:
+                # Update detection_event table
                 stmt = (
                     update(ORMDetectionEvent)
                     .where(
                         and_(
                             ORMDetectionEvent.camera_id == detection_event.camera_id,
-                            ORMDetectionEvent.time_stamp
-                            == convert_to_datetime(detection_event.time_stamp),
+                            ORMDetectionEvent.time_stamp == detection_event.time_stamp,
                         )
                     )
                     .values(
                         classification=detection_event.classification,
-                        classified_animals=json.dumps(
-                            detection_event.serialize_classified_animals()
-                        ),
                         classification_img_path=detection_event.classification_img_path,
                     )
                 )
                 session.execute(stmt)
                 session.commit()
+
+                # Retrieve the local_id of the updated detection event
+                detection_event_id = (
+                    session.query(ORMDetectionEvent.local_id)
+                    .filter(
+                        and_(
+                            ORMDetectionEvent.camera_id == detection_event.camera_id,
+                            ORMDetectionEvent.time_stamp == detection_event.time_stamp,
+                        )
+                    )
+                    .scalar()
+                )  # Use scalar() to retrieve the value directly
+
+                if detection_event_id:
+                    # Create ClassifiedAnimals table entries and link them with detection event
+                    for classified_animal in detection_event.classified_animals:
+                        orm_obj = ORMClassifiedAnimals(
+                            detection_event_id=detection_event_id,  # Link to detection event by ID
+                            classified_animal=classified_animal["classification"][0],
+                            probability=classified_animal["classification"][1],
+                        )
+                        session.add(orm_obj)
+                    session.commit()
+
             except SQLAlchemyError:
                 # Rollback the transaction in case of an error
                 session.rollback()
@@ -203,7 +225,7 @@ class DataBase(ABC):
                 # Handle other unexpected errors
                 session.rollback()
                 logger.exception(
-                    "Unexpected error occurred while updating detection event into db.."
+                    "Unexpected error occurred while updating detection event into db."
                 )
 
     @staticmethod
@@ -232,14 +254,14 @@ class DataBase(ABC):
         elif isinstance(domain_object, ActuationEvent):
             return ORMActuationEvent(
                 actuator_id=domain_object.actuator_id,
-                time_stamp=convert_to_datetime(domain_object.time_stamp),
+                time_stamp=domain_object.time_stamp,
                 detection_event=domain_object.detection_event,
                 command=domain_object.command,
             )
         elif isinstance(domain_object, DetectionEvent):
             return ORMDetectionEvent(
                 camera_id=domain_object.camera_id,
-                time_stamp=convert_to_datetime(domain_object.time_stamp),
+                time_stamp=domain_object.time_stamp,
                 original_image=domain_object.original_image,
                 detection_img_path=domain_object.detection_img_path,
                 detected_animals=json.dumps(
@@ -247,7 +269,6 @@ class DataBase(ABC):
                 ),  # detected_animals is a dict
                 classification=domain_object.classification,
                 classification_img_path=domain_object.classification_img_path,
-                classified_animals=json.dumps(domain_object.serialize_classified_animals()),
             )
         else:
             raise ValueError(f"Unsupported domain object type: {type(domain_object).__name__}")

@@ -32,6 +32,10 @@ def get_timestamp():
     return timestamp
 
 
+def get_precise_timestamp():
+    return datetime.datetime.now().replace(microsecond=0)  # To get milliseconds use microsecond = 0
+
+
 def convert_to_datetime(timestamp_str: str) -> datetime:
     """
     Converts a timestamp string into a datetime object.
