@@ -392,7 +392,7 @@ class DataBase(ABC):
 class MySQLDataBase(DataBase):
     """MySQL DataBase class"""
 
-    def __init__(self, host, port, username, database_name, enabled=False, version=__dbversion__):
+    def __init__(self, host, port, username, database_name, enabled=True, version=__dbversion__):
         super().__init__(host)
         self.type = DataBase.DBTypes.MYSQL
         self.port = port
@@ -469,7 +469,7 @@ class MySQLDataBase(DataBase):
 class MariaDBDataBase(DataBase):
     """MariaDB DataBase class"""
 
-    def __init__(self, host, port, username, database_name, enabled=False, version=__dbversion__):
+    def __init__(self, host, port, username, database_name, enabled=True, version=__dbversion__):
         super().__init__(host)
         self.type = DataBase.DBTypes.MARIADB
         self.port = port

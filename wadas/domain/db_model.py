@@ -119,7 +119,7 @@ class DetectionEvent(Base):
     time_stamp = Column(DateTime(timezone=True), nullable=False)
     original_image = Column(Text, nullable=False)
     detection_img_path = Column(Text, nullable=False)
-    detected_animals = Column(Text, nullable=False)  # Use JSON if supported
+    detected_animals = Column(Integer, nullable=False)  # Use JSON if supported
     classification = Column(Boolean, default=True)
     classification_img_path = Column(Text, nullable=True)
 
