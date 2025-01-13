@@ -56,7 +56,7 @@ class Camera(Base):
 class USBCamera(Camera):
     __tablename__ = "usb_cameras"
 
-    local_id = Column(Integer, ForeignKey("cameras.id"), primary_key=True)
+    local_id = Column(Integer, ForeignKey("cameras.id"), primary_key=True, name="id")
     name = Column(String, nullable=True)
     en_wadas_motion_detection = Column(Boolean, default=False)
     pid = Column(String, nullable=True)
@@ -69,7 +69,7 @@ class USBCamera(Camera):
 class FTPCamera(Camera):
     __tablename__ = "ftp_cameras"
 
-    local_id = Column(Integer, ForeignKey("cameras.id"), primary_key=True)
+    local_id = Column(Integer, ForeignKey("cameras.id"), primary_key=True, name="id")
     ftp_folder = Column(Text, nullable=False)
 
     __mapper_args__ = {"polymorphic_identity": DomainCamera.CameraTypes.FTP_CAMERA}
@@ -159,7 +159,7 @@ class ActuationEvent(Base):
 class User(Base):
     __tablename__ = "users"
 
-    local_id = Column(String, primary_key=True)
+    local_id = Column(String, primary_key=True, name="id")
     username = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True)
@@ -170,7 +170,7 @@ class User(Base):
 class DBMetadata(Base):
     __tablename__ = "db_metadata"
 
-    local_id = Column(Integer, primary_key=True, autoincrement=True)
+    local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
     version = Column(String, nullable=False, default=lambda: __dbversion__)
     applied_at = Column(DateTime(timezone=True), nullable=False)
     description = Column(Text, nullable=True)
