@@ -17,6 +17,7 @@
 # Date: 2025-01-04
 # Description: database module.
 
+import json
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -85,6 +86,7 @@ class DataBase(ABC):
 
         cls.wadas_db = db_instance
         cls.wadas_db_engine = create_engine(db_instance.get_connection_string())
+        logger.debug("Database initialized!")
         return cls.wadas_db_engine
 
     @classmethod
@@ -117,6 +119,7 @@ class DataBase(ABC):
     def destroy_instance(cls):
         """Destroy the current database instance and release resources."""
 
+        logger.debug("Destroying db isntance...")
         if cls.wadas_db_engine:
             try:
                 cls.wadas_db_engine.dispose()
@@ -141,6 +144,7 @@ class DataBase(ABC):
         """Generic method to run a query starting forma statement as input and handling
         exceptions (if any)."""
 
+        logger.debug("Running query: %s", str(stmt))
         if session := cls.create_session():
             try:
                 session.execute(stmt)
@@ -164,7 +168,9 @@ class DataBase(ABC):
     def insert_into_db(cls, domain_object):
         """Method to insert a WADAS object into the db."""
 
+        logger.debug("Inserting object into db...")
         if session := cls.create_session():
+            foreign_key = None
             if isinstance(domain_object, DetectionEvent):
                 # If Camera associated to the detection event is not in db abort insertion
                 if (
@@ -181,8 +187,11 @@ class DataBase(ABC):
                     .first()
                 ):
                     return
+                # If detection event associated to the actuation event is not in db abort insertion
+                if not (foreign_key := cls.get_detection_event_id(domain_object.detection_event)):
+                    return
             try:
-                orm_object = DataBase.domain_to_orm(domain_object)
+                orm_object = DataBase.domain_to_orm(domain_object, foreign_key)
                 session.add(orm_object)
                 session.commit()
                 logger.debug(
@@ -200,6 +209,7 @@ class DataBase(ABC):
         into an existing detection event object.
         """
 
+        logger.debug("Updating detection event db entry...")
         if session := cls.create_session():
 
             # Update detection_event table
@@ -220,16 +230,7 @@ class DataBase(ABC):
 
             try:
                 # Retrieve the id of the updated detection event
-                detection_event_id = (
-                    session.query(ORMDetectionEvent.local_id)
-                    .filter(
-                        and_(
-                            ORMDetectionEvent.camera_id == detection_event.camera_id,
-                            ORMDetectionEvent.time_stamp == detection_event.time_stamp,
-                        )
-                    )
-                    .scalar()
-                )  # Use scalar() to retrieve the value directly
+                detection_event_id = cls.get_detection_event_id(detection_event)
 
                 if detection_event_id:
                     # Create ClassifiedAnimals table entries and link them with detection event
@@ -257,6 +258,7 @@ class DataBase(ABC):
     def update_camera(cls, camera, delete_camera=False):
         """Method to reflect camera fields update in db."""
 
+        logger.debug("Updating camera db entry...")
         stmt = (
             (
                 update(ORMFTPCamera)
@@ -272,8 +274,26 @@ class DataBase(ABC):
         )
         cls.run_query(stmt)
 
+    @classmethod
+    def get_detection_event_id(cls, detection_event: DetectionEvent):
+        """Method to return detection event database id (primary key)"""
+
+        if session := cls.create_session():
+            return (
+                session.query(ORMDetectionEvent.local_id)
+                .filter(
+                    and_(
+                        ORMDetectionEvent.camera_id == detection_event.camera_id,
+                        ORMDetectionEvent.time_stamp == detection_event.time_stamp,
+                    )
+                )
+                .scalar()
+            )  # Use scalar() to retrieve the value directly
+        else:
+            return None
+
     @staticmethod
-    def domain_to_orm(domain_object):
+    def domain_to_orm(domain_object, foreign_key=None):
         """Convert a domain object to an ORM object."""
 
         if isinstance(domain_object, FTPCamera):
@@ -306,11 +326,13 @@ class DataBase(ABC):
                 creation_date=get_precise_timestamp(),
             )
         elif isinstance(domain_object, ActuationEvent):
+            command = json.loads(domain_object.command.value)
+
             return ORMActuationEvent(
                 actuator_id=domain_object.actuator_id,
                 time_stamp=domain_object.time_stamp,
-                detection_event=domain_object.detection_event,
-                command=domain_object.command,
+                detection_event_id=foreign_key,
+                command=next(iter(command)),
             )
         elif isinstance(domain_object, DetectionEvent):
             return ORMDetectionEvent(

@@ -24,14 +24,18 @@ import traceback
 import keyring
 import openvino as ov
 import yaml
-from domain.database import MariaDBDataBase
 from packaging.version import Version
 
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
-from wadas.domain.database import DataBase, MySQLDataBase, SQLiteDataBase
+from wadas.domain.database import (
+    DataBase,
+    MariaDBDataBase,
+    MySQLDataBase,
+    SQLiteDataBase,
+)
 from wadas.domain.email_notifier import EmailNotifier
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.feeder_actuator import FeederActuator

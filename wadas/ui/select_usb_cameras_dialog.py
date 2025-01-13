@@ -253,7 +253,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                         cameras.append(camera)
 
                         # If db is enabled, insert camera into db.
-                        if DataBase.get_instance():
+                        if (db:=DataBase.get_instance()) and db.enabled:
                             DataBase.insert_into_db(camera)
         else:
             # Save cameras
@@ -275,7 +275,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                     cameras.append(camera)
 
                     # If db is enabled, insert camera into db.
-                    if DataBase.get_instance():
+                    if (db:=DataBase.get_instance()) and db.enabled:
                         DataBase.insert_into_db(camera)
         self.accept()
 

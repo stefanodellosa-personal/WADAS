@@ -188,7 +188,8 @@ class OperationMode(QObject):
             return
 
     def _initialize_processes(self):
-        """Method to initialize the processes needed for the dectection"""
+        """Method to initialize the processes needed for the detection"""
+
         self.init_model()
         self.check_for_termination_requests()
         self._initialize_cameras()
@@ -196,10 +197,12 @@ class OperationMode(QObject):
 
     def send_notification(self, detection_event: DetectionEvent, message):
         """Method to send notification(s) trough Notifier class (and subclasses)"""
+
         Notifier.send_notifications(detection_event, message)
 
     def actuate(self, detection_event: DetectionEvent):
         """Method to trigger actuators associated to the camera, when enabled"""
+
         cur_camera = None
         for cur_camera in cameras:
             if cur_camera.id == detection_event.camera_id:
@@ -212,11 +215,12 @@ class OperationMode(QObject):
                     )
                     actuator.actuate(actuation_event)
                     # Insert actuation event into db, if enabled
-                    if db := DataBase.get_instance():
+                    if (db := DataBase.get_instance()) and db.enabled:
                         db.insert_into_db(actuation_event)
 
     def execution_completed(self):
         """Method to perform end of execution steps."""
+
         self.run_finished.emit()
         self.stop_ftp_server()
         logger.info("Done with processing.")
@@ -231,12 +235,14 @@ class OperationMode(QObject):
 
     def _scheduled_update_actuators_trigger(self):
         """Method to trigger the actuator(s) view update every 5 secs"""
+
         while not self.flag_stop_update_actuators_thread:
             time.sleep(5)
             self.update_actuator_status.emit()
 
     def start_actuator_server(self):
         """Method to start the HTTPS Actuator Server"""
+
         if Actuator.actuators and FastAPIActuatorServer.actuator_server:
             initialize_fastapi_logger()
             logger.info("Instantiating HTTPS Actuator server...")
@@ -247,6 +253,7 @@ class OperationMode(QObject):
 
     def start_update_actuators_thread(self):
         """Start the thread responsible for keeping the actuator(s) view updated"""
+
         update_thread = threading.Thread(target=self._scheduled_update_actuators_trigger)
         if update_thread:
             update_thread.start()
@@ -257,12 +264,14 @@ class OperationMode(QObject):
 
     def stop_update_actuators_thread(self):
         """Method to stop the thread responsible for keeping the actuator(s) view updated"""
+
         self.flag_stop_update_actuators_thread = True
         if self.actuators_view_thread:
             self.actuators_view_thread.join()
 
     def stop_actuator_server(self):
         """Method to Stop HTTPS Actuator Server"""
+
         if FastAPIActuatorServer.actuator_server:
             self.stop_update_actuators_thread()
             FastAPIActuatorServer.actuator_server.stop()

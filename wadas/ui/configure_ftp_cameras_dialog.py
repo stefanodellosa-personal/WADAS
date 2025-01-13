@@ -222,7 +222,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         self.add_camera_to_ftp_server(cur_ui_id, camera_ftp_path, camera_pass)
 
                         # Insert camera into db if enabled
-                        if DataBase.get_instance():
+                        if (db:=DataBase.get_instance()) and db.enabled:
                             DataBase.insert_into_db(camera)
 
             # Check for cameras old id (prior to modification) and remove them
@@ -234,15 +234,15 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             for camera in orphan_cameras:
                 cameras.remove(camera)
                 # Set camera as deleted into db
-                if db:=DataBase.get_instance():
-                    db.update_camera(camera, delete_camera=True)
+                if (db:=DataBase.get_instance()) and db.enabled:
+                    DataBase.update_camera(camera, delete_camera=True)
             for camera in tuple(cameras):
                 if camera.id in self.removed_cameras:
                     if camera.type == Camera.CameraTypes.FTP_CAMERA:
                         cameras.remove(camera)
                         # Set camera as deleted into db
-                        if db := DataBase.get_instance():
-                            db.update_camera(camera, delete_camera=True)
+                        if (db:=DataBase.get_instance()) and db.enabled:
+                            DataBase.update_camera(camera, delete_camera=True)
         else:
             # Insert new camera(s) in list (including the ones with modified id)
             for i in range(0, self.ui_camera_idx):
@@ -259,7 +259,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                     self.add_camera_to_ftp_server(cur_camera_id, cur_cam_ftp_dir, camera_pass)
 
                     # Insert camera into db if enabled
-                    if DataBase.get_instance():
+                    if (db:=DataBase.get_instance()) and db.enabled:
                         DataBase.insert_into_db(camera)
         self.accept()
 

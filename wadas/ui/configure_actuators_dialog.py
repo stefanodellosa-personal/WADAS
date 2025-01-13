@@ -330,14 +330,14 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                             actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enablement)
                             Actuator.actuators[actuator.id] = actuator
                             # If db is enabled,add actuator into db
-                            if db:=DataBase.get_instance():
-                                db.insert_into_db(actuator)
+                            if (db:=DataBase.get_instance()) and db.enabled:
+                                DataBase.insert_into_db(actuator)
                         elif cur_actuator_type == Actuator.ActuatorTypes.FEEDER.value:
                             actuator = FeederActuator(cur_actuator_id, cur_actuator_enablement)
                             Actuator.actuators[actuator.id] = actuator
                             # If db is enabled,add actuator into db
-                            if db := DataBase.get_instance():
-                                db.insert_into_db(actuator)
+                            if (db:=DataBase.get_instance()) and db.enabled:
+                                DataBase.insert_into_db(actuator)
             # If an actuator changes the id we have to remove previous orphaned ids from dictionary
             for key in list(Actuator.actuators.keys()):
                 if key not in actuators_id:
@@ -357,14 +357,14 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                         actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enablement)
                         Actuator.actuators[actuator.id] = actuator
                         # If db is enabled,add actuator into db
-                        if db := DataBase.get_instance():
-                            db.insert_into_db(actuator)
+                        if (db:=DataBase.get_instance()) and db.enabled:
+                            DataBase.insert_into_db(actuator)
                     elif cur_actuator_type == Actuator.ActuatorTypes.FEEDER.value:
                         actuator = FeederActuator(cur_actuator_id, cur_actuator_enablement)
                         Actuator.actuators[actuator.id] = actuator
                         # If db is enabled,add actuator into db
-                        if db := DataBase.get_instance():
-                            db.insert_into_db(actuator)
+                        if (db:=DataBase.get_instance()) and db.enabled:
+                            DataBase.insert_into_db(actuator)
         self.accept()
 
     def reject_and_close(self):
