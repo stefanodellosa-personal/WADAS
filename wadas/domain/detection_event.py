@@ -45,36 +45,6 @@ class DetectionEvent:
         self.classification_img_path = classification_img_path
         self.classified_animals = classified_animals
 
-    def serialize_detected_animals(self):
-        """Method to prepare JSON serialization to db of detected_animals attribute."""
-
-        return (
-            {
-                "xyxy": (
-                    self.detected_animals.xyxy.tolist()
-                    if hasattr(self.detected_animals, "xyxy")
-                    else None
-                ),
-                "class_id": (
-                    self.detected_animals.class_id.tolist()
-                    if hasattr(self.detected_animals, "class_id")
-                    else None
-                ),
-                "tracker_id": (
-                    self.detected_animals.tracker_id.tolist()
-                    if hasattr(self.detected_animals, "tracker_id")
-                    else None
-                ),
-                "labels": (
-                    self.detected_animals.labels
-                    if hasattr(self.detected_animals, "labels")
-                    else None
-                ),
-            }
-            if self.detected_animals
-            else {}
-        )
-
     def serialize_classified_animals(self):
         """Method to prepare JSON serialization to db of classified_animals attribute."""
 

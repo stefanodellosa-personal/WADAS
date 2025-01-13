@@ -35,6 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.database import DataBase
 from wadas.domain.usb_camera import USBCamera
 from wadas.ui.qt.ui_select_usb_cameras import Ui_DialogSelectUSBCameras
 from wadas.ui.motion_detection_dialog import MotionDetectionDialog
@@ -250,6 +251,10 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                             self.enumerated_usb_cameras[idx].path,
                         )
                         cameras.append(camera)
+
+                        # If db is enabled, insert camera into db.
+                        if DataBase.get_instance():
+                            DataBase.insert_into_db(camera)
         else:
             # Save cameras
             for idx in range(camera_number):
@@ -268,6 +273,10 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                         self.enumerated_usb_cameras[idx].path,
                     )
                     cameras.append(camera)
+
+                    # If db is enabled, insert camera into db.
+                    if DataBase.get_instance():
+                        DataBase.insert_into_db(camera)
         self.accept()
 
     def test_camera_stream(self, camera_idx):

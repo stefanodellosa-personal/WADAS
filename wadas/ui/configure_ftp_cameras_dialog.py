@@ -184,7 +184,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                     camera.ftp_folder = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id)
                                     camera_changed = True
 
-                                # check if password has been changed
+                                # Check if password has been changed
                                 cur_pass = self.get_camera_pass(i)
                                 if cur_pass:
                                     credentials = keyring.get_credential(
@@ -221,6 +221,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         # Add FTP Camera to FTP server users list
                         self.add_camera_to_ftp_server(cur_ui_id, camera_ftp_path, camera_pass)
 
+                        # Insert camera into db if enabled
+                        if DataBase.get_instance():
+                            DataBase.insert_into_db(camera)
+
             # Check for cameras old id (prior to modification) and remove them
             orphan_cameras = (
                 camera
@@ -229,10 +233,16 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             )
             for camera in orphan_cameras:
                 cameras.remove(camera)
+                # Set camera as deleted into db
+                if db:=DataBase.get_instance():
+                    db.update_camera(camera, delete_camera=True)
             for camera in tuple(cameras):
                 if camera.id in self.removed_cameras:
                     if camera.type == Camera.CameraTypes.FTP_CAMERA:
                         cameras.remove(camera)
+                        # Set camera as deleted into db
+                        if db := DataBase.get_instance():
+                            db.update_camera(camera, delete_camera=True)
         else:
             # Insert new camera(s) in list (including the ones with modified id)
             for i in range(0, self.ui_camera_idx):
@@ -299,7 +309,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         return camera_pass_ln.text() if camera_pass_ln else False
 
     def get_camera_enablement(self, row):
-        """Method to get camera enablement status from UI programmmatically by row number"""
+        """Method to get camera enablement status from UI programmatically by row number"""
 
         camera_enablement = self.findChild(QCheckBox, f"checkBox_enable_{row}")
         return camera_enablement.isChecked() if camera_enablement else None

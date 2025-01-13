@@ -24,6 +24,7 @@ import traceback
 import keyring
 import openvino as ov
 import yaml
+from domain.database import MariaDBDataBase
 from packaging.version import Version
 
 from wadas._version import __version__
@@ -253,15 +254,16 @@ def load_configuration_from_file(file_path):
         if database_cfg := wadas_config["database"]:
             match database_cfg["type"]:
                 case DataBase.DBTypes.SQLITE.value:
-                    db_instance = SQLiteDataBase.deserialize(database_cfg)
+                    SQLiteDataBase.deserialize(database_cfg)
                 case DataBase.DBTypes.MYSQL.value:
-                    db_instance = MySQLDataBase.deserialize(database_cfg)
+                    MySQLDataBase.deserialize(database_cfg)
+                case DataBase.DBTypes.MARIADB.value:
+                    MariaDBDataBase.deserialize(database_cfg)
                 case _:
                     logger.error("Unrecognized Database Type")
                     load_status["errors_on_load"] = True
                     load_status["errors_log"] = "Unrecognized Database Type"
                     return load_status
-            DataBase.initialize(db_instance)
 
     except Exception as e:
         load_status["errors_on_load"] = True

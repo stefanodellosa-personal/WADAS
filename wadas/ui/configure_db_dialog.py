@@ -165,7 +165,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
 
     def new_mysql_db(self):
         """Method to create and initialize a new MySQL DB with dialog input fields"""
-        mysql_db = MySQLDataBase(self.ui.lineEdit_db_host.text(),
+
+        MySQLDataBase(self.ui.lineEdit_db_host.text(),
                                  int(self.ui.lineEdit_db_port.text()),
                                   self.ui.lineEdit_db_username.text(),
                                   self.ui.lineEdit_db_name.text(),
@@ -175,18 +176,16 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.lineEdit_db_username.text(),
             self.ui.lineEdit_db_password.text(),
         )
-        DataBase.initialize(mysql_db)
 
     def new_sqlite_db(self):
         """Method to create and initialize a new SQLite DB with dialog input fields"""
 
-        sqlite_db = SQLiteDataBase(self.ui.lineEdit_db_host.text(), self.ui.checkBox.isChecked())
-        DataBase.initialize(sqlite_db)
+        SQLiteDataBase(self.ui.lineEdit_db_host.text(), self.ui.checkBox.isChecked())
 
     def new_mariadb_db(self):
         """Method to create and initialize a new MariaDB with dialog input fields"""
 
-        maria_db = MariaDBDataBase(self.ui.lineEdit_db_host.text(),
+        MariaDBDataBase(self.ui.lineEdit_db_host.text(),
                                  int(self.ui.lineEdit_db_port.text()),
                                   self.ui.lineEdit_db_username.text(),
                                   self.ui.lineEdit_db_name.text(),
@@ -196,7 +195,6 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.lineEdit_db_username.text(),
             self.ui.lineEdit_db_password.text(),
         )
-        DataBase.initialize(maria_db)
 
     def create_db(self):
         """Method to trigger new db creation"""

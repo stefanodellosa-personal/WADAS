@@ -16,7 +16,7 @@
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2025-01-04
 # Description: database module.
-import json
+
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -46,6 +46,7 @@ from wadas.domain.feeder_actuator import FeederActuator
 from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.usb_camera import USBCamera
+from wadas.domain.utils import get_precise_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -124,21 +125,46 @@ class DataBase(ABC):
         cls.wadas_db_engine = None
         cls.wadas_db = None
 
-    @staticmethod
-    def create_session():
+    @classmethod
+    def create_session(cls):
         """Method to create a session to perform operation with the db"""
 
-        if engine := DataBase.get_engine():
+        if engine := cls.get_engine():
             Session = sessionmaker(bind=engine)
             return Session()
         else:
             logger.error("Unable to create a session as DB engine is not initialized.")
             return None
 
-    def insert_into_db(self, domain_object):
+    @classmethod
+    def run_query(cls, stmt):
+        """Generic method to run a query starting forma statement as input and handling
+        exceptions (if any)."""
+
+        if session := cls.create_session():
+            try:
+                session.execute(stmt)
+                session.commit()
+            except SQLAlchemyError:
+                # Rollback the transaction in case of an error
+                session.rollback()
+                logger.exception(
+                    "SQLAlchemy error occurred while running the query: %s.", str(stmt)
+                )
+            except Exception:
+                # Handle other unexpected errors
+                session.rollback()
+                logger.exception(
+                    "SQLAlchemy error occurred while running the query: %s.", str(stmt)
+                )
+        else:
+            logger.error("DB session not initialized.")
+
+    @classmethod
+    def insert_into_db(cls, domain_object):
         """Method to insert a WADAS object into the db."""
 
-        if session := DataBase.create_session():
+        if session := cls.create_session():
             if isinstance(domain_object, DetectionEvent):
                 # If Camera associated to the detection event is not in db abort insertion
                 if (
@@ -168,33 +194,32 @@ class DataBase(ABC):
                     "Error while inserting object ''%s'' into db.", type(domain_object).__name__
                 )
 
-    @staticmethod
-    def update_detection_event(detection_event: DetectionEvent):
+    def update_detection_event(cls, detection_event: DetectionEvent):
         """Update fields of a detection_events record in db.
         This is typically the case when classification details
         into an existing detection event object.
         """
 
-        if session := DataBase.create_session():
-            try:
-                # Update detection_event table
-                stmt = (
-                    update(ORMDetectionEvent)
-                    .where(
-                        and_(
-                            ORMDetectionEvent.camera_id == detection_event.camera_id,
-                            ORMDetectionEvent.time_stamp == detection_event.time_stamp,
-                        )
-                    )
-                    .values(
-                        classification=detection_event.classification,
-                        classification_img_path=detection_event.classification_img_path,
+        if session := cls.create_session():
+
+            # Update detection_event table
+            stmt = (
+                update(ORMDetectionEvent)
+                .where(
+                    and_(
+                        ORMDetectionEvent.camera_id == detection_event.camera_id,
+                        ORMDetectionEvent.time_stamp == detection_event.time_stamp,
                     )
                 )
-                session.execute(stmt)
-                session.commit()
+                .values(
+                    classification=detection_event.classification,
+                    classification_img_path=detection_event.classification_img_path,
+                )
+            )
+            cls.run_query(stmt)
 
-                # Retrieve the local_id of the updated detection event
+            try:
+                # Retrieve the id of the updated detection event
                 detection_event_id = (
                     session.query(ORMDetectionEvent.local_id)
                     .filter(
@@ -228,6 +253,25 @@ class DataBase(ABC):
                     "Unexpected error occurred while updating detection event into db."
                 )
 
+    @classmethod
+    def update_camera(cls, camera, delete_camera=False):
+        """Method to reflect camera fields update in db."""
+
+        stmt = (
+            (
+                update(ORMFTPCamera)
+                .where(ORMFTPCamera.camera_id == camera.camera_id)
+                .values(enabled=camera.enabled)
+            )
+            if not delete_camera
+            else (
+                update(ORMFTPCamera)
+                .where(ORMFTPCamera.camera_id == camera.camera_id)
+                .values(deleted_time=get_precise_timestamp())
+            )
+        )
+        cls.run_query(stmt)
+
     @staticmethod
     def domain_to_orm(domain_object):
         """Convert a domain object to an ORM object."""
@@ -237,6 +281,7 @@ class DataBase(ABC):
                 camera_id=domain_object.id,
                 enabled=domain_object.enabled,
                 ftp_folder=domain_object.ftp_folder,
+                creation_date=get_precise_timestamp(),
             )
         elif isinstance(domain_object, USBCamera):
             return ORMUSBCamera(
@@ -246,11 +291,20 @@ class DataBase(ABC):
                 pid=domain_object.pid,
                 vid=domain_object.vid,
                 path=domain_object.path,
+                creation_date=get_precise_timestamp(),
             )
         elif isinstance(domain_object, RoadSignActuator):
-            return ORMRoadSignActuator(actuator_id=domain_object.id, enabled=domain_object.enabled)
+            return ORMRoadSignActuator(
+                actuator_id=domain_object.id,
+                enabled=domain_object.enabled,
+                creation_date=get_precise_timestamp(),
+            )
         elif isinstance(domain_object, FeederActuator):
-            return ORMFeederActuator(actuator_id=domain_object.id, enabled=domain_object.enabled)
+            return ORMFeederActuator(
+                actuator_id=domain_object.id,
+                enabled=domain_object.enabled,
+                creation_date=get_precise_timestamp(),
+            )
         elif isinstance(domain_object, ActuationEvent):
             return ORMActuationEvent(
                 actuator_id=domain_object.actuator_id,
@@ -264,9 +318,9 @@ class DataBase(ABC):
                 time_stamp=domain_object.time_stamp,
                 original_image=domain_object.original_image,
                 detection_img_path=domain_object.detection_img_path,
-                detected_animals=json.dumps(
-                    domain_object.serialize_detected_animals()
-                ),  # detected_animals is a dict
+                detected_animals=len(
+                    domain_object.detected_animals["detections"].xyxy
+                ),  # detected_animals count
                 classification=domain_object.classification,
                 classification_img_path=domain_object.classification_img_path,
             )
@@ -324,6 +378,8 @@ class MySQLDataBase(DataBase):
         self.database_name = database_name
         self.enabled = enabled
         self.version = version
+
+        DataBase.initialize(self)
 
     def get_password(self):
         """Retrieve the password from the keyring."""
@@ -400,6 +456,8 @@ class MariaDBDataBase(DataBase):
         self.enabled = enabled
         self.version = version
 
+        DataBase.initialize(self)
+
     def get_password(self):
         """Retrieve the password from the keyring."""
 
@@ -471,6 +529,8 @@ class SQLiteDataBase(DataBase):
         self.type = DataBase.DBTypes.SQLITE
         self.enabled = enabled
         self.version = version
+
+        DataBase.initialize(self)
 
     def get_connection_string(self):
         """Generate the connection string based on the database type."""
