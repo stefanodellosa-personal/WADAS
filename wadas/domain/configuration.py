@@ -80,6 +80,7 @@ def load_configuration_from_file(file_path):
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
+        "uuid": "",
     }
 
     with open(str(file_path)) as file_:
@@ -88,6 +89,9 @@ def load_configuration_from_file(file_path):
 
     # Applying configuration to WADAS from config file values
     try:
+        # Uuid
+        load_status["uuid"] = wadas_config["uuid"]
+
         # Version
         config_file_version = Version(wadas_config["version"].lstrip("v"))
         load_status["config_version"] = config_file_version
@@ -280,7 +284,7 @@ def load_configuration_from_file(file_path):
     return load_status
 
 
-def save_configuration_to_file(file_):
+def save_configuration_to_file(file_, prj_uuid):
     """Save configuration to YAML file."""
 
     logger.info("Saving configuration to file...")
@@ -313,6 +317,7 @@ def save_configuration_to_file(file_):
 
     # Build data structure to serialize
     data = {
+        "uuid:": prj_uuid,
         "version": __version__,
         "notification": notification or "",
         "cameras": cameras_to_dict,

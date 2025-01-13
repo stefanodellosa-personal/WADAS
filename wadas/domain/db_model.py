@@ -19,7 +19,7 @@
 
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as SqlEnum
-from sqlalchemy import Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import Float, ForeignKey, Index, Integer, String, Table, Text
 from sqlalchemy.orm import declarative_base, relationship
 
 from wadas._version import __dbversion__
@@ -33,18 +33,30 @@ Base = declarative_base()
 Base = declarative_base()
 
 
+camera_actuator_association = Table(
+    "camera_actuator_association",
+    Base.metadata,
+    Column("camera_id", Integer, ForeignKey("cameras.id"), primary_key=True),
+    Column("actuator_id", Integer, ForeignKey("actuators.id"), primary_key=True),
+)
+
+
 class Camera(Base):
     __tablename__ = "cameras"
 
-    local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")  # DB id
-    camera_id = Column(String, nullable=False, unique=True, name="name")  # Unique external ID
+    local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
+    camera_id = Column(String, nullable=False, unique=True, name="name")
     type = Column(SqlEnum(DomainCamera.CameraTypes), nullable=False)
     enabled = Column(Boolean, default=False)
-    actuators = relationship("Actuator", back_populates="camera")
     creation_date = Column(DateTime(timezone=True), nullable=False)
     deletion_date = Column(DateTime(timezone=True), nullable=True)
     detection_events = relationship(
         "DetectionEvent", back_populates="camera", cascade="all, delete-orphan"
+    )
+    actuators = relationship(
+        "Actuator",
+        secondary=camera_actuator_association,
+        back_populates="cameras",
     )
 
     __mapper_args__ = {
@@ -78,19 +90,19 @@ class FTPCamera(Camera):
 class Actuator(Base):
     __tablename__ = "actuators"
 
-    local_id = Column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )  # DB id and primary key
-    actuator_id = Column(String, nullable=False, unique=True, name="name")  # DB unique identifier
+    local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
+    actuator_id = Column(String, nullable=False, unique=True, name="name")
     type = Column(SqlEnum(DomainActuator.ActuatorTypes), nullable=False)
     enabled = Column(Boolean, default=False)
     creation_date = Column(DateTime(timezone=True), nullable=False)
     deletion_date = Column(DateTime(timezone=True), nullable=True)
-    camera_id = Column(Integer, ForeignKey("cameras.id"), nullable=True)  # Relationship with Camera
-
-    camera = relationship("Camera", back_populates="actuators")
     actuation_events = relationship(
         "ActuationEvent", back_populates="actuator", cascade="all, delete-orphan"
+    )
+    cameras = relationship(
+        "Camera",
+        secondary=camera_actuator_association,
+        back_populates="actuators",
     )
 
     __mapper_args__ = {

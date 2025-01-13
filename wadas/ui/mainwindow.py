@@ -25,6 +25,7 @@ import sys
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 from packaging.version import Version
+import uuid
 
 import keyring
 from PySide6 import QtCore, QtGui
@@ -111,7 +112,7 @@ class MainWindow(QMainWindow):
             "valid_whatsapp_keyring"
              ]
         )
-
+        self.uuid = uuid.uuid4()
         self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
 
         # Connect Actions
@@ -619,6 +620,7 @@ class MainWindow(QMainWindow):
                 return
 
             self.configuration_file_name = file_name[0]
+            self.uuid = self.load_status["uuid"]
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()

@@ -193,6 +193,16 @@ class DataBase(ABC):
             try:
                 orm_object = DataBase.domain_to_orm(domain_object, foreign_key)
                 session.add(orm_object)
+
+                # If instance is a camera, handle relationship with actuators
+                if isinstance(domain_object, FTPCamera) or isinstance(domain_object, USBCamera):
+                    for actuator in domain_object.actuators:
+                        orm_actuator = (
+                            session.query(ORMActuator).filter_by(actuator_id=actuator.id).first()
+                        )
+                        if orm_actuator:
+                            orm_object.actuators.append(orm_actuator)
+
                 session.commit()
                 logger.debug(
                     "Object '%s' successfully added to the db!", type(domain_object).__name__
@@ -273,6 +283,35 @@ class DataBase(ABC):
             )
         )
         cls.run_query(stmt)
+
+    @classmethod
+    def add_actuator_to_camera(cls, camera, actuator):
+        """Method to add new actuator to a given camera actuators list."""
+
+        logger.debug("Adding actuator %s to camera %s in db.", actuator.id, camera.id)
+        if session := cls.create_session():
+            try:
+                # Retrieve camera and actuator db instances
+                camera = session.query(ORMCamera).filter_by(camera_id=camera.id).one()
+                actuator = session.query(ORMActuator).filter_by(actuator_id=actuator.id).one()
+
+                # Add the actuator to the camera actuators list
+                camera.actuators.append(actuator)
+                session.commit()
+            except SQLAlchemyError:
+                # Rollback the transaction in case of an error
+                session.rollback()
+                logger.exception(
+                    "SQLAlchemy error occurred while updating actuator "
+                    "association to camera into db."
+                )
+            except Exception:
+                # Handle other unexpected errors
+                session.rollback()
+                logger.exception(
+                    "Unexpected error occurred while updating actuator "
+                    "association to camera into db."
+                )
 
     @classmethod
     def get_detection_event_id(cls, detection_event: DetectionEvent):

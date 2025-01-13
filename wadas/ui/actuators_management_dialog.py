@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
 )
 
 from wadas.domain.actuator import Actuator
+from wadas.domain.database import DataBase
 
 
 class DialogCameraActuatorManagement(QDialog):
@@ -115,6 +116,9 @@ class DialogCameraActuatorManagement(QDialog):
     def apply_changes(self):
         """Apply changes to the camera's actuator list and accept the dialog."""
         # Changes are directly applied to self.camera.actuators, so we just accept the dialog
+        for actuator in self.camera.actuators:
+            if not actuator in self.original_actuators:
+                DataBase.add_actuator_to_camera(self.camera, actuator)
         self.accept()
 
     def reject(self):

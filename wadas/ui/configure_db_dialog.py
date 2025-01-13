@@ -210,12 +210,13 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         if db := DataBase.get_instance():
             db.create_database()
             # Populate DB with existing cameras and actuators
-            if cameras:
-                for camera in cameras:
-                    db.insert_into_db(camera)
             if Actuator.actuators:
                 for actuator_id in Actuator.actuators:
                     db.insert_into_db(Actuator.actuators[actuator_id])
+            if cameras:
+                for camera in cameras:
+                    db.insert_into_db(camera)
+
             self.show_create_status(True)
         else:
             self.show_create_status(False)

@@ -58,6 +58,7 @@ ftps_server: []
 notification: []
 operation_mode:
 version: v0.1.0
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 """,
 )
 def test_load_incompatible_older_version_config(mock_file, init):
@@ -69,6 +70,7 @@ def test_load_incompatible_older_version_config(mock_file, init):
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
     }
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is None
@@ -104,6 +106,7 @@ ftps_server: []
 notification: []
 operation_mode:
 version: {__version__}
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 """,
 )
 def test_load_empty_config(mock_file, init):
@@ -115,6 +118,7 @@ def test_load_empty_config(mock_file, init):
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
     }
     assert Notifier.notifiers == {"Email": None, "WhatsApp": None}
     assert FTPsServer.ftps_server is None
@@ -133,7 +137,7 @@ def test_load_empty_config(mock_file, init):
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
 def test_save_empty_config(mock_file, init):
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -150,7 +154,9 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
+
 """
     )
 
