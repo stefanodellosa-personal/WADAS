@@ -35,7 +35,7 @@ module_dir_path = os.path.dirname(os.path.abspath(__file__))
 class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     """Class to insert DB configuration to enable WADAS for database persistency."""
 
-    def __init__(self):
+    def __init__(self, prj_uuid):
         super(ConfigureDBDialog, self).__init__()
         self.ui = Ui_ConfigureDBDialog()
         self.ui.setupUi(self)
@@ -57,6 +57,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.lineEdit_db_password.textChanged.connect(self.validate)
 
         self.init_dialog()
+        self.uuid = prj_uuid
 
     def init_dialog(self):
         """Method to initialize dialog with saved configuration data"""
@@ -208,16 +209,13 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                 self.new_mariadb_db()
 
         if db := DataBase.get_instance():
-            db.create_database()
+            create = db.create_database()
             # Populate DB with existing cameras and actuators
-            if Actuator.actuators:
-                for actuator_id in Actuator.actuators:
-                    db.insert_into_db(Actuator.actuators[actuator_id])
-            if cameras:
-                for camera in cameras:
-                    db.insert_into_db(camera)
-
-            self.show_create_status(True)
+            if create:
+                DataBase.populate_db(self.uuid)
+                self.show_create_status(True)
+            else:
+                self.show_create_status(False)
         else:
             self.show_create_status(False)
 

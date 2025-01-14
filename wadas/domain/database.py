@@ -32,11 +32,14 @@ from sqlalchemy.orm import sessionmaker
 
 from wadas._version import __dbversion__
 from wadas.domain.actuation_event import ActuationEvent
+from wadas.domain.actuator import Actuator
+from wadas.domain.camera import cameras
 from wadas.domain.db_model import ActuationEvent as ORMActuationEvent
 from wadas.domain.db_model import Actuator as ORMActuator
 from wadas.domain.db_model import Base
 from wadas.domain.db_model import Camera as ORMCamera
 from wadas.domain.db_model import ClassifiedAnimals as ORMClassifiedAnimals
+from wadas.domain.db_model import DBMetadata as ORMDBMetadata
 from wadas.domain.db_model import DetectionEvent as ORMDetectionEvent
 from wadas.domain.db_model import FeederActuator as ORMFeederActuator
 from wadas.domain.db_model import FTPCamera as ORMFTPCamera
@@ -50,6 +53,14 @@ from wadas.domain.usb_camera import USBCamera
 from wadas.domain.utils import get_precise_timestamp
 
 logger = logging.getLogger(__name__)
+
+
+class DBMetadata:
+    def __init__(self, description: str, project_uuid):
+        self.version = __dbversion__
+        self.applied_at = get_precise_timestamp()
+        self.description = description
+        self.project_uuid = project_uuid
 
 
 class DataBase(ABC):
@@ -385,6 +396,13 @@ class DataBase(ABC):
                 classification=domain_object.classification,
                 classification_img_path=domain_object.classification_img_path,
             )
+        elif isinstance(domain_object, DBMetadata):
+            return ORMDBMetadata(
+                version=domain_object.version,
+                applied_at=domain_object.applied_at,
+                description=domain_object.description,
+                project_uuid=str(domain_object.project_uuid),
+            )
         else:
             raise ValueError(f"Unsupported domain object type: {type(domain_object).__name__}")
 
@@ -417,6 +435,21 @@ class DataBase(ABC):
         except AttributeError:
             logger.exception("Error mapping ORM object to domain.")
             raise
+
+    @classmethod
+    def populate_db(cls, uuid):
+        """Method to create a db and optionally populate it with existing domain objects"""
+
+        # Set db metadata
+        db_metadata = DBMetadata("WADAS database", uuid)
+        cls.insert_into_db(db_metadata)
+        # Populate DB with existing cameras and actuators
+        if Actuator.actuators:
+            for actuator_id in Actuator.actuators:
+                cls.insert_into_db(Actuator.actuators[actuator_id])
+        if cameras:
+            for camera in cameras:
+                cls.insert_into_db(camera)
 
     @abstractmethod
     def serialize(self):

@@ -186,6 +186,7 @@ class DBMetadata(Base):
     version = Column(String, nullable=False, default=lambda: __dbversion__)
     applied_at = Column(DateTime(timezone=True), nullable=False)
     description = Column(Text, nullable=True)
+    project_uuid = Column(Text, nullable=False)
 
 
 # Indexes

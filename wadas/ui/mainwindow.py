@@ -585,7 +585,7 @@ class MainWindow(QMainWindow):
             logger.error("No configuration file provided. Aborting save.")
             return
         else:
-            save_configuration_to_file(self.configuration_file_name)
+            save_configuration_to_file(self.configuration_file_name, self.uuid)
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.set_recent_configuration(self.configuration_file_name)
@@ -620,7 +620,7 @@ class MainWindow(QMainWindow):
                 return
 
             self.configuration_file_name = file_name[0]
-            self.uuid = self.load_status["uuid"]
+            self.uuid = uuid.UUID(self.load_status["uuid"])
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()
@@ -728,7 +728,7 @@ class MainWindow(QMainWindow):
     def configure_database(self):
         """Method to trigger DB configuration dialog"""
 
-        if (configure_db_dlg := ConfigureDBDialog()).exec():
+        if (ConfigureDBDialog(self.uuid)).exec():
             logger.info("Database configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
