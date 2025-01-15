@@ -554,6 +554,10 @@ class DataBase(ABC):
     def deserialize(cls, data):
         """Method to deserialize DataBase object from file."""
 
+        # If db is already initialized, destroy it before new init.
+        if cls.get_instance():
+            cls.destroy_instance()
+
         cfg_db_type = data["type"]
         match cfg_db_type:
             case DataBase.DBTypes.SQLITE.value:
