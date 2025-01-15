@@ -167,11 +167,14 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def new_mysql_db(self):
         """Method to create and initialize a new MySQL DB with dialog input fields"""
 
-        MySQLDataBase(self.ui.lineEdit_db_host.text(),
-                                 int(self.ui.lineEdit_db_port.text()),
-                                  self.ui.lineEdit_db_username.text(),
-                                  self.ui.lineEdit_db_name.text(),
-                                  self.ui.checkBox.isChecked())
+        DataBase.initialize(
+            DataBase.DBTypes.MYSQL,
+            self.ui.lineEdit_db_host.text(),
+            int(self.ui.lineEdit_db_port.text()),
+            self.ui.lineEdit_db_username.text(),
+            self.ui.lineEdit_db_name.text(),
+            self.ui.checkBox.isChecked()
+        )
         keyring.set_password(
             f"WADAS_DB_MySQL",
             self.ui.lineEdit_db_username.text(),
@@ -181,16 +184,26 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def new_sqlite_db(self):
         """Method to create and initialize a new SQLite DB with dialog input fields"""
 
-        SQLiteDataBase(self.ui.lineEdit_db_host.text(), self.ui.checkBox.isChecked())
+        DataBase.initialize(
+            DataBase.DBTypes.SQLITE,
+            self.ui.lineEdit_db_host.text(),
+            None,
+            "",
+            "",
+            self.ui.checkBox.isChecked()
+        )
 
     def new_mariadb_db(self):
         """Method to create and initialize a new MariaDB with dialog input fields"""
 
-        MariaDBDataBase(self.ui.lineEdit_db_host.text(),
-                                 int(self.ui.lineEdit_db_port.text()),
-                                  self.ui.lineEdit_db_username.text(),
-                                  self.ui.lineEdit_db_name.text(),
-                                  self.ui.checkBox.isChecked())
+        DataBase.initialize(
+            DataBase.DBTypes.MARIADB,
+            self.ui.lineEdit_db_host.text(),
+            int(self.ui.lineEdit_db_port.text()),
+            self.ui.lineEdit_db_username.text(),
+            self.ui.lineEdit_db_name.text(),
+            self.ui.checkBox.isChecked()
+        )
         keyring.set_password(
             f"WADAS_DB_MariaDB",
             self.ui.lineEdit_db_username.text(),
@@ -200,13 +213,22 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def create_db(self):
         """Method to trigger new db creation"""
 
+        db_type = None
         if self.ui.radioButton_SQLite.isChecked():
-            if not DataBase.get_instance():
-                self.new_sqlite_db()
-            elif self.ui.radioButton_MySQL.isChecked():
-                self.new_mysql_db()
-            elif self.ui.radioButton_MariaDB.isChecked():
-                self.new_mariadb_db()
+                db_type = DataBase.DBTypes.SQLITE
+        elif self.ui.radioButton_MySQL.isChecked():
+            db_type = DataBase.DBTypes.MYSQL
+        elif self.ui.radioButton_MariaDB.isChecked():
+            db_type = DataBase.DBTypes.MARIADB
+
+        port_str = self.ui.lineEdit_db_port.text()
+        DataBase.initialize(
+            db_type,
+            self.ui.lineEdit_db_host.text(),
+            int(port_str) if port_str.strip() else 0,
+            self.ui.lineEdit_db_username.text(),
+            self.ui.lineEdit_db_name.text()
+        )
 
         if db := DataBase.get_instance():
             create = db.create_database()
@@ -219,6 +241,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         else:
             self.show_create_status(False)
 
+        # DB instance is saved only when OK button is pressed.
         DataBase.destroy_instance()
 
     def show_create_status(self, success: bool):

@@ -30,12 +30,7 @@ from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
-from wadas.domain.database import (
-    DataBase,
-    MariaDBDataBase,
-    MySQLDataBase,
-    SQLiteDataBase,
-)
+from wadas.domain.database import DataBase
 from wadas.domain.email_notifier import EmailNotifier
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.feeder_actuator import FeederActuator
@@ -260,18 +255,11 @@ def load_configuration_from_file(file_path):
 
         # DataBase
         if database_cfg := wadas_config["database"]:
-            match database_cfg["type"]:
-                case DataBase.DBTypes.SQLITE.value:
-                    SQLiteDataBase.deserialize(database_cfg)
-                case DataBase.DBTypes.MYSQL.value:
-                    MySQLDataBase.deserialize(database_cfg)
-                case DataBase.DBTypes.MARIADB.value:
-                    MariaDBDataBase.deserialize(database_cfg)
-                case _:
-                    logger.error("Unrecognized Database Type")
-                    load_status["errors_on_load"] = True
-                    load_status["errors_log"] = "Unrecognized Database Type"
-                    return load_status
+            if not DataBase.deserialize(database_cfg):
+                logger.error("Unrecognized Database Type")
+                load_status["errors_on_load"] = True
+                load_status["errors_log"] = "Unrecognized Database Type"
+                return load_status
 
     except Exception as e:
         load_status["errors_on_load"] = True

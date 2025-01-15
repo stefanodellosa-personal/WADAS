@@ -24,7 +24,7 @@ from enum import Enum
 
 import keyring
 from pymysql import OperationalError
-from sqlalchemy import and_, create_engine, update
+from sqlalchemy import and_, create_engine, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import OperationalError as SQLiteOperationalError
 from sqlalchemy.exc import SQLAlchemyError
@@ -74,31 +74,81 @@ class DataBase(ABC):
         MYSQL = "MySQL"
         MARIADB = "MariaDB"
 
-    def __init__(self, host):
-        self.host = host
-        self.type = None
-        self.enabled = True
-        self.version = None
+    def __init__(self, host, enabled=True, version=__dbversion__):
+        """Constructor is not public, no external code should call this directly"""
 
-    @abstractmethod
-    def get_connection_string(self):
-        """Generate the connection string based on the database type."""
+        if DataBase.wadas_db is not None:
+            raise RuntimeError("Database instance already created.")
+
+        self.host = host
+        self.enabled = enabled
+        self.version = version
 
     @classmethod
-    def initialize(cls, db_instance):
-        """
-        Initialize the singleton database instance and its engine.
+    def _create_instance(
+        cls,
+        db_type: DBTypes,
+        host,
+        port,
+        username,
+        database_name,
+        enabled=True,
+        version=__dbversion__,
+    ):
+        """Create the database instance."""
 
-        :param db_instance: An instance of a subclass of DataBase
-        (e.g., MySQLDataBase or SQLiteDataBase).
-        """
+        if not host:
+            return False
+
+        # Create the appropriate database instance
+        match db_type:
+            case DataBase.DBTypes.MYSQL:
+
+                return (
+                    MySQLDataBase(host, port, username, database_name, enabled, version)
+                    if (port and username and database_name)
+                    else False
+                )
+            case DataBase.DBTypes.MARIADB:
+                return (
+                    MariaDBDataBase(host, port, username, database_name, enabled, version)
+                    if (port and username and database_name)
+                    else False
+                )
+            case DataBase.DBTypes.SQLITE:
+                return SQLiteDataBase(host, enabled, version)
+            case _:
+                logger.error("Unsupported database type %s!", db_type)
+                raise ValueError(f"Unsupported database type: {db_type}")
+
+    @classmethod
+    def initialize(
+        cls,
+        db_type: DBTypes,
+        host,
+        port,
+        username,
+        database_name,
+        enabled=True,
+        version=__dbversion__,
+    ):
+        """Initialize the singleton database instance."""
+
         if cls.wadas_db is not None:
-            raise RuntimeError("The database has already been initialized.")
+            logger.error("Database is already initialized.")
+            return False
 
-        cls.wadas_db = db_instance
-        cls.wadas_db_engine = create_engine(db_instance.get_connection_string())
-        logger.debug("Database initialized!")
-        return cls.wadas_db_engine
+        sb_instance = cls._create_instance(
+            db_type, host, port, username, database_name, enabled=True, version=__dbversion__
+        )
+        if sb_instance:
+            cls.wadas_db = sb_instance
+        else:
+            return False
+
+        cls.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
+        logger.info("%s database initialized.", db_type.value)
+        return True
 
     @classmethod
     def get_engine(cls):
@@ -109,6 +159,7 @@ class DataBase(ABC):
         """
         if cls.wadas_db_engine is None:
             if cls.wadas_db is None:
+                logger.error("The database and db engine have not been initialized.")
                 raise RuntimeError("The database and db engine have not been initialized.")
             else:
                 logger.debug("Initializing engine...")
@@ -124,6 +175,7 @@ class DataBase(ABC):
         """
         if cls.wadas_db is None:
             logger.debug("The database has not been initialized. Call 'initialize' first.")
+            return None
         return cls.wadas_db
 
     @classmethod
@@ -299,30 +351,33 @@ class DataBase(ABC):
     def add_actuator_to_camera(cls, camera, actuator):
         """Method to add new actuator to a given camera actuators list."""
 
-        logger.debug("Adding actuator %s to camera %s in db.", actuator.id, camera.id)
-        if session := cls.create_session():
-            try:
-                # Retrieve camera and actuator db instances
-                camera = session.query(ORMCamera).filter_by(camera_id=camera.id).one()
-                actuator = session.query(ORMActuator).filter_by(actuator_id=actuator.id).one()
+        if cls.get_instance():
+            logger.debug("Adding actuator %s to camera %s in db.", actuator.id, camera.id)
+            if session := cls.create_session():
+                try:
+                    # Retrieve camera and actuator db instances
+                    camera = session.query(ORMCamera).filter_by(camera_id=camera.id).one()
+                    actuator = session.query(ORMActuator).filter_by(actuator_id=actuator.id).one()
 
-                # Add the actuator to the camera actuators list
-                camera.actuators.append(actuator)
-                session.commit()
-            except SQLAlchemyError:
-                # Rollback the transaction in case of an error
-                session.rollback()
-                logger.exception(
-                    "SQLAlchemy error occurred while updating actuator "
-                    "association to camera into db."
-                )
-            except Exception:
-                # Handle other unexpected errors
-                session.rollback()
-                logger.exception(
-                    "Unexpected error occurred while updating actuator "
-                    "association to camera into db."
-                )
+                    # Add the actuator to the camera actuators list
+                    camera.actuators.append(actuator)
+                    session.commit()
+                except SQLAlchemyError:
+                    # Rollback the transaction in case of an error
+                    session.rollback()
+                    logger.exception(
+                        "SQLAlchemy error occurred while updating actuator "
+                        "association to camera into db."
+                    )
+                except Exception:
+                    # Handle other unexpected errors
+                    session.rollback()
+                    logger.exception(
+                        "Unexpected error occurred while updating actuator "
+                        "association to camera into db."
+                    )
+        else:
+            logger.debug("No db configured, skipping actuator association insert.")
 
     @classmethod
     def get_detection_event_id(cls, detection_event: DetectionEvent):
@@ -452,28 +507,58 @@ class DataBase(ABC):
                 cls.insert_into_db(camera)
 
     @abstractmethod
+    def get_connection_string(self):
+        """Generate the connection string based on the database type."""
+
+    @abstractmethod
     def serialize(self):
         """Method to serialize DataBase object into file."""
 
-    @staticmethod
-    @abstractmethod
-    def deserialize(data):
+    @classmethod
+    def deserialize(cls, data):
         """Method to deserialize DataBase object from file."""
+
+        cfg_db_type = data["type"]
+        match cfg_db_type:
+            case DataBase.DBTypes.SQLITE.value:
+                db_type = DataBase.DBTypes.SQLITE
+                return cls.initialize(
+                    db_type,
+                    data["host"],
+                    None,
+                    "",
+                    "",
+                    data["enabled"],
+                    data["version"],
+                )
+            case DataBase.DBTypes.MYSQL.value:
+                db_type = DataBase.DBTypes.MYSQL
+            case DataBase.DBTypes.MARIADB.value:
+                db_type = DataBase.DBTypes.MARIADB
+            case _:
+                logger.error("Wrong deserialized db type!")
+                return False
+
+        return cls.initialize(
+            db_type,
+            data["host"],
+            data["port"],
+            data["username"],
+            data["database_name"],
+            data["enabled"],
+            data["version"],
+        )
 
 
 class MySQLDataBase(DataBase):
     """MySQL DataBase class"""
 
     def __init__(self, host, port, username, database_name, enabled=True, version=__dbversion__):
-        super().__init__(host)
+        super().__init__(host, enabled, version)
         self.type = DataBase.DBTypes.MYSQL
         self.port = port
         self.username = username
         self.database_name = database_name
-        self.enabled = enabled
-        self.version = version
-
-        DataBase.initialize(self)
 
     def get_password(self):
         """Retrieve the password from the keyring."""
@@ -524,33 +609,16 @@ class MySQLDataBase(DataBase):
             "version": self.version,
         }
 
-    @staticmethod
-    def deserialize(data):
-        """Method to deserialize MySQL DataBase object from file."""
-
-        return MySQLDataBase(
-            data["host"],
-            data["port"],
-            data["username"],
-            data["database_name"],
-            data["enabled"],
-            data["version"],
-        )
-
 
 class MariaDBDataBase(DataBase):
     """MariaDB DataBase class"""
 
     def __init__(self, host, port, username, database_name, enabled=True, version=__dbversion__):
-        super().__init__(host)
+        super().__init__(host, enabled, version)
         self.type = DataBase.DBTypes.MARIADB
         self.port = port
         self.username = username
         self.database_name = database_name
-        self.enabled = enabled
-        self.version = version
-
-        DataBase.initialize(self)
 
     def get_password(self):
         """Retrieve the password from the keyring."""
@@ -559,34 +627,37 @@ class MariaDBDataBase(DataBase):
             raise ValueError("Username must be defined to retrieve the password.")
         return keyring.get_password("WADAS_DB_MariaDB", self.username)
 
-    def get_connection_string(self):
+    def get_connection_string(self, create=False):
         """Generate the connection string based on the database type."""
-
         password = self.get_password()
-        if not self.database_name:
+
+        if not self.database_name and not create:
             raise ValueError("Database name is required for MariaDB.")
-        return (
-            f"mariadb+mariadbconnector://"
-            f"{self.username}:{password}@{self.host}:{self.port}/{self.database_name}"
+
+        base_string = (
+            f"mariadb+mariadbconnector://{self.username}:{password}@{self.host}:{self.port}"
         )
+        if not create:
+            return f"{base_string}/{self.database_name}"
+        return base_string
 
     def create_database(self):
         """Method to create a new database."""
+        logger.info("Creating or verifying the existence of the database...")
 
+        temp_engine = create_engine(self.get_connection_string(create=True))
+
+        with temp_engine.connect() as conn:
+            # Create db if not already existing
+            conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {self.database_name}"))
+            logger.info("Database '%s' successfully created or already exists.", self.database_name)
         try:
-            # Try to connect to db to check whether it exists
-            with DataBase.wadas_db_engine.connect() as conn:
-                logger.debug("Database exists.")
-        except OperationalError:
-            # If db does not exist, creates it
-            logger.info("Creating Database...")
-            temp_engine = create_engine(self.get_connection_string())
-            with temp_engine.connect() as conn:
-                conn.execute(f"CREATE DATABASE {self.database_name}")
-            logger.info("Database '%s' successfully created.", self.database_name)
-
-        # Create all tables
-        Base.metadata.create_all(DataBase.wadas_db_engine)
+            Base.metadata.create_all(DataBase.wadas_db_engine)
+            logger.info("Tables created successfully in '%s'.", self.database_name)
+        except Exception:
+            logger.error("Error while creating the tables...")
+            return False
+        return True
 
     def serialize(self):
         """Method to serialize MariaDB DataBase object into file."""
@@ -601,30 +672,13 @@ class MariaDBDataBase(DataBase):
             "version": self.version,
         }
 
-    @staticmethod
-    def deserialize(data):
-        """Method to deserialize MariaDB DataBase object from file."""
-
-        return MySQLDataBase(
-            data["host"],
-            data["port"],
-            data["username"],
-            data["database_name"],
-            data["enabled"],
-            data["version"],
-        )
-
 
 class SQLiteDataBase(DataBase):
     """SQLite DataBase class"""
 
     def __init__(self, host, enabled=True, version=__dbversion__):
-        super().__init__(host)
+        super().__init__(host, enabled, version)
         self.type = DataBase.DBTypes.SQLITE
-        self.enabled = enabled
-        self.version = version
-
-        DataBase.initialize(self)
 
     def get_connection_string(self):
         """Generate the connection string based on the database type."""
@@ -662,9 +716,3 @@ class SQLiteDataBase(DataBase):
             "enabled": self.enabled,
             "version": self.version,
         }
-
-    @staticmethod
-    def deserialize(data):
-        """Method to deserialize SQLite DataBase object from file."""
-
-        return SQLiteDataBase(data["host"], data["enabled"], data["version"])

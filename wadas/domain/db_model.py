@@ -45,7 +45,7 @@ class Camera(Base):
     __tablename__ = "cameras"
 
     local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
-    camera_id = Column(String, nullable=False, unique=True, name="name")
+    camera_id = Column(String(255), nullable=False, unique=True, name="name")
     type = Column(SqlEnum(DomainCamera.CameraTypes), nullable=False)
     enabled = Column(Boolean, default=False)
     creation_date = Column(DateTime(timezone=True), nullable=False)
@@ -69,10 +69,10 @@ class USBCamera(Camera):
     __tablename__ = "usb_cameras"
 
     local_id = Column(Integer, ForeignKey("cameras.id"), primary_key=True, name="id")
-    name = Column(String, nullable=True)
+    name = Column(String(255), nullable=True)
     en_wadas_motion_detection = Column(Boolean, default=False)
-    pid = Column(String, nullable=True)
-    vid = Column(String, nullable=True)
+    pid = Column(String(255), nullable=True)
+    vid = Column(String(255), nullable=True)
     path = Column(Text, nullable=True)
 
     __mapper_args__ = {"polymorphic_identity": DomainCamera.CameraTypes.USB_CAMERA}
@@ -91,7 +91,7 @@ class Actuator(Base):
     __tablename__ = "actuators"
 
     local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
-    actuator_id = Column(String, nullable=False, unique=True, name="name")
+    actuator_id = Column(String(255), nullable=False, unique=True, name="name")
     type = Column(SqlEnum(DomainActuator.ActuatorTypes), nullable=False)
     enabled = Column(Boolean, default=False)
     creation_date = Column(DateTime(timezone=True), nullable=False)
@@ -171,11 +171,11 @@ class ActuationEvent(Base):
 class User(Base):
     __tablename__ = "users"
 
-    local_id = Column(String, primary_key=True, name="id")
-    username = Column(String, nullable=False, unique=True)
-    password = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
-    role = Column(String, nullable=False)
+    local_id = Column(String(255), primary_key=True, name="id")
+    username = Column(String(255), nullable=False, unique=True)
+    password = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=False, unique=True)
+    role = Column(String(255), nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False)
 
 
@@ -183,7 +183,7 @@ class DBMetadata(Base):
     __tablename__ = "db_metadata"
 
     local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
-    version = Column(String, nullable=False, default=lambda: __dbversion__)
+    version = Column(String(255), nullable=False, default=lambda: __dbversion__)
     applied_at = Column(DateTime(timezone=True), nullable=False)
     description = Column(Text, nullable=True)
     project_uuid = Column(Text, nullable=False)
