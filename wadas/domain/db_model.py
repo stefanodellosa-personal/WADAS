@@ -58,9 +58,6 @@ def compile_datetime6_mariadb(element, compiler, **kwargs):
 
 
 # Classes
-Base = declarative_base()
-
-
 camera_actuator_association = Table(
     "camera_actuator_association",
     Base.metadata,
@@ -72,7 +69,7 @@ camera_actuator_association = Table(
 class Camera(Base):
     __tablename__ = "cameras"
 
-    local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
+    db_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
     camera_id = Column(String(255), nullable=False, unique=True, name="name")
     type = Column(SqlEnum(DomainCamera.CameraTypes), nullable=False)
     enabled = Column(Boolean, default=False)
@@ -96,8 +93,8 @@ class Camera(Base):
 class USBCamera(Camera):
     __tablename__ = "usb_cameras"
 
-    local_id = Column(Integer, ForeignKey("cameras.id"), primary_key=True, name="id")
-    name = Column(String(255), nullable=True)
+    db_id = Column(Integer, ForeignKey("cameras.id"), primary_key=True, name="id")
+    name = Column(String(255), nullable=True, name="product_name")
     en_wadas_motion_detection = Column(Boolean, default=False)
     pid = Column(String(255), nullable=True)
     vid = Column(String(255), nullable=True)
@@ -118,7 +115,7 @@ class FTPCamera(Camera):
 class Actuator(Base):
     __tablename__ = "actuators"
 
-    local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
+    db_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
     actuator_id = Column(String(255), nullable=False, unique=True, name="name")
     type = Column(SqlEnum(DomainActuator.ActuatorTypes), nullable=False)
     enabled = Column(Boolean, default=False)
@@ -154,8 +151,8 @@ class FeederActuator(Actuator):
 class DetectionEvent(Base):
     __tablename__ = "detection_events"
 
-    local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")  # db ID
-    camera_id = Column(Integer, ForeignKey("cameras.id"), name="camera_id", nullable=False)
+    db_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
+    camera_id = Column(Integer, ForeignKey("cameras.id"), nullable=False)
     time_stamp = Column(MySQLDATETIME6(timezone=True), nullable=False)
     original_image = Column(Text, nullable=False)
     detection_img_path = Column(Text, nullable=False)
@@ -175,7 +172,7 @@ class DetectionEvent(Base):
 class ClassifiedAnimals(Base):
     __tablename__ = "classified_animals"
 
-    local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")  # db ID
+    db_id = Column(Integer, primary_key=True, autoincrement=True, name="id")  # db ID
     detection_event_id = Column(Integer, ForeignKey("detection_events.id"), nullable=False)
     classified_animal = Column(Text, nullable=True)
     probability = Column(Float, nullable=True)
@@ -189,7 +186,7 @@ class ActuationEvent(Base):
     actuator_id = Column(Integer, ForeignKey("actuators.id"), primary_key=True, nullable=False)
     time_stamp = Column(MySQLDATETIME6(timezone=True), primary_key=True, nullable=False)
     detection_event_id = Column(Integer, ForeignKey("detection_events.id"), nullable=False)
-    command = Column(Text, nullable=True)  # Use JSON if needed
+    command = Column(Text, nullable=True)
 
     actuator = relationship("Actuator", back_populates="actuation_events")
     detection_event = relationship("DetectionEvent", back_populates="actuation_events")

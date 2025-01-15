@@ -233,11 +233,11 @@ class DataBase(ABC):
 
         logger.debug("Inserting object into db...")
         if session := cls.create_session():
-            foreign_key = None
+            foreign_key = []
             if isinstance(domain_object, DetectionEvent):
                 # If Camera associated to the detection event is not in db abort insertion
-                foreign_key = (
-                    session.query(ORMCamera.local_id)
+                foreign_key.append(
+                    session.query(ORMCamera.db_id)
                     .filter_by(camera_id=domain_object.camera_id)
                     .scalar()
                 )
@@ -249,11 +249,12 @@ class DataBase(ABC):
                     return
             if isinstance(domain_object, ActuationEvent):
                 # If Actuator associated to the actuation event is not in db abort insertion
-                if (
-                    not session.query(ORMActuator)
+                foreign_key.append(
+                    session.query(ORMActuator.db_id)
                     .filter_by(actuator_id=domain_object.actuator_id)
-                    .first()
-                ):
+                    .scalar()
+                )
+                if not foreign_key:
                     logger.error(
                         "Unable to add Actuation event into db as %s actuator id is not found"
                         " in db.",
@@ -261,11 +262,12 @@ class DataBase(ABC):
                     )
                     return
                 # If detection event associated to the actuation event is not in db abort insertion
-                if not (foreign_key := cls.get_detection_event_id(domain_object.detection_event)):
+                foreign_key.append(cls.get_detection_event_id(domain_object.detection_event))
+                if not foreign_key[1]:
                     logger.error(
                         "Unable to add Actuation event into db as %s detection event id is not"
                         " found in db.",
-                        domain_object.actuator_id,
+                        domain_object.detection_event,
                     )
                     return
             try:
@@ -307,7 +309,7 @@ class DataBase(ABC):
             # Update detection_event table
             stmt = (
                 update(ORMDetectionEvent)
-                .where(and_(ORMDetectionEvent.local_id == detection_event_db_id))
+                .where(and_(ORMDetectionEvent.db_id == detection_event_db_id))
                 .values(
                     classification=detection_event.classification,
                     classification_img_path=detection_event.classification_img_path,
@@ -337,8 +339,8 @@ class DataBase(ABC):
                 logger.exception(
                     "Unexpected error occurred while updating detection event into db."
                 )
-            else:
-                logger.error("unable to update detection event into db...")
+        else:
+            logger.error("unable to update detection event into db...")
 
     @classmethod
     def update_camera(cls, camera, delete_camera=False):
@@ -398,7 +400,7 @@ class DataBase(ABC):
 
         if session := cls.create_session():
             return (
-                session.query(ORMCamera.local_id)
+                session.query(ORMCamera.db_id)
                 .filter(
                     and_(
                         ORMCamera.camera_id == camera_id,
@@ -421,7 +423,7 @@ class DataBase(ABC):
 
         if session := cls.create_session():
             return (
-                session.query(ORMDetectionEvent.local_id)
+                session.query(ORMDetectionEvent.db_id)
                 .filter(
                     and_(
                         ORMDetectionEvent.camera_id == camera_db_id,
@@ -470,14 +472,14 @@ class DataBase(ABC):
             command = json.loads(domain_object.command.value)
 
             return ORMActuationEvent(
-                actuator_id=domain_object.actuator_id,
+                actuator_id=foreign_key[0],
                 time_stamp=domain_object.time_stamp,
-                detection_event_id=foreign_key,
+                detection_event_id=foreign_key[1],
                 command=next(iter(command)),
             )
         elif isinstance(domain_object, DetectionEvent):
             return ORMDetectionEvent(
-                camera_id=foreign_key,
+                camera_id=foreign_key[0],
                 time_stamp=domain_object.time_stamp,
                 original_image=domain_object.original_image,
                 detection_img_path=domain_object.detection_img_path,
