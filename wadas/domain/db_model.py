@@ -17,16 +17,44 @@
 # Date: 2025-01-04
 # Description: database model module, it contains ORM classes.
 
-from sqlalchemy import Boolean, Column, DateTime
+from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import Float, ForeignKey, Index, Integer, String, Table, Text
+from sqlalchemy.ext import compiler
 from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.types import DateTime, TypeDecorator
 
 from wadas._version import __dbversion__
 from wadas.domain.actuator import Actuator as DomainActuator
 from wadas.domain.camera import Camera as DomainCamera
 
 Base = declarative_base()
+
+
+# Custom DATETIME type with precision for MySQL/MariaDB
+class MySQLDATETIME6(TypeDecorator):
+    impl = DateTime
+    cache_ok = True  # Set cache_ok to True for performance optimization
+
+    @staticmethod
+    def process_bind_param(value, dialect):
+        # No conversion required for binding parameters
+        return value
+
+    def process_result_value(self, value, dialect):
+        # No conversion required when retrieving the value
+        return value
+
+
+# Custom compilation rule for MySQL/MariaDB
+@compiler.compiles(MySQLDATETIME6, "mysql")
+def compile_datetime6(element, compiler, **kwargs):
+    return "DATETIME(6)"
+
+
+@compiler.compiles(MySQLDATETIME6, "mariadb")
+def compile_datetime6_mariadb(element, compiler, **kwargs):
+    return "DATETIME(6)"
 
 
 # Classes
@@ -48,8 +76,8 @@ class Camera(Base):
     camera_id = Column(String(255), nullable=False, unique=True, name="name")
     type = Column(SqlEnum(DomainCamera.CameraTypes), nullable=False)
     enabled = Column(Boolean, default=False)
-    creation_date = Column(DateTime(timezone=True), nullable=False)
-    deletion_date = Column(DateTime(timezone=True), nullable=True)
+    creation_date = Column(MySQLDATETIME6(timezone=True), nullable=False)
+    deletion_date = Column(MySQLDATETIME6(timezone=True), nullable=True)
     detection_events = relationship(
         "DetectionEvent", back_populates="camera", cascade="all, delete-orphan"
     )
@@ -94,8 +122,8 @@ class Actuator(Base):
     actuator_id = Column(String(255), nullable=False, unique=True, name="name")
     type = Column(SqlEnum(DomainActuator.ActuatorTypes), nullable=False)
     enabled = Column(Boolean, default=False)
-    creation_date = Column(DateTime(timezone=True), nullable=False)
-    deletion_date = Column(DateTime(timezone=True), nullable=True)
+    creation_date = Column(MySQLDATETIME6(timezone=True), nullable=False)
+    deletion_date = Column(MySQLDATETIME6(timezone=True), nullable=True)
     actuation_events = relationship(
         "ActuationEvent", back_populates="actuator", cascade="all, delete-orphan"
     )
@@ -128,7 +156,7 @@ class DetectionEvent(Base):
 
     local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")  # db ID
     camera_id = Column(Integer, ForeignKey("cameras.id"), name="camera_id", nullable=False)
-    time_stamp = Column(DateTime(timezone=True), nullable=False)
+    time_stamp = Column(MySQLDATETIME6(timezone=True), nullable=False)
     original_image = Column(Text, nullable=False)
     detection_img_path = Column(Text, nullable=False)
     detected_animals = Column(Integer, nullable=False)  # Use JSON if supported
@@ -159,7 +187,7 @@ class ActuationEvent(Base):
     __tablename__ = "actuation_events"
 
     actuator_id = Column(Integer, ForeignKey("actuators.id"), primary_key=True, nullable=False)
-    time_stamp = Column(DateTime(timezone=True), primary_key=True, nullable=False)
+    time_stamp = Column(MySQLDATETIME6(timezone=True), primary_key=True, nullable=False)
     detection_event_id = Column(Integer, ForeignKey("detection_events.id"), nullable=False)
     command = Column(Text, nullable=True)  # Use JSON if needed
 
@@ -176,7 +204,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     role = Column(String(255), nullable=False)
-    created_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(MySQLDATETIME6(timezone=True), nullable=False)
 
 
 class DBMetadata(Base):
@@ -184,7 +212,7 @@ class DBMetadata(Base):
 
     local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
     version = Column(String(255), nullable=False, default=lambda: __dbversion__)
-    applied_at = Column(DateTime(timezone=True), nullable=False)
+    applied_at = Column(MySQLDATETIME6(timezone=True), nullable=False)
     description = Column(Text, nullable=True)
     project_uuid = Column(Text, nullable=False)
 
