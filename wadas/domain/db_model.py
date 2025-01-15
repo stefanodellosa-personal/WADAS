@@ -127,7 +127,7 @@ class DetectionEvent(Base):
     __tablename__ = "detection_events"
 
     local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")  # db ID
-    camera_id = Column(Integer, ForeignKey("cameras.id"), name="camera_name", nullable=False)
+    camera_id = Column(Integer, ForeignKey("cameras.id"), name="camera_id", nullable=False)
     time_stamp = Column(DateTime(timezone=True), nullable=False)
     original_image = Column(Text, nullable=False)
     detection_img_path = Column(Text, nullable=False)

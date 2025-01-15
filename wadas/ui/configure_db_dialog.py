@@ -77,6 +77,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                     self.ui.lineEdit_db_password.setText(pwd)
                     self.ui.lineEdit_db_name.setText(wadas_db.database_name)
                 elif wadas_db.type == DataBase.DBTypes.MARIADB:
+                    self.ui.radioButton_MariaDB.setChecked(True)
                     pwd = keyring.get_password("WADAS_DB_MariaDB", wadas_db.username)
                     self.ui.lineEdit_db_port.setText(str(wadas_db.port))
                     self.ui.lineEdit_db_username.setText(wadas_db.username)

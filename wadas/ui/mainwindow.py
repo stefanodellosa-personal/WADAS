@@ -639,8 +639,8 @@ class MainWindow(QMainWindow):
             return True
         else:
             error_dialog = WADASErrorMessage("Incompatible configuration file provided",
-                "Provided WADAS configuration version is not compatible with current version of WADAS therefore cannot "
-                "be loaded."
+                "Provided WADAS configuration version is not compatible with current version of "
+                "WADAS therefore cannot be loaded."
             )
             error_dialog.exec()
             return False

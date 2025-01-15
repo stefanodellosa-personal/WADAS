@@ -236,11 +236,16 @@ class DataBase(ABC):
             foreign_key = None
             if isinstance(domain_object, DetectionEvent):
                 # If Camera associated to the detection event is not in db abort insertion
-                if (
-                    not session.query(ORMCamera)
+                foreign_key = (
+                    session.query(ORMCamera.local_id)
                     .filter_by(camera_id=domain_object.camera_id)
-                    .first()
-                ):
+                    .scalar()
+                )
+                if not foreign_key:
+                    logger.error(
+                        "Unable to add Detection event into db as %s camera id is not found in db.",
+                        domain_object.camera_id,
+                    )
                     return
             if isinstance(domain_object, ActuationEvent):
                 # If Actuator associated to the actuation event is not in db abort insertion
@@ -249,9 +254,19 @@ class DataBase(ABC):
                     .filter_by(actuator_id=domain_object.actuator_id)
                     .first()
                 ):
+                    logger.error(
+                        "Unable to add Actuation event into db as %s actuator id is not found"
+                        " in db.",
+                        domain_object.actuator_id,
+                    )
                     return
                 # If detection event associated to the actuation event is not in db abort insertion
                 if not (foreign_key := cls.get_detection_event_id(domain_object.detection_event)):
+                    logger.error(
+                        "Unable to add Actuation event into db as %s detection event id is not"
+                        " found in db.",
+                        domain_object.actuator_id,
+                    )
                     return
             try:
                 orm_object = DataBase.domain_to_orm(domain_object, foreign_key)
@@ -273,7 +288,7 @@ class DataBase(ABC):
             except IntegrityError:
                 session.rollback()  # Cancel modifications in case of error
                 logger.exception(
-                    "Error while inserting object ''%s'' into db.", type(domain_object).__name__
+                    "Error while inserting object %s into db.", type(domain_object).__name__
                 )
 
     def update_detection_event(cls, detection_event: DetectionEvent):
@@ -283,17 +298,16 @@ class DataBase(ABC):
         """
 
         logger.debug("Updating detection event db entry...")
-        if session := cls.create_session():
+        # Retrieve the db id of the updated detection event
+        detection_event_db_id = cls.get_detection_event_id(detection_event)
+        if not detection_event_db_id:
+            logger.error("Unable to update detection event as detection event not found in db.")
 
+        if session := cls.create_session():
             # Update detection_event table
             stmt = (
                 update(ORMDetectionEvent)
-                .where(
-                    and_(
-                        ORMDetectionEvent.camera_id == detection_event.camera_id,
-                        ORMDetectionEvent.time_stamp == detection_event.time_stamp,
-                    )
-                )
+                .where(and_(ORMDetectionEvent.local_id == detection_event_db_id))
                 .values(
                     classification=detection_event.classification,
                     classification_img_path=detection_event.classification_img_path,
@@ -302,14 +316,11 @@ class DataBase(ABC):
             cls.run_query(stmt)
 
             try:
-                # Retrieve the id of the updated detection event
-                detection_event_id = cls.get_detection_event_id(detection_event)
-
-                if detection_event_id:
+                if detection_event_db_id:
                     # Create ClassifiedAnimals table entries and link them with detection event
                     for classified_animal in detection_event.classified_animals:
                         orm_obj = ORMClassifiedAnimals(
-                            detection_event_id=detection_event_id,  # Link to detection event by ID
+                            detection_event_id=detection_event_db_id,  # Link to det event by ID
                             classified_animal=classified_animal["classification"][0],
                             probability=classified_animal["classification"][1],
                         )
@@ -326,6 +337,8 @@ class DataBase(ABC):
                 logger.exception(
                     "Unexpected error occurred while updating detection event into db."
                 )
+            else:
+                logger.error("unable to update detection event into db...")
 
     @classmethod
     def update_camera(cls, camera, delete_camera=False):
@@ -335,13 +348,13 @@ class DataBase(ABC):
         stmt = (
             (
                 update(ORMFTPCamera)
-                .where(ORMFTPCamera.camera_id == camera.camera_id)
+                .where(ORMFTPCamera.camera_id == camera.id)
                 .values(enabled=camera.enabled)
             )
             if not delete_camera
             else (
                 update(ORMFTPCamera)
-                .where(ORMFTPCamera.camera_id == camera.camera_id)
+                .where(ORMFTPCamera.camera_id == camera.id)
                 .values(deleted_time=get_precise_timestamp())
             )
         )
@@ -380,15 +393,38 @@ class DataBase(ABC):
             logger.debug("No db configured, skipping actuator association insert.")
 
     @classmethod
+    def get_camera_id(cls, camera_id):
+        """Method to return camera database id (primary key)"""
+
+        if session := cls.create_session():
+            return (
+                session.query(ORMCamera.local_id)
+                .filter(
+                    and_(
+                        ORMCamera.camera_id == camera_id,
+                    )
+                )
+                .scalar()
+            )  # Use scalar() to retrieve the value directly
+        else:
+            logger.debug("No camera id %s found in db.", camera_id)
+            return None
+
+    @classmethod
     def get_detection_event_id(cls, detection_event: DetectionEvent):
         """Method to return detection event database id (primary key)"""
+
+        camera_db_id = cls.get_camera_id(detection_event.camera_id)
+        if not camera_db_id:
+            logger.error("Unable to find Camera id %s while getting Detection event id.")
+            return None
 
         if session := cls.create_session():
             return (
                 session.query(ORMDetectionEvent.local_id)
                 .filter(
                     and_(
-                        ORMDetectionEvent.camera_id == detection_event.camera_id,
+                        ORMDetectionEvent.camera_id == camera_db_id,
                         ORMDetectionEvent.time_stamp == detection_event.time_stamp,
                     )
                 )
@@ -441,7 +477,7 @@ class DataBase(ABC):
             )
         elif isinstance(domain_object, DetectionEvent):
             return ORMDetectionEvent(
-                camera_id=domain_object.camera_id,
+                camera_id=foreign_key,
                 time_stamp=domain_object.time_stamp,
                 original_image=domain_object.original_image,
                 detection_img_path=domain_object.detection_img_path,
