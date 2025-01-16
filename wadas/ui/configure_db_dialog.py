@@ -26,6 +26,7 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 from wadas.domain.database import DataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_db_dialog import Ui_ConfigureDBDialog
+from wadas._version import __dbversion__
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -40,6 +41,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_error.setStyleSheet("color: red")
         self.ui.pushButton_test_db.setEnabled(False)
+        self.ui.pushButton_create_db.setEnabled(True)
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
@@ -52,9 +54,14 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.lineEdit_db_port.textChanged.connect(self.validate)
         self.ui.lineEdit_db_username.textChanged.connect(self.validate)
         self.ui.lineEdit_db_password.textChanged.connect(self.validate)
+        self.ui.checkBox_new_db.clicked.connect(self.on_checkbox_new_db_checked)
+        self.ui.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.on_cancel_clicked)
 
         self.init_dialog()
         self.uuid = prj_uuid
+        self.db_created = False
+        self.initial_wadas_db = DataBase.get_instance()
+        self.ui.plainTextEdit_db_test.setPlainText("Test out your DB before accepting changes!")
 
     def init_dialog(self):
         """Method to initialize dialog with saved configuration data"""
@@ -62,9 +69,13 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         if not (wadas_db := DataBase.get_instance()):
             self.ui.checkBox.setChecked(True)
             self.ui.radioButton_SQLite.setChecked(True)
+            self.ui.label_db_version.setText(__dbversion__)
+            self.ui.checkBox_new_db.setChecked(True)
         else:
             self.ui.checkBox.setChecked(wadas_db.enabled)
             self.ui.lineEdit_db_host.setText(wadas_db.host)
+            self.ui.pushButton_create_db.setEnabled(False)
+            self.ui.label_db_version.setText(wadas_db.version)
             if wadas_db.type:
                 if wadas_db.type == DataBase.DBTypes.MYSQL:
                     self.ui.radioButton_MySQL.setChecked(True)
@@ -86,10 +97,12 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                     unrecognized_db_type_dlg = WADASErrorMessage("Unrecognized DB type",
                                                                  "Database type is not recognized or supported.")
                     unrecognized_db_type_dlg.exec()
+                    self.ui.pushButton_create_db.setEnabled(True)
             else:
                 unrecognized_db_type_dlg = WADASErrorMessage("No DB type",
                                                              "Database type is not configured.")
                 unrecognized_db_type_dlg.exec()
+                self.ui.pushButton_create_db.setEnabled(True)
         self.on_radioButton_checked()
 
     def on_radioButton_checked(self):
@@ -104,6 +117,12 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.lineEdit_db_name.setPlaceholderText("wadas")
         elif self.ui.radioButton_SQLite.isChecked():
             self.ui.lineEdit_db_name.setPlaceholderText("")
+
+    def on_checkbox_new_db_checked(self):
+        """Method to handle new db checkbox states."""
+
+        self.ui.pushButton_create_db.setEnabled(self.ui.checkBox_new_db.isChecked())
+        self.validate()
 
     def _update_common_params(self, wadas_db):
         """Method to update params common to MySQL and SQLite db types"""
@@ -208,12 +227,12 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.lineEdit_db_password.text(),
         )
 
-    def create_db(self):
-        """Method to trigger new db creation"""
+    def init_db_from_dialog_params(self):
+        """Method to initialize database object from dialog input fields"""
 
         db_type = None
         if self.ui.radioButton_SQLite.isChecked():
-                db_type = DataBase.DBTypes.SQLITE
+            db_type = DataBase.DBTypes.SQLITE
         elif self.ui.radioButton_MySQL.isChecked():
             db_type = DataBase.DBTypes.MYSQL
         elif self.ui.radioButton_MariaDB.isChecked():
@@ -228,27 +247,26 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.lineEdit_db_name.text()
         )
 
+    def create_db(self):
+        """Method to trigger new db creation"""
+
+        self.init_db_from_dialog_params()
+
         if db := DataBase.get_instance():
             create = db.create_database()
             # Populate DB with existing cameras and actuators
             if create:
                 DataBase.populate_db(self.uuid)
-                self.show_create_status(True)
-            else:
-                self.show_create_status(False)
-        else:
-            self.show_create_status(False)
+                self.db_created = True
+        message = "Database successfully created!" if self.db_created else "Failed to create the db!"
+        self.show_status_dialog("Database creation status", message, self.db_created)
 
-        # DB instance is saved only when OK button is pressed.
-        DataBase.destroy_instance()
-
-    def show_create_status(self, success: bool):
+    def show_status_dialog(self, title, message, success: bool):
         """Method to show message with db creation status"""
 
-        message = "Database successfully created!" if success else "Failed to create the db!"
         icon = QMessageBox.Information if success else QMessageBox.Critical
         msg_box = QMessageBox()
-        msg_box.setWindowTitle("Database creation status")
+        msg_box.setWindowTitle(title)
         msg_box.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
         msg_box.setText(message)
         msg_box.setIcon(icon)
@@ -298,10 +316,56 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         if valid:
             self.ui.label_error.setText("")
             self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(valid)
-            self.ui.pushButton_test_db.setEnabled(valid)
+            enable_test = valid if not self.ui.checkBox_new_db.isChecked() else (valid and self.db_created)
+
+            self.ui.pushButton_test_db.setEnabled(enable_test)
 
     def test_db(self):
         """Method to test db connection"""
 
-        pass #TODO: implement logic and remove
+        self.ui.plainTextEdit_db_test.setPlainText("")
+        if self.initial_wadas_db:
+            DataBase.destroy_instance()
+        self.init_db_from_dialog_params()
 
+        db_uuid = DataBase.get_db_uuid()
+        db_version = DataBase.get_db_version()
+
+        if db_uuid and db_version:
+            text = (f"DB version: {db_version},\n"
+                    f"Associated project uuid: {db_uuid}.\n"
+                    f"Connection test succeeded!")
+        elif not db_uuid:
+            text = ("DB associated uuid not found!\n"
+                    "Connection test failed!")
+        elif not db_version:
+            text = ("DB version not found!\n"
+                    "Connection test failed!")
+        else:
+            text = "Connection test failed!"
+        self.ui.plainTextEdit_db_test.setPlainText(text)
+
+        if self.uuid != db_uuid:
+            self.show_status_dialog("Project UUID mismatch",
+                                    "Project UUID is different than the one stored in DB!\n"
+                                    "Use of this database is highly discouraged as it might cause errors and crashes.\n"
+                                    "Please make sure to select the correct one.",
+                                    False)
+            self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+    def on_cancel_clicked(self):
+        """Method to cancel and exit the dialog"""
+
+        # DB instance is saved only when OK button is pressed.
+        if self.initial_wadas_db:
+            DataBase.destroy_instance()
+            # Pristine previous db config, if any
+            DataBase.initialize(
+                self.initial_wadas_db.type,
+                self.initial_wadas_db.host,
+                self.initial_wadas_db.port,
+                self.initial_wadas_db.username,
+                self.initial_wadas_db.database_name,
+                self.initial_wadas_db.enabled,
+                self.initial_wadas_db.version
+            )

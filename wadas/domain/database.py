@@ -203,6 +203,32 @@ class DataBase(ABC):
             return None
 
     @classmethod
+    def get_db_uuid(cls):
+        """Method to return uuid from database"""
+
+        if session := cls.create_session():
+            try:
+                result = session.query(ORMDBMetadata.project_uuid).first()
+                return result[0] if result else None
+            except Exception:
+                return None
+        else:
+            return None
+
+    @classmethod
+    def get_db_version(cls):
+        """Method to return version from db"""
+
+        if session := cls.create_session():
+            try:
+                result = session.query(ORMDBMetadata.version).first()
+                return result[0] if result else None
+            except Exception:
+                return None
+        else:
+            return None
+
+    @classmethod
     def run_query(cls, stmt):
         """Generic method to run a query starting forma statement as input and handling
         exceptions (if any)."""
