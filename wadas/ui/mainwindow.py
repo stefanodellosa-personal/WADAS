@@ -520,6 +520,10 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
+            if DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
+                self.save_config_to_file()
 
     def configure_actuators(self):
         """Method to trigger UI dialog for actuator(s) configuration."""
@@ -530,6 +534,10 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_actuator_list()
+            if DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
+                self.save_config_to_file()
 
     def configure_camera_to_actuators_associations(self):
         """Method to trigger UI dialog for actuator(s) configuration."""
@@ -539,6 +547,10 @@ class MainWindow(QMainWindow):
             logger.info("Camera(s) to Actuator(s) association(s) configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            if DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
+                self.save_config_to_file()
 
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""
@@ -706,6 +718,10 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
+            if DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
+                self.save_config_to_file()
 
     def configure_whatsapp(self):
         """Method to trigger WhatsApp configuration dialog"""
