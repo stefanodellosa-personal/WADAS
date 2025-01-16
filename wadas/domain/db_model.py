@@ -70,7 +70,7 @@ class Camera(Base):
     __tablename__ = "cameras"
 
     db_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
-    camera_id = Column(String(255), nullable=False, unique=True, name="name")
+    camera_id = Column(String(255), nullable=False, name="name")
     type = Column(SqlEnum(DomainCamera.CameraTypes), nullable=False)
     enabled = Column(Boolean, default=False)
     creation_date = Column(MySQLDATETIME6(timezone=True), nullable=False)
@@ -116,7 +116,7 @@ class Actuator(Base):
     __tablename__ = "actuators"
 
     db_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
-    actuator_id = Column(String(255), nullable=False, unique=True, name="name")
+    actuator_id = Column(String(255), nullable=False, name="name")
     type = Column(SqlEnum(DomainActuator.ActuatorTypes), nullable=False)
     enabled = Column(Boolean, default=False)
     creation_date = Column(MySQLDATETIME6(timezone=True), nullable=False)
