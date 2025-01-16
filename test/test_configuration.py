@@ -156,7 +156,6 @@ notification: ''
 operation_mode: ''
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
-
 """
     )
 
@@ -179,6 +178,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 """,
 )
 def test_load_wrong_format_config(mock_file, init):
@@ -229,6 +229,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -238,6 +239,7 @@ def test_load_actuator_server_config(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -270,7 +272,7 @@ def test_save_actuator_server_config(mock_file, init):
     FastAPIActuatorServer.actuator_server = FastAPIActuatorServer(
         "1.2.3.4", 567, "eshare_crt.pem", "eshare_key.pem", 89
     )
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server:
@@ -292,6 +294,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -327,6 +330,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -336,6 +340,7 @@ def test_load_actuators_config(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -370,7 +375,7 @@ def test_save_actuators_config(mock_file, init):
     Actuator.actuators["Actuator2"] = FeederActuator("Actuator2", True)
     Actuator.actuators["Actuator3"] = RoadSignActuator("Actuator3", False)
     Actuator.actuators["Actuator4"] = RoadSignActuator("Actuator4", True)
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -399,6 +404,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -422,6 +428,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -431,6 +438,7 @@ def test_load_ai_model_config(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -457,7 +465,7 @@ def test_save_ai_model_config(mock_file, init):
     AiModel.language = "it"
     AiModel.classification_device = "GPU"
     AiModel.detection_device = "CPU"
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -474,6 +482,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -501,6 +510,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -510,6 +520,7 @@ def test_load_camera_detection_params_config(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -542,7 +553,7 @@ def test_save_camera_detection_params_config(mock_file, init):
         "ms_sample_rate": 67,
         "threshold": 89,
     }
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -563,6 +574,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -618,6 +630,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {}
 """.format(
         r"\\?\usb#vid_1bcf&pid_2883&mi_00#7&e89baf7&0&0000#"
@@ -639,6 +652,7 @@ def test_load_cameras_config(mock_file, init):
             "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
+            "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
             "valid_ftp_keyring": True,
             "valid_email_keyring": True,
             "valid_whatsapp_keyring": True,
@@ -757,6 +771,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -774,6 +789,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_no_credentials(mock_file, i
             "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
+            "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
             "valid_ftp_keyring": False,
             "valid_email_keyring": True,
             "valid_whatsapp_keyring": True,
@@ -831,6 +847,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -848,6 +865,7 @@ def test_load_cameras_config_with_ftp_and_no_folder_and_no_credentials(mock_file
             "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
+            "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
             "valid_ftp_keyring": False,
             "valid_email_keyring": True,
             "valid_whatsapp_keyring": True,
@@ -905,6 +923,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -922,6 +941,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file,
             "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
+            "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
             "valid_ftp_keyring": True,
             "valid_email_keyring": True,
             "valid_whatsapp_keyring": True,
@@ -979,6 +999,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -996,6 +1017,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_different_credentials(mock_
             "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
+            "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
             "valid_ftp_keyring": False,
             "valid_email_keyring": True,
             "valid_whatsapp_keyring": True,
@@ -1056,7 +1078,7 @@ def test_save_cameras_config(mock_file, init):
             ),
         )
     )
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == r"""actuator_server: ''
@@ -1105,6 +1127,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {}
 """.format(
             r"\\?\usb#vid_1bcf&pid_2883&mi_00#7&e89baf7&0&0000#"
@@ -1142,6 +1165,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1151,6 +1175,7 @@ def test_load_ftps_server_config(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -1207,6 +1232,7 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: []
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1220,6 +1246,7 @@ def test_load_ftps_server_config_with_existing_server(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -1263,7 +1290,7 @@ def test_save_ftps_server_config(mock_file, init):
         "/Documents/ssl/eshare_key.pem",
         "/Documents/ftp",
     )
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -1290,6 +1317,7 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: ''
 operation_mode: ''
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -1321,6 +1349,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1332,6 +1361,7 @@ def test_load_notification_config_with_no_credentials(mock_file, init):
             "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
+            "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
             "valid_ftp_keyring": True,
             "valid_email_keyring": False,
             "valid_whatsapp_keyring": True,
@@ -1386,6 +1416,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1397,6 +1428,7 @@ def test_load_notification_config_with_same_credentials(mock_file, init):
             "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
+            "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
             "valid_ftp_keyring": True,
             "valid_email_keyring": True,
             "valid_whatsapp_keyring": True,
@@ -1451,6 +1483,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1462,6 +1495,7 @@ def test_load_notification_config_with_different_credentials(mock_file, init):
             "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
+            "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
             "valid_ftp_keyring": True,
             "valid_email_keyring": False,
             "valid_whatsapp_keyring": True,
@@ -1516,6 +1550,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1527,6 +1562,7 @@ def test_load_enabled_notification_config(mock_file, init):
             "errors_log": "",
             "config_version": Version(__version__),
             "compatible_config": True,
+            "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
             "valid_ftp_keyring": True,
             "valid_email_keyring": False,
             "valid_whatsapp_keyring": True,
@@ -1542,7 +1578,7 @@ def test_save_notification_config(mock_file, init):
     Notifier.notifiers["Email"] = EmailNotifier(
         "development@wadas.org", "smtp.wadas.org", 123, ["foo@wadas.org", "bar@wadas.org"], False
     )
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -1567,6 +1603,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode: ''
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -1577,7 +1614,7 @@ def test_save_enabled_notification_config(mock_file, init):
     Notifier.notifiers["Email"] = EmailNotifier(
         "development@wadas.org", "smtp.wadas.org", 123, ["foo@wadas.org", "bar@wadas.org"], True
     )
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -1602,6 +1639,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode: ''
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -1626,6 +1664,7 @@ ftps_server: []
 notification: []
 operation_mode:
     type: Test Model Mode
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1635,6 +1674,7 @@ def test_load_test_model_mode_config(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -1657,7 +1697,7 @@ def test_load_test_model_mode_config(mock_file, init):
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
 def test_save_test_model_mode_config(mock_file, init):
     OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.TestModelMode
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -1675,6 +1715,7 @@ ftps_server: ''
 notification: ''
 operation_mode:
   type: Test Model Mode
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -1699,6 +1740,7 @@ ftps_server: []
 notification: []
 operation_mode:
     type: Animal Detection Mode
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1708,6 +1750,7 @@ def test_load_animal_detection_mode_config(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -1722,7 +1765,7 @@ def test_load_animal_detection_mode_config(mock_file, init):
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
 def test_save_animal_detection_mode_config(mock_file, init):
     OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.AnimalDetectionMode
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -1740,6 +1783,7 @@ ftps_server: ''
 notification: ''
 operation_mode:
   type: Animal Detection Mode
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -1764,6 +1808,7 @@ ftps_server: []
 notification: []
 operation_mode:
     type: Animal Detection and Classification Mode
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1773,6 +1818,7 @@ def test_load_animal_detection_and_classification_mode_config(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -1789,7 +1835,7 @@ def test_save_animal_detection_and_classification_mode_config(mock_file, init):
     OperationMode.cur_operation_mode_type = (
         OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
     )
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -1807,6 +1853,7 @@ ftps_server: ''
 notification: ''
 operation_mode:
   type: Animal Detection and Classification Mode
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )
@@ -1832,6 +1879,7 @@ notification: []
 operation_mode:
     type: Custom Species Classification Mode
     custom_target_species: chamois
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
 )
@@ -1841,6 +1889,7 @@ def test_load_custom_species_classification_mode_config(mock_file, init):
         "errors_log": "",
         "config_version": Version(__version__),
         "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
@@ -1859,7 +1908,7 @@ def test_save_custom_species_classification_mode_config(mock_file, init):
         OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
     )
     OperationMode.cur_custom_classification_species = "chamois"
-    save_configuration_to_file("")
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
         == f"""actuator_server: ''
@@ -1878,6 +1927,7 @@ notification: ''
 operation_mode:
   custom_target_species: chamois
   type: Custom Species Classification Mode
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
     )

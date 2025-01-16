@@ -23,10 +23,7 @@ import keyring
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 
-from domain.database import MariaDBDataBase
-from wadas.domain.actuator import Actuator
-from wadas.domain.camera import cameras
-from wadas.domain.database import DataBase, SQLiteDataBase, MySQLDataBase
+from wadas.domain.database import DataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_db_dialog import Ui_ConfigureDBDialog
 

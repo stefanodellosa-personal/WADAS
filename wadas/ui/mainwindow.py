@@ -39,7 +39,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
-from domain.database import DataBase
+from wadas.domain.database import DataBase
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
