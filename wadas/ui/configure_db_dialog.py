@@ -244,7 +244,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.lineEdit_db_host.text(),
             int(port_str) if port_str.strip() else 0,
             self.ui.lineEdit_db_username.text(),
-            self.ui.lineEdit_db_name.text()
+            self.ui.lineEdit_db_name.text(),
+            False
         )
 
     def create_db(self):
@@ -361,12 +362,19 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         if self.initial_wadas_db:
             DataBase.destroy_instance()
             # Pristine previous db config, if any
+            port = self.initial_wadas_db.port if\
+                not self.initial_wadas_db.type == DataBase.DBTypes.SQLITE else None
+            username = self.initial_wadas_db.username if\
+                not self.initial_wadas_db.type == DataBase.DBTypes.SQLITE else None
+            database_name = self.initial_wadas_db.database_name if\
+                not self.initial_wadas_db.type == DataBase.DBTypes.SQLITE else None
             DataBase.initialize(
                 self.initial_wadas_db.type,
                 self.initial_wadas_db.host,
-                self.initial_wadas_db.port,
-                self.initial_wadas_db.username,
-                self.initial_wadas_db.database_name,
+                port,
+                username,
+                database_name,
                 self.initial_wadas_db.enabled,
-                self.initial_wadas_db.version
+                self.initial_wadas_db.version,
+                False
             )

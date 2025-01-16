@@ -131,6 +131,7 @@ class DataBase(ABC):
         database_name,
         enabled=True,
         version=__dbversion__,
+        log=True,
     ):
         """Initialize the singleton database instance."""
 
@@ -147,7 +148,8 @@ class DataBase(ABC):
             return False
 
         cls.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
-        logger.info("%s database initialized.", db_type.value)
+        if log:
+            logger.info("%s database initialized.", db_type.value)
         return True
 
     @classmethod

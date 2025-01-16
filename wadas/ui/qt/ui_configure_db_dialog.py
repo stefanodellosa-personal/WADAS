@@ -24,15 +24,15 @@ class Ui_ConfigureDBDialog(object):
     def setupUi(self, ConfigureDBDialog):
         if not ConfigureDBDialog.objectName():
             ConfigureDBDialog.setObjectName(u"ConfigureDBDialog")
-        ConfigureDBDialog.resize(425, 443)
+        ConfigureDBDialog.resize(425, 476)
         self.buttonBox = QDialogButtonBox(ConfigureDBDialog)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setGeometry(QRect(10, 410, 401, 32))
+        self.buttonBox.setGeometry(QRect(10, 440, 401, 32))
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
         self.label_error = QLabel(ConfigureDBDialog)
         self.label_error.setObjectName(u"label_error")
-        self.label_error.setGeometry(QRect(8, 390, 401, 20))
+        self.label_error.setGeometry(QRect(10, 410, 401, 20))
         self.gridLayoutWidget_2 = QWidget(ConfigureDBDialog)
         self.gridLayoutWidget_2.setObjectName(u"gridLayoutWidget_2")
         self.gridLayoutWidget_2.setGeometry(QRect(10, 10, 401, 381))
@@ -166,6 +166,9 @@ class Ui_ConfigureDBDialog(object):
 
         self.gridLayout_mysql.addWidget(self.line_2, 4, 0, 1, 4)
 
+        self.label_error_2 = QLabel(ConfigureDBDialog)
+        self.label_error_2.setObjectName(u"label_error_2")
+        self.label_error_2.setGeometry(QRect(10, 390, 401, 20))
         QWidget.setTabOrder(self.checkBox, self.radioButton_SQLite)
         QWidget.setTabOrder(self.radioButton_SQLite, self.radioButton_MySQL)
         QWidget.setTabOrder(self.radioButton_MySQL, self.radioButton_MariaDB)
@@ -201,5 +204,6 @@ class Ui_ConfigureDBDialog(object):
         self.label_db_version.setText("")
         self.pushButton_create_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"Create new DB", None))
         self.checkBox_new_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"New database (requires creations before test)", None))
+        self.label_error_2.setText(QCoreApplication.translate("ConfigureDBDialog", u"NOTE: DB enablement will trigger autosave when modifying configuration.", None))
     # retranslateUi
 
