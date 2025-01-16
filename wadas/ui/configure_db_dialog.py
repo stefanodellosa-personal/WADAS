@@ -260,6 +260,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                 self.db_created = True
         message = "Database successfully created!" if self.db_created else "Failed to create the db!"
         self.show_status_dialog("Database creation status", message, self.db_created)
+        self.validate()
 
     def show_status_dialog(self, title, message, success: bool):
         """Method to show message with db creation status"""
@@ -345,7 +346,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             text = "Connection test failed!"
         self.ui.plainTextEdit_db_test.setPlainText(text)
 
-        if self.uuid != db_uuid:
+        if db_uuid and str(self.uuid) != db_uuid:
             self.show_status_dialog("Project UUID mismatch",
                                     "Project UUID is different than the one stored in DB!\n"
                                     "Use of this database is highly discouraged as it might cause errors and crashes.\n"

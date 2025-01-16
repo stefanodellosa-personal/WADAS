@@ -888,6 +888,7 @@ Are you sure you want to exit?""",
                 return
 
             self.configuration_file_name = path
+            self.uuid = uuid.UUID(self.load_status["uuid"])
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()
