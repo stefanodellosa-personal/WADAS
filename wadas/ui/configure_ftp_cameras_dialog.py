@@ -176,7 +176,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         if camera.type == Camera.CameraTypes.FTP_CAMERA:
                             if cur_ui_id == camera.id:
                                 found = True
-                                camera.enabled = self.get_camera_enablement(i)
+                                dialog_camera_enabled = self.get_camera_enablement(i)
+                                if camera.enabled != dialog_camera_enabled:
+                                    camera.enabled = self.get_camera_enablement(i)
+                                    DataBase.update_camera(camera)
 
                                 # Check if ftp folder has been changed
                                 camera_changed = False

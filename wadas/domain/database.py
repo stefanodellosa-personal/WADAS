@@ -375,19 +375,25 @@ class DataBase(ABC):
         """Method to reflect camera fields update in db."""
 
         logger.debug("Updating camera db entry...")
-        stmt = (
-            (
-                update(ORMFTPCamera)
-                .where(ORMFTPCamera.camera_id == camera.id)
-                .values(enabled=camera.enabled)
+        camera_db_id = cls.get_camera_id(camera.id)
+        enabled = camera.enabled
+
+        if not camera_db_id:
+            logger.error(
+                "Unable to update camera. Camera ID %s not found or already deleted.", camera.id
             )
-            if not delete_camera
-            else (
-                update(ORMFTPCamera)
-                .where(ORMFTPCamera.camera_id == camera.id)
-                .values(deleted_time=get_precise_timestamp())
+            return
+
+        if delete_camera:
+            deletion_date_time = get_precise_timestamp()
+            stmt = (
+                update(ORMCamera)
+                .where(ORMCamera.db_id == camera_db_id)
+                .values(deletion_date=deletion_date_time)
             )
-        )
+        else:
+            stmt = update(ORMCamera).where(ORMCamera.db_id == camera_db_id).values(enabled=enabled)
+
         cls.run_query(stmt)
 
     @classmethod
@@ -432,6 +438,7 @@ class DataBase(ABC):
                 .filter(
                     and_(
                         ORMCamera.camera_id == camera_id,
+                        ORMCamera.deletion_date.is_(None),  # Avoid to return id of deleted camera
                     )
                 )
                 .scalar()
