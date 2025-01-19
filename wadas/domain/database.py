@@ -397,6 +397,37 @@ class DataBase(ABC):
         cls.run_query(stmt)
 
     @classmethod
+    def update_actuator(cls, actuator, delete_actuator=False):
+        """Method to reflect actuator fields update in db."""
+
+        logger.debug("Updating actuator db entry...")
+        actuator_db_id = cls.get_actuator_id(actuator.id)
+        enabled = actuator.enabled
+
+        if not actuator_db_id:
+            logger.error(
+                "Unable to update actuator. Actuator ID %s not found or already deleted.",
+                actuator.id,
+            )
+            return
+
+        if delete_actuator:
+            deletion_date_time = get_precise_timestamp()
+            stmt = (
+                update(ORMActuator)
+                .where(ORMActuator.db_id == actuator_db_id)
+                .values(deletion_date=deletion_date_time)
+            )
+        else:
+            stmt = (
+                update(ORMActuator)
+                .where(ORMActuator.db_id == actuator_db_id)
+                .values(enabled=enabled)
+            )
+
+        cls.run_query(stmt)
+
+    @classmethod
     def add_actuator_to_camera(cls, camera, actuator):
         """Method to add new actuator to a given camera actuators list."""
 
@@ -445,6 +476,25 @@ class DataBase(ABC):
             )  # Use scalar() to retrieve the value directly
         else:
             logger.debug("No camera id %s found in db.", camera_id)
+            return None
+
+    @classmethod
+    def get_actuator_id(cls, actuator_id):
+        """Method to return actuator database id (primary key)"""
+
+        if session := cls.create_session():
+            return (
+                session.query(ORMActuator.db_id)
+                .filter(
+                    and_(
+                        ORMActuator.actuator_id == actuator_id,
+                        ORMActuator.deletion_date.is_(None),  # Avoid to return id of deleted camera
+                    )
+                )
+                .scalar()
+            )
+        else:
+            logger.debug("No actuator id %s found in db.", actuator_id)
             return None
 
     @classmethod

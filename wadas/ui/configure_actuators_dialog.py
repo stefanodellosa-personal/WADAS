@@ -324,6 +324,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                     if cur_actuator_id in Actuator.actuators:
                         # Actuator exists and we update its enablement status
                         Actuator.actuators[cur_actuator_id].enabled = cur_actuator_enablement
+                        # Update actuator in db if enabled
+                        if (db := DataBase.get_instance()) and db.enabled:
+                            DataBase.update_actuator(Actuator.actuators[cur_actuator_id])
                     else:
                         # Actuator does not exist, therefore we add it to the dictionary
                         if cur_actuator_type == Actuator.ActuatorTypes.ROADSIGN.value:
@@ -341,6 +344,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             # If an actuator changes the id we have to remove previous orphaned ids from dictionary
             for key in list(Actuator.actuators.keys()):
                 if key not in actuators_id:
+                    # Remove actuator from db
+                    if (db := DataBase.get_instance()) and db.enabled:
+                        DataBase.update_actuator(Actuator.actuators[key], delete_actuator=True)
                     del Actuator.actuators[key]
                     # Remove orphan actuators from Camera association (if any)
                     for camera in cameras:
