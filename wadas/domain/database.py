@@ -24,7 +24,7 @@ from enum import Enum
 
 import keyring
 from pymysql import OperationalError
-from sqlalchemy import and_, create_engine, text, update
+from sqlalchemy import and_, create_engine, delete, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import OperationalError as SQLiteOperationalError
 from sqlalchemy.exc import SQLAlchemyError
@@ -45,6 +45,7 @@ from wadas.domain.db_model import FeederActuator as ORMFeederActuator
 from wadas.domain.db_model import FTPCamera as ORMFTPCamera
 from wadas.domain.db_model import RoadSignActuator as ORMRoadSignActuator
 from wadas.domain.db_model import USBCamera as ORMUSBCamera
+from wadas.domain.db_model import camera_actuator_association
 from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.feeder_actuator import FeederActuator
 from wadas.domain.ftp_camera import FTPCamera
@@ -391,10 +392,15 @@ class DataBase(ABC):
                 .where(ORMCamera.db_id == camera_db_id)
                 .values(deletion_date=deletion_date_time)
             )
+            cls.run_query(stmt)
+            # Delete camera association with actuators, if any
+            stmt = delete(camera_actuator_association).where(
+                camera_actuator_association.c.camera_id == camera_db_id
+            )
+            cls.run_query(stmt)
         else:
             stmt = update(ORMCamera).where(ORMCamera.db_id == camera_db_id).values(enabled=enabled)
-
-        cls.run_query(stmt)
+            cls.run_query(stmt)
 
     @classmethod
     def update_actuator(cls, actuator, delete_actuator=False):
@@ -418,14 +424,19 @@ class DataBase(ABC):
                 .where(ORMActuator.db_id == actuator_db_id)
                 .values(deletion_date=deletion_date_time)
             )
+            cls.run_query(stmt)
+            # Delete actuator association with cameras, if any
+            stmt = delete(camera_actuator_association).where(
+                camera_actuator_association.c.actuator_id == actuator_db_id
+            )
+            cls.run_query(stmt)
         else:
             stmt = (
                 update(ORMActuator)
                 .where(ORMActuator.db_id == actuator_db_id)
                 .values(enabled=enabled)
             )
-
-        cls.run_query(stmt)
+            cls.run_query(stmt)
 
     @classmethod
     def add_actuator_to_camera(cls, camera, actuator):
@@ -436,8 +447,25 @@ class DataBase(ABC):
             if session := cls.create_session():
                 try:
                     # Retrieve camera and actuator db instances
-                    camera = session.query(ORMCamera).filter_by(camera_id=camera.id).one()
-                    actuator = session.query(ORMActuator).filter_by(actuator_id=actuator.id).one()
+                    camera = (
+                        session.query(ORMCamera)
+                        .filter(
+                            and_(
+                                ORMCamera.camera_id == camera.id, ORMCamera.deletion_date.is_(None)
+                            )
+                        )
+                        .one()
+                    )
+                    actuator = (
+                        session.query(ORMActuator)
+                        .filter(
+                            and_(
+                                ORMActuator.actuator_id == actuator.id,
+                                ORMActuator.deletion_date.is_(None),
+                            )
+                        )
+                        .one()
+                    )
 
                     # Add the actuator to the camera actuators list
                     camera.actuators.append(actuator)
@@ -458,6 +486,27 @@ class DataBase(ABC):
                     )
         else:
             logger.debug("No db configured, skipping actuator association insert.")
+
+    @classmethod
+    def remove_actuator_from_camera(cls, camera, actuator):
+        """Remove an actuator from actuators list of a camera"""
+
+        if cls.get_instance():
+            logger.debug("Removing actuator %s from camera %s in db.", actuator.id, camera.id)
+            if cls.create_session():
+                # Retrieve camera and actuator db instances
+                camera_db_id = cls.get_camera_id(camera.id)
+                actuator_db_id = cls.get_actuator_id(actuator.id)
+
+                stmt = delete(camera_actuator_association).where(
+                    and_(
+                        camera_actuator_association.c.actuator_id == actuator_db_id,
+                        camera_actuator_association.c.camera_id == camera_db_id,
+                    )
+                )
+                cls.run_query(stmt)
+            else:
+                logger.debug("No db configured, skipping actuator association insert.")
 
     @classmethod
     def get_camera_id(cls, camera_id):

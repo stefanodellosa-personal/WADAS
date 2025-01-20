@@ -115,10 +115,15 @@ class DialogCameraActuatorManagement(QDialog):
 
     def apply_changes(self):
         """Apply changes to the camera's actuator list and accept the dialog."""
-        # Changes are directly applied to self.camera.actuators, so we just accept the dialog
+
+        # Apply changes into db
         for actuator in self.camera.actuators:
             if not actuator in self.original_actuators:
                 DataBase.add_actuator_to_camera(self.camera, actuator)
+        for actuator in self.original_actuators:
+            if not actuator in self.camera.actuators:
+                DataBase.remove_actuator_from_camera(self.camera, actuator)
+        # Changes are directly applied to self.camera.actuators, so we just accept the dialog
         self.accept()
 
     def reject(self):
