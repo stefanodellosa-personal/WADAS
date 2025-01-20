@@ -18,6 +18,7 @@
 # Description: DB UI configuration module.
 
 import os
+import re
 
 import keyring
 from PySide6.QtGui import QIcon
@@ -26,6 +27,7 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 from wadas.domain.database import DataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_db_dialog import Ui_ConfigureDBDialog
+import validators
 from wadas._version import __dbversion__
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -103,23 +105,26 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                                                              "Database type is not configured.")
                 unrecognized_db_type_dlg.exec()
                 self.ui.pushButton_create_db.setEnabled(True)
-        self.on_radioButton_checked()
+        self.on_radioButton_checked(True)
 
-    def on_radioButton_checked(self):
+    def on_radioButton_checked(self, init_dialog=False):
         """Method to update dialog fields depending on DB selection"""
 
         auth_db_selected = self.ui.radioButton_MySQL.isChecked() or self.ui.radioButton_MariaDB.isChecked()
-        self.ui.lineEdit_db_host.setText("")
         self.ui.lineEdit_db_port.setEnabled(auth_db_selected)
         self.ui.lineEdit_db_username.setEnabled(auth_db_selected)
         self.ui.lineEdit_db_password.setEnabled(auth_db_selected)
         self.ui.lineEdit_db_name.setEnabled(auth_db_selected)
-        if auth_db_selected and not self.ui.lineEdit_db_name.text():
-            self.ui.lineEdit_db_name.setPlaceholderText("wadas")
-            self.ui.lineEdit_db_host.setPlaceholderText("127.0.0.1")
+        if auth_db_selected:
+            if not self.ui.lineEdit_db_name.text():
+                self.ui.lineEdit_db_name.setPlaceholderText("wadas")
+            if not self.ui.lineEdit_db_host.text():
+                self.ui.lineEdit_db_host.setPlaceholderText("127.0.0.1")
         elif self.ui.radioButton_SQLite.isChecked():
             self.ui.lineEdit_db_name.setPlaceholderText("")
-            self.ui.lineEdit_db_host.setPlaceholderText("wadas_db.sqlite")
+            if not self.ui.lineEdit_db_host.text():
+                self.ui.lineEdit_db_host.setPlaceholderText("wadas_db.sqlite")
+        self.validate()
 
     def on_checkbox_new_db_checked(self):
         """Method to handle new db checkbox states."""
@@ -298,24 +303,39 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         """Method to validate db parameters"""
 
         valid = True
+        host = self.ui.lineEdit_db_host.text()
 
-        if not self.ui.lineEdit_db_host.text():
+        if not host:
             self.ui.label_error.setText("Database host field cannot be empty.")
             valid = False
 
-        if self.ui.radioButton_MySQL.isChecked():
-            if not self.ui.lineEdit_db_username.text():
-                self.ui.label_error.setText("Database username field cannot be empty.")
-                valid = False
+        if self.ui.radioButton_MySQL.isChecked() or self.ui.radioButton_MariaDB.isChecked():
             if not self.ui.lineEdit_db_password.text():
                 self.ui.label_error.setText("Database password field cannot be empty.")
                 valid = False
-
+            if not self.ui.lineEdit_db_username.text():
+                self.ui.label_error.setText("Database username field cannot be empty.")
+                valid = False
             if port := self.ui.lineEdit_db_port.text():
                 if not self.validate_port(port):
                     valid = False
             else:
                 self.ui.label_error.setText("No server port provided!")
+                valid = False
+            if (host and (
+                    not validators.domain(host)
+                    and not validators.ipv4(host)
+                    and not validators.ipv6(host)
+                    )
+            ):
+                self.ui.label_error.setText("No valid hostname or IP address provided!")
+                valid = False
+        elif self.ui.radioButton_SQLite.isChecked():
+            if (host and (
+                    not self.validate_filename(host) or
+                    validators.ipv4(host) or
+                    validators.ipv6(host))):
+                self.ui.label_error.setText("No valid sqlite db file name provided!")
                 valid = False
 
         if valid:
@@ -324,6 +344,14 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             enable_test = valid if not self.ui.checkBox_new_db.isChecked() else (valid and self.db_created)
 
             self.ui.pushButton_test_db.setEnabled(enable_test)
+
+    def validate_filename(self, filename):
+        """Method to validate filename in host field when sqlite is selected"""
+        invalid_chars = r'[<>:"/\\|?*]'
+
+        if re.search(invalid_chars, filename) or len(filename) > 255:
+            return False
+        return True
 
     def test_db(self):
         """Method to test db connection"""
