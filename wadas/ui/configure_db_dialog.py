@@ -109,14 +109,17 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         """Method to update dialog fields depending on DB selection"""
 
         auth_db_selected = self.ui.radioButton_MySQL.isChecked() or self.ui.radioButton_MariaDB.isChecked()
+        self.ui.lineEdit_db_host.setText("")
         self.ui.lineEdit_db_port.setEnabled(auth_db_selected)
         self.ui.lineEdit_db_username.setEnabled(auth_db_selected)
         self.ui.lineEdit_db_password.setEnabled(auth_db_selected)
         self.ui.lineEdit_db_name.setEnabled(auth_db_selected)
         if auth_db_selected and not self.ui.lineEdit_db_name.text():
             self.ui.lineEdit_db_name.setPlaceholderText("wadas")
+            self.ui.lineEdit_db_host.setPlaceholderText("127.0.0.1")
         elif self.ui.radioButton_SQLite.isChecked():
             self.ui.lineEdit_db_name.setPlaceholderText("")
+            self.ui.lineEdit_db_host.setPlaceholderText("wadas_db.sqlite")
 
     def on_checkbox_new_db_checked(self):
         """Method to handle new db checkbox states."""
