@@ -64,6 +64,9 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
 
+        # db enablement status
+        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
+
     def list_usb_cameras(self):
         """Method to initialize cameras list."""
 
@@ -220,6 +223,8 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                                 camera.enabled = checkbox.isChecked()
                                 camera.id = line_edit.text()
                                 saved = True
+                                if self.db_enabled:
+                                    DataBase.update_camera(camera)
                                 break
                             elif (
                                 self.enumerated_usb_cameras[idx].name == camera.name
@@ -253,7 +258,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                         cameras.append(camera)
 
                         # If db is enabled, insert camera into db.
-                        if (db:=DataBase.get_instance()) and db.enabled:
+                        if self.db_enabled:
                             DataBase.insert_into_db(camera)
         else:
             # Save cameras
@@ -275,7 +280,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                     cameras.append(camera)
 
                     # If db is enabled, insert camera into db.
-                    if (db:=DataBase.get_instance()) and db.enabled:
+                    if self.db_enabled:
                         DataBase.insert_into_db(camera)
         self.accept()
 

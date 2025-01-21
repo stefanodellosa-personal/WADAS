@@ -79,6 +79,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         # Init dialog
         self.initialize_dialog()
 
+        # DB enablement status
+        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
+
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
 
@@ -325,7 +328,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                         # Actuator exists and we update its enablement status
                         Actuator.actuators[cur_actuator_id].enabled = cur_actuator_enablement
                         # Update actuator in db if enabled
-                        if (db := DataBase.get_instance()) and db.enabled:
+                        if self.db_enabled:
                             DataBase.update_actuator(Actuator.actuators[cur_actuator_id])
                     else:
                         # Actuator does not exist, therefore we add it to the dictionary
@@ -333,19 +336,19 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                             actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enablement)
                             Actuator.actuators[actuator.id] = actuator
                             # If db is enabled,add actuator into db
-                            if (db:=DataBase.get_instance()) and db.enabled:
+                            if self.db_enabled:
                                 DataBase.insert_into_db(actuator)
                         elif cur_actuator_type == Actuator.ActuatorTypes.FEEDER.value:
                             actuator = FeederActuator(cur_actuator_id, cur_actuator_enablement)
                             Actuator.actuators[actuator.id] = actuator
                             # If db is enabled,add actuator into db
-                            if (db:=DataBase.get_instance()) and db.enabled:
+                            if self.db_enabled:
                                 DataBase.insert_into_db(actuator)
             # If an actuator changes the id we have to remove previous orphaned ids from dictionary
             for key in list(Actuator.actuators):
                 if key not in actuators_id:
                     # Remove actuator from db
-                    if (db := DataBase.get_instance()) and db.enabled:
+                    if self.db_enabled:
                         DataBase.update_actuator(Actuator.actuators[key], delete_actuator=True)
                     del Actuator.actuators[key]
                     # Remove orphan actuators from Camera association (if any)
@@ -363,13 +366,13 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                         actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enablement)
                         Actuator.actuators[actuator.id] = actuator
                         # If db is enabled,add actuator into db
-                        if (db:=DataBase.get_instance()) and db.enabled:
+                        if self.db_enabled:
                             DataBase.insert_into_db(actuator)
                     elif cur_actuator_type == Actuator.ActuatorTypes.FEEDER.value:
                         actuator = FeederActuator(cur_actuator_id, cur_actuator_enablement)
                         Actuator.actuators[actuator.id] = actuator
                         # If db is enabled,add actuator into db
-                        if (db:=DataBase.get_instance()) and db.enabled:
+                        if self.db_enabled:
                             DataBase.insert_into_db(actuator)
         self.accept()
 

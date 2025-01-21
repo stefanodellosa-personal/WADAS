@@ -100,6 +100,9 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         self.initialize_dialog()
         self._setup_logger()
 
+        # DB enablement status
+        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
+
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
 
@@ -179,7 +182,8 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                 dialog_camera_enabled = self.get_camera_enablement(i)
                                 if camera.enabled != dialog_camera_enabled:
                                     camera.enabled = self.get_camera_enablement(i)
-                                    DataBase.update_camera(camera)
+                                    if self.db_enabled:
+                                        DataBase.update_camera(camera)
 
                                 # Check if ftp folder has been changed
                                 camera_changed = False
@@ -225,7 +229,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         self.add_camera_to_ftp_server(cur_ui_id, camera_ftp_path, camera_pass)
 
                         # Insert camera into db if enabled
-                        if (db:=DataBase.get_instance()) and db.enabled:
+                        if self.db_enabled:
                             DataBase.insert_into_db(camera)
 
             # Check for cameras old id (prior to modification) and remove them
@@ -237,14 +241,14 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             for camera in orphan_cameras:
                 cameras.remove(camera)
                 # Set camera as deleted into db
-                if (db:=DataBase.get_instance()) and db.enabled:
+                if self.db_enabled:
                     DataBase.update_camera(camera, delete_camera=True)
             for camera in tuple(cameras):
                 if camera.id in self.removed_cameras:
                     if camera.type == Camera.CameraTypes.FTP_CAMERA:
                         cameras.remove(camera)
                         # Set camera as deleted into db
-                        if (db:=DataBase.get_instance()) and db.enabled:
+                        if self.db_enabled:
                             DataBase.update_camera(camera, delete_camera=True)
         else:
             # Insert new camera(s) in list (including the ones with modified id)
@@ -262,7 +266,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                     self.add_camera_to_ftp_server(cur_camera_id, cur_cam_ftp_dir, camera_pass)
 
                     # Insert camera into db if enabled
-                    if (db:=DataBase.get_instance()) and db.enabled:
+                    if self.db_enabled:
                         DataBase.insert_into_db(camera)
         self.accept()
 

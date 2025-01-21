@@ -40,6 +40,7 @@ class DialogCameraActuatorManagement(QDialog):
         self.setWindowTitle(f"Manage Actuators for Camera ID: {camera.id}")
         self.camera = camera
         self.original_actuators = camera.actuators.copy()  # Save original list for cancel action
+        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
 
         layout = QGridLayout(self)
 
@@ -116,13 +117,14 @@ class DialogCameraActuatorManagement(QDialog):
     def apply_changes(self):
         """Apply changes to the camera's actuator list and accept the dialog."""
 
-        # Apply changes into db
-        for actuator in self.camera.actuators:
-            if not actuator in self.original_actuators:
-                DataBase.add_actuator_to_camera(self.camera, actuator)
-        for actuator in self.original_actuators:
-            if not actuator in self.camera.actuators:
-                DataBase.remove_actuator_from_camera(self.camera, actuator)
+        if self.db_enabled:
+            # Apply changes into db
+            for actuator in self.camera.actuators:
+                if not actuator in self.original_actuators:
+                    DataBase.add_actuator_to_camera(self.camera, actuator)
+            for actuator in self.original_actuators:
+                if not actuator in self.camera.actuators:
+                    DataBase.remove_actuator_from_camera(self.camera, actuator)
         # Changes are directly applied to self.camera.actuators, so we just accept the dialog
         self.accept()
 
