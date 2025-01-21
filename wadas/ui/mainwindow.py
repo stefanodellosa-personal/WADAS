@@ -279,6 +279,11 @@ class MainWindow(QMainWindow):
                         OperationMode.cur_operation_mode.custom_target_species = (
                             OperationMode.cur_custom_classification_species)
 
+            db_status_log = "Database not configured."
+            if db:=DataBase.get_instance():
+                db_status_log = "Database enabled!" if db.enabled else "Database configured but not enabled."
+            logger.info(db_status_log)
+
             # Connect slots to update UI from operation mode
             self._connect_mode_ui_slots()
 
@@ -744,10 +749,17 @@ class MainWindow(QMainWindow):
     def configure_database(self):
         """Method to trigger DB configuration dialog"""
 
-        if (ConfigureDBDialog(self.uuid)).exec():
+        if (configure_db_dialog :=ConfigureDBDialog(self.uuid)).exec():
             logger.info("Database configured.")
+            if configure_db_dialog.create_db() and DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info(
+                    "Autosave enabled! NOTE: DB will enforce autosave when creating new db.")
+                self.save_config_to_file()
             self.setWindowModified(True)
             self.update_toolbar_status()
+
+
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""
