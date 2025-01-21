@@ -261,6 +261,20 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     def create_db(self):
         """Method to trigger new db creation"""
 
+        if self.initial_wadas_db:
+            if self.initial_wadas_db.host != self.ui.lineEdit_db_host.text():
+                DataBase.destroy_instance()
+            elif (not self.ui.radioButton_SQLite.isChecked() and
+                        self.ui.lineEdit_db_name.text() != self.initial_wadas_db.database_name):
+                    DataBase.destroy_instance()
+            else:
+                db_uuid = DataBase.get_db_uuid()
+                db_version = DataBase.get_db_version()
+                if db_uuid and db_version:
+                    message = "Database already existing!" if self.db_created else \
+                        "Cannot create the db as it already exists! Please delete it or rename it before proceed."
+                    self.show_status_dialog("Database creation status", message, False)
+                    return
         self.init_db_from_dialog_params()
 
         if db := DataBase.get_instance():
@@ -374,8 +388,9 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.plainTextEdit_db_test.setPlainText(text)
 
         if db_uuid and str(self.uuid) != db_uuid:
-            self.show_status_dialog("Project UUID mismatch",
+            self.show_status_dialog("Project UUID mismatch in database",
                                     "Project UUID is different than the one stored in DB!\n"
+                                    f"Project UUID:{self.uuid}\n"
                                     "Use of this database is highly discouraged as it might cause errors and crashes.\n"
                                     "Please make sure to select the correct one.",
                                     False)

@@ -267,7 +267,12 @@ class DataBase(ABC):
                 # If Camera associated to the detection event is not in db abort insertion
                 foreign_key.append(
                     session.query(ORMCamera.db_id)
-                    .filter_by(camera_id=domain_object.camera_id)
+                    .filter(
+                        and_(
+                            ORMCamera.camera_id == domain_object.camera_id,
+                            ORMCamera.deletion_date.is_(None),
+                        )
+                    )
                     .scalar()
                 )
                 if not foreign_key:
@@ -280,7 +285,12 @@ class DataBase(ABC):
                 # If Actuator associated to the actuation event is not in db abort insertion
                 foreign_key.append(
                     session.query(ORMActuator.db_id)
-                    .filter_by(actuator_id=domain_object.actuator_id)
+                    .filter(
+                        and_(
+                            ORMActuator.actuator_id == domain_object.actuator_id,
+                            ORMActuator.deletion_date.is_(None),
+                        )
+                    )
                     .scalar()
                 )
                 if not foreign_key:

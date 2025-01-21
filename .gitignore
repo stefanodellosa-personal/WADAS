@@ -41,6 +41,10 @@ build/
 *.bin
 *.xml
 
+# DB
+*.db
+*.sqlite
+
 # Dependency directories
 node_modules/
 bower_components/
