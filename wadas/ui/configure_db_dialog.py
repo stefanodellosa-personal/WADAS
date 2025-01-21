@@ -116,11 +116,13 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.lineEdit_db_password.setEnabled(auth_db_selected)
         self.ui.lineEdit_db_name.setEnabled(auth_db_selected)
         if auth_db_selected:
+            self.ui.label_host.setText("Host name:")
             if not self.ui.lineEdit_db_name.text():
                 self.ui.lineEdit_db_name.setPlaceholderText("wadas")
             if not self.ui.lineEdit_db_host.text():
                 self.ui.lineEdit_db_host.setPlaceholderText("127.0.0.1")
         elif self.ui.radioButton_SQLite.isChecked():
+            self.ui.label_host.setText("File name:")
             self.ui.lineEdit_db_name.setPlaceholderText("")
             if not self.ui.lineEdit_db_host.text():
                 self.ui.lineEdit_db_host.setPlaceholderText("wadas_db.sqlite")
@@ -304,9 +306,11 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
 
         valid = True
         host = self.ui.lineEdit_db_host.text()
+        is_sqlite_selected = self.ui.radioButton_SQLite.isChecked()
 
         if not host:
-            self.ui.label_error.setText("Database host field cannot be empty.")
+            host_field_text = "file name" if is_sqlite_selected else "host name"
+            self.ui.label_error.setText(f"Database {host_field_text} field cannot be empty.")
             valid = False
 
         if self.ui.radioButton_MySQL.isChecked() or self.ui.radioButton_MariaDB.isChecked():
@@ -330,9 +334,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             ):
                 self.ui.label_error.setText("No valid hostname or IP address provided!")
                 valid = False
-        elif self.ui.radioButton_SQLite.isChecked():
+        elif is_sqlite_selected:
             if (host and (
-                    not self.validate_filename(host) or
                     validators.ipv4(host) or
                     validators.ipv6(host))):
                 self.ui.label_error.setText("No valid sqlite db file name provided!")
@@ -344,14 +347,6 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             enable_test = valid if not self.ui.checkBox_new_db.isChecked() else (valid and self.db_created)
 
             self.ui.pushButton_test_db.setEnabled(enable_test)
-
-    def validate_filename(self, filename):
-        """Method to validate filename in host field when sqlite is selected"""
-        invalid_chars = r'[<>:"/\\|?*]'
-
-        if re.search(invalid_chars, filename) or len(filename) > 255:
-            return False
-        return True
 
     def test_db(self):
         """Method to test db connection"""

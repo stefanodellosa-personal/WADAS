@@ -79,10 +79,10 @@ class Ui_ConfigureDBDialog(object):
 
         self.gridLayout_mysql.addWidget(self.lineEdit_db_host, 7, 2, 1, 1)
 
-        self.label_2 = QLabel(self.gridLayoutWidget_2)
-        self.label_2.setObjectName(u"label_2")
+        self.label_host = QLabel(self.gridLayoutWidget_2)
+        self.label_host.setObjectName(u"label_host")
 
-        self.gridLayout_mysql.addWidget(self.label_2, 7, 0, 1, 1)
+        self.gridLayout_mysql.addWidget(self.label_host, 7, 0, 1, 1)
 
         self.lineEdit_db_password = QLineEdit(self.gridLayoutWidget_2)
         self.lineEdit_db_password.setObjectName(u"lineEdit_db_password")
@@ -194,7 +194,7 @@ class Ui_ConfigureDBDialog(object):
         self.radioButton_MySQL.setText(QCoreApplication.translate("ConfigureDBDialog", u"MySQL", None))
         self.pushButton_test_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"Test database connection", None))
         self.label_3.setText(QCoreApplication.translate("ConfigureDBDialog", u"Username:", None))
-        self.label_2.setText(QCoreApplication.translate("ConfigureDBDialog", u"Host:", None))
+        self.label_host.setText(QCoreApplication.translate("ConfigureDBDialog", u"Host:", None))
         self.label_4.setText(QCoreApplication.translate("ConfigureDBDialog", u"Password:", None))
         self.radioButton_MariaDB.setText(QCoreApplication.translate("ConfigureDBDialog", u"MariaDB", None))
         self.label.setText(QCoreApplication.translate("ConfigureDBDialog", u"Database name:", None))
