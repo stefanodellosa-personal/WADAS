@@ -111,10 +111,10 @@ class Ui_ConfigureDBDialog(object):
 
         self.gridLayout_mysql.addWidget(self.label, 11, 0, 1, 1)
 
-        self.checkBox = QCheckBox(self.gridLayoutWidget_2)
-        self.checkBox.setObjectName(u"checkBox")
+        self.checkBox_enable_db = QCheckBox(self.gridLayoutWidget_2)
+        self.checkBox_enable_db.setObjectName(u"checkBox_enable_db")
 
-        self.gridLayout_mysql.addWidget(self.checkBox, 0, 0, 1, 3)
+        self.gridLayout_mysql.addWidget(self.checkBox_enable_db, 0, 0, 1, 3)
 
         self.label_6 = QLabel(self.gridLayoutWidget_2)
         self.label_6.setObjectName(u"label_6")
@@ -169,7 +169,7 @@ class Ui_ConfigureDBDialog(object):
         self.label_error_2 = QLabel(ConfigureDBDialog)
         self.label_error_2.setObjectName(u"label_error_2")
         self.label_error_2.setGeometry(QRect(10, 390, 401, 20))
-        QWidget.setTabOrder(self.checkBox, self.radioButton_SQLite)
+        QWidget.setTabOrder(self.checkBox_enable_db, self.radioButton_SQLite)
         QWidget.setTabOrder(self.radioButton_SQLite, self.radioButton_MySQL)
         QWidget.setTabOrder(self.radioButton_MySQL, self.radioButton_MariaDB)
         QWidget.setTabOrder(self.radioButton_MariaDB, self.lineEdit_db_host)
@@ -198,7 +198,7 @@ class Ui_ConfigureDBDialog(object):
         self.label_4.setText(QCoreApplication.translate("ConfigureDBDialog", u"Password:", None))
         self.radioButton_MariaDB.setText(QCoreApplication.translate("ConfigureDBDialog", u"MariaDB", None))
         self.label.setText(QCoreApplication.translate("ConfigureDBDialog", u"Database name:", None))
-        self.checkBox.setText(QCoreApplication.translate("ConfigureDBDialog", u"Enable database", None))
+        self.checkBox_enable_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"Enable database", None))
         self.label_6.setText(QCoreApplication.translate("ConfigureDBDialog", u"Version:", None))
         self.radioButton_SQLite.setText(QCoreApplication.translate("ConfigureDBDialog", u"SQLite", None))
         self.label_db_version.setText("")

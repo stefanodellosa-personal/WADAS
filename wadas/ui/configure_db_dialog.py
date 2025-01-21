@@ -69,12 +69,12 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         """Method to initialize dialog with saved configuration data"""
 
         if not (wadas_db := DataBase.get_instance()):
-            self.ui.checkBox.setChecked(True)
+            self.ui.checkBox_enable_db.setChecked(True)
             self.ui.radioButton_SQLite.setChecked(True)
             self.ui.label_db_version.setText(__dbversion__)
             self.ui.checkBox_new_db.setChecked(True)
         else:
-            self.ui.checkBox.setChecked(wadas_db.enabled)
+            self.ui.checkBox_enable_db.setChecked(wadas_db.enabled)
             self.ui.lineEdit_db_host.setText(wadas_db.host)
             self.ui.pushButton_create_db.setEnabled(False)
             self.ui.label_db_version.setText(wadas_db.version)
@@ -139,7 +139,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         """Method to update params common to MySQL and SQLite db types"""
 
         wadas_db.host = self.ui.lineEdit_db_host.text()
-        wadas_db.enabled = self.ui.checkBox.isChecked()
+        wadas_db.enabled = self.ui.checkBox_enable_db.isChecked()
 
     def _update_mysql_params(self, wadas_db):
         """Method to update params specific to MySQL or MariaDB db type"""
@@ -201,7 +201,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             int(self.ui.lineEdit_db_port.text()),
             self.ui.lineEdit_db_username.text(),
             self.ui.lineEdit_db_name.text(),
-            self.ui.checkBox.isChecked()
+            self.ui.checkBox_enable_db.isChecked(),
+            self.ui.label_db_version.text()
         )
         keyring.set_password(
             "WADAS_DB_MySQL",
@@ -218,7 +219,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             None,
             "",
             "",
-            self.ui.checkBox.isChecked()
+            self.ui.checkBox_enable_db.isChecked(),
+            self.ui.label_db_version.text()
         )
 
     def new_mariadb_db(self):
@@ -230,7 +232,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             int(self.ui.lineEdit_db_port.text()),
             self.ui.lineEdit_db_username.text(),
             self.ui.lineEdit_db_name.text(),
-            self.ui.checkBox.isChecked()
+            self.ui.checkBox_enable_db.isChecked(),
+            self.ui.label_db_version.text()
         )
         keyring.set_password(
             "WADAS_DB_MariaDB",
@@ -238,7 +241,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.lineEdit_db_password.text(),
         )
 
-    def init_db_from_dialog_params(self):
+    def init_db_from_dialog_params(self, log_info=True):
         """Method to initialize database object from dialog input fields"""
 
         db_type = None
@@ -256,7 +259,9 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             int(port_str) if port_str.isdigit() else 0,
             self.ui.lineEdit_db_username.text(),
             self.ui.lineEdit_db_name.text(),
-            False
+            self.ui.checkBox_enable_db.isChecked(),
+            self.ui.label_db_version.text(),
+            log=log_info
         )
 
     def create_db(self):
@@ -366,9 +371,9 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         """Method to test db connection"""
 
         self.ui.plainTextEdit_db_test.setPlainText("")
-        if self.initial_wadas_db:
-            DataBase.destroy_instance()
-        self.init_db_from_dialog_params()
+        # Make sure we're testing latest input data and not instantiated db values
+        DataBase.destroy_instance()
+        self.init_db_from_dialog_params(log_info=False)
 
         db_uuid = DataBase.get_db_uuid()
         db_version = DataBase.get_db_version()

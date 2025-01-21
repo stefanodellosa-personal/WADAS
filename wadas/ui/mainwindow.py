@@ -751,7 +751,7 @@ class MainWindow(QMainWindow):
 
         if (configure_db_dialog :=ConfigureDBDialog(self.uuid)).exec():
             logger.info("Database configured.")
-            if configure_db_dialog.create_db() and DataBase.get_instance() and self.configuration_file_name:
+            if configure_db_dialog.db_created and DataBase.get_instance() and self.configuration_file_name:
                 # Force project save to guarantee consistency
                 logger.info(
                     "Autosave enabled! NOTE: DB will enforce autosave when creating new db.")
