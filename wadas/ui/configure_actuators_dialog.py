@@ -342,7 +342,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                             if (db:=DataBase.get_instance()) and db.enabled:
                                 DataBase.insert_into_db(actuator)
             # If an actuator changes the id we have to remove previous orphaned ids from dictionary
-            for key in list(Actuator.actuators.keys()):
+            for key in list(Actuator.actuators):
                 if key not in actuators_id:
                     # Remove actuator from db
                     if (db := DataBase.get_instance()) and db.enabled:

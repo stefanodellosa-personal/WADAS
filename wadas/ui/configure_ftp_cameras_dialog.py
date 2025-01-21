@@ -188,8 +188,8 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                     camera_changed = True
 
                                 # Check if password has been changed
-                                cur_pass = self.get_camera_pass(i)
-                                if cur_pass:
+
+                                if cur_pass:= self.get_camera_pass(i):
                                     credentials = keyring.get_credential(
                                         f"WADAS_FTP_camera_{camera.id}", ""
                                     )

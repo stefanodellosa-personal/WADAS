@@ -272,7 +272,7 @@ def load_configuration_from_file(file_path):
     return load_status
 
 
-def save_configuration_to_file(file_, prj_uuid):
+def save_configuration_to_file(file_, project_uuid):
     """Save configuration to YAML file."""
 
     logger.info("Saving configuration to file...")
@@ -305,7 +305,7 @@ def save_configuration_to_file(file_, prj_uuid):
 
     # Build data structure to serialize
     data = {
-        "uuid": str(prj_uuid),
+        "uuid": str(project_uuid),
         "version": __version__,
         "notification": notification or "",
         "cameras": cameras_to_dict,

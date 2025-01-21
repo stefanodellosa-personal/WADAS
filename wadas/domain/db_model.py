@@ -106,7 +106,7 @@ class USBCamera(Camera):
 class FTPCamera(Camera):
     __tablename__ = "ftp_cameras"
 
-    local_id = Column(Integer, ForeignKey("cameras.id"), primary_key=True, name="id")
+    db_id = Column(Integer, ForeignKey("cameras.id"), primary_key=True, name="id")
     ftp_folder = Column(Text, nullable=False)
 
     __mapper_args__ = {"polymorphic_identity": DomainCamera.CameraTypes.FTP_CAMERA}

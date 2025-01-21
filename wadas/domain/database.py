@@ -104,7 +104,6 @@ class DataBase(ABC):
         # Create the appropriate database instance
         match db_type:
             case DataBase.DBTypes.MYSQL:
-
                 return (
                     MySQLDataBase(host, port, username, database_name, enabled, version)
                     if (port and username and database_name)
@@ -185,7 +184,7 @@ class DataBase(ABC):
     def destroy_instance(cls):
         """Destroy the current database instance and release resources."""
 
-        logger.debug("Destroying db isntance...")
+        logger.debug("Destroying db instance...")
         if cls.wadas_db_engine:
             try:
                 cls.wadas_db_engine.dispose()
@@ -562,7 +561,10 @@ class DataBase(ABC):
 
         camera_db_id = cls.get_camera_id(detection_event.camera_id)
         if not camera_db_id:
-            logger.error("Unable to find Camera id %s while getting Detection event id.")
+            logger.error(
+                "Unable to find Camera id %s while getting Detection event id.",
+                detection_event.camera_id,
+            )
             return None
 
         if session := cls.create_session():
@@ -823,9 +825,7 @@ class MariaDBDataBase(DataBase):
         base_string = (
             f"mariadb+mariadbconnector://{self.username}:{password}@{self.host}:{self.port}"
         )
-        if not create:
-            return f"{base_string}/{self.database_name}"
-        return base_string
+        return base_string if create else f"{base_string}/{self.database_name}"
 
     def create_database(self):
         """Method to create a new database."""

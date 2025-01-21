@@ -35,7 +35,7 @@ module_dir_path = os.path.dirname(os.path.abspath(__file__))
 class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     """Class to insert DB configuration to enable WADAS for database persistency."""
 
-    def __init__(self, prj_uuid):
+    def __init__(self, project_uuid):
         super(ConfigureDBDialog, self).__init__()
         self.ui = Ui_ConfigureDBDialog()
         self.ui.setupUi(self)
@@ -60,7 +60,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.on_cancel_clicked)
 
         self.init_dialog()
-        self.uuid = prj_uuid
+        self.uuid = project_uuid
         self.db_created = False
         self.initial_wadas_db = DataBase.get_instance()
         self.ui.plainTextEdit_db_test.setPlainText("Test out your DB before accepting changes!")
@@ -79,27 +79,28 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.pushButton_create_db.setEnabled(False)
             self.ui.label_db_version.setText(wadas_db.version)
             if wadas_db.type:
-                if wadas_db.type == DataBase.DBTypes.MYSQL:
-                    self.ui.radioButton_MySQL.setChecked(True)
-                    pwd = keyring.get_password("WADAS_DB_MySQL", wadas_db.username)
-                    self.ui.lineEdit_db_port.setText(str(wadas_db.port))
-                    self.ui.lineEdit_db_username.setText(wadas_db.username)
-                    self.ui.lineEdit_db_password.setText(pwd)
-                    self.ui.lineEdit_db_name.setText(wadas_db.database_name)
-                elif wadas_db.type == DataBase.DBTypes.MARIADB:
-                    self.ui.radioButton_MariaDB.setChecked(True)
-                    pwd = keyring.get_password("WADAS_DB_MariaDB", wadas_db.username)
-                    self.ui.lineEdit_db_port.setText(str(wadas_db.port))
-                    self.ui.lineEdit_db_username.setText(wadas_db.username)
-                    self.ui.lineEdit_db_password.setText(pwd)
-                    self.ui.lineEdit_db_name.setText(wadas_db.database_name)
-                elif wadas_db.type == DataBase.DBTypes.SQLITE:
-                    self.ui.radioButton_SQLite.setChecked(True)
-                else:
-                    unrecognized_db_type_dlg = WADASErrorMessage("Unrecognized DB type",
-                                                                 "Database type is not recognized or supported.")
-                    unrecognized_db_type_dlg.exec()
-                    self.ui.pushButton_create_db.setEnabled(True)
+                match wadas_db.type:
+                    case DataBase.DBTypes.MYSQL:
+                        self.ui.radioButton_MySQL.setChecked(True)
+                        pwd = keyring.get_password("WADAS_DB_MySQL", wadas_db.username)
+                        self.ui.lineEdit_db_port.setText(str(wadas_db.port))
+                        self.ui.lineEdit_db_username.setText(wadas_db.username)
+                        self.ui.lineEdit_db_password.setText(pwd)
+                        self.ui.lineEdit_db_name.setText(wadas_db.database_name)
+                    case DataBase.DBTypes.MARIADB:
+                        self.ui.radioButton_MariaDB.setChecked(True)
+                        pwd = keyring.get_password("WADAS_DB_MariaDB", wadas_db.username)
+                        self.ui.lineEdit_db_port.setText(str(wadas_db.port))
+                        self.ui.lineEdit_db_username.setText(wadas_db.username)
+                        self.ui.lineEdit_db_password.setText(pwd)
+                        self.ui.lineEdit_db_name.setText(wadas_db.database_name)
+                    case DataBase.DBTypes.SQLITE:
+                        self.ui.radioButton_SQLite.setChecked(True)
+                    case _:
+                        unrecognized_db_type_dlg = WADASErrorMessage("Unrecognized DB type",
+                                                                     "Database type is not recognized or supported.")
+                        unrecognized_db_type_dlg.exec()
+                        self.ui.pushButton_create_db.setEnabled(True)
             else:
                 unrecognized_db_type_dlg = WADASErrorMessage("No DB type",
                                                              "Database type is not configured.")
@@ -203,7 +204,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.checkBox.isChecked()
         )
         keyring.set_password(
-            f"WADAS_DB_MySQL",
+            "WADAS_DB_MySQL",
             self.ui.lineEdit_db_username.text(),
             self.ui.lineEdit_db_password.text(),
         )
@@ -232,7 +233,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.checkBox.isChecked()
         )
         keyring.set_password(
-            f"WADAS_DB_MariaDB",
+            "WADAS_DB_MariaDB",
             self.ui.lineEdit_db_username.text(),
             self.ui.lineEdit_db_password.text(),
         )
@@ -252,7 +253,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         DataBase.initialize(
             db_type,
             self.ui.lineEdit_db_host.text(),
-            int(port_str) if port_str.strip() else 0,
+            int(port_str) if port_str.isdigit() else 0,
             self.ui.lineEdit_db_username.text(),
             self.ui.lineEdit_db_name.text(),
             False
@@ -278,9 +279,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.init_db_from_dialog_params()
 
         if db := DataBase.get_instance():
-            create = db.create_database()
             # Populate DB with existing cameras and actuators
-            if create:
+            if db.create_database():
                 DataBase.populate_db(self.uuid)
                 self.db_created = True
         message = "Database successfully created!" if self.db_created else "Failed to create the db!"
@@ -403,12 +403,9 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         if self.initial_wadas_db:
             DataBase.destroy_instance()
             # Pristine previous db config, if any
-            port = self.initial_wadas_db.port if\
-                not self.initial_wadas_db.type == DataBase.DBTypes.SQLITE else None
-            username = self.initial_wadas_db.username if\
-                not self.initial_wadas_db.type == DataBase.DBTypes.SQLITE else None
-            database_name = self.initial_wadas_db.database_name if\
-                not self.initial_wadas_db.type == DataBase.DBTypes.SQLITE else None
+            port, username, database_name = (None, None, None) if (
+                self.initial_wadas_db.type == DataBase.DBTypes.SQLITE) else (
+                self.initial_wadas_db.port, self.initial_wadas_db.username, self.initial_wadas_db.database_name)
             DataBase.initialize(
                 self.initial_wadas_db.type,
                 self.initial_wadas_db.host,
