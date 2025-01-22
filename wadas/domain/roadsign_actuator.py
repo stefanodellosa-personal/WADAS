@@ -22,6 +22,7 @@ import json
 import logging
 from enum import Enum
 
+from wadas.domain.actuation_event import ActuationEvent
 from wadas.domain.actuator import Actuator
 
 logger = logging.getLogger(__name__)
@@ -39,8 +40,11 @@ class RoadSignActuator(Actuator):
 
     def send_command(self, cmd):
         """Method to send the specific command to the Actuator superclass."""
+
+        command_sent = False
         if isinstance(cmd, RoadSignActuator.Commands):
             super().send_command(cmd)
+            command_sent = True
         else:
             logger.error(
                 "Actuator %s with ID %s received an unknown command: %s.",
@@ -49,16 +53,22 @@ class RoadSignActuator(Actuator):
                 cmd,
             )
             raise Exception("Unknown command.")
+        return command_sent
 
-    def actuate(self):
+    def actuate(self, actuation_event: ActuationEvent):
         """Method to trigger the RoadSignActuator sending it the DISPLAY_ON Command"""
-        self.send_command(self.Commands.DISPLAY_ON)
+
+        cmd = self.Commands.DISPLAY_ON
+        if self.send_command(cmd):
+            actuation_event.command = cmd
 
     def serialize(self):
         """Method to serialize RoadSignActuator object into file."""
+
         return {"id": self.id, "enabled": self.enabled, "type": self.type.value}
 
     @staticmethod
     def deserialize(data):
         """Method to deserialize Actuator object from file."""
+
         return RoadSignActuator(data["id"], data["enabled"])

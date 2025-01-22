@@ -14,8 +14,19 @@
 # along with WADAS. If not, see <https://www.gnu.org/licenses/>.
 #
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
-# Date: 2024-08-14
-# Description: module to keep track of WADAS version
+# Date: 2025-01-04
+# Description: Actuation event module.
 
-__version__ = "v0.5.1"
-__dbversion__ = __version__
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class ActuationEvent:
+    """Class to embed actuation event information into a dedicated object."""
+
+    def __init__(self, actuator_id, time_stamp, detection_event, command=None):
+        self.actuator_id = actuator_id
+        self.time_stamp = time_stamp
+        self.detection_event = detection_event
+        self.command = command

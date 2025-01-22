@@ -30,6 +30,7 @@ from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.database import DataBase
 from wadas.domain.email_notifier import EmailNotifier
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer
 from wadas.domain.feeder_actuator import FeederActuator
@@ -55,7 +56,11 @@ def check_version_compatibility(config_file_version):
     if wadas_version < config_file_version:
         return False
     if wadas_version > config_file_version:
-        # Add here conversion logic for older versions to support (if any)
+        # Example of compatibility check to list here:
+        # if config_file_version == Version("0.5.0") and wadas_version == Version("0.5.1"):
+        #    return True
+        # NOTE: prerequisite to this is that new yaml keys, absent in previous version, are handled
+        # at load_configuration_from_file() time.
         return False
 
 
@@ -70,6 +75,7 @@ def load_configuration_from_file(file_path):
         "valid_ftp_keyring": True,
         "valid_email_keyring": True,
         "valid_whatsapp_keyring": True,
+        "uuid": "",
     }
 
     with open(str(file_path)) as file_:
@@ -78,6 +84,9 @@ def load_configuration_from_file(file_path):
 
     # Applying configuration to WADAS from config file values
     try:
+        # Uuid
+        load_status["uuid"] = wadas_config["uuid"]
+
         # Version
         config_file_version = Version(wadas_config["version"].lstrip("v"))
         load_status["config_version"] = config_file_version
@@ -243,6 +252,15 @@ def load_configuration_from_file(file_path):
                     load_status["errors_on_load"] = True
         else:
             OperationMode.cur_operation_mode = None
+
+        # DataBase
+        if database_cfg := wadas_config["database"]:
+            if not DataBase.deserialize(database_cfg):
+                logger.error("Unrecognized Database Type")
+                load_status["errors_on_load"] = True
+                load_status["errors_log"] = "Unrecognized Database Type"
+                return load_status
+
     except Exception as e:
         load_status["errors_on_load"] = True
         load_status["errors_log"] = e
@@ -254,7 +272,7 @@ def load_configuration_from_file(file_path):
     return load_status
 
 
-def save_configuration_to_file(file_):
+def save_configuration_to_file(file_, project_uuid):
     """Save configuration to YAML file."""
 
     logger.info("Saving configuration to file...")
@@ -287,6 +305,7 @@ def save_configuration_to_file(file_):
 
     # Build data structure to serialize
     data = {
+        "uuid": str(project_uuid),
         "version": __version__,
         "notification": notification or "",
         "cameras": cameras_to_dict,
@@ -306,6 +325,7 @@ def save_configuration_to_file(file_):
             if FastAPIActuatorServer.actuator_server
             else ""
         ),
+        "database": DataBase.wadas_db.serialize() if DataBase.wadas_db else "",
     }
 
     with open(file_, "w") as yaml_file:

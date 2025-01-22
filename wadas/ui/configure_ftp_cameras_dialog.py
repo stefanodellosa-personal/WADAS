@@ -39,6 +39,7 @@ from PySide6.QtWidgets import (
 from validators import ipv4
 
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.database import DataBase
 from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.ftps_server import FTPsServer
 from wadas.ui.qt.ui_configure_ftp_cameras import Ui_DialogFTPCameras
@@ -98,6 +99,9 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         # Init dialog
         self.initialize_dialog()
         self._setup_logger()
+
+        # DB enablement status
+        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
 
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
@@ -175,7 +179,11 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         if camera.type == Camera.CameraTypes.FTP_CAMERA:
                             if cur_ui_id == camera.id:
                                 found = True
-                                camera.enabled = self.get_camera_enablement(i)
+                                dialog_camera_enabled = self.get_camera_enablement(i)
+                                if camera.enabled != dialog_camera_enabled:
+                                    camera.enabled = self.get_camera_enablement(i)
+                                    if self.db_enabled:
+                                        DataBase.update_camera(camera)
 
                                 # Check if ftp folder has been changed
                                 camera_changed = False
@@ -183,9 +191,9 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                                     camera.ftp_folder = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_ui_id)
                                     camera_changed = True
 
-                                # check if password has been changed
-                                cur_pass = self.get_camera_pass(i)
-                                if cur_pass:
+                                # Check if password has been changed
+
+                                if cur_pass:= self.get_camera_pass(i):
                                     credentials = keyring.get_credential(
                                         f"WADAS_FTP_camera_{camera.id}", ""
                                     )
@@ -220,6 +228,10 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                         # Add FTP Camera to FTP server users list
                         self.add_camera_to_ftp_server(cur_ui_id, camera_ftp_path, camera_pass)
 
+                        # Insert camera into db if enabled
+                        if self.db_enabled:
+                            DataBase.insert_into_db(camera)
+
             # Check for cameras old id (prior to modification) and remove them
             orphan_cameras = (
                 camera
@@ -228,10 +240,16 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
             )
             for camera in orphan_cameras:
                 cameras.remove(camera)
+                # Set camera as deleted into db
+                if self.db_enabled:
+                    DataBase.update_camera(camera, delete_camera=True)
             for camera in tuple(cameras):
                 if camera.id in self.removed_cameras:
                     if camera.type == Camera.CameraTypes.FTP_CAMERA:
                         cameras.remove(camera)
+                        # Set camera as deleted into db
+                        if self.db_enabled:
+                            DataBase.update_camera(camera, delete_camera=True)
         else:
             # Insert new camera(s) in list (including the ones with modified id)
             for i in range(0, self.ui_camera_idx):
@@ -239,13 +257,17 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
                 if cur_camera_id:
                     cur_cam_ftp_dir = os.path.join(FTPsServer.ftps_server.ftp_dir, cur_camera_id)
                     camera_pass = self.get_camera_pass(i)
-                    camera_user = cur_camera_id
-                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir, camera_user)
+                    camera_enabled = self.get_camera_enablement(i)
+                    camera = FTPCamera(cur_camera_id, cur_cam_ftp_dir, camera_enabled)
                     cameras.append(camera)
                     # Store credentials in keyring
                     self.add_camera_credentials(cur_camera_id, camera_pass)
                     # Add camera user to FTPS server
                     self.add_camera_to_ftp_server(cur_camera_id, cur_cam_ftp_dir, camera_pass)
+
+                    # Insert camera into db if enabled
+                    if self.db_enabled:
+                        DataBase.insert_into_db(camera)
         self.accept()
 
     def add_camera_credentials(self, camera_id, password):
@@ -294,7 +316,7 @@ class DialogFTPCameras(QDialog, Ui_DialogFTPCameras):
         return camera_pass_ln.text() if camera_pass_ln else False
 
     def get_camera_enablement(self, row):
-        """Method to get camera enablement status from UI programmmatically by row number"""
+        """Method to get camera enablement status from UI programmatically by row number"""
 
         camera_enablement = self.findChild(QCheckBox, f"checkBox_enable_{row}")
         return camera_enablement.isChecked() if camera_enablement else None

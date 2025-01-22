@@ -21,6 +21,7 @@ from validators import ipv4
 
 from wadas.domain.actuator import Actuator
 from wadas.domain.camera import cameras
+from wadas.domain.database import DataBase
 from wadas.domain.fastapi_actuator_server import FastAPIActuatorServer, initialize_fastapi_logger
 from wadas.domain.feeder_actuator import FeederActuator
 from wadas.domain.roadsign_actuator import RoadSignActuator
@@ -49,7 +50,6 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui.pushButton_stop_server.setEnabled(False)
         self.ui.pushButton_remove_actuator.setEnabled(False)
         self.ui.label_status.setStyleSheet("color: red")
-        self.add_actuator()
 
         # Create scrollable area for Actuator list in Actuators tab
         scroll_area = QScrollArea(self.ui.tab_actuator_list)
@@ -61,12 +61,12 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui.verticalLayout_actuators.addWidget(scroll_area)
 
         # Adding first row of actuators form
-        self.add_actuator()
+        self.add_actuator() if not Actuator.actuators else self.add_actuator(False)
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
         self.ui.buttonBox.rejected.connect(self.reject_and_close)
-        self.ui.pushButton_add_actuator.clicked.connect(self.add_actuator)
+        self.ui.pushButton_add_actuator.clicked.connect(self.on_add_actuator_clicked)
         self.ui.pushButton_remove_actuator.clicked.connect(self.remove_actuator)
         self.ui.pushButton_key_file.clicked.connect(self.select_key_file)
         self.ui.pushButton_cert_file.clicked.connect(self.select_certificate_file)
@@ -78,6 +78,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
 
         # Init dialog
         self.initialize_dialog()
+
+        # DB enablement status
+        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
 
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
@@ -97,12 +100,12 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.list_actuators_in_tab()
 
     def list_actuators_in_tab(self):
-        """Method to list cameras in FTPCameras tab."""
+        """Method to list actuators in actuators tab."""
 
         i = 0
         for key in Actuator.actuators:
             if i > 0:
-                self.add_actuator()
+                self.add_actuator(type_select_enabled=False)
             actuator_id_ln = self.findChild(QLineEdit, f"lineEdit_actuator_id_{i}")
             actuator_id_ln.setText(Actuator.actuators[key].id)
             actuator_type_cb: QComboBox
@@ -172,7 +175,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(valid)
         self.ui.pushButton_start_server.setEnabled(valid)
 
-    def add_actuator(self):
+    def add_actuator(self, type_select_enabled=True):
         """Method to add new actuator line edits."""
 
         grid_layout_actuators = self.findChild(QGridLayout, "gridLayout_actuators")
@@ -202,6 +205,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
             combo_box.addItems(types)
             combo_box.currentIndexChanged.connect(self.validate)
             combo_box.setToolTip("Select actuator type")
+            combo_box.setEnabled(type_select_enabled) # If Actuator object exists type cannot be changed
             grid_layout_actuators.addWidget(combo_box, row, 4)
             # Actuator Enablement
             label = QLabel("Enable:")
@@ -288,6 +292,9 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                 return True
         return False
 
+    def on_add_actuator_clicked(self):
+        self.add_actuator(type_select_enabled=True)
+
     def accept_and_close(self):
         """When Ok is clicked, save Ai model config info before closing."""
 
@@ -318,19 +325,31 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                 if cur_actuator_id and cur_actuator_type:
                     actuators_id.add(cur_actuator_id)
                     if cur_actuator_id in Actuator.actuators:
-                        # actuator exists and we update its enablement status
+                        # Actuator exists and we update its enablement status
                         Actuator.actuators[cur_actuator_id].enabled = cur_actuator_enablement
+                        # Update actuator in db if enabled
+                        if self.db_enabled:
+                            DataBase.update_actuator(Actuator.actuators[cur_actuator_id])
                     else:
-                        # actuator does not exist, therefore we add it to the dictionary
+                        # Actuator does not exist, therefore we add it to the dictionary
                         if cur_actuator_type == Actuator.ActuatorTypes.ROADSIGN.value:
                             actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enablement)
                             Actuator.actuators[actuator.id] = actuator
+                            # If db is enabled,add actuator into db
+                            if self.db_enabled:
+                                DataBase.insert_into_db(actuator)
                         elif cur_actuator_type == Actuator.ActuatorTypes.FEEDER.value:
                             actuator = FeederActuator(cur_actuator_id, cur_actuator_enablement)
                             Actuator.actuators[actuator.id] = actuator
+                            # If db is enabled,add actuator into db
+                            if self.db_enabled:
+                                DataBase.insert_into_db(actuator)
             # If an actuator changes the id we have to remove previous orphaned ids from dictionary
-            for key in list(Actuator.actuators.keys()):
+            for key in list(Actuator.actuators):
                 if key not in actuators_id:
+                    # Remove actuator from db
+                    if self.db_enabled:
+                        DataBase.update_actuator(Actuator.actuators[key], delete_actuator=True)
                     del Actuator.actuators[key]
                     # Remove orphan actuators from Camera association (if any)
                     for camera in cameras:
@@ -346,9 +365,15 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
                     if cur_actuator_type == Actuator.ActuatorTypes.ROADSIGN.value:
                         actuator = RoadSignActuator(cur_actuator_id, cur_actuator_enablement)
                         Actuator.actuators[actuator.id] = actuator
+                        # If db is enabled,add actuator into db
+                        if self.db_enabled:
+                            DataBase.insert_into_db(actuator)
                     elif cur_actuator_type == Actuator.ActuatorTypes.FEEDER.value:
                         actuator = FeederActuator(cur_actuator_id, cur_actuator_enablement)
                         Actuator.actuators[actuator.id] = actuator
+                        # If db is enabled,add actuator into db
+                        if self.db_enabled:
+                            DataBase.insert_into_db(actuator)
         self.accept()
 
     def reject_and_close(self):

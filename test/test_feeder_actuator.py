@@ -1,6 +1,9 @@
 import pytest
 
+from wadas.domain.actuation_event import ActuationEvent
+from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.feeder_actuator import FeederActuator
+from wadas.domain.utils import get_timestamp
 
 
 def test_send_command_valid():
@@ -20,8 +23,17 @@ def test_send_command_invalid():
 
 
 def test_actuate():
+    detection_event = DetectionEvent(
+        "TestCamera",
+        get_timestamp(),
+        "orig_img_path",
+        "detected_img_path",
+        detected_animals=None,
+        classification=False,
+    )
+    actuation_event = ActuationEvent("TestActuator", get_timestamp(), detection_event)
     actuator = FeederActuator(id="123", enabled=True)
-    actuator.actuate()
+    actuator.actuate(actuation_event)
     assert actuator.get_command() == FeederActuator.Commands.CLOSE.value
 
 

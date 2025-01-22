@@ -35,6 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.database import DataBase
 from wadas.domain.usb_camera import USBCamera
 from wadas.ui.qt.ui_select_usb_cameras import Ui_DialogSelectUSBCameras
 from wadas.ui.motion_detection_dialog import MotionDetectionDialog
@@ -62,6 +63,9 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
+
+        # db enablement status
+        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
 
     def list_usb_cameras(self):
         """Method to initialize cameras list."""
@@ -219,6 +223,8 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                                 camera.enabled = checkbox.isChecked()
                                 camera.id = line_edit.text()
                                 saved = True
+                                if self.db_enabled:
+                                    DataBase.update_camera(camera)
                                 break
                             elif (
                                 self.enumerated_usb_cameras[idx].name == camera.name
@@ -250,6 +256,10 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                             self.enumerated_usb_cameras[idx].path,
                         )
                         cameras.append(camera)
+
+                        # If db is enabled, insert camera into db.
+                        if self.db_enabled:
+                            DataBase.insert_into_db(camera)
         else:
             # Save cameras
             for idx in range(camera_number):
@@ -268,6 +278,10 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
                         self.enumerated_usb_cameras[idx].path,
                     )
                     cameras.append(camera)
+
+                    # If db is enabled, insert camera into db.
+                    if self.db_enabled:
+                        DataBase.insert_into_db(camera)
         self.accept()
 
     def test_camera_stream(self, camera_idx):

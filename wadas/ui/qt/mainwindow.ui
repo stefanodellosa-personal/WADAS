@@ -300,7 +300,10 @@
    <addaction name="actionConfigure_Telegram"/>
    <addaction name="separator"/>
    <addaction name="actionSelect_Mode"/>
+   <addaction name="separator"/>
    <addaction name="actionConfigure_Ai_model"/>
+   <addaction name="separator"/>
+   <addaction name="actionConfigure_database"/>
    <addaction name="separator"/>
    <addaction name="actionRun"/>
    <addaction name="actionStop"/>
@@ -555,6 +558,21 @@
    </property>
    <property name="toolTip">
     <string>Load last saved configuration</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionConfigure_database">
+   <property name="icon">
+    <iconset>
+     <normaloff>wadas/icons/icon-db.png</normaloff>wadas/icons/icon-db.png</iconset>
+   </property>
+   <property name="text">
+    <string>configure database</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure database</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

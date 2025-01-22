@@ -44,3 +44,23 @@ class DetectionEvent:
         self.classification = classification
         self.classification_img_path = classification_img_path
         self.classified_animals = classified_animals
+
+    def serialize_classified_animals(self):
+        """Method to prepare JSON serialization to db of classified_animals attribute."""
+
+        return (
+            [
+                {
+                    "id": animal["id"],
+                    "classification": animal["classification"],
+                    "xyxy": (
+                        animal["xyxy"].tolist()
+                        if hasattr(animal["xyxy"], "tolist")
+                        else animal["xyxy"]
+                    ),
+                }
+                for animal in self.classified_animals
+            ]
+            if self.classified_animals
+            else []
+        )

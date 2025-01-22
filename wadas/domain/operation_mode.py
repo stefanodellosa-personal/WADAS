@@ -25,9 +25,11 @@ from enum import Enum
 
 from PySide6.QtCore import QObject, Signal
 
+from wadas.domain.actuation_event import ActuationEvent
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
+from wadas.domain.database import DataBase
 from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.fastapi_actuator_server import (
     FastAPIActuatorServer,
@@ -35,6 +37,7 @@ from wadas.domain.fastapi_actuator_server import (
 )
 from wadas.domain.ftps_server import FTPsServer
 from wadas.domain.notifier import Notifier
+from wadas.domain.utils import get_precise_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +79,7 @@ class OperationMode(QObject):
         self.ftp_thread = None
         self.actuators_server_thread = None
         self.actuators_view_thread = None
+        self.en_classification = False
 
     def init_model(self):
         """Method to run the selected WADAS operation mode"""
@@ -107,11 +111,27 @@ class OperationMode(QObject):
                     self.ftp_thread = FTPsServer.ftps_server.run()
         logger.info("Ready for video stream from Camera(s)...")
 
-    def _detect(self, cur_image_path):
+    def _detect(self, cur_img):
         """Method to run the animal detection process on a specific image"""
-        results, detected_img_path = self.ai_model.process_image(cur_image_path, True)
-        self.last_detection = detected_img_path
-        return results, detected_img_path
+
+        results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
+
+        if results and detected_img_path:
+            detection_event = DetectionEvent(
+                cur_img["camera_id"],
+                get_precise_timestamp(),
+                cur_img["img"],
+                detected_img_path,
+                results,
+                self.en_classification,
+            )
+            self.last_detection = detected_img_path
+            # Insert detection event into db, if enabled
+            if (db := DataBase.get_instance()) and db.enabled:
+                db.insert_into_db(detection_event)
+            return detection_event
+        else:
+            return None
 
     def _format_classified_animals_string(self, classified_animals):
         # Prepare a list of classified animals to print in UI
@@ -119,27 +139,32 @@ class OperationMode(QObject):
             animal["classification"][0] for animal in classified_animals
         )
 
-    def _classify(self, cur_image_path, detection_results):
+    def _classify(self, detection_event: DetectionEvent):
         """Method to run the animal classification process
         on a specific image starting from the detection output"""
+
         # Classify if detection has identified animals
-        if len(detection_results["detections"].xyxy):
+        if len(detection_event.detected_animals["detections"].xyxy):
             logger.info("Running classification on detection result(s)...")
             (
                 classified_img_path,
                 classified_animals,
-            ) = self.ai_model.classify(cur_image_path, detection_results)
-            self.last_classification = classified_img_path
-
-            self._format_classified_animals_string(classified_animals)
-            return classified_img_path, classified_animals
-        return None, None
+            ) = self.ai_model.classify(
+                detection_event.original_image, detection_event.detected_animals
+            )
+            if classified_img_path and classified_animals:
+                self.last_classification = classified_img_path
+                self._format_classified_animals_string(classified_animals)
+                detection_event.classified_animals = classified_animals
+                detection_event.classification_img_path = classified_img_path
+                # Update detection event into db, if enabled
+                if (db := DataBase.get_instance()) and db.enabled:
+                    db.update_detection_event(detection_event)
 
     def ftp_camera_exist(self):
-        for camera in cameras:
-            if camera.type == Camera.CameraTypes.FTP_CAMERA:
-                return True
-        return False
+        """Method that returns True if at least an FTP camera exists, False otherwise."""
+
+        return any(camera.type == Camera.CameraTypes.FTP_CAMERA for camera in cameras)
 
     def check_for_termination_requests(self):
         """Terminate current thread if interrupt request comes from Mainwindow."""
@@ -163,7 +188,8 @@ class OperationMode(QObject):
             return
 
     def _initialize_processes(self):
-        """Method to initialize the processes needed for the dectection"""
+        """Method to initialize the processes needed for the detection"""
+
         self.init_model()
         self.check_for_termination_requests()
         self._initialize_cameras()
@@ -171,21 +197,30 @@ class OperationMode(QObject):
 
     def send_notification(self, detection_event: DetectionEvent, message):
         """Method to send notification(s) trough Notifier class (and subclasses)"""
+
         Notifier.send_notifications(detection_event, message)
 
-    def actuate(self, camera_id):
+    def actuate(self, detection_event: DetectionEvent):
         """Method to trigger actuators associated to the camera, when enabled"""
+
         cur_camera = None
         for cur_camera in cameras:
-            if cur_camera.id == camera_id:
+            if cur_camera.id == detection_event.camera_id:
                 break
         if cur_camera:
             for actuator in cur_camera.actuators:
                 if actuator.enabled:
-                    actuator.actuate()
+                    actuation_event = ActuationEvent(
+                        actuator.id, get_precise_timestamp(), detection_event
+                    )
+                    actuator.actuate(actuation_event)
+                    # Insert actuation event into db, if enabled
+                    if (db := DataBase.get_instance()) and db.enabled:
+                        db.insert_into_db(actuation_event)
 
     def execution_completed(self):
         """Method to perform end of execution steps."""
+
         self.run_finished.emit()
         self.stop_ftp_server()
         logger.info("Done with processing.")
@@ -200,12 +235,14 @@ class OperationMode(QObject):
 
     def _scheduled_update_actuators_trigger(self):
         """Method to trigger the actuator(s) view update every 5 secs"""
+
         while not self.flag_stop_update_actuators_thread:
             time.sleep(5)
             self.update_actuator_status.emit()
 
     def start_actuator_server(self):
         """Method to start the HTTPS Actuator Server"""
+
         if Actuator.actuators and FastAPIActuatorServer.actuator_server:
             initialize_fastapi_logger()
             logger.info("Instantiating HTTPS Actuator server...")
@@ -216,6 +253,7 @@ class OperationMode(QObject):
 
     def start_update_actuators_thread(self):
         """Start the thread responsible for keeping the actuator(s) view updated"""
+
         update_thread = threading.Thread(target=self._scheduled_update_actuators_trigger)
         if update_thread:
             update_thread.start()
@@ -226,12 +264,14 @@ class OperationMode(QObject):
 
     def stop_update_actuators_thread(self):
         """Method to stop the thread responsible for keeping the actuator(s) view updated"""
+
         self.flag_stop_update_actuators_thread = True
         if self.actuators_view_thread:
             self.actuators_view_thread.join()
 
     def stop_actuator_server(self):
         """Method to Stop HTTPS Actuator Server"""
+
         if FastAPIActuatorServer.actuator_server:
             self.stop_update_actuators_thread()
             FastAPIActuatorServer.actuator_server.stop()

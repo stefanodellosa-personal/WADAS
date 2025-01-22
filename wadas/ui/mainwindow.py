@@ -25,6 +25,7 @@ import sys
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 from packaging.version import Version
+import uuid
 
 import keyring
 from PySide6 import QtCore, QtGui
@@ -38,6 +39,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
+from wadas.domain.database import DataBase
 from wadas._version import __version__
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
@@ -59,6 +61,7 @@ from wadas.ui.configure_ai_model_dialog import ConfigureAiModel
 from wadas.ui.configure_camera_actuator_associations_dialog import (
     DialogConfigureCameraToActuatorAssociations,
 )
+from wadas.ui.configure_db_dialog import ConfigureDBDialog
 from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
@@ -99,8 +102,17 @@ class MainWindow(QMainWindow):
         self.configuration_file_name = None
         self.key_ring = None
         self.ftp_server = None
-        self.load_status = None
-
+        self.load_status = dict.fromkeys(
+            ["errors_on_load",
+            "errors_log",
+            "config_version",
+            "compatible_config",
+            "valid_ftp_keyring",
+            "valid_email_keyring",
+            "valid_whatsapp_keyring"
+             ]
+        )
+        self.uuid = uuid.uuid4()
         self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
 
         # Connect Actions
@@ -156,6 +168,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_WA.triggered.connect(self.configure_whatsapp)
         self.ui.actionConfigure_Telegram.triggered.connect(self.configure_telegram)
         self.ui.actionRecent_configuration.triggered.connect(self.open_last_saved_file)
+        self.ui.actionConfigure_database.triggered.connect(self.configure_database)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -265,6 +278,11 @@ class MainWindow(QMainWindow):
                     else:
                         OperationMode.cur_operation_mode.custom_target_species = (
                             OperationMode.cur_custom_classification_species)
+
+            db_status_log = "Database not configured."
+            if (db := DataBase.get_instance()):
+                db_status_log = "Database enabled!" if db.enabled else "Database configured but not enabled."
+            logger.info(db_status_log)
 
             # Connect slots to update UI from operation mode
             self._connect_mode_ui_slots()
@@ -412,6 +430,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_camera_to_actuator_associations.setEnabled(not running)
         self.ui.actionConfigure_WA.setEnabled(not running)
         self.ui.actionConfigure_Telegram.setEnabled(not running)
+        self.ui.actionConfigure_database.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""
@@ -506,6 +525,10 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
+            if DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
+                self.save_config_to_file()
 
     def configure_actuators(self):
         """Method to trigger UI dialog for actuator(s) configuration."""
@@ -516,6 +539,10 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_actuator_list()
+            if DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
+                self.save_config_to_file()
 
     def configure_camera_to_actuators_associations(self):
         """Method to trigger UI dialog for actuator(s) configuration."""
@@ -525,6 +552,10 @@ class MainWindow(QMainWindow):
             logger.info("Camera(s) to Actuator(s) association(s) configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            if DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
+                self.save_config_to_file()
 
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""
@@ -571,7 +602,7 @@ class MainWindow(QMainWindow):
             logger.error("No configuration file provided. Aborting save.")
             return
         else:
-            save_configuration_to_file(self.configuration_file_name)
+            save_configuration_to_file(self.configuration_file_name, self.uuid)
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.set_recent_configuration(self.configuration_file_name)
@@ -606,6 +637,7 @@ class MainWindow(QMainWindow):
                 return
 
             self.configuration_file_name = file_name[0]
+            self.uuid = uuid.UUID(self.load_status["uuid"])
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()
@@ -624,8 +656,8 @@ class MainWindow(QMainWindow):
             return True
         else:
             error_dialog = WADASErrorMessage("Incompatible configuration file provided",
-                "Provided WADAS configuration version is not compatible with current version of WADAS therefore cannot "
-                "be loaded."
+                "Provided WADAS configuration version is not compatible with current version of "
+                "WADAS therefore cannot be loaded."
             )
             error_dialog.exec()
             return False
@@ -691,6 +723,10 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
+            if DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
+                self.save_config_to_file()
 
     def configure_whatsapp(self):
         """Method to trigger WhatsApp configuration dialog"""
@@ -709,6 +745,21 @@ class MainWindow(QMainWindow):
             logger.info("Telegram notification configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+
+    def configure_database(self):
+        """Method to trigger DB configuration dialog"""
+
+        if (configure_db_dialog := ConfigureDBDialog(self.uuid)).exec():
+            logger.info("Database configured.")
+            if configure_db_dialog.db_created and DataBase.get_instance() and self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info(
+                    "Autosave enabled! NOTE: DB will enforce autosave when creating new db.")
+                self.save_config_to_file()
+            self.setWindowModified(True)
+            self.update_toolbar_status()
+
+
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""
@@ -790,7 +841,7 @@ class MainWindow(QMainWindow):
         self.log_txtedt_handler.setLevel(new_level)
 
     def closeEvent(self, event):
-        """Method to hadle proper thread closure when close window action is triggered"""
+        """Method to handle proper thread closure when close window action is triggered"""
 
         if not self.ui.actionRun.isEnabled() and self.ui.actionStop.isEnabled():
             reply = QMessageBox.question(
@@ -803,6 +854,8 @@ class MainWindow(QMainWindow):
             if reply == QMessageBox.Yes:
                 # Terminate running mode for safe shutdown
                 self.interrupt_thread()
+                # Terminate DB object, engine and active session(s)
+                DataBase.destroy_instance()
                 event.accept()
             else:
                 event.ignore()
@@ -863,6 +916,7 @@ Are you sure you want to exit?""",
                 return
 
             self.configuration_file_name = path
+            self.uuid = uuid.UUID(self.load_status["uuid"])
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()

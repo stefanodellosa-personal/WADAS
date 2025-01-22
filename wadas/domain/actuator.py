@@ -23,6 +23,8 @@ from abc import abstractmethod
 from enum import Enum
 from queue import Empty, Queue
 
+from wadas.domain.actuation_event import ActuationEvent
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +47,7 @@ class Actuator:
 
     def send_command(self, cmd: Enum):
         """Method to insert a command into the actuator queue"""
+
         self.cmd_queue.put(cmd.value)
 
     def get_command(self):
@@ -56,7 +59,7 @@ class Actuator:
             return None  # if there are no commands, return None
 
     @abstractmethod
-    def actuate(self):
+    def actuate(self, actuation_event: ActuationEvent):
         """Method to trigger the actuator sending the appropriate command"""
         pass
 

@@ -54,8 +54,7 @@ class DialogConfigureCameraToActuatorAssociations(QDialog, Ui_DialogCameraActuat
 
         # Signal
         self.ui.treeView.doubleClicked.connect(self.handle_double_click)
-        self.ui.buttonBox.accepted.connect(self.accept_and_close)
-        self.ui.buttonBox.rejected.connect(self.reject)
+        self.ui.pushButton_close.clicked.connect(self.accept_and_close)
         self.ui.pushButton_expandTreeView.clicked.connect(self.ui.treeView.expandAll)
         self.ui.pushButton_collapseTreeView.clicked.connect(self.ui.treeView.collapseAll)
 
