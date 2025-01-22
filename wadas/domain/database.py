@@ -559,8 +559,7 @@ class DataBase(ABC):
     def get_detection_event_id(cls, detection_event: DetectionEvent):
         """Method to return detection event database id (primary key)"""
 
-        camera_db_id = cls.get_camera_id(detection_event.camera_id)
-        if not camera_db_id:
+        if not (camera_db_id := cls.get_camera_id(detection_event.camera_id)):
             logger.error(
                 "Unable to find Camera id %s while getting Detection event id.",
                 detection_event.camera_id,

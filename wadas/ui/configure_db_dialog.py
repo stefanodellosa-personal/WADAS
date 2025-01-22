@@ -18,16 +18,15 @@
 # Description: DB UI configuration module.
 
 import os
-import re
 
 import keyring
+import validators
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
 
 from wadas.domain.database import DataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_db_dialog import Ui_ConfigureDBDialog
-import validators
 from wadas._version import __dbversion__
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
