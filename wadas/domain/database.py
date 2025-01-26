@@ -67,18 +67,18 @@ class DBMetadata:
 class DataBase(ABC):
     """Base Class to handle DB object."""
 
-    wadas_db = None  # Singleton instance of the database
-    wadas_db_engine = None  # Singleton engine associated with the database
-
     class DBTypes(Enum):
         SQLITE = "SQLite"
         MYSQL = "MySQL"
         MARIADB = "MariaDB"
 
+    wadas_db = None  # Singleton instance of the database
+    wadas_db_engine = None  # Singleton engine associated with the database
+
     def __init__(self, host, enabled=True, version=__dbversion__):
         """Constructor is not public, no external code should call this directly"""
 
-        if DataBase.wadas_db is not None:
+        if self.wadas_db is not None:
             raise RuntimeError("Database instance already created.")
 
         self.host = host
@@ -139,15 +139,13 @@ class DataBase(ABC):
             logger.error("Database is already initialized.")
             return False
 
-        sb_instance = cls._create_instance(
+        DataBase.wadas_db = cls._create_instance(
             db_type, host, port, username, database_name, enabled=True, version=__dbversion__
         )
-        if sb_instance:
-            cls.wadas_db = sb_instance
-        else:
+        if not cls.wadas_db:
             return False
 
-        cls.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
+        DataBase.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
         if log:
             logger.info("%s database initialized.", db_type.value)
         return True
@@ -165,7 +163,7 @@ class DataBase(ABC):
                 raise RuntimeError("The database and db engine have not been initialized.")
             else:
                 logger.debug("Initializing engine...")
-                cls.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
+                DataBase.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
         return cls.wadas_db_engine
 
     @classmethod
@@ -190,8 +188,8 @@ class DataBase(ABC):
                 cls.wadas_db_engine.dispose()
             except Exception:
                 logger.warning("Failed to dispose the database engine.")
-        cls.wadas_db_engine = None
-        cls.wadas_db = None
+        DataBase.wadas_db_engine = None
+        DataBase.wadas_db = None
 
     @classmethod
     def create_session(cls):
@@ -770,7 +768,7 @@ class MySQLDataBase(DataBase):
 
         try:
             # Try to connect to db to check whether it exists
-            with DataBase.wadas_db_engine.connect() as conn:
+            with self.wadas_db_engine.connect() as conn:
                 logger.debug("Database exists.")
         except OperationalError:
             # If db does not exist, creates it
@@ -781,7 +779,7 @@ class MySQLDataBase(DataBase):
             logger.info("Database '%s' successfully created.", self.database_name)
 
         # Create all tables
-        Base.metadata.create_all(DataBase.wadas_db_engine)
+        Base.metadata.create_all(self.wadas_db_engine)
 
     def serialize(self):
         """Method to serialize MySQL DataBase object into file."""
@@ -837,7 +835,7 @@ class MariaDBDataBase(DataBase):
             conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {self.database_name}"))
             logger.info("Database '%s' successfully created or already exists.", self.database_name)
         try:
-            Base.metadata.create_all(DataBase.wadas_db_engine)
+            Base.metadata.create_all(self.wadas_db_engine)
             logger.info("Tables created successfully in '%s'.", self.database_name)
         except Exception:
             logger.error("Error while creating the tables...")
@@ -873,9 +871,9 @@ class SQLiteDataBase(DataBase):
     def create_database(self):
         """Method to create database by creating all tables"""
 
-        if DataBase.wadas_db_engine:
+        if self.wadas_db_engine:
             try:
-                Base.metadata.create_all(DataBase.wadas_db_engine)
+                Base.metadata.create_all(self.wadas_db_engine)
             except SQLiteOperationalError:
                 logger.exception("OperationalError during database creation.")
                 return False

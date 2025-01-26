@@ -325,7 +325,7 @@ def save_configuration_to_file(file_, project_uuid):
             if FastAPIActuatorServer.actuator_server
             else ""
         ),
-        "database": DataBase.wadas_db.serialize() if DataBase.wadas_db else "",
+        "database": db.serialize() if (db := DataBase.get_instance()) else "",
     }
 
     with open(file_, "w") as yaml_file:
