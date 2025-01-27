@@ -454,7 +454,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                     self.start_sanitization()
 
     def start_sanitization(self):
-        """Starts the sanitization process in a separate thread."""
+        """Method that starts the sanitization process in a separate thread."""
+
         self.progress_bar.setVisible(True)
         self.ui.label_error.setText("Synchronizing database...")
 
@@ -464,7 +465,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.worker.start()
 
     def on_sanitization_complete(self):
-        """Called when the sanitization process is complete."""
+        """Method to complete the sanitization process."""
+
         self.progress_bar.setVisible(False)
         self.ui.label_error.setText("")
         self.show_status_dialog("Database synchronization status",

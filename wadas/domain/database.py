@@ -736,21 +736,17 @@ class DataBase(ABC):
                         cls.update_camera(camera, False)
                     if not camera.actuators == db_camera.actuators:
                         # Delete all associations for camera
-                        session.execute(
-                            delete(camera_actuator_association).where(
-                                camera_actuator_association.c.camera_id == camera_db_id
-                            )
+                        stmt = delete(camera_actuator_association).where(
+                            camera_actuator_association.c.camera_id == camera_db_id
                         )
-                        session.commit()
+                        cls.run_query(stmt)
                         # Pristine associations for camera
                         for actuator in camera.actuators:
                             actuator_db_id = cls.get_actuator_id(actuator.id)
-                            session.execute(
-                                camera_actuator_association.insert().values(
-                                    camera_id=camera_db_id, actuator_id=actuator_db_id
-                                )
+                            stmt = camera_actuator_association.insert().values(
+                                camera_id=camera_db_id, actuator_id=actuator_db_id
                             )
-                        session.commit()
+                        cls.run_query(stmt)
                 else:
                     cls.insert_into_db(camera)
 
