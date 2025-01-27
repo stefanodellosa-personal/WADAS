@@ -382,17 +382,22 @@ class DataBase(ABC):
 
     @classmethod
     def update_camera(cls, camera, delete_camera=False):
-        """Method to reflect camera fields update in db."""
 
-        logger.debug("Updating camera db entry...")
-        camera_db_id = cls.get_camera_id(camera.id)
-        enabled = camera.enabled
-
-        if not camera_db_id:
+        if not cls.update_camera_by_db_id(
+            cls.get_camera_id(camera.id), camera.enabled, delete_camera
+        ):
             logger.error(
                 "Unable to update camera. Camera ID %s not found or already deleted.", camera.id
             )
-            return
+
+    @classmethod
+    def update_camera_by_db_id(cls, camera_db_id, enabled, delete_camera=False):
+        """Method to reflect camera fields update in db."""
+
+        logger.debug("Updating camera db entry...")
+
+        if not camera_db_id:
+            return False
 
         if delete_camera:
             deletion_date_time = get_precise_timestamp()
@@ -410,21 +415,26 @@ class DataBase(ABC):
         else:
             stmt = update(ORMCamera).where(ORMCamera.db_id == camera_db_id).values(enabled=enabled)
             cls.run_query(stmt)
+        return True
 
     @classmethod
     def update_actuator(cls, actuator, delete_actuator=False):
         """Method to reflect actuator fields update in db."""
 
-        logger.debug("Updating actuator db entry...")
-        actuator_db_id = cls.get_actuator_id(actuator.id)
-        enabled = actuator.enabled
-
-        if not actuator_db_id:
+        if not cls.update_actuator_by_db_id(
+            cls.get_actuator_id(actuator.id), actuator.enabled, delete_actuator
+        ):
             logger.error(
                 "Unable to update actuator. Actuator ID %s not found or already deleted.",
                 actuator.id,
             )
-            return
+
+    @classmethod
+    def update_actuator_by_db_id(cls, actuator_db_id, enabled, delete_actuator=False):
+        logger.debug("Updating actuator db entry...")
+
+        if not actuator_db_id:
+            return False
 
         if delete_actuator:
             deletion_date_time = get_precise_timestamp()
@@ -446,6 +456,7 @@ class DataBase(ABC):
                 .values(enabled=enabled)
             )
             cls.run_query(stmt)
+        return True
 
     @classmethod
     def add_actuator_to_camera(cls, camera, actuator):
@@ -688,6 +699,100 @@ class DataBase(ABC):
         if cameras:
             for camera in cameras:
                 cls.insert_into_db(camera)
+
+    @classmethod
+    def sanitize_db(cls):
+        """Method to align db tables with domain model"""
+
+        if session := cls.create_session():
+            # Check if actuators in model are reflected into db
+            for actuator_id in Actuator.actuators:
+                cur_actuator = Actuator.actuators[actuator_id]
+                if actuator_db_id := cls.get_actuator_id(actuator_id):
+                    # Check actuator attributes type, enabled
+                    db_actuator = (
+                        session.query(ORMActuator).filter(ORMActuator.db_id == actuator_db_id).one()
+                    )
+                    if not db_actuator.type == cur_actuator.type:
+                        # If type does not match, set to deleted the one in db
+                        cls.update_actuator_by_db_id(actuator_db_id, db_actuator.enabled, True)
+                        # Insert new actuator into db
+                        cls.insert_into_db(cur_actuator)
+                    if not db_actuator.enabled == cur_actuator.enabled:
+                        cls.update_actuator(cur_actuator, False)
+                else:
+                    cls.insert_into_db(cur_actuator)
+
+            # Check if cameras in model are reflected into db
+            for camera in cameras:
+                if camera_db_id := cls.get_camera_id(camera.id):
+                    db_camera = (
+                        session.query(ORMCamera).filter(ORMCamera.db_id == camera_db_id).one()
+                    )
+                    if not camera.type == db_camera.type:
+                        cls.update_camera_by_db_id(camera_db_id, db_camera.enabled, True)
+                        cls.insert_into_db(camera)
+                    if not camera.enabled == db_camera.enabled:
+                        cls.update_camera(camera, False)
+                    if not camera.actuators == db_camera.actuators:
+                        # Delete all associations for camera
+                        session.execute(
+                            delete(camera_actuator_association).where(
+                                camera_actuator_association.c.camera_id == camera_db_id
+                            )
+                        )
+                        session.commit()
+                        # Pristine associations for camera
+                        for actuator in camera.actuators:
+                            actuator_db_id = cls.get_actuator_id(actuator.id)
+                            session.execute(
+                                camera_actuator_association.insert().values(
+                                    camera_id=camera_db_id, actuator_id=actuator_db_id
+                                )
+                            )
+                        session.commit()
+                else:
+                    cls.insert_into_db(camera)
+
+            # Check if actuators in db match the ones in domain
+            actuator_ids = session.query(ORMActuator.actuator_id).all()
+            actuator_ids_from_db = {actuator_id[0] for actuator_id in actuator_ids}
+            actuator_id_from_domain = set(Actuator.actuators)
+            db_extra_actuators_ids = actuator_ids_from_db - actuator_id_from_domain
+            for extra_actuator_id in db_extra_actuators_ids:
+                deletion_date_time = get_precise_timestamp()
+                actuator_db_id = cls.get_actuator_id(extra_actuator_id)
+                stmt = (
+                    update(ORMActuator)
+                    .where(ORMActuator.actuator_id == actuator_db_id)
+                    .values(deletion_date=deletion_date_time)
+                )
+                cls.run_query(stmt)
+                # Delete camera association with actuators, if any
+                stmt = delete(camera_actuator_association).where(
+                    camera_actuator_association.c.actuator_id == extra_actuator_id
+                )
+                cls.run_query(stmt)
+
+            # Check if cameras in db match the ones in domain
+            camera_ids = session.query(ORMCamera.camera_id).all()
+            camera_ids_from_db = {camera_id[0] for camera_id in camera_ids}
+            camera_id_from_domain = {camera.id for camera in cameras}
+            db_extra_camera_ids = camera_ids_from_db - camera_id_from_domain
+            for extra_camera_id in db_extra_camera_ids:
+                deletion_date_time = get_precise_timestamp()
+                camera_db_id = cls.get_camera_id(extra_camera_id)
+                stmt = (
+                    update(ORMCamera)
+                    .where(ORMCamera.db_id == camera_db_id)
+                    .values(deletion_date=deletion_date_time)
+                )
+                cls.run_query(stmt)
+                # Delete camera association with actuators, if any
+                stmt = delete(camera_actuator_association).where(
+                    camera_actuator_association.c.camera_id == extra_camera_id
+                )
+                cls.run_query(stmt)
 
     @abstractmethod
     def get_connection_string(self):
