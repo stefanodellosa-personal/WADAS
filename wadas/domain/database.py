@@ -760,7 +760,7 @@ class DataBase(ABC):
                 actuator_db_id = cls.get_actuator_id(extra_actuator_id)
                 stmt = (
                     update(ORMActuator)
-                    .where(ORMActuator.actuator_id == actuator_db_id)
+                    .where(ORMActuator.db_id == actuator_db_id)
                     .values(deletion_date=deletion_date_time)
                 )
                 cls.run_query(stmt)
