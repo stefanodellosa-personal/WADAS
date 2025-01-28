@@ -446,17 +446,24 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                     self,
                     "Confirm database synchronization",
                     "Re-Enabling the db will cause the synchronization of WADAS data into db.\n"
-                    "This operation cannot be reverted. Are you sure you want to continue?",
+                    "This operation cannot be reverted or interrupted. Are you sure you want to continue?",
                     QMessageBox.Yes | QMessageBox.No,
                     QMessageBox.No
                 )
                 if reply == QMessageBox.Yes:
                     self.start_sanitization()
+                    self.show_status_dialog("Database synchronization status",
+                                            "Database synchronization complete!",
+                                            True)
+                else:
+                    self.ui.checkBox_enable_db.setChecked(False)
 
     def start_sanitization(self):
         """Method that starts the sanitization process in a separate thread."""
 
         self.progress_bar.setVisible(True)
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.ui.buttonBox.button(QDialogButtonBox.Cancel).setEnabled(False)
         self.ui.label_error.setText("Synchronizing database...")
 
         # Create and start the worker thread
@@ -469,6 +476,5 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
 
         self.progress_bar.setVisible(False)
         self.ui.label_error.setText("")
-        self.show_status_dialog("Database synchronization status",
-                                "Database synchronization complete!",
-                                True)
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+        self.ui.buttonBox.button(QDialogButtonBox.Cancel).setEnabled(True)
