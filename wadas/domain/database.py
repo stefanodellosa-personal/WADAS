@@ -78,7 +78,7 @@ class DataBase(ABC):
     def __init__(self, host, enabled=True, version=__dbversion__):
         """Constructor is not public, no external code should call this directly"""
 
-        if self.wadas_db is not None:
+        if DataBase.wadas_db is not None:
             raise RuntimeError("Database instance already created.")
 
         self.host = host
@@ -135,17 +135,17 @@ class DataBase(ABC):
     ):
         """Initialize the singleton database instance."""
 
-        if cls.wadas_db is not None:
+        if DataBase.wadas_db is not None:
             logger.error("Database is already initialized.")
             return False
 
         DataBase.wadas_db = cls._create_instance(
             db_type, host, port, username, database_name, enabled=True, version=__dbversion__
         )
-        if not cls.wadas_db:
+        if not DataBase.wadas_db:
             return False
 
-        DataBase.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
+        DataBase.wadas_db_engine = create_engine(DataBase.wadas_db.get_connection_string())
         if log:
             logger.info("%s database initialized.", db_type.value)
         return True
@@ -157,14 +157,14 @@ class DataBase(ABC):
 
         :return: SQLAlchemy engine instance.
         """
-        if cls.wadas_db_engine is None:
-            if cls.wadas_db is None:
+        if DataBase.wadas_db_engine is None:
+            if DataBase.wadas_db is None:
                 logger.error("The database and db engine have not been initialized.")
                 raise RuntimeError("The database and db engine have not been initialized.")
             else:
                 logger.debug("Initializing engine...")
-                DataBase.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
-        return cls.wadas_db_engine
+                DataBase.wadas_db_engine = create_engine(DataBase.wadas_db.get_connection_string())
+        return DataBase.wadas_db_engine
 
     @classmethod
     def get_instance(cls):
@@ -173,19 +173,19 @@ class DataBase(ABC):
 
         :return: The current database instance.
         """
-        if cls.wadas_db is None:
+        if DataBase.wadas_db is None:
             logger.debug("The database has not been initialized. Call 'initialize' first.")
             return None
-        return cls.wadas_db
+        return DataBase.wadas_db
 
     @classmethod
     def destroy_instance(cls):
         """Destroy the current database instance and release resources."""
 
         logger.debug("Destroying db instance...")
-        if cls.wadas_db_engine:
+        if DataBase.wadas_db_engine:
             try:
-                cls.wadas_db_engine.dispose()
+                DataBase.wadas_db_engine.dispose()
             except Exception:
                 logger.warning("Failed to dispose the database engine.")
         DataBase.wadas_db_engine = None
@@ -768,7 +768,7 @@ class MySQLDataBase(DataBase):
 
         try:
             # Try to connect to db to check whether it exists
-            with self.wadas_db_engine.connect() as conn:
+            with DataBase.wadas_db_engine.connect() as conn:
                 logger.debug("Database exists.")
         except OperationalError:
             # If db does not exist, creates it
@@ -779,7 +779,7 @@ class MySQLDataBase(DataBase):
             logger.info("Database '%s' successfully created.", self.database_name)
 
         # Create all tables
-        Base.metadata.create_all(self.wadas_db_engine)
+        Base.metadata.create_all(DataBase.wadas_db_engine)
 
     def serialize(self):
         """Method to serialize MySQL DataBase object into file."""
@@ -835,7 +835,7 @@ class MariaDBDataBase(DataBase):
             conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {self.database_name}"))
             logger.info("Database '%s' successfully created or already exists.", self.database_name)
         try:
-            Base.metadata.create_all(self.wadas_db_engine)
+            Base.metadata.create_all(DataBase.wadas_db_engine)
             logger.info("Tables created successfully in '%s'.", self.database_name)
         except Exception:
             logger.error("Error while creating the tables...")
@@ -871,9 +871,9 @@ class SQLiteDataBase(DataBase):
     def create_database(self):
         """Method to create database by creating all tables"""
 
-        if self.wadas_db_engine:
+        if DataBase.wadas_db_engine:
             try:
-                Base.metadata.create_all(self.wadas_db_engine)
+                Base.metadata.create_all(DataBase.wadas_db_engine)
             except SQLiteOperationalError:
                 logger.exception("OperationalError during database creation.")
                 return False
