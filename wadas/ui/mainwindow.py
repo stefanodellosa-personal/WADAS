@@ -140,6 +140,7 @@ class MainWindow(QMainWindow):
         # Update mainwindow UI methods
         self._init_logging_dropdown()
         self.update_toolbar_status()
+        self.update_info_widget()
         logger.info("Welcome to WADAS!")
 
         self.show_terms_n_conditions()
@@ -437,6 +438,9 @@ class MainWindow(QMainWindow):
 
         if OperationMode.cur_operation_mode_type:
             self.ui.label_op_mode.setText(OperationMode.cur_operation_mode_type.value)
+        else:
+            self.ui.label_op_mode.setText("None")
+
         if OperationMode.cur_operation_mode:
             self.ui.label_last_detection.setText(
                 os.path.basename(OperationMode.cur_operation_mode.last_detection)
@@ -447,6 +451,19 @@ class MainWindow(QMainWindow):
             self.ui.label_classified_animal.setText(
                 str(OperationMode.cur_operation_mode.last_classified_animals_str)
             )
+
+        if (db := DataBase.get_instance()) and db.enabled:
+            self.ui.label_database.setText(db.type.value)
+        else:
+            self.ui.label_database.setText("None")
+
+        notifier_lable_text = ""
+        for notifier in Notifier.notifiers:
+            if cur_notifier := Notifier.notifiers[notifier]:
+                notifier_lable_text += ", "+cur_notifier.type.value if notifier_lable_text else cur_notifier.type.value
+        if not notifier_lable_text:
+            notifier_lable_text = "None"
+        self.ui.label_notification_method.setText(notifier_lable_text)
 
     def url_input_dialog(self):
         """Method to run dialog for insertion of a URL to fetch image from."""
@@ -758,8 +775,7 @@ class MainWindow(QMainWindow):
                 self.save_config_to_file()
             self.setWindowModified(True)
             self.update_toolbar_status()
-
-
+            self.update_info_widget()
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""
