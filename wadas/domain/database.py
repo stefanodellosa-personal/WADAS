@@ -179,6 +179,13 @@ class DataBase(ABC):
         return DataBase.wadas_db
 
     @classmethod
+    def get_enabled_db(cls):
+        """Method that returns the db instance if enabled"""
+
+        db = DataBase.get_instance()
+        return db if db and db.enabled else None
+
+    @classmethod
     def destroy_instance(cls):
         """Destroy the current database instance and release resources."""
 
@@ -380,6 +387,7 @@ class DataBase(ABC):
 
     @classmethod
     def update_camera(cls, camera, delete_camera=False):
+        """Method to reflect camera fields update in db given a camera object"""
 
         if not cls.update_camera_by_db_id(
             cls.get_camera_id(camera.id), camera.enabled, delete_camera
@@ -390,7 +398,7 @@ class DataBase(ABC):
 
     @classmethod
     def update_camera_by_db_id(cls, camera_db_id, enabled, delete_camera=False):
-        """Method to reflect camera fields update in db."""
+        """Method to reflect camera fields update in db given a camera id"""
 
         logger.debug("Updating camera db entry...")
 
@@ -417,7 +425,7 @@ class DataBase(ABC):
 
     @classmethod
     def update_actuator(cls, actuator, delete_actuator=False):
-        """Method to reflect actuator fields update in db."""
+        """Method to reflect actuator fields update in db given an actuator object"""
 
         if not cls.update_actuator_by_db_id(
             cls.get_actuator_id(actuator.id), actuator.enabled, delete_actuator
@@ -429,6 +437,8 @@ class DataBase(ABC):
 
     @classmethod
     def update_actuator_by_db_id(cls, actuator_db_id, enabled, delete_actuator=False):
+        """Method to reflect actuator fields update in db given an actuator id."""
+
         logger.debug("Updating actuator db entry...")
 
         if not actuator_db_id:
@@ -711,12 +721,12 @@ class DataBase(ABC):
                     db_actuator = (
                         session.query(ORMActuator).filter(ORMActuator.db_id == actuator_db_id).one()
                     )
-                    if not db_actuator.type == cur_actuator.type:
+                    if db_actuator.type != cur_actuator.type:
                         # If type does not match, set to deleted the one in db
                         cls.update_actuator_by_db_id(actuator_db_id, db_actuator.enabled, True)
                         # Insert new actuator into db
                         cls.insert_into_db(cur_actuator)
-                    if not db_actuator.enabled == cur_actuator.enabled:
+                    if db_actuator.enabled != cur_actuator.enabled:
                         cls.update_actuator(cur_actuator, False)
                 else:
                     cls.insert_into_db(cur_actuator)
@@ -727,12 +737,12 @@ class DataBase(ABC):
                     db_camera = (
                         session.query(ORMCamera).filter(ORMCamera.db_id == camera_db_id).one()
                     )
-                    if not camera.type == db_camera.type:
+                    if camera.type != db_camera.type:
                         cls.update_camera_by_db_id(camera_db_id, db_camera.enabled, True)
                         cls.insert_into_db(camera)
-                    if not camera.enabled == db_camera.enabled:
+                    if camera.enabled != db_camera.enabled:
                         cls.update_camera(camera, False)
-                    if not camera.actuators == db_camera.actuators:
+                    if camera.actuators != db_camera.actuators:
                         # Delete all associations for camera
                         stmt = delete(camera_actuator_association).where(
                             camera_actuator_association.c.camera_id == camera_db_id
@@ -751,8 +761,7 @@ class DataBase(ABC):
             # Check if actuators in db match the ones in domain
             actuator_ids = session.query(ORMActuator.actuator_id).all()
             actuator_ids_from_db = {actuator_id[0] for actuator_id in actuator_ids}
-            actuator_id_from_domain = set(Actuator.actuators)
-            db_extra_actuators_ids = actuator_ids_from_db - actuator_id_from_domain
+            db_extra_actuators_ids = actuator_ids_from_db - Actuator.actuators.keys()
             for extra_actuator_id in db_extra_actuators_ids:
                 deletion_date_time = get_precise_timestamp()
                 actuator_db_id = cls.get_actuator_id(extra_actuator_id)

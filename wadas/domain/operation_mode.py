@@ -127,7 +127,7 @@ class OperationMode(QObject):
             )
             self.last_detection = detected_img_path
             # Insert detection event into db, if enabled
-            if (db := DataBase.get_instance()) and db.enabled:
+            if db := DataBase.get_enabled_db():
                 db.insert_into_db(detection_event)
             return detection_event
         else:
@@ -158,7 +158,7 @@ class OperationMode(QObject):
                 detection_event.classified_animals = classified_animals
                 detection_event.classification_img_path = classified_img_path
                 # Update detection event into db, if enabled
-                if (db := DataBase.get_instance()) and db.enabled:
+                if db := DataBase.get_enabled_db():
                     db.update_detection_event(detection_event)
 
     def ftp_camera_exist(self):
@@ -215,7 +215,7 @@ class OperationMode(QObject):
                     )
                     actuator.actuate(actuation_event)
                     # Insert actuation event into db, if enabled
-                    if (db := DataBase.get_instance()) and db.enabled:
+                    if db := DataBase.get_enabled_db():
                         db.insert_into_db(actuation_event)
 
     def execution_completed(self):
