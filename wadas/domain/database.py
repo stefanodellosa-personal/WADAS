@@ -67,13 +67,13 @@ class DBMetadata:
 class DataBase(ABC):
     """Base Class to handle DB object."""
 
-    wadas_db = None  # Singleton instance of the database
-    wadas_db_engine = None  # Singleton engine associated with the database
-
     class DBTypes(Enum):
         SQLITE = "SQLite"
         MYSQL = "MySQL"
         MARIADB = "MariaDB"
+
+    wadas_db = None  # Singleton instance of the database
+    wadas_db_engine = None  # Singleton engine associated with the database
 
     def __init__(self, host, enabled=True, version=__dbversion__):
         """Constructor is not public, no external code should call this directly"""
@@ -135,19 +135,17 @@ class DataBase(ABC):
     ):
         """Initialize the singleton database instance."""
 
-        if cls.wadas_db is not None:
+        if DataBase.wadas_db is not None:
             logger.error("Database is already initialized.")
             return False
 
-        sb_instance = cls._create_instance(
+        DataBase.wadas_db = cls._create_instance(
             db_type, host, port, username, database_name, enabled=True, version=__dbversion__
         )
-        if sb_instance:
-            cls.wadas_db = sb_instance
-        else:
+        if not DataBase.wadas_db:
             return False
 
-        cls.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
+        DataBase.wadas_db_engine = create_engine(DataBase.wadas_db.get_connection_string())
         if log:
             logger.info("%s database initialized.", db_type.value)
         return True
@@ -159,14 +157,14 @@ class DataBase(ABC):
 
         :return: SQLAlchemy engine instance.
         """
-        if cls.wadas_db_engine is None:
-            if cls.wadas_db is None:
+        if DataBase.wadas_db_engine is None:
+            if DataBase.wadas_db is None:
                 logger.error("The database and db engine have not been initialized.")
                 raise RuntimeError("The database and db engine have not been initialized.")
             else:
                 logger.debug("Initializing engine...")
-                cls.wadas_db_engine = create_engine(cls.wadas_db.get_connection_string())
-        return cls.wadas_db_engine
+                DataBase.wadas_db_engine = create_engine(DataBase.wadas_db.get_connection_string())
+        return DataBase.wadas_db_engine
 
     @classmethod
     def get_instance(cls):
@@ -175,23 +173,23 @@ class DataBase(ABC):
 
         :return: The current database instance.
         """
-        if cls.wadas_db is None:
+        if DataBase.wadas_db is None:
             logger.debug("The database has not been initialized. Call 'initialize' first.")
             return None
-        return cls.wadas_db
+        return DataBase.wadas_db
 
     @classmethod
     def destroy_instance(cls):
         """Destroy the current database instance and release resources."""
 
         logger.debug("Destroying db instance...")
-        if cls.wadas_db_engine:
+        if DataBase.wadas_db_engine:
             try:
-                cls.wadas_db_engine.dispose()
+                DataBase.wadas_db_engine.dispose()
             except Exception:
                 logger.warning("Failed to dispose the database engine.")
-        cls.wadas_db_engine = None
-        cls.wadas_db = None
+        DataBase.wadas_db_engine = None
+        DataBase.wadas_db = None
 
     @classmethod
     def create_session(cls):
