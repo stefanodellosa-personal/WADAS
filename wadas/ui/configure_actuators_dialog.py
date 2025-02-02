@@ -80,7 +80,7 @@ class DialogConfigureActuators(QDialog, Ui_DialogConfigureActuators):
         self.initialize_dialog()
 
         # DB enablement status
-        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
+        self.db_enabled = bool(DataBase.get_enabled_db())
 
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""

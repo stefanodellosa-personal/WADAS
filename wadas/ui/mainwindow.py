@@ -140,6 +140,7 @@ class MainWindow(QMainWindow):
         # Update mainwindow UI methods
         self._init_logging_dropdown()
         self.update_toolbar_status()
+        self.update_info_widget()
         logger.info("Welcome to WADAS!")
 
         self.show_terms_n_conditions()
@@ -437,6 +438,9 @@ class MainWindow(QMainWindow):
 
         if OperationMode.cur_operation_mode_type:
             self.ui.label_op_mode.setText(OperationMode.cur_operation_mode_type.value)
+        else:
+            self.ui.label_op_mode.setText("None")
+
         if OperationMode.cur_operation_mode:
             self.ui.label_last_detection.setText(
                 os.path.basename(OperationMode.cur_operation_mode.last_detection)
@@ -447,6 +451,16 @@ class MainWindow(QMainWindow):
             self.ui.label_classified_animal.setText(
                 str(OperationMode.cur_operation_mode.last_classified_animals_str)
             )
+
+        if db := DataBase.get_enabled_db():
+            self.ui.label_database.setText(db.type.value)
+        else:
+            self.ui.label_database.setText("None")
+
+        notifier_lable_text = ", ".join(
+            cur_notifier.type.value for notifier, cur_notifier in Notifier.notifiers.items()
+            if cur_notifier and cur_notifier.enabled) or "None"
+        self.ui.label_notification_method.setText(notifier_lable_text)
 
     def url_input_dialog(self):
         """Method to run dialog for insertion of a URL to fetch image from."""
@@ -482,6 +496,7 @@ class MainWindow(QMainWindow):
             self.load_status["valid_email_keyring"] = True
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_info_widget()
         else:
             logger.debug("Email configuration aborted.")
 
@@ -516,6 +531,18 @@ class MainWindow(QMainWindow):
         else:
             return True
 
+    def save_config_if_db_exists(self):
+        """Method that performs autosave of the configuration to file if database exists"""
+
+        if DataBase.get_enabled_db():
+            if self.configuration_file_name:
+                # Force project save to guarantee consistency
+                logger.info("Autosave enabled! note: DB will enforce autosave when modifying cameras and actuators.")
+                self.save_config_to_file()
+            else:
+                logger.warning("Current configuration has not been saved yet! "
+                               "Please save it as soon as possible to avoid db misalignment.")
+
     def select_local_cameras(self):
         """Method to trigger UI dialog for local camera(s) configuration."""
 
@@ -525,10 +552,7 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
-            if DataBase.get_instance() and self.configuration_file_name:
-                # Force project save to guarantee consistency
-                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
-                self.save_config_to_file()
+            self.save_config_if_db_exists()
 
     def configure_actuators(self):
         """Method to trigger UI dialog for actuator(s) configuration."""
@@ -539,10 +563,7 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_actuator_list()
-            if DataBase.get_instance() and self.configuration_file_name:
-                # Force project save to guarantee consistency
-                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
-                self.save_config_to_file()
+            self.save_config_if_db_exists()
 
     def configure_camera_to_actuators_associations(self):
         """Method to trigger UI dialog for actuator(s) configuration."""
@@ -552,10 +573,7 @@ class MainWindow(QMainWindow):
             logger.info("Camera(s) to Actuator(s) association(s) configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
-            if DataBase.get_instance() and self.configuration_file_name:
-                # Force project save to guarantee consistency
-                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
-                self.save_config_to_file()
+            self.save_config_if_db_exists()
 
     def configure_ai_model(self):
         """Method to trigger UI dialog to configure Ai model."""
@@ -723,10 +741,7 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_en_camera_list()
-            if DataBase.get_instance() and self.configuration_file_name:
-                # Force project save to guarantee consistency
-                logger.info("Autosave enabled! NOTE: DB will enforce autosave when modifying cameras and actuators.")
-                self.save_config_to_file()
+            self.save_config_if_db_exists()
 
     def configure_whatsapp(self):
         """Method to trigger WhatsApp configuration dialog"""
@@ -736,6 +751,7 @@ class MainWindow(QMainWindow):
             logger.info("WhatsApp notification configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_info_widget()
 
     def configure_telegram(self):
         """Method to trigger Telegram configuration dialog"""
@@ -745,21 +761,21 @@ class MainWindow(QMainWindow):
             logger.info("Telegram notification configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_info_widget()
 
     def configure_database(self):
         """Method to trigger DB configuration dialog"""
 
         if (configure_db_dialog := ConfigureDBDialog(self.uuid)).exec():
             logger.info("Database configured.")
-            if configure_db_dialog.db_created and DataBase.get_instance() and self.configuration_file_name:
+            if configure_db_dialog.db_created and DataBase.get_enabled_db() and self.configuration_file_name:
                 # Force project save to guarantee consistency
                 logger.info(
-                    "Autosave enabled! NOTE: DB will enforce autosave when creating new db.")
+                    "Autosave enabled! note: DB will enforce autosave when creating new db.")
                 self.save_config_to_file()
             self.setWindowModified(True)
             self.update_toolbar_status()
-
-
+            self.update_info_widget()
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""

@@ -147,7 +147,7 @@ class Ui_DialogConfigureEmail(object):
     # setupUi
 
     def retranslateUi(self, DialogConfigureEmail):
-        DialogConfigureEmail.setWindowTitle(QCoreApplication.translate("DialogConfigureEmail", u"Email configuration", None))
+        DialogConfigureEmail.setWindowTitle(QCoreApplication.translate("DialogConfigureEmail", u"Configure Email notifications", None))
         self.label_4.setText(QCoreApplication.translate("DialogConfigureEmail", u"Port", None))
         self.label_2.setText(QCoreApplication.translate("DialogConfigureEmail", u"password", None))
         self.label.setText(QCoreApplication.translate("DialogConfigureEmail", u"Sender email", None))

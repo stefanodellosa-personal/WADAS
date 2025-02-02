@@ -110,7 +110,7 @@ class Ui_DialogConfigureTelegram(object):
     # setupUi
 
     def retranslateUi(self, DialogConfigureTelegram):
-        DialogConfigureTelegram.setWindowTitle(QCoreApplication.translate("DialogConfigureTelegram", u"Configure Telegram", None))
+        DialogConfigureTelegram.setWindowTitle(QCoreApplication.translate("DialogConfigureTelegram", u"Configure Telegram notifications", None))
         self.pushButton_test_message.setText(QCoreApplication.translate("DialogConfigureTelegram", u"Test Message", None))
         self.label_3.setText(QCoreApplication.translate("DialogConfigureTelegram", u"To get your organization code please request it at info@wadas.it", None))
         self.checkBox_enable_images.setText(QCoreApplication.translate("DialogConfigureTelegram", u"Enable images in Telegram notification messages", None))

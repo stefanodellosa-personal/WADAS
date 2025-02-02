@@ -122,7 +122,7 @@ class Ui_DialogConfigureWhatsApp(object):
     # setupUi
 
     def retranslateUi(self, DialogConfigureWhatsApp):
-        DialogConfigureWhatsApp.setWindowTitle(QCoreApplication.translate("DialogConfigureWhatsApp", u"Dialog", None))
+        DialogConfigureWhatsApp.setWindowTitle(QCoreApplication.translate("DialogConfigureWhatsApp", u"Configure WhatsApp notifications", None))
         self.label_errorMessage.setText("")
         self.checkBox_allowImg.setText(QCoreApplication.translate("DialogConfigureWhatsApp", u"Enable detection/classification image attachment to the notification message", None))
         self.pushButton_testMessage.setText(QCoreApplication.translate("DialogConfigureWhatsApp", u"Test Message", None))

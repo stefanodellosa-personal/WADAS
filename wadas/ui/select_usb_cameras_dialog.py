@@ -65,7 +65,7 @@ class DialogSelectLocalCameras(QDialog, Ui_DialogSelectUSBCameras):
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
 
         # db enablement status
-        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
+        self.db_enabled = bool(DataBase.get_enabled_db())
 
     def list_usb_cameras(self):
         """Method to initialize cameras list."""

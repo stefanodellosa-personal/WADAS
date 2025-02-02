@@ -40,7 +40,7 @@ class DialogCameraActuatorManagement(QDialog):
         self.setWindowTitle(f"Manage Actuators for Camera ID: {camera.id}")
         self.camera = camera
         self.original_actuators = camera.actuators.copy()  # Save original list for cancel action
-        self.db_enabled = (db := DataBase.get_instance()) and db.enabled
+        self.db_enabled = bool(DataBase.get_enabled_db())
 
         layout = QGridLayout(self)
 

@@ -61,8 +61,10 @@ def compile_datetime6_mariadb(element, compiler, **kwargs):
 camera_actuator_association = Table(
     "camera_actuator_association",
     Base.metadata,
-    Column("camera_id", Integer, ForeignKey("cameras.id"), primary_key=True),
-    Column("actuator_id", Integer, ForeignKey("actuators.id"), primary_key=True),
+    Column("camera_id", Integer, ForeignKey("cameras.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "actuator_id", Integer, ForeignKey("actuators.id", ondelete="CASCADE"), primary_key=True
+    ),
 )
 
 

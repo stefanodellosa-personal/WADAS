@@ -21,8 +21,9 @@ import os
 
 import keyring
 import validators
+from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox, QStatusBar, QProgressBar
 
 from wadas.domain.database import DataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
@@ -30,6 +31,14 @@ from wadas.ui.qt.ui_configure_db_dialog import Ui_ConfigureDBDialog
 from wadas._version import __dbversion__
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
+
+
+class SanitizeWorker(QThread):
+    finished = Signal()  # Signal emitted when the task is done
+
+    def run(self):
+        DataBase.sanitize_db()
+        self.finished.emit()
 
 class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
     """Class to insert DB configuration to enable WADAS for database persistency."""
@@ -57,12 +66,19 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.lineEdit_db_password.textChanged.connect(self.validate)
         self.ui.checkBox_new_db.clicked.connect(self.on_checkbox_new_db_checked)
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.on_cancel_clicked)
+        self.ui.checkBox_enable_db.clicked.connect(self.on_enable_state_changed)
 
         self.init_dialog()
         self.uuid = project_uuid
         self.db_created = False
         self.initial_wadas_db = DataBase.get_instance()
         self.ui.plainTextEdit_db_test.setPlainText("Test out your DB before accepting changes!")
+
+        # Indefinite progress bar
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 0)  # Indeterminate range
+        self.progress_bar.setVisible(False)  # Initially hidden
+        self.ui.gridLayout_mysql.addWidget(self.progress_bar)
 
     def init_dialog(self):
         """Method to initialize dialog with saved configuration data"""
@@ -420,3 +436,45 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                 self.initial_wadas_db.version,
                 False
             )
+
+    def on_enable_state_changed(self):
+        """Method to sanitize db if existing db is re-enabled."""
+
+        if self.ui.checkBox_enable_db.isChecked():
+            if self.initial_wadas_db and not self.initial_wadas_db.enabled and not self.db_created:
+                reply = QMessageBox.question(
+                    self,
+                    "Confirm database synchronization",
+                    "Re-Enabling the db will cause the synchronization of WADAS data into db.\n"
+                    "This operation cannot be reverted or interrupted. Are you sure you want to continue?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+                if reply == QMessageBox.Yes:
+                    self.start_sanitization()
+                    self.show_status_dialog("Database synchronization status",
+                                            "Database synchronization complete!",
+                                            True)
+                else:
+                    self.ui.checkBox_enable_db.setChecked(False)
+
+    def start_sanitization(self):
+        """Method that starts the sanitization process in a separate thread."""
+
+        self.progress_bar.setVisible(True)
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.ui.buttonBox.button(QDialogButtonBox.Cancel).setEnabled(False)
+        self.ui.label_error.setText("Synchronizing database...")
+
+        # Create and start the worker thread
+        self.worker = SanitizeWorker()
+        self.worker.finished.connect(self.on_sanitization_complete)
+        self.worker.start()
+
+    def on_sanitization_complete(self):
+        """Method to complete the sanitization process."""
+
+        self.progress_bar.setVisible(False)
+        self.ui.label_error.setText("")
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+        self.ui.buttonBox.button(QDialogButtonBox.Cancel).setEnabled(True)
