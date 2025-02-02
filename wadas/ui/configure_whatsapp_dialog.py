@@ -59,7 +59,7 @@ class DialogConfigureWhatsApp(QDialog, Ui_DialogConfigureWhatsApp):
         """Method to initialize form with existing WhatsApp configuration data (if any)."""
 
         if Notifier.notifiers[Notifier.NotifierTypes.WHATSAPP.value]:
-            self.ui.checkBox_enableWhatsAppNotifications.setEnabled(self.whatsapp_notifier.enabled)
+            self.ui.checkBox_enableWhatsAppNotifications.setChecked(self.whatsapp_notifier.enabled)
             self.ui.lineEdit_phoneID.setText(self.whatsapp_notifier.sender_id)
             credentials = keyring.get_credential("WADAS_WhatsApp", self.whatsapp_notifier.sender_id)
             if credentials and credentials.username == self.whatsapp_notifier.sender_id:

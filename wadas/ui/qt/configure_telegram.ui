@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Configure Telegram</string>
+   <string>Configure Telegram notifications</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">

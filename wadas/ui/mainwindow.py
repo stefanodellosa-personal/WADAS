@@ -457,12 +457,9 @@ class MainWindow(QMainWindow):
         else:
             self.ui.label_database.setText("None")
 
-        notifier_lable_text = ""
-        for notifier in Notifier.notifiers:
-            if cur_notifier := Notifier.notifiers[notifier]:
-                notifier_lable_text += ", "+cur_notifier.type.value if notifier_lable_text else cur_notifier.type.value
-        if not notifier_lable_text:
-            notifier_lable_text = "None"
+        notifier_lable_text = ", ".join(
+            cur_notifier.type.value for notifier, cur_notifier in Notifier.notifiers.items()
+            if cur_notifier and cur_notifier.enabled) or "None"
         self.ui.label_notification_method.setText(notifier_lable_text)
 
     def url_input_dialog(self):
@@ -499,6 +496,7 @@ class MainWindow(QMainWindow):
             self.load_status["valid_email_keyring"] = True
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_info_widget()
         else:
             logger.debug("Email configuration aborted.")
 
@@ -753,6 +751,7 @@ class MainWindow(QMainWindow):
             logger.info("WhatsApp notification configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_info_widget()
 
     def configure_telegram(self):
         """Method to trigger Telegram configuration dialog"""
@@ -762,6 +761,7 @@ class MainWindow(QMainWindow):
             logger.info("Telegram notification configured.")
             self.setWindowModified(True)
             self.update_toolbar_status()
+            self.update_info_widget()
 
     def configure_database(self):
         """Method to trigger DB configuration dialog"""

@@ -182,8 +182,7 @@ class DataBase(ABC):
     def get_enabled_db(cls):
         """Method that returns the db instance if enabled"""
 
-        db = DataBase.get_instance()
-        return db if db and db.enabled else None
+        return db if (db := cls.get_instance()) and db.enabled else None
 
     @classmethod
     def destroy_instance(cls):
