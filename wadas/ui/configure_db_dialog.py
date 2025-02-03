@@ -28,6 +28,7 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox, QStatusBar
 from wadas.domain.database import DataBase
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_db_dialog import Ui_ConfigureDBDialog
+from wadas.domain.utils import is_valid_database_name
 from wadas._version import __dbversion__
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -64,6 +65,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.lineEdit_db_port.textChanged.connect(self.validate)
         self.ui.lineEdit_db_username.textChanged.connect(self.validate)
         self.ui.lineEdit_db_password.textChanged.connect(self.validate)
+        self.ui.lineEdit_db_name.textChanged.connect(self.validate)
         self.ui.checkBox_new_db.clicked.connect(self.on_checkbox_new_db_checked)
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.on_cancel_clicked)
         self.ui.checkBox_enable_db.clicked.connect(self.on_enable_state_changed)
@@ -342,6 +344,10 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         host = self.ui.lineEdit_db_host.text()
         is_sqlite_selected = self.ui.radioButton_SQLite.isChecked()
 
+        if not is_sqlite_selected and not is_valid_database_name(self.ui.lineEdit_db_name.text()):
+            valid = False
+            self.ui.label_error.setText("No valid database name!")
+
         if not host:
             host_field_text = "file name" if is_sqlite_selected else "host name"
             self.ui.label_error.setText(f"Database {host_field_text} field cannot be empty.")
@@ -381,6 +387,8 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             enable_test = valid if not self.ui.checkBox_new_db.isChecked() else (valid and self.db_created)
 
             self.ui.pushButton_test_db.setEnabled(enable_test)
+        else:
+            self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def test_db(self):
         """Method to test db connection"""
