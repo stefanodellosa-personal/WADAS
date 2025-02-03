@@ -353,6 +353,7 @@
    <addaction name="actionRun"/>
    <addaction name="actionStop"/>
    <addaction name="separator"/>
+   <addaction name="actionConfigure_web_interface"/>
   </widget>
   <action name="actionSelect_Mode">
    <property name="icon">
@@ -618,6 +619,20 @@
    </property>
    <property name="toolTip">
     <string>Configure database</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionConfigure_web_interface">
+   <property name="icon">
+    <iconset theme="applications-internet"/>
+   </property>
+   <property name="text">
+    <string>Configure web interface</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure web interface</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
