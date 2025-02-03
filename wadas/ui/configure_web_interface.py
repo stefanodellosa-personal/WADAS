@@ -22,10 +22,8 @@ import os
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QFileDialog,
     QGridLayout,
     QLabel,
     QLineEdit,
@@ -33,10 +31,12 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QWidget,
 )
-
+from sqlalchemy import select
 
 from wadas.domain.database import DataBase
+from wadas.domain.db_model import User
 from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface
+from wadas.ui.error_message_dialog import WADASErrorMessage
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -49,6 +49,8 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         self.ui_user_idx = 0
         self.removed_users = []
         self.removed_rows = set()
+        # DB enablement status
+        self.db_enabled = bool(DataBase.get_enabled_db())
 
         # UI
         self.ui.setupUi(self)
@@ -69,7 +71,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         self.add_user()
 
         # Slots
-        self.ui.buttonBox.button(QDialogButtonBox.Close).clicked.connect(self.close)
+        self.ui.buttonBox.accepted.connect(self.accept_and_close)
         self.ui.pushButton_add_user.clicked.connect(self.add_user)
         self.ui.pushButton_remove_user.clicked.connect(self.remove_user)
         self.ui.pushButton_reset_password.clicked.connect(self.reset_user_password)
@@ -77,14 +79,29 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         # Init dialog
         self.initialize_dialog()
 
-        # DB enablement status
-        self.db_enabled = bool(DataBase.get_enabled_db())
-
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
 
-        #TODO: add query to init users list
-        pass
+        if self.db_enabled:
+            i = 0
+            try:
+                if session := DataBase.create_session():
+                    stmt = select(User.username)
+                    for username in session.scalars(stmt):
+                        if i > 0:
+                            self.add_user()
+                        user_ln = self.findChild(QLineEdit, f"lineEdit_user_{i}")
+                        user_ln.setText(username)
+                        password_ln = self.findChild(QLineEdit, f"lineEdit_password_{i}")
+                        password_ln.setText("xxxxxxx")
+                        password_ln.setEnabled(False)
+                    self.validate()
+                else:
+                    return None
+            except:
+                WADASErrorMessage("Failed to retrieve users data",
+                                  "Failed to retrieve user data from db. "
+                                  "Please make sure db is healty and properly configured.")
 
     def add_user(self):
         """Method to add a user into the dialog"""
@@ -106,6 +123,15 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
             user_line_edit.setObjectName(f"lineEdit_user_{row}")
             user_line_edit.textChanged.connect(self.validate)
             grid_layout_users.addWidget(user_line_edit, row, 2)
+            # Password
+            label = QLabel("Password:")
+            label.setObjectName(f"label_password_{row}")
+            grid_layout_users.addWidget(label, row, 3)
+            pass_line_edit = QLineEdit()
+            pass_line_edit.setObjectName(f"lineEdit_password_{row}")
+            pass_line_edit.setEchoMode(QLineEdit.EchoMode.Password)
+            pass_line_edit.textChanged.connect(self.validate)
+            grid_layout_users.addWidget(pass_line_edit, row, 4)
 
             grid_layout_users.setAlignment(Qt.AlignmentFlag.AlignTop)
             self.ui_user_idx += 1
@@ -124,7 +150,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
                     self.removed_rows.add(i)
                     grid_layout_users = self.findChild(QGridLayout, "gridLayout_users")
                     if grid_layout_users:
-                        for j in range(0, 3):
+                        for j in range(0, 5):
                             grid_layout_users.itemAtPosition(i, j).widget().setParent(None)
         self.ui.pushButton_remove_user.setEnabled(False)
         self.ui.pushButton_reset_password.setEnabled(False)
@@ -135,14 +161,44 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         self.ui.pushButton_remove_user.setEnabled(True)
         self.ui.pushButton_reset_password.setEnabled(True)
 
+    def get_user(self, row):
+        """Method to get user text from UI programmatically by row number"""
+        userln = self.findChild(QLineEdit, f"lineEdit_user_{row}")
+        return userln.text() if userln else None
+
+    def get_password(self, row):
+        """Method to get user password text from UI programmatically by row number"""
+        password_ln = self.findChild(QLineEdit, f"lineEdit_password_{row}")
+        return password_ln.text() if password_ln else False
+
     def validate(self):
         """Method to validate dialog input fields"""
 
-        #TODO: add form validation logic
-        pass
+        for i in range(0, self.ui_user_idx):
+            if i in self.removed_rows:
+                continue
+            if not self.get_user(i):
+                self.ui.label_errorMessage.setText("Invalid user name provided!")
+                return False
+            if not self.get_password(i):
+                self.ui.label_errorMessage.setText("Invalid user name provided!")
+                return False
+
+        self.ui.label_errorMessage.setText("")
+        return True
+
 
     def reset_user_password(self):
         """Method to reset user password in db."""
 
-        #TODO: add logic
-        pass
+        for i in range(0, self.ui_user_idx):
+            radiobtn = self.findChild(QRadioButton, f"radioButton_user_{i}")
+            if radiobtn:
+                user_ln = self.findChild(QLineEdit, f"lineEdit_password_{i}")
+                if radiobtn.isChecked():
+                    user_ln.Enabled(True)
+
+    def accept_and_close(self):
+        """Method to apply changes to db"""
+
+        self.close()
