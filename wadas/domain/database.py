@@ -919,6 +919,28 @@ class DataBase(ABC):
         finally:
             session.close()
 
+    @classmethod
+    def delete_user(cls, username):
+        """Method to delete a given user from db."""
+
+        try:
+            if session := DataBase.create_session():
+                stmt = delete(ORMUser).where(ORMUser.username == username)
+                result = session.execute(stmt)
+
+                if result.rowcount == 0:
+                    WADASErrorMessage(
+                        "User not found", f"Could not delete user '{username}'."
+                    ).exec()
+                session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            WADASErrorMessage(
+                "Failed to delete user", f"Could not delete user '{username}'.\n\nError: {str(e)}"
+            ).exec()
+        finally:
+            session.close()
+
     @abstractmethod
     def get_connection_string(self):
         """Generate the connection string based on the database type."""

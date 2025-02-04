@@ -19,6 +19,7 @@
 
 import os
 import bcrypt
+from validators import email as valid_email
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
@@ -224,10 +225,17 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
             if i in self.removed_rows:
                 continue
             if not self.get_line_edit_txt_by_objectname(f"lineEdit_user_{i}"):
-                self.ui.label_errorMessage.setText("Invalid user name provided!")
+                self.ui.label_errorMessage.setText("user name cannot be empty!")
                 return False
             if not self.get_line_edit_txt_by_objectname(f"lineEdit_password_{i}"):
-                self.ui.label_errorMessage.setText("Invalid password provided!")
+                self.ui.label_errorMessage.setText("password cannot be empty!")
+                return False
+            email = self.get_line_edit_txt_by_objectname(f"lineEdit_email_{i}")
+            if not email:
+                self.ui.label_errorMessage.setText("email cannot be empty!")
+                return False
+            elif not valid_email(email):
+                self.ui.label_errorMessage.setText("Invalid email provided!")
                 return False
 
         self.ui.label_errorMessage.setText("")
@@ -278,4 +286,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
                     DataBase.update_user_role(username, role)
                 if new_password:
                     DataBase.update_user_password(username, hashed_password)
+
+        for user in self.removed_users:
+            DataBase.delete_user(user)
         self.close()
