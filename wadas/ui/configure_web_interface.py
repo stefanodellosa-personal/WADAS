@@ -18,12 +18,12 @@
 # Description: Web interface users UI Module
 
 import os
+import bcrypt
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QDialog,
-    QDialogButtonBox,
     QGridLayout,
     QLabel,
     QLineEdit,
@@ -32,10 +32,12 @@ from PySide6.QtWidgets import (
     QWidget,
     QComboBox,
 )
-from sqlalchemy import select
+from sqlalchemy import select, update
+from sqlalchemy.exc import SQLAlchemyError
 
 from wadas.domain.database import DataBase
 from wadas.domain.db_model import User
+from wadas.domain.utils import get_precise_timestamp
 from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface
 from wadas.ui.error_message_dialog import WADASErrorMessage
 
@@ -225,15 +227,11 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         self.ui.pushButton_remove_user.setEnabled(True)
         self.ui.pushButton_reset_password.setEnabled(True)
 
-    def get_user(self, row):
-        """Method to get user text from UI programmatically by row number"""
-        userln = self.findChild(QLineEdit, f"lineEdit_user_{row}")
-        return userln.text() if userln else None
+    def get_line_edit_txt_by_objectname(self, object_name):
+        """Method to get text from UI line edit programmatically by objectname"""
 
-    def get_password(self, row):
-        """Method to get user password text from UI programmatically by row number"""
-        password_ln = self.findChild(QLineEdit, f"lineEdit_password_{row}")
-        return password_ln.text() if password_ln else False
+        ln_object = self.findChild(QLineEdit, object_name)
+        return ln_object.text() if ln_object else None
 
     def validate(self):
         """Method to validate dialog input fields"""
@@ -241,16 +239,15 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         for i in range(0, self.ui_user_idx):
             if i in self.removed_rows:
                 continue
-            if not self.get_user(i):
+            if not self.get_line_edit_txt_by_objectname(f"lineEdit_user_{i}"):
                 self.ui.label_errorMessage.setText("Invalid user name provided!")
                 return False
-            if not self.get_password(i):
+            if not self.get_line_edit_txt_by_objectname(f"lineEdit_password_{i}"):
                 self.ui.label_errorMessage.setText("Invalid password provided!")
                 return False
 
         self.ui.label_errorMessage.setText("")
         return True
-
 
     def reset_user_password(self):
         """Method to reset user password in db."""
@@ -263,7 +260,131 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
                     password_ln.setText("")
                     password_ln.setEnabled(True)
 
+    def hash_password(self, password):
+        """Method to generate a salt and create hash of a password"""
+
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+        return hashed_password
+
+    def get_user_email_and_role(self, username):
+        """Method to retrieve user email and role from db"""
+        try:
+            if session := DataBase.create_session():
+                stmt = select(User.email, User.role).where(User.username == username)
+                result = session.execute(stmt).fetchone()
+
+                if result:
+                    email, role = result
+                    return email, role
+                else:
+                    return None
+        except SQLAlchemyError as e:
+            WADASErrorMessage(
+                "Failed to retrieve user data",
+                f"Could not fetch data for user '{username}'.\n\nError: {str(e)}"
+            ).exec()
+            return None
+        finally:
+            session.close()
+
     def accept_and_close(self):
         """Method to apply changes to db"""
 
+        for i in range(0, self.ui_user_idx):
+            if i in self.removed_rows:
+                continue
+
+            new_user = bool(self.findChild(QLineEdit, f"lineEdit_user_{i}").isEnabled())
+            new_password = bool(self.findChild(QLineEdit, f"lineEdit_password_{i}").isEnabled())
+
+            username = self.get_line_edit_txt_by_objectname(f"lineEdit_user_{i}")
+            password = self.get_line_edit_txt_by_objectname(f"lineEdit_password_{i}")
+            email = self.get_line_edit_txt_by_objectname(f"lineEdit_email_{i}")
+            role = self.findChild(QComboBox, f"comboBox_role_{i}").currentText()
+            hashed_password = self.hash_password(password)
+
+            if new_user:
+                try:
+                    if session := DataBase.create_session():
+                        new_user = User(
+                            username=username,
+                            password=hashed_password,
+                            email=email,
+                            role=role,
+                            created_at=get_precise_timestamp()
+                        )
+                        session.add(new_user)
+                        session.commit()
+                except SQLAlchemyError as e:
+                    session.rollback()  # Rollback in caso di errore
+                    WADASErrorMessage(
+                        "Failed to insert user data into db",
+                        f"Failed to insert user data into db. "
+                        f"Please make sure db is healthy and properly configured.\n\nError: {str(e)}"
+                    ).exec()
+                finally:
+                    session.close()
+            else:
+                db_email, db_role = self.get_user_email_and_role(username)
+                if db_email != email:
+                    try:
+                        if session := DataBase.create_session():
+                            # Update user email
+                            stmt = (
+                                update(User)
+                                .where(User.username == username)
+                                .values(email=email)
+                            )
+
+                            session.execute(stmt)
+                            session.commit()
+                    except SQLAlchemyError as e:
+                        session.rollback()
+                        WADASErrorMessage(
+                            "Failed to update user email",
+                            f"Could not update email for user '{username}'.\n\nError: {str(e)}"
+                        ).exec()
+                    finally:
+                        session.close()
+                if db_role != role:
+                    try:
+                        if session := DataBase.create_session():
+                            # Update user role
+                            stmt = (
+                                update(User)
+                                .where(User.username == username)
+                                .values(role=role)
+                            )
+
+                            session.execute(stmt)
+                            session.commit()
+                    except SQLAlchemyError as e:
+                        session.rollback()
+                        WADASErrorMessage(
+                            "Failed to update user role",
+                            f"Could not update role for user '{username}'.\n\nError: {str(e)}"
+                        ).exec()
+                    finally:
+                        session.close()
+                if new_password:
+                    try:
+                        if session := DataBase.create_session():
+                            # Update user password
+                            stmt = (
+                                update(User)
+                                .where(User.username == username)
+                                .values(password=hashed_password)
+                            )
+
+                            session.execute(stmt)
+                            session.commit()
+                    except SQLAlchemyError as e:
+                        session.rollback()
+                        WADASErrorMessage(
+                            "Failed to update user password",
+                            f"Could not update password for user '{username}'.\n\nError: {str(e)}"
+                        ).exec()
+                    finally:
+                        session.close()
         self.close()

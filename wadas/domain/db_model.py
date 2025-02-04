@@ -198,7 +198,7 @@ class ActuationEvent(Base):
 class User(Base):
     __tablename__ = "users"
 
-    local_id = Column(String(255), primary_key=True, name="id")
+    db_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
     username = Column(String(255), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
@@ -209,7 +209,7 @@ class User(Base):
 class DBMetadata(Base):
     __tablename__ = "db_metadata"
 
-    local_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
+    db_id = Column(Integer, primary_key=True, autoincrement=True, name="id")
     version = Column(String(255), nullable=False, default=lambda: __dbversion__)
     applied_at = Column(MySQLDATETIME6(timezone=True), nullable=False)
     description = Column(Text, nullable=True)
