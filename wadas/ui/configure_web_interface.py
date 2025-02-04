@@ -50,7 +50,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         self.ui_user_idx = 0
         self.removed_users = []
         self.removed_rows = set()
-        self.types = ["Admin", "Viewer"]
+        self.roles = ["Admin", "Viewer"]
         self.web_interface_enabled = False
         # DB enablement status
         self.db_enabled = bool(DataBase.get_enabled_db())
@@ -92,22 +92,37 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
             i = 0
             try:
                 if session := DataBase.create_session():
-                    stmt = select(User.username)
-                    for username in session.scalars(stmt):
+                    stmt = select(User.username, User.email, User.role)
+                    for username, email, role in session.execute(stmt):
                         if i > 0:
                             self.add_user()
+
                         user_ln = self.findChild(QLineEdit, f"lineEdit_user_{i}")
                         user_ln.setText(username)
+                        user_ln.setEnabled(False)
+
                         password_ln = self.findChild(QLineEdit, f"lineEdit_password_{i}")
                         password_ln.setText("xxxxxxx")
                         password_ln.setEnabled(False)
+
+                        email_ln = self.findChild(QLineEdit, f"lineEdit_email_{i}")
+                        email_ln.setText(email)
+
+                        role_cb = self.findChild(QComboBox, f"comboBox_role_{i}")
+                        role_txt = role if role in self.roles else "Viewer"
+                        role_cb.setCurrentText(role_txt)
+
+                        i += 1
+
                     self.validate()
                 else:
                     return None
-            except:
-                WADASErrorMessage("Failed to retrieve users data",
-                                  "Failed to retrieve user data from db. "
-                                  "Please make sure db is healty and properly configured.")
+            except Exception as e:
+                WADASErrorMessage(
+                    "Failed to retrieve users data",
+                    f"Failed to retrieve user data from db. "
+                    f"Please make sure db is healthy and properly configured.\n\nError: {str(e)}"
+                ).exec()
 
     def update_web_interface_status(self):
         """Method to reflect up-to-date web interface status."""
@@ -176,10 +191,10 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
             label.setObjectName(f"label_role_{row}")
             grid_layout_users.addWidget(label, row, 7)
             combo_box = QComboBox(self)
-            combo_box.setObjectName(f"comboBox_actuator_type_{row}")
-            combo_box.addItems(self.types)
+            combo_box.setObjectName(f"comboBox_role_{row}")
+            combo_box.addItems(self.roles)
             combo_box.currentIndexChanged.connect(self.validate)
-            combo_box.setToolTip("Select actuator type")
+            combo_box.setToolTip("Select user role")
             grid_layout_users.addWidget(combo_box, row, 8)
 
             grid_layout_users.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -243,9 +258,10 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         for i in range(0, self.ui_user_idx):
             radiobtn = self.findChild(QRadioButton, f"radioButton_user_{i}")
             if radiobtn:
-                user_ln = self.findChild(QLineEdit, f"lineEdit_password_{i}")
+                password_ln = self.findChild(QLineEdit, f"lineEdit_password_{i}")
                 if radiobtn.isChecked():
-                    user_ln.Enabled(True)
+                    password_ln.setText("")
+                    password_ln.setEnabled(True)
 
     def accept_and_close(self):
         """Method to apply changes to db"""
