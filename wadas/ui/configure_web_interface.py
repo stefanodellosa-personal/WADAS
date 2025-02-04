@@ -30,6 +30,7 @@ from PySide6.QtWidgets import (
     QRadioButton,
     QScrollArea,
     QWidget,
+    QComboBox,
 )
 from sqlalchemy import select
 
@@ -49,6 +50,8 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         self.ui_user_idx = 0
         self.removed_users = []
         self.removed_rows = set()
+        self.types = ["Admin", "Viewer"]
+        self.web_interface_enabled = False
         # DB enablement status
         self.db_enabled = bool(DataBase.get_enabled_db())
 
@@ -75,6 +78,8 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         self.ui.pushButton_add_user.clicked.connect(self.add_user)
         self.ui.pushButton_remove_user.clicked.connect(self.remove_user)
         self.ui.pushButton_reset_password.clicked.connect(self.reset_user_password)
+        self.ui.pushButton_stop_web_interface.clicked.connect(self.on_web_interface_stop_clicked)
+        self.ui.pushButton_start_web_interface.clicked.connect(self.on_web_interface_start_clicked)
 
         # Init dialog
         self.initialize_dialog()
@@ -82,6 +87,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
 
+        self.update_web_interface_status()
         if self.db_enabled:
             i = 0
             try:
@@ -102,6 +108,31 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
                 WADASErrorMessage("Failed to retrieve users data",
                                   "Failed to retrieve user data from db. "
                                   "Please make sure db is healty and properly configured.")
+
+    def update_web_interface_status(self):
+        """Method to reflect up-to-date web interface status."""
+
+        status = self.web_interface_enabled
+        status_txt = "Active" if status else "Inactive"
+        status_color = "color: green" if status else "color: red"
+        self.ui.label_web_interface_status.setText(status_txt)
+        self.ui.label_web_interface_status.setStyleSheet(status_color)
+        self.ui.pushButton_start_web_interface.setEnabled(not status)
+        self.ui.pushButton_stop_web_interface.setEnabled(status)
+
+    def on_web_interface_start_clicked(self):
+        """Method to trigger start of web interface"""
+
+        #TODO: add logic to start web interface start
+        self.web_interface_enabled = True
+        self.update_web_interface_status()
+
+    def on_web_interface_stop_clicked(self):
+        """Method to trigger stop of web interface"""
+
+        # TODO: add logic to stop web interface start
+        self.web_interface_enabled = False
+        self.update_web_interface_status()
 
     def add_user(self):
         """Method to add a user into the dialog"""
@@ -132,6 +163,24 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
             pass_line_edit.setEchoMode(QLineEdit.EchoMode.Password)
             pass_line_edit.textChanged.connect(self.validate)
             grid_layout_users.addWidget(pass_line_edit, row, 4)
+            # Email
+            label = QLabel("Email:")
+            label.setObjectName(f"label_email_{row}")
+            grid_layout_users.addWidget(label, row, 5)
+            email_line_edit = QLineEdit()
+            email_line_edit.setObjectName(f"lineEdit_email_{row}")
+            email_line_edit.textChanged.connect(self.validate)
+            grid_layout_users.addWidget(email_line_edit, row, 6)
+            # Role
+            label = QLabel("Role:")
+            label.setObjectName(f"label_role_{row}")
+            grid_layout_users.addWidget(label, row, 7)
+            combo_box = QComboBox(self)
+            combo_box.setObjectName(f"comboBox_actuator_type_{row}")
+            combo_box.addItems(self.types)
+            combo_box.currentIndexChanged.connect(self.validate)
+            combo_box.setToolTip("Select actuator type")
+            grid_layout_users.addWidget(combo_box, row, 8)
 
             grid_layout_users.setAlignment(Qt.AlignmentFlag.AlignTop)
             self.ui_user_idx += 1
@@ -150,7 +199,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
                     self.removed_rows.add(i)
                     grid_layout_users = self.findChild(QGridLayout, "gridLayout_users")
                     if grid_layout_users:
-                        for j in range(0, 5):
+                        for j in range(0, 9):
                             grid_layout_users.itemAtPosition(i, j).widget().setParent(None)
         self.ui.pushButton_remove_user.setEnabled(False)
         self.ui.pushButton_reset_password.setEnabled(False)
@@ -181,7 +230,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
                 self.ui.label_errorMessage.setText("Invalid user name provided!")
                 return False
             if not self.get_password(i):
-                self.ui.label_errorMessage.setText("Invalid user name provided!")
+                self.ui.label_errorMessage.setText("Invalid password provided!")
                 return False
 
         self.ui.label_errorMessage.setText("")
