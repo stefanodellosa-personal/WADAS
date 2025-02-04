@@ -24,7 +24,7 @@ from enum import Enum
 
 import keyring
 from pymysql import OperationalError
-from sqlalchemy import and_, create_engine, delete, text, update
+from sqlalchemy import and_, create_engine, delete, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import OperationalError as SQLiteOperationalError
 from sqlalchemy.exc import SQLAlchemyError
@@ -45,6 +45,7 @@ from wadas.domain.db_model import FeederActuator as ORMFeederActuator
 from wadas.domain.db_model import FTPCamera as ORMFTPCamera
 from wadas.domain.db_model import RoadSignActuator as ORMRoadSignActuator
 from wadas.domain.db_model import USBCamera as ORMUSBCamera
+from wadas.domain.db_model import User as ORMUser
 from wadas.domain.db_model import camera_actuator_association
 from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.feeder_actuator import FeederActuator
@@ -52,6 +53,7 @@ from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.usb_camera import USBCamera
 from wadas.domain.utils import get_precise_timestamp
+from wadas.ui.error_message_dialog import WADASErrorMessage
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +64,14 @@ class DBMetadata:
         self.applied_at = get_precise_timestamp()
         self.description = description
         self.project_uuid = project_uuid
+
+
+class DBUser:
+    def __init__(self, username, password, email, role):
+        self.username = username
+        self.password = password
+        self.email = email
+        self.role = role
 
 
 class DataBase(ABC):
@@ -659,6 +669,14 @@ class DataBase(ABC):
                 description=domain_object.description,
                 project_uuid=str(domain_object.project_uuid),
             )
+        elif isinstance(domain_object, DBUser):
+            return ORMUser(
+                username=domain_object.username,
+                password=domain_object.password,
+                email=domain_object.email,
+                role=domain_object.role,
+                created_at=get_precise_timestamp(),
+            )
         else:
             raise ValueError(f"Unsupported domain object type: {type(domain_object).__name__}")
 
@@ -795,6 +813,111 @@ class DataBase(ABC):
                     camera_actuator_association.c.camera_id == extra_camera_id
                 )
                 cls.run_query(stmt)
+
+    @classmethod
+    def get_users(cls):
+        """Method to retrieve users from db"""
+        try:
+            if session := DataBase.create_session():
+                stmt = select(ORMUser.username, ORMUser.email, ORMUser.role)
+                return session.execute(stmt)
+            else:
+                return None
+        except Exception as e:
+            WADASErrorMessage(
+                "Failed to retrieve users data",
+                f"Failed to retrieve user data from db. "
+                f"Please make sure db is healthy and properly configured.\n\nError: {str(e)}",
+            ).exec()
+        finally:
+            session.close()
+
+    @classmethod
+    def get_user_email_and_role(cls, username):
+        """Method to retrieve user email and role from db"""
+
+        try:
+            if session := DataBase.create_session():
+                stmt = select(ORMUser.email, ORMUser.role).where(ORMUser.username == username)
+                result = session.execute(stmt).fetchone()
+
+                if result:
+                    email, role = result
+                    return email, role
+                else:
+                    return None
+        except SQLAlchemyError as e:
+            WADASErrorMessage(
+                "Failed to retrieve user data",
+                f"Could not fetch data for user '{username}'.\n\nError: {str(e)}",
+            ).exec()
+            return None
+        finally:
+            session.close()
+
+    @classmethod
+    def update_user_email(cls, username, email):
+        """Method to update the email of a user in db"""
+
+        try:
+            if session := DataBase.create_session():
+                # Update user email
+                stmt = update(ORMUser).where(ORMUser.username == username).values(email=email)
+
+                session.execute(stmt)
+                session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            WADASErrorMessage(
+                "Failed to update user email",
+                f"Could not update email for user '{username}'.\n\nError: {str(e)}",
+            ).exec()
+        finally:
+            session.close()
+
+    @classmethod
+    def update_user_role(cls, username, role):
+        """Method to update the role of a user in db"""
+
+        try:
+            if session := DataBase.create_session():
+                # Update user role
+                stmt = update(ORMUser).where(ORMUser.username == username).values(role=role)
+
+                session.execute(stmt)
+                session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            WADASErrorMessage(
+                "Failed to update user role",
+                f"Could not update role for user '{username}'.\n\nError: {str(e)}",
+            ).exec()
+        finally:
+            session.close()
+
+    @classmethod
+    def update_user_password(cls, username, hashed_password):
+        """Method to update the password of a user in db"""
+
+        try:
+            if session := DataBase.create_session():
+                # Update user password
+                stmt = (
+                    update(ORMUser)
+                    .where(ORMUser.username == username)
+                    .values(password=hashed_password)
+                )
+
+                session.execute(stmt)
+                session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            WADASErrorMessage(
+                "Failed to update user password",
+                f"Could not update password for user '{username}'.\n\nError: {str(e)}",
+            ).exec()
+        finally:
+            session.close()
 
     @abstractmethod
     def get_connection_string(self):

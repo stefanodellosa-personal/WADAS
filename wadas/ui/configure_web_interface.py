@@ -32,14 +32,9 @@ from PySide6.QtWidgets import (
     QWidget,
     QComboBox,
 )
-from sqlalchemy import select, update
-from sqlalchemy.exc import SQLAlchemyError
 
-from wadas.domain.database import DataBase
-from wadas.domain.db_model import User
-from wadas.domain.utils import get_precise_timestamp
+from wadas.domain.database import DataBase, DBUser
 from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface
-from wadas.ui.error_message_dialog import WADASErrorMessage
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -92,39 +87,28 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         self.update_web_interface_status()
         if self.db_enabled:
             i = 0
-            try:
-                if session := DataBase.create_session():
-                    stmt = select(User.username, User.email, User.role)
-                    for username, email, role in session.execute(stmt):
-                        if i > 0:
-                            self.add_user()
+            users = DataBase.get_users()
+            for username, email, role in users:
+                if i > 0:
+                    self.add_user()
 
-                        user_ln = self.findChild(QLineEdit, f"lineEdit_user_{i}")
-                        user_ln.setText(username)
-                        user_ln.setEnabled(False)
+                user_ln = self.findChild(QLineEdit, f"lineEdit_user_{i}")
+                user_ln.setText(username)
+                user_ln.setEnabled(False)
 
-                        password_ln = self.findChild(QLineEdit, f"lineEdit_password_{i}")
-                        password_ln.setText("xxxxxxx")
-                        password_ln.setEnabled(False)
+                password_ln = self.findChild(QLineEdit, f"lineEdit_password_{i}")
+                password_ln.setText("xxxxxxx")
+                password_ln.setEnabled(False)
 
-                        email_ln = self.findChild(QLineEdit, f"lineEdit_email_{i}")
-                        email_ln.setText(email)
+                email_ln = self.findChild(QLineEdit, f"lineEdit_email_{i}")
+                email_ln.setText(email)
 
-                        role_cb = self.findChild(QComboBox, f"comboBox_role_{i}")
-                        role_txt = role if role in self.roles else "Viewer"
-                        role_cb.setCurrentText(role_txt)
+                role_cb = self.findChild(QComboBox, f"comboBox_role_{i}")
+                role_txt = role if role in self.roles else "Viewer"
+                role_cb.setCurrentText(role_txt)
 
-                        i += 1
-
-                    self.validate()
-                else:
-                    return None
-            except Exception as e:
-                WADASErrorMessage(
-                    "Failed to retrieve users data",
-                    f"Failed to retrieve user data from db. "
-                    f"Please make sure db is healthy and properly configured.\n\nError: {str(e)}"
-                ).exec()
+                i += 1
+                self.validate()
 
     def update_web_interface_status(self):
         """Method to reflect up-to-date web interface status."""
@@ -267,27 +251,6 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
         return hashed_password
 
-    def get_user_email_and_role(self, username):
-        """Method to retrieve user email and role from db"""
-        try:
-            if session := DataBase.create_session():
-                stmt = select(User.email, User.role).where(User.username == username)
-                result = session.execute(stmt).fetchone()
-
-                if result:
-                    email, role = result
-                    return email, role
-                else:
-                    return None
-        except SQLAlchemyError as e:
-            WADASErrorMessage(
-                "Failed to retrieve user data",
-                f"Could not fetch data for user '{username}'.\n\nError: {str(e)}"
-            ).exec()
-            return None
-        finally:
-            session.close()
-
     def accept_and_close(self):
         """Method to apply changes to db"""
 
@@ -305,86 +268,14 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
             hashed_password = self.hash_password(password)
 
             if new_user:
-                try:
-                    if session := DataBase.create_session():
-                        new_user = User(
-                            username=username,
-                            password=hashed_password,
-                            email=email,
-                            role=role,
-                            created_at=get_precise_timestamp()
-                        )
-                        session.add(new_user)
-                        session.commit()
-                except SQLAlchemyError as e:
-                    session.rollback()  # Rollback in caso di errore
-                    WADASErrorMessage(
-                        "Failed to insert user data into db",
-                        f"Failed to insert user data into db. "
-                        f"Please make sure db is healthy and properly configured.\n\nError: {str(e)}"
-                    ).exec()
-                finally:
-                    session.close()
+                db_user = DBUser(username, hashed_password, email, role)
+                DataBase.insert_into_db(db_user)
             else:
-                db_email, db_role = self.get_user_email_and_role(username)
+                db_email, db_role = DataBase.get_user_email_and_role(username)
                 if db_email != email:
-                    try:
-                        if session := DataBase.create_session():
-                            # Update user email
-                            stmt = (
-                                update(User)
-                                .where(User.username == username)
-                                .values(email=email)
-                            )
-
-                            session.execute(stmt)
-                            session.commit()
-                    except SQLAlchemyError as e:
-                        session.rollback()
-                        WADASErrorMessage(
-                            "Failed to update user email",
-                            f"Could not update email for user '{username}'.\n\nError: {str(e)}"
-                        ).exec()
-                    finally:
-                        session.close()
+                    DataBase.update_user_email(username, email)
                 if db_role != role:
-                    try:
-                        if session := DataBase.create_session():
-                            # Update user role
-                            stmt = (
-                                update(User)
-                                .where(User.username == username)
-                                .values(role=role)
-                            )
-
-                            session.execute(stmt)
-                            session.commit()
-                    except SQLAlchemyError as e:
-                        session.rollback()
-                        WADASErrorMessage(
-                            "Failed to update user role",
-                            f"Could not update role for user '{username}'.\n\nError: {str(e)}"
-                        ).exec()
-                    finally:
-                        session.close()
+                    DataBase.update_user_role(username, role)
                 if new_password:
-                    try:
-                        if session := DataBase.create_session():
-                            # Update user password
-                            stmt = (
-                                update(User)
-                                .where(User.username == username)
-                                .values(password=hashed_password)
-                            )
-
-                            session.execute(stmt)
-                            session.commit()
-                    except SQLAlchemyError as e:
-                        session.rollback()
-                        WADASErrorMessage(
-                            "Failed to update user password",
-                            f"Could not update password for user '{username}'.\n\nError: {str(e)}"
-                        ).exec()
-                    finally:
-                        session.close()
+                    DataBase.update_user_password(username, hashed_password)
         self.close()
