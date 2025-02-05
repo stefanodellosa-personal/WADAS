@@ -836,13 +836,7 @@ class DataBase(ABC):
         try:
             if session := DataBase.create_session():
                 stmt = select(ORMUser.email, ORMUser.role).where(ORMUser.username == username)
-                result = session.execute(stmt).fetchone()
-
-                if result:
-                    email, role = result
-                    return email, role
-                else:
-                    return None
+                return session.execute(stmt).fetchone()
         except SQLAlchemyError:
             logger.error(
                 "Failed to retrieve user data", "Could not fetch data for user '%s'.", username
@@ -928,7 +922,7 @@ class DataBase(ABC):
                 stmt = delete(ORMUser).where(ORMUser.username == username)
                 result = session.execute(stmt)
 
-                if result.rowcount == 0:
+                if not result.rowcount:
                     logger.warning("User not found", f"Could not delete user '{username}'.")
                     return False
                 session.commit()

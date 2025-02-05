@@ -24,6 +24,7 @@ from validators import email as valid_email
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
+    QComboBox,
     QDialog,
     QGridLayout,
     QLabel,
@@ -31,7 +32,6 @@ from PySide6.QtWidgets import (
     QRadioButton,
     QScrollArea,
     QWidget,
-    QComboBox,
 )
 
 from ui.error_message_dialog import WADASErrorMessage
@@ -149,8 +149,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
     def add_user(self):
         """Method to add a user into the dialog"""
 
-        grid_layout_users = self.findChild(QGridLayout, "gridLayout_users")
-        if grid_layout_users:
+        if grid_layout_users := self.findChild(QGridLayout, "gridLayout_users"):
             row = self.ui_user_idx
             # User selection check box
             radio_button = QRadioButton()
@@ -203,10 +202,8 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         """Method to remove user from list."""
 
         for i in range(0, self.ui_user_idx):
-            radiobtn = self.findChild(QRadioButton, f"radioButton_user_{i}")
-            if radiobtn:
-                user_ln = self.findChild(QLineEdit, f"lineEdit_user_{i}")
-                if radiobtn.isChecked() and user_ln:
+            if radiobtn := self.findChild(QRadioButton, f"radioButton_user_{i}"):
+                if radiobtn.isChecked() and (user_ln := self.findChild(QLineEdit, f"lineEdit_user_{i}")):
                     self.removed_users.append(user_ln.text())
                     self.removed_rows.add(i)
                     grid_layout_users = self.findChild(QGridLayout, "gridLayout_users")
@@ -255,10 +252,8 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         """Method to reset user password in db."""
 
         for i in range(0, self.ui_user_idx):
-            radiobtn = self.findChild(QRadioButton, f"radioButton_user_{i}")
-            if radiobtn:
-                password_ln = self.findChild(QLineEdit, f"lineEdit_password_{i}")
-                if radiobtn.isChecked():
+            if radiobtn := self.findChild(QRadioButton, f"radioButton_user_{i}"):
+                if radiobtn.isChecked() and (password_ln := self.findChild(QLineEdit, f"lineEdit_password_{i}")):
                     password_ln.setText("")
                     password_ln.setEnabled(True)
 
@@ -266,8 +261,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         """Method to generate a salt and create hash of a password"""
 
         salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-        return hashed_password
+        return bcrypt.hashpw(password.encode('utf-8'), salt)
 
     def accept_and_close(self):
         """Method to apply changes to db"""
