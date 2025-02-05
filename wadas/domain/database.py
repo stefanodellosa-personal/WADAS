@@ -53,7 +53,6 @@ from wadas.domain.ftp_camera import FTPCamera
 from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.usb_camera import USBCamera
 from wadas.domain.utils import get_precise_timestamp
-from wadas.ui.error_message_dialog import WADASErrorMessage
 
 logger = logging.getLogger(__name__)
 
@@ -823,14 +822,12 @@ class DataBase(ABC):
                 return session.execute(stmt)
             else:
                 return None
-        except Exception as e:
-            WADASErrorMessage(
-                "Failed to retrieve users data",
-                f"Failed to retrieve user data from db. "
-                f"Please make sure db is healthy and properly configured.\n\nError: {str(e)}",
-            ).exec()
+        except Exception:
+            logger.error("Please make sure db is healthy and properly configured.")
+            return None
         finally:
-            session.close()
+            if session:
+                session.close()
 
     @classmethod
     def get_user_email_and_role(cls, username):
@@ -846,14 +843,14 @@ class DataBase(ABC):
                     return email, role
                 else:
                     return None
-        except SQLAlchemyError as e:
-            WADASErrorMessage(
-                "Failed to retrieve user data",
-                f"Could not fetch data for user '{username}'.\n\nError: {str(e)}",
-            ).exec()
+        except SQLAlchemyError:
+            logger.error(
+                "Failed to retrieve user data", "Could not fetch data for user '%s'.", username
+            )
             return None
         finally:
-            session.close()
+            if session:
+                session.close()
 
     @classmethod
     def update_user_email(cls, username, email):
@@ -866,14 +863,15 @@ class DataBase(ABC):
 
                 session.execute(stmt)
                 session.commit()
-        except SQLAlchemyError as e:
-            session.rollback()
-            WADASErrorMessage(
-                "Failed to update user email",
-                f"Could not update email for user '{username}'.\n\nError: {str(e)}",
-            ).exec()
+                return True
+        except SQLAlchemyError:
+            if session:
+                session.rollback()
+            logger.error("Could not update email for user '%s'.", username)
+            return False
         finally:
-            session.close()
+            if session:
+                session.close()
 
     @classmethod
     def update_user_role(cls, username, role):
@@ -886,14 +884,15 @@ class DataBase(ABC):
 
                 session.execute(stmt)
                 session.commit()
-        except SQLAlchemyError as e:
-            session.rollback()
-            WADASErrorMessage(
-                "Failed to update user role",
-                f"Could not update role for user '{username}'.\n\nError: {str(e)}",
-            ).exec()
+                return True
+        except SQLAlchemyError:
+            if session:
+                session.rollback()
+            logger.error("Could not update role for user '%s'.", username)
+            return False
         finally:
-            session.close()
+            if session:
+                session.close()
 
     @classmethod
     def update_user_password(cls, username, hashed_password):
@@ -910,14 +909,15 @@ class DataBase(ABC):
 
                 session.execute(stmt)
                 session.commit()
-        except SQLAlchemyError as e:
-            session.rollback()
-            WADASErrorMessage(
-                "Failed to update user password",
-                f"Could not update password for user '{username}'.\n\nError: {str(e)}",
-            ).exec()
+                return True
+        except SQLAlchemyError:
+            if session:
+                session.rollback()
+            logger.error("Could not update password for user '%s'.", username)
+            return False
         finally:
-            session.close()
+            if session:
+                session.close()
 
     @classmethod
     def delete_user(cls, username):
@@ -929,17 +929,20 @@ class DataBase(ABC):
                 result = session.execute(stmt)
 
                 if result.rowcount == 0:
-                    WADASErrorMessage(
-                        "User not found", f"Could not delete user '{username}'."
-                    ).exec()
+                    logger.warning("User not found", f"Could not delete user '{username}'.")
+                    return False
                 session.commit()
+                return True
         except SQLAlchemyError as e:
-            session.rollback()
-            WADASErrorMessage(
+            if session:
+                session.rollback()
+            logger.error(
                 "Failed to delete user", f"Could not delete user '{username}'.\n\nError: {str(e)}"
-            ).exec()
+            )
+            return False
         finally:
-            session.close()
+            if session:
+                session.close()
 
     @abstractmethod
     def get_connection_string(self):

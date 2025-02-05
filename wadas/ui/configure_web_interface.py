@@ -34,6 +34,7 @@ from PySide6.QtWidgets import (
     QComboBox,
 )
 
+from ui.error_message_dialog import WADASErrorMessage
 from wadas.domain.database import DataBase, DBUser
 from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface
 
@@ -290,12 +291,20 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
             else:
                 db_email, db_role = DataBase.get_user_email_and_role(username)
                 if db_email != email:
-                    DataBase.update_user_email(username, email)
+                    if not DataBase.update_user_email(username, email):
+                        WADASErrorMessage("Unable to update user email",
+                                          f"Unable to update {username} email in db!").exec()
                 if db_role != role:
-                    DataBase.update_user_role(username, role)
+                    if not DataBase.update_user_role(username, role):
+                        WADASErrorMessage("Unable to update user role",
+                                          f"Unable to update {username} role in db!").exec()
                 if new_password:
-                    DataBase.update_user_password(username, hashed_password)
+                    if not DataBase.update_user_password(username, hashed_password):
+                        WADASErrorMessage("Unable to update user password",
+                                          f"Unable to update {username} password in db!").exec()
 
         for user in self.removed_users:
-            DataBase.delete_user(user)
+            if not DataBase.delete_user(user):
+                WADASErrorMessage("Unable to remove user from db",
+                                  f"Unable to remove {user} from db!").exec()
         self.close()
