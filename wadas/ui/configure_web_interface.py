@@ -110,6 +110,15 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
 
                 i += 1
                 self.validate()
+        else:
+            self.findChild(QLineEdit, "lineEdit_user_0").setEnabled(False)
+            self.findChild(QLineEdit, "lineEdit_password_0").setEnabled(False)
+            self.findChild(QLineEdit, "lineEdit_email_0").setEnabled(False)
+            self.findChild(QComboBox, "comboBox_role_0").setEnabled(False)
+            self.findChild(QRadioButton, "radioButton_user_0").setEnabled(False)
+            self.ui.pushButton_add_user.setEnabled(False)
+            self.ui.pushButton_start_web_interface.setEnabled(False)
+            self.ui.label_errorMessage.setText("Database not configured or enabled!")
 
     def update_web_interface_status(self):
         """Method to reflect up-to-date web interface status."""
