@@ -89,6 +89,4 @@ def is_valid_uuid4(val):
 
 
 def is_valid_database_name(val):
-    if re.match(r"^[a-zA-Z1-9_]+$", val):
-        return True
-    return False
+    return bool(re.match(r"^[a-zA-Z1-9_]+$", val))
