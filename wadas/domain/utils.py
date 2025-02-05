@@ -21,6 +21,7 @@ import base64
 import datetime
 import logging
 import os
+import re
 import uuid
 from logging.handlers import RotatingFileHandler
 
@@ -85,3 +86,7 @@ def is_valid_uuid4(val):
         return True
     except ValueError:
         return False
+
+
+def is_valid_database_name(val):
+    return bool(re.match(r"^[a-zA-Z1-9_]+$", val))
