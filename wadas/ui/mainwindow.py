@@ -397,6 +397,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration_menu.setEnabled(
             self.isWindowModified() and bool(self.configuration_file_name)
         )
+        self.ui.actionConfigure_web_interface.setEnabled(bool(DataBase.get_enabled_db()))
 
     def ftp_camera_exists(self):
         """Method that checks if at least one FTP camera exists in camera list."""
