@@ -40,6 +40,7 @@ from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterfac
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
+
 class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
     """Class to configure FTP server and cameras"""
 
@@ -88,10 +89,8 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
 
         self.update_web_interface_status()
         if self.db_enabled:
-            i = 0
-            users = DataBase.get_users()
-            for username, email, role in users:
-                if i > 0:
+            for i, (username, email, role) in enumerate(DataBase.get_users()):
+                if i:
                     self.add_user()
 
                 user_ln = self.findChild(QLineEdit, f"lineEdit_user_{i}")
@@ -109,7 +108,6 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
                 role_txt = role if role in self.roles else "Viewer"
                 role_cb.setCurrentText(role_txt)
 
-                i += 1
                 self.validate()
         else:
             self.findChild(QLineEdit, "lineEdit_user_0").setEnabled(False)

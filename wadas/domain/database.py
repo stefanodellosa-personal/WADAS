@@ -210,11 +210,15 @@ class DataBase(ABC):
     def create_session(cls):
         """Method to create a session to perform operation with the db"""
 
-        if engine := cls.get_engine():
-            Session = sessionmaker(bind=engine)
-            return Session()
-        else:
-            logger.error("Unable to create a session as DB engine is not initialized.")
+        try:
+            if engine := cls.get_engine():
+                Session = sessionmaker(bind=engine)
+                return Session()
+            else:
+                logger.error("Unable to create a session as DB engine is not initialized.")
+                return None
+        except Exception:
+            logger.exception("An error occurred while creating a session")
             return None
 
     @classmethod
@@ -343,6 +347,8 @@ class DataBase(ABC):
                 logger.exception(
                     "Error while inserting object %s into db.", type(domain_object).__name__
                 )
+        else:
+            logger.error("Failed to insert object into db as session could not been created.")
 
     def update_detection_event(cls, detection_event: DetectionEvent):
         """Update fields of a detection_events record in db.
@@ -391,7 +397,9 @@ class DataBase(ABC):
                     "Unexpected error occurred while updating detection event into db."
                 )
         else:
-            logger.error("unable to update detection event into db...")
+            logger.error(
+                "Unable to update detection event into db as session could not be created."
+            )
 
     @classmethod
     def update_camera(cls, camera, delete_camera=False):
@@ -542,7 +550,7 @@ class DataBase(ABC):
                 )
                 cls.run_query(stmt)
             else:
-                logger.debug("No db configured, skipping actuator association insert.")
+                logger.debug("Could not create db session, skipping actuator association insert.")
 
     @classmethod
     def get_camera_id(cls, camera_id):
@@ -560,7 +568,9 @@ class DataBase(ABC):
                 .scalar()
             )  # Use scalar() to retrieve the value directly
         else:
-            logger.debug("No camera id %s found in db.", camera_id)
+            logger.debug(
+                "Could not get camera id %s since session has not been created.", camera_id
+            )
             return None
 
     @classmethod
@@ -579,7 +589,9 @@ class DataBase(ABC):
                 .scalar()
             )
         else:
-            logger.debug("No actuator id %s found in db.", actuator_id)
+            logger.debug(
+                "Could not get actuator id %s since session has not been created.", actuator_id
+            )
             return None
 
     @classmethod
@@ -605,6 +617,9 @@ class DataBase(ABC):
                 .scalar()
             )  # Use scalar() to retrieve the value directly
         else:
+            logger.error(
+                "Could not retrieve detection event id as connection could not be created."
+            )
             return None
 
     @staticmethod
@@ -812,6 +827,8 @@ class DataBase(ABC):
                     camera_actuator_association.c.camera_id == extra_camera_id
                 )
                 cls.run_query(stmt)
+        else:
+            logger.error("Could not sanitize db as session has not been created.")
 
     @classmethod
     def get_users(cls):
@@ -826,8 +843,7 @@ class DataBase(ABC):
             logger.error("Please make sure db is healthy and properly configured.")
             return None
         finally:
-            if session:
-                session.close()
+            session.close()
 
     @classmethod
     def get_user_email_and_role(cls, username):
@@ -837,14 +853,18 @@ class DataBase(ABC):
             if session := DataBase.create_session():
                 stmt = select(ORMUser.email, ORMUser.role).where(ORMUser.username == username)
                 return session.execute(stmt).fetchone()
+            else:
+                logger.error(
+                    "Could not retrieve email and role for user %s since "
+                    "session has not been created.",
+                    username,
+                )
+                return None
         except SQLAlchemyError:
-            logger.error(
-                "Failed to retrieve user data", "Could not fetch data for user '%s'.", username
-            )
+            logger.error("Could not fetch data for user '%s'.", username)
             return None
         finally:
-            if session:
-                session.close()
+            session.close()
 
     @classmethod
     def update_user_email(cls, username, email):
@@ -858,14 +878,18 @@ class DataBase(ABC):
                 session.execute(stmt)
                 session.commit()
                 return True
+            else:
+                logger.error(
+                    "Could not update email for user %s since session has not been created.",
+                    username,
+                )
+                return False
         except SQLAlchemyError:
-            if session:
-                session.rollback()
+            session.rollback()
             logger.error("Could not update email for user '%s'.", username)
             return False
         finally:
-            if session:
-                session.close()
+            session.close()
 
     @classmethod
     def update_user_role(cls, username, role):
@@ -879,14 +903,18 @@ class DataBase(ABC):
                 session.execute(stmt)
                 session.commit()
                 return True
+            else:
+                logger.error(
+                    "Could not update role for user %s since session has not been created.",
+                    username,
+                )
+                return False
         except SQLAlchemyError:
-            if session:
-                session.rollback()
+            session.rollback()
             logger.error("Could not update role for user '%s'.", username)
             return False
         finally:
-            if session:
-                session.close()
+            session.close()
 
     @classmethod
     def update_user_password(cls, username, hashed_password):
@@ -904,14 +932,18 @@ class DataBase(ABC):
                 session.execute(stmt)
                 session.commit()
                 return True
+            else:
+                logger.error(
+                    "Could not update user %s password since session has not been created.",
+                    username,
+                )
+                return False
         except SQLAlchemyError:
-            if session:
-                session.rollback()
+            session.rollback()
             logger.error("Could not update password for user '%s'.", username)
             return False
         finally:
-            if session:
-                session.close()
+            session.close()
 
     @classmethod
     def delete_user(cls, username):
@@ -923,20 +955,21 @@ class DataBase(ABC):
                 result = session.execute(stmt)
 
                 if not result.rowcount:
-                    logger.warning("User not found", f"Could not delete user '{username}'.")
+                    logger.warning("Could not delete user '%s'.", username)
                     return False
                 session.commit()
                 return True
-        except SQLAlchemyError as e:
-            if session:
-                session.rollback()
-            logger.error(
-                "Failed to delete user", f"Could not delete user '{username}'.\n\nError: {str(e)}"
-            )
+            else:
+                logger.error(
+                    "Could not delete user %s since session has not been created.", username
+                )
+                return None
+        except SQLAlchemyError:
+            session.rollback()
+            logger.error("Could not delete user '%s'.", username)
             return False
         finally:
-            if session:
-                session.close()
+            session.close()
 
     @abstractmethod
     def get_connection_string(self):
