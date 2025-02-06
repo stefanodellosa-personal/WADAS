@@ -216,7 +216,7 @@ class MainWindow(QMainWindow):
     def set_mainwindow_title(self, projectname="Untitled"):
         """Method to set MainWindow title showing version and projectname"""
 
-        window_title = self.default_window_title+" - "+projectname
+        window_title = self.default_window_title+" - "+projectname+"[*]"
         self.setWindowTitle(window_title)
 
     def set_image(self, img):
@@ -628,8 +628,8 @@ class MainWindow(QMainWindow):
             return
         else:
             save_configuration_to_file(self.configuration_file_name, self.uuid)
-            self.setWindowModified(False)
             self.set_mainwindow_title(os.path.basename(self.configuration_file_name))
+            self.setWindowModified(False)
             self.update_toolbar_status()
             self.set_recent_configuration(self.configuration_file_name)
 
@@ -664,8 +664,8 @@ class MainWindow(QMainWindow):
 
             self.configuration_file_name = file_name[0]
             self.uuid = uuid.UUID(self.load_status["uuid"])
-            self.setWindowModified(False)
             self.set_mainwindow_title(os.path.basename(file_name[0]))
+            self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()
             self.update_en_camera_list()
@@ -942,8 +942,8 @@ Are you sure you want to exit?""",
 
             self.configuration_file_name = path
             self.uuid = uuid.UUID(self.load_status["uuid"])
-            self.setWindowModified(False)
             self.set_mainwindow_title(os.path.basename(path))
+            self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()
             self.update_en_camera_list()
