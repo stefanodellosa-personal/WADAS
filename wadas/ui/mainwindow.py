@@ -115,6 +115,8 @@ class MainWindow(QMainWindow):
         )
         self.uuid = uuid.uuid4()
         self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
+        self.default_window_title = f"{self.windowTitle()}  {__version__}"
+        self.set_mainwindow_title()
 
         # Connect Actions
         self._connect_actions()
@@ -213,6 +215,11 @@ class MainWindow(QMainWindow):
         initialize_fpts_logger()
         initialize_asyncio_logger()
 
+    def set_mainwindow_title(self, projectname="Untitled"):
+        """Method to set MainWindow title showing version and projectname"""
+
+        window_title = f"{self.default_window_title} - {projectname}[*]"
+        self.setWindowTitle(window_title)
 
     def set_image(self, img):
         """Set image to show in WADAS. This is used for startup, detected and
@@ -624,6 +631,7 @@ class MainWindow(QMainWindow):
             return
         else:
             save_configuration_to_file(self.configuration_file_name, self.uuid)
+            self.set_mainwindow_title(os.path.basename(self.configuration_file_name))
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.set_recent_configuration(self.configuration_file_name)
@@ -659,6 +667,7 @@ class MainWindow(QMainWindow):
 
             self.configuration_file_name = file_name[0]
             self.uuid = uuid.UUID(self.load_status["uuid"])
+            self.set_mainwindow_title(os.path.basename(file_name[0]))
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()
@@ -942,6 +951,7 @@ Are you sure you want to exit?""",
 
             self.configuration_file_name = path
             self.uuid = uuid.UUID(self.load_status["uuid"])
+            self.set_mainwindow_title(os.path.basename(path))
             self.setWindowModified(False)
             self.update_toolbar_status()
             self.update_info_widget()
