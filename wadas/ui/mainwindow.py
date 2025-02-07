@@ -66,6 +66,7 @@ from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
 from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
+from wadas.ui.configure_web_interface import DialogConfigureWebInterface
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.insert_url_dialog import InsertUrlDialog
 from wadas.ui.license_dialog import LicenseDialog
@@ -170,6 +171,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_Telegram.triggered.connect(self.configure_telegram)
         self.ui.actionRecent_configuration.triggered.connect(self.open_last_saved_file)
         self.ui.actionConfigure_database.triggered.connect(self.configure_database)
+        self.ui.actionConfigure_web_interface.triggered.connect(self.configure_web_interface)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -395,6 +397,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSave_configuration_menu.setEnabled(
             self.isWindowModified() and bool(self.configuration_file_name)
         )
+        self.ui.actionConfigure_web_interface.setEnabled(bool(DataBase.get_enabled_db()))
 
     def ftp_camera_exists(self):
         """Method that checks if at least one FTP camera exists in camera list."""
@@ -776,6 +779,12 @@ class MainWindow(QMainWindow):
             self.setWindowModified(True)
             self.update_toolbar_status()
             self.update_info_widget()
+
+    def configure_web_interface(self):
+        """Method to trigger web interface configuration dialog"""
+
+        if DialogConfigureWebInterface().exec():
+            logger.info("Web interface configured.")
 
     def update_en_camera_list(self):
         """Method to list enabled camera(s) in UI"""

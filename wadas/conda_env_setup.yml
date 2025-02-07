@@ -4,6 +4,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - bcrypt==4.2.1
   - fastapi==0.115.2
   - filetype==1.2.0
   - ipykernel==6.29.5
