@@ -114,7 +114,7 @@ class MainWindow(QMainWindow):
         )
         self.uuid = uuid.uuid4()
         self.settings = QSettings("UI_settings.ini", QSettings.IniFormat)
-        self.default_window_title = self.windowTitle() + " " + __version__
+        self.default_window_title = f"{self.windowTitle()}  {__version__}"
         self.set_mainwindow_title()
 
         # Connect Actions
@@ -216,7 +216,7 @@ class MainWindow(QMainWindow):
     def set_mainwindow_title(self, projectname="Untitled"):
         """Method to set MainWindow title showing version and projectname"""
 
-        window_title = self.default_window_title+" - "+projectname+"[*]"
+        window_title = f"{self.default_window_title} - {projectname}[*]"
         self.setWindowTitle(window_title)
 
     def set_image(self, img):
