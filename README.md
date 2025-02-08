@@ -9,7 +9,7 @@ The project might leverage AI and other (open source or free to use) technologie
 
 Evolution of this technology will aim to detect and idenify the Marsican brown bear among wildife, to enable ad-hoc monitoring and notifications for the authorities which works everyday to protect this (and many other) species.
 
-See the project [Wiki](https://github.com/stefanodellosa-personal/WADAS/wiki) and our website [wadas.it](https://www.wadas.it/) for more details.
+See the project [Wiki](https://github.com/stefanodellosa-personal/WADAS/wiki) and our website [wadas.it](https://www.wadas.it/en/home-en/) for more details.
 
 **NOTE**: the owner discourages and forbids any usage of the application for scopes different than animal protection and conservation. Any violation of the intended use will be pursued by law.
 
