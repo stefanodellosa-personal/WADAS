@@ -22,8 +22,11 @@ import datetime
 import logging
 import os
 import re
+import socket
 import uuid
 from logging.handlers import RotatingFileHandler
+
+import psutil
 
 
 def get_timestamp():
@@ -90,3 +93,37 @@ def is_valid_uuid4(val):
 
 def is_valid_database_name(val):
     return bool(re.match(r"^[a-zA-Z1-9_]+$", val))
+
+
+def is_webserver_running():
+    """Method to check if the WADAS web server process is alive"""
+    current_pid = os.getpid()
+    script_name = "wadas_webserver_main.py"
+
+    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+        try:
+            if proc.info["pid"] == current_pid:
+                continue
+
+            cmdline = proc.info["cmdline"]
+            if proc.info["name"] == "python.exe" and cmdline and script_name in " ".join(cmdline):
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    return False
+
+
+def send_data_on_socket(port, command):
+    """Method to communicate over a local socket
+    (mainly used to communicate with WADAS web server process)
+    """
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = ("localhost", port)
+    client_socket.connect(server_address)
+    try:
+        client_socket.sendall(command.value.encode("utf-8"))
+        data = client_socket.recv(1024).decode("utf-8")
+        return data
+
+    finally:
+        client_socket.close()

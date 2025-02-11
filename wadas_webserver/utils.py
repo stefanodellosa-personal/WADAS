@@ -1,0 +1,70 @@
+import logging
+import os
+from datetime import datetime, timedelta
+from logging.handlers import RotatingFileHandler
+
+from config import ALGORITHM, REFRESH_SECRET_KEY, SECRET_KEY
+from jose import jwt
+from OpenSSL import crypto
+
+
+def cert_gen(key_filepath, cert_filepath):
+    """Generate a new certificate-key pair that
+    will be stored into key_filepath and cert_filepath
+    """
+    k = crypto.PKey()
+    k.generate_key(crypto.TYPE_RSA, 4096)
+    # create a self-signed cert
+    cert = crypto.X509()
+    cert.get_subject().CN = "localhost"
+    cert.set_serial_number(0)
+    cert.gmtime_adj_notBefore(0)
+    cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
+    cert.set_issuer(cert.get_subject())
+    cert.set_pubkey(k)
+    cert.sign(k, "sha512")
+    with open(cert_filepath, "wt") as f:
+        f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("utf-8"))
+    with open(key_filepath, "wt") as f:
+        f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, k).decode("utf-8"))
+
+
+def setup_logger():
+    # fix: one of our import libraries is setting a root logger with a handler
+    # we need to remove it to avoid duplicate logs
+    for handler in logging.root.handlers[1:]:
+        logging.root.removeHandler(handler)
+
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    log_dir = os.path.join(current_directory, "log")
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S")
+    logging_level = logging.INFO
+
+    # WADAS webserver log file
+    file_handler = RotatingFileHandler(
+        os.path.join(log_dir, "WADAS_webserver.log"),
+        maxBytes=10 * 1024 * 1024,
+        backupCount=3,
+    )
+    file_handler.setLevel(logging_level)
+    file_handler.setFormatter(formatter)
+    logger = logging.getLogger()
+    logger.setLevel(logging_level)
+    logger.addHandler(file_handler)
+
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def create_refresh_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(days=7))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, REFRESH_SECRET_KEY, algorithm=ALGORITHM)

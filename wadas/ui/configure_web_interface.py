@@ -16,13 +16,18 @@
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2024-10-01
 # Description: Web interface users UI Module
-
+import asyncio
+import base64
+import logging
 import os
 import bcrypt
 from validators import email as valid_email
+import subprocess
+from enum import Enum
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThread
 from PySide6.QtGui import QIcon
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -37,12 +42,30 @@ from PySide6.QtWidgets import (
 from ui.error_message_dialog import WADASErrorMessage
 from wadas.domain.database import DataBase, DBUser
 from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface
+from wadas.ui.error_message_dialog import WADASErrorMessage
+from wadas.domain.utils import is_webserver_running, send_data_on_socket
+
+logger = logging.getLogger(__name__)
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
+
+class WebserverCommands(Enum):
+    KILL = "kill"
+    STATUS = "status"
+
+
 class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
     """Class to configure FTP server and cameras"""
+    web_interface_main_file = "wadas_webserver_main.py"
+
+    class WorkerThread(QThread):
+        result_signal = Signal(bool)
+
+        def run(self):
+            result = is_webserver_running()
+            self.result_signal.emit(result)
 
     def __init__(self):
         super(DialogConfigureWebInterface, self).__init__()
@@ -52,6 +75,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         self.removed_rows = set()
         self.roles = ["Admin", "Viewer"]
         self.web_interface_enabled = False
+
         # DB enablement status
         self.db_enabled = bool(DataBase.get_enabled_db())
 
@@ -83,6 +107,9 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
 
         # Init dialog
         self.initialize_dialog()
+
+        # todo: understand if we can make it in more efficient way
+        self._check_webserver_status()
 
     def initialize_dialog(self):
         """Method to initialize dialog with existing values (if any)."""
@@ -119,6 +146,16 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
             self.ui.pushButton_start_web_interface.setEnabled(False)
             self.ui.label_errorMessage.setText("Database not configured or enabled!")
 
+    def _check_webserver_status(self):
+        if self.db_enabled:
+            self.worker = self.WorkerThread()
+            self.worker.result_signal.connect(self._update_web_interface_status)
+            self.worker.start()
+
+    def _update_web_interface_status(self, status):
+        self.web_interface_enabled = status
+        self.update_web_interface_status()
+
     def update_web_interface_status(self):
         """Method to reflect up-to-date web interface status."""
 
@@ -133,16 +170,33 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
     def on_web_interface_start_clicked(self):
         """Method to trigger start of web interface"""
 
-        #TODO: add logic to start web interface start
-        self.web_interface_enabled = True
-        self.update_web_interface_status()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        webserver_dir = os.path.join(current_dir, "../../wadas_webserver")
+        script_path = os.path.join(webserver_dir, self.web_interface_main_file)
+
+        enc_conn_str = base64.b64encode(DataBase.get_instance().get_connection_string().encode("utf-8")).decode("utf-8")
+
+        if os.path.exists(script_path):
+            subprocess.Popen(
+                ["python", script_path, f"--enc_conn_str={enc_conn_str}"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                close_fds=True
+            )
+
+            self.web_interface_enabled = True
+            self.update_web_interface_status()
+        else:
+            logger.error("Web Interface file not found")
 
     def on_web_interface_stop_clicked(self):
         """Method to trigger stop of web interface"""
-
-        # TODO: add logic to stop web interface start
-        self.web_interface_enabled = False
-        self.update_web_interface_status()
+        try:
+            received = send_data_on_socket(65000, WebserverCommands.KILL)
+            self.web_interface_enabled = False
+            self.update_web_interface_status()
+        except Exception as e:
+            logger.error("Impossible to communicate with Web Interface")
 
     def add_user(self):
         """Method to add a user into the dialog"""
