@@ -21,6 +21,7 @@ import logging
 import os
 import subprocess
 from enum import Enum
+from pathlib import Path
 
 import bcrypt
 from PySide6.QtCore import Qt, QThread
@@ -55,7 +56,7 @@ class WebserverCommands(Enum):
 
 class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
     """Class to configure FTP server and cameras"""
-    web_interface_main_file = "wadas_webserver_main.py"
+    WEB_INTERFACE_MAIN_FILE = "wadas_webserver_main.py"
 
     class WorkerThread(QThread):
         result_signal = Signal(bool)
@@ -167,13 +168,13 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
     def on_web_interface_start_clicked(self):
         """Method to trigger start of web interface"""
 
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        webserver_dir = os.path.join(current_dir, "../../wadas_webserver")
-        script_path = os.path.join(webserver_dir, self.web_interface_main_file)
+        current_dir = Path(__file__).resolve().parent
+        webserver_dir = current_dir / "../../wadas_webserver"
+        script_path = webserver_dir / self.WEB_INTERFACE_MAIN_FILE
 
         enc_conn_str = base64.b64encode(DataBase.get_instance().get_connection_string().encode("utf-8")).decode("utf-8")
 
-        if os.path.exists(script_path):
+        if script_path.exists():
             subprocess.Popen(
                 ["python", script_path, f"--enc_conn_str={enc_conn_str}"],
                 stdout=subprocess.DEVNULL,

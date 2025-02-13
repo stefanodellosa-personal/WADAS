@@ -43,15 +43,15 @@ def verify_token(token, token_type="access") -> User:
             SECRET_KEY if token_type == "access" else REFRESH_SECRET_KEY,
             algorithms=[ALGORITHM],
         )
-        username: str = payload.get("sub")
-        if username is None:
+
+        if (username := payload.get("sub")) is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-        user = Database.instance.get_user_by_username(username)
-        if not user:
+        if user := Database.instance.get_user_by_username(username):
+            return user
+        else:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-        return user
     except JWTError as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")

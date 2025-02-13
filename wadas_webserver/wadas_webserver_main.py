@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def handle_shutdown():
     """Method to catch the SIGINT and SIGTERM signals to properly shut down the process"""
-    global flag_run, webserver
+    global flag_run
     logger.info("Killing WADAS web server")
     stop_server()
     flag_run = False
@@ -52,7 +52,6 @@ def blocking_socket():
     """Method to instantiate a blocking socket on a fixed port
     to wait communication attempts from WADAS main process
     """
-    global flag_run
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ("localhost", 65000)
     server_socket.bind(server_address)

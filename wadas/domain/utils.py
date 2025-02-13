@@ -124,6 +124,5 @@ def send_data_on_socket(port, command):
         client_socket.sendall(command.value.encode("utf-8"))
         data = client_socket.recv(1024).decode("utf-8")
         return data
-
     finally:
         client_socket.close()
