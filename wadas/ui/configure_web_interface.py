@@ -16,18 +16,16 @@
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2024-10-01
 # Description: Web interface users UI Module
-import asyncio
 import base64
 import logging
 import os
-import bcrypt
-from validators import email as valid_email
 import subprocess
 from enum import Enum
 
+import bcrypt
 from PySide6.QtCore import Qt, QThread
-from PySide6.QtGui import QIcon
 from PySide6.QtCore import Signal
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -38,17 +36,16 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QWidget,
 )
+from validators import email as valid_email
 
-from ui.error_message_dialog import WADASErrorMessage
 from wadas.domain.database import DataBase, DBUser
-from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface
-from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.domain.utils import is_webserver_running, send_data_on_socket
+from wadas.ui.error_message_dialog import WADASErrorMessage
+from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface
 
 logger = logging.getLogger(__name__)
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
-
 
 
 class WebserverCommands(Enum):
