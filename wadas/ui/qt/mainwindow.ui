@@ -309,6 +309,8 @@
     <addaction name="actionSave_configuration_menu"/>
     <addaction name="separator"/>
     <addaction name="actionRecent_configuration"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -636,6 +638,14 @@
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset theme="application-exit"/>
+   </property>
+   <property name="text">
+    <string>Exit</string>
    </property>
   </action>
  </widget>
