@@ -149,7 +149,7 @@ class DataBase(ABC):
             return False
 
         DataBase.wadas_db = cls._create_instance(
-            db_type, host, port, username, database_name, enabled=True, version=__dbversion__
+            db_type, host, port, username, database_name, enabled=enabled, version=version
         )
         if not DataBase.wadas_db:
             return False
@@ -249,14 +249,15 @@ class DataBase(ABC):
 
     @classmethod
     def run_query(cls, stmt):
-        """Generic method to run a query starting forma statement as input and handling
+        """Generic method to run a query starting from a statement as input and handling
         exceptions (if any)."""
 
-        logger.debug("Running query: %s", str(stmt))
+        logger.debug("Running query: %s", stmt)
         if session := cls.create_session():
             try:
                 session.execute(stmt)
                 session.commit()
+                return True
             except SQLAlchemyError:
                 # Rollback the transaction in case of an error
                 session.rollback()
@@ -271,6 +272,7 @@ class DataBase(ABC):
                 )
         else:
             logger.error("DB session not initialized.")
+        return False
 
     @classmethod
     def insert_into_db(cls, domain_object):
