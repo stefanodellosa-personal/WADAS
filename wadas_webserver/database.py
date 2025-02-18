@@ -28,6 +28,8 @@ class Database:
         session = sessionmaker(bind=self.engine)()
         try:
             yield session
+        except Exception:
+            logger.exception("An error occurred while creating a session")
         finally:
             session.close()
 
@@ -44,10 +46,9 @@ class Database:
     def get_all_detection_events(self) -> Tuple[int, List[DetectionEvent]]:
         """Method to get all detection events in the database and their count."""
         with self.get_session() as session:
-            count = session.query(DB_DetectionEvent).count()
             result = session.query(DB_DetectionEvent).all()
             events = [Mapper.map_db_detectionevent_to_detectionevent(x) for x in result]
-            return count, events
+            return len(result), events
 
     def get_detection_events_by_filter(
         self,
@@ -79,7 +80,7 @@ class Database:
             count = query.count()
 
             # order_by, offset, limit
-            query = query.order_by(DB_DetectionEvent.time_stamp.desc())  # todo handle order_by
+            query = query.order_by(DB_DetectionEvent.time_stamp.desc())  # TODO: handle order_by
             query = query.offset(offset)
             query = query.limit(limit)
 

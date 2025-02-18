@@ -106,7 +106,9 @@ def is_webserver_running():
                 continue
 
             cmdline = proc.info["cmdline"]
-            if proc.info["name"] == "python.exe" and cmdline and script_name in " ".join(cmdline):
+            if (
+                proc.info["name"] == "python.exe" and cmdline and script_name in " ".join(cmdline)
+            ):  # TODO: handle Linux use cases
                 return True
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue

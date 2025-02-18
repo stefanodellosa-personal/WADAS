@@ -1,9 +1,12 @@
 import datetime
+import logging
 import threading
 
 import uvicorn
 
 from wadas_webserver.web_server_app import app as server_app
+
+logger = logging.getLogger(__name__)
 
 
 class WebServer:
@@ -42,11 +45,11 @@ class WebServer:
             self.thread.start()
             self.startup_time = datetime.datetime.now()
         else:
-            print("Unable to create new thread for FastAPI Actuator Server.")
+            logger.error("Unable to create new thread for FastAPI Actuator Server.")
         return self.thread
 
     def stop(self):
-        print("Stopping FastAPI Actuator Server...")
+        logger.info("Stopping FastAPI Actuator Server...")
         if self.server:
             self.server.should_exit = True
             self.startup_time = None

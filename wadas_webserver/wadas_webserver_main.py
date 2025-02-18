@@ -7,8 +7,8 @@ import socket
 
 from utils import cert_gen, setup_logger
 
-from wadas_webserver.config import CERT_FILEPATH, CERT_FOLDER, KEY_FILEPATH
 from wadas_webserver.database import Database
+from wadas_webserver.server_config import ServerConfig
 from wadas_webserver.web_server import WebServer
 from wadas_webserver.web_server_app import app
 
@@ -37,13 +37,16 @@ def start_web_server():
     N.B. HTTPS certificates are built on-the-fly and stored under CERT_FOLDER
     """
 
-    if not os.path.exists(CERT_FOLDER):
-        os.makedirs(os.path.join(CERT_FOLDER))
-        cert_gen(KEY_FILEPATH, CERT_FILEPATH)
-    elif not os.path.exists(CERT_FILEPATH) or not os.path.exists(KEY_FILEPATH):
-        cert_gen(KEY_FILEPATH, CERT_FILEPATH)
+    cert_filepath = ServerConfig.CERT_FILEPATH
+    key_filepath = ServerConfig.KEY_FILEPATH
 
-    app.server = WebServer("0.0.0.0", 443, CERT_FILEPATH, KEY_FILEPATH)
+    if not os.path.exists(ServerConfig.CERT_FOLDER):
+        os.makedirs(ServerConfig.CERT_FOLDER)
+        cert_gen(key_filepath, cert_filepath)
+    elif not os.path.exists(cert_filepath) or not os.path.exists(key_filepath):
+        cert_gen(key_filepath, cert_filepath)
+
+    app.server = WebServer("0.0.0.0", 443, cert_filepath, key_filepath)
     app.server.run()
     return app.server
 
@@ -71,7 +74,7 @@ def blocking_socket():
             match data:
                 case "status":
                     logger.info("Received <status> command")
-                    # todo check server status
+                    # TODO: check server status
                     response = "ok"
                 case "kill":
                     logger.info("Received <kill> command")
@@ -95,22 +98,29 @@ if __name__ == "__main__":
         "--enc_conn_string", type=str, required=True, help="Encoded connection string"
     )
 
+    parser.add_argument("--project_uuid", type=str, required=True, help="WADAS Project UUID")
+
     try:
         args = parser.parse_args()
         encoded_string = args.enc_conn_string
         conn_string = base64.b64decode(encoded_string).decode("utf-8")
+        project_uuid = args.project_uuid
 
-        Database.instance = Database(conn_string)
-        webserver = start_web_server()
-        signal.signal(signal.SIGINT, lambda signum, frame: handle_shutdown())
-        signal.signal(signal.SIGTERM, lambda signum, frame: handle_shutdown())
-        try:
-            blocking_socket()
-        except Exception:
-            print("Impossible to create a listening socket. Exiting...")
-            logger.error("Error create a listening socket")
-            webserver.stop()
+        config = ServerConfig(project_uuid)
+        if config:
+            ServerConfig.instance = config
+            Database.instance = Database(conn_string)
+            webserver = start_web_server()
+            signal.signal(signal.SIGINT, lambda signum, frame: handle_shutdown())
+            signal.signal(signal.SIGTERM, lambda signum, frame: handle_shutdown())
+            try:
+                blocking_socket()
+            except Exception:
+                logger.error("Unable to create a listening socket.")
+                webserver.stop()
+        else:
+            logger.error("Unable to initialize Config instance.")
     except Exception:
-        logger.exception("Generic Exception")
+        logger.exception("Generic Exception.")
 
-    logger.info("WADAS webserver exited")
+    logger.info("WADAS webserver exited.")

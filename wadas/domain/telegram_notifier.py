@@ -69,7 +69,7 @@ class TelegramNotifier(Notifier):
                 for user_id in res.json()
             ]
         else:
-            raise Exception("Impossible to retrieve registered users")
+            raise Exception("Unable to retrieve registered users")
 
     def register_new_recipient(self):
         """Method to enable Telegram notification to a new user."""
@@ -100,7 +100,7 @@ class TelegramNotifier(Notifier):
         if res.status_code == 204:
             self.recipients.remove(recipient)
         else:
-            raise Exception("Impossible to delete the recipient")
+            raise Exception("Unable to delete the recipient")
 
     def send_notification(self, detection_event: DetectionEvent):
         """Implementation of send_notification method for Telegram notifier."""

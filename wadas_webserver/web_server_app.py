@@ -8,8 +8,8 @@ from jose import JWTError, jwt
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
-from wadas_webserver.config import ALGORITHM, REFRESH_SECRET_KEY, SECRET_KEY
 from wadas_webserver.database import Database
+from wadas_webserver.server_config import ServerConfig
 from wadas_webserver.utils import create_access_token, create_refresh_token
 from wadas_webserver.view_model import (
     DataResponse,
@@ -40,8 +40,12 @@ def verify_token(token, token_type="access") -> User:
     try:
         payload = jwt.decode(
             token,
-            SECRET_KEY if token_type == "access" else REFRESH_SECRET_KEY,
-            algorithms=[ALGORITHM],
+            (
+                ServerConfig.instance.access_secret_key
+                if token_type == "access"
+                else ServerConfig.instance.refresh_secret_key
+            ),
+            algorithms=[ServerConfig.JWT_ENC_ALGORITHM],
         )
 
         if (username := payload.get("sub")) is None:

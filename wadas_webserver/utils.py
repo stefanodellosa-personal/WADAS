@@ -3,9 +3,10 @@ import os
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 
-from config import ALGORITHM, REFRESH_SECRET_KEY, SECRET_KEY
 from jose import jwt
 from OpenSSL import crypto
+
+from wadas_webserver.server_config import ServerConfig
 
 
 def cert_gen(key_filepath, cert_filepath):
@@ -60,11 +61,17 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(
+        to_encode, ServerConfig.instance.access_secret_key, algorithm=ServerConfig.JWT_ENC_ALGORITHM
+    )
 
 
 def create_refresh_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(days=7))
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, REFRESH_SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(
+        to_encode,
+        ServerConfig.instance.refresh_secret_key,
+        algorithm=ServerConfig.JWT_ENC_ALGORITHM,
+    )
