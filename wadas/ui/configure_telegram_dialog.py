@@ -120,7 +120,7 @@ class DialogConfigureTelegram(QDialog, Ui_DialogConfigureTelegram):
                     for r in self.telegram_notifier.recipients:
                         self.add_recipient_to_gridlayout(r)
                 except Exception:
-                    self.ui.label_errorMessage.setText("Impossible to retrieve existing recipients")
+                    self.ui.label_errorMessage.setText("Unable to retrieve existing recipients")
 
             if index == 0:
                 self.ui.plainTextEdit.setPlainText("")
