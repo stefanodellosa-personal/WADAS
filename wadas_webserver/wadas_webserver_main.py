@@ -106,8 +106,7 @@ if __name__ == "__main__":
         conn_string = base64.b64decode(encoded_string).decode("utf-8")
         project_uuid = args.project_uuid
 
-        config = ServerConfig(project_uuid)
-        if config:
+        if config := ServerConfig(project_uuid):
             ServerConfig.instance = config
             Database.instance = Database(conn_string)
             webserver = start_web_server()

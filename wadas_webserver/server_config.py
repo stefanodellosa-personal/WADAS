@@ -17,6 +17,8 @@ class ServerConfig:
     CERT_FILEPATH = CERT_FOLDER / "cert.pem"
     KEY_FILEPATH = CERT_FOLDER / "key.pem"
 
+    WADAS_ROOT_DIR = CURRENT_DIRECTORY / "../"
+
     instance = None
 
     def __init__(self, project_uuid):
@@ -26,8 +28,7 @@ class ServerConfig:
         service_name = f"WADAS_web_server_{key_type}_{self.project_uuid}"
         username = f"{key_type}_token"
 
-        cred = keyring.get_credential(service_name, username)
-        if cred:
+        if cred := keyring.get_credential(service_name, username):
             return cred.password
 
         secret = secrets.token_hex(32)

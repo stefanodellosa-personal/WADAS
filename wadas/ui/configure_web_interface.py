@@ -18,7 +18,6 @@
 # Description: Web interface users UI Module
 import base64
 import logging
-import os
 import subprocess
 from enum import Enum
 from pathlib import Path
@@ -33,9 +32,10 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QRadioButton,
     QScrollArea,
-    QWidget, QMessageBox,
+    QWidget,
 )
 from validators import email as valid_email
 
@@ -47,7 +47,7 @@ from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterfac
 logger = logging.getLogger(__name__)
 
 module_dir_path = Path(__file__).parent
-webserver_dir = Path(module_dir_path) / "../../wadas_webserver"
+webserver_dir = Path(module_dir_path) / ".." / ".." / "wadas_webserver"
 
 
 class WebserverCommands(Enum):
@@ -81,7 +81,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
 
         # UI
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(str(module_dir_path / "../img/mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon(str(module_dir_path / ".." / "img" / "mainwindow_icon.jpg")))
         self.ui.pushButton_remove_user.setEnabled(False)
         self.ui.pushButton_reset_password.setEnabled(False)
         self.ui.label_errorMessage.setStyleSheet("color: red")
@@ -169,7 +169,6 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
 
     def on_web_interface_start_clicked(self):
         """Method to trigger start of web interface"""
-
 
         script_path = webserver_dir / self.WEB_INTERFACE_MAIN_FILE
 

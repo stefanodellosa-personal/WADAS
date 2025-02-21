@@ -18,9 +18,18 @@ class DetectionsRequest(BaseModel):
     camera_ids: Optional[List[int]] = None
     date_from: Optional[datetime] = None
     date_to: Optional[datetime] = None
-    detected_animals_operator: Optional[str] = None
-    detected_animals_value: Optional[int] = None
+    classified_animals: Optional[List[str]] = None
     order_by: Optional[str] = "timestamp_desc"
+    offset: Optional[int] = 0
+    limit: Optional[int] = 20
+
+
+class ActuationsRequest(BaseModel):
+    detection_id: Optional[int] = None
+    date_from: Optional[datetime] = None
+    date_to: Optional[datetime] = None
+    actuator_types: Optional[List[str]] = None
+    commands: Optional[List[str]] = None
     offset: Optional[int] = 0
     limit: Optional[int] = 20
 
@@ -47,8 +56,9 @@ class Camera(BaseModel):
     actuators: Optional[List[Actuator]] = []
 
 
-class Animal(BaseModel):
-    name: str
+class ClassifiedAnimal(BaseModel):
+    animal: str
+    probability: float
 
 
 class DetectionEvent(BaseModel):
@@ -58,7 +68,14 @@ class DetectionEvent(BaseModel):
     classification_img_path: Optional[str]
     detected_animals: int
     classification: bool
-    classified_animals: Optional[List[str]]
+    classified_animals: Optional[List[ClassifiedAnimal]]
+    timestamp: datetime
+
+
+class ActuationEvent(BaseModel):
+    actuator: Actuator
+    detection_event_id: int
+    command: str
     timestamp: datetime
 
 

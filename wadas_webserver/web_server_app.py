@@ -1,17 +1,20 @@
 import logging
 import os
+from pathlib import Path
 from typing import Annotated
 
 import bcrypt
 from fastapi import FastAPI, Header, HTTPException, Query, status
 from jose import JWTError, jwt
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import FileResponse
 from starlette.staticfiles import StaticFiles
 
 from wadas_webserver.database import Database
 from wadas_webserver.server_config import ServerConfig
 from wadas_webserver.utils import create_access_token, create_refresh_token
 from wadas_webserver.view_model import (
+    ActuationsRequest,
     DataResponse,
     DetectionsRequest,
     LoginRequest,
@@ -107,6 +110,22 @@ async def get_animals(x_access_token: Annotated[str | None, Header()] = None):
     return DataResponse(data=animals_names)
 
 
+@app.get("/api/v1/actuator_types")
+async def get_actuator_types(x_access_token: Annotated[str | None, Header()] = None):
+    """Method to get all known types for actuator"""
+    verify_token(x_access_token)
+    actuator_types = Database.instance.get_known_actuator_types()
+    return DataResponse(data=actuator_types)
+
+
+@app.get("/api/v1/actuation_commands")
+async def get_actuation_commands(x_access_token: Annotated[str | None, Header()] = None):
+    """Method to get all known commands for actuation events"""
+    verify_token(x_access_token)
+    actuation_commands = Database.instance.get_known_actuation_commands()
+    return DataResponse(data=actuation_commands)
+
+
 @app.get("/api/v1/detections")
 async def get_filtered_detections(
     detection_filter: Annotated[DetectionsRequest, Query()],
@@ -118,6 +137,50 @@ async def get_filtered_detections(
     verify_token(x_access_token)
     total, events = Database.instance.get_detection_events_by_filter(**detection_filter.__dict__)
     return PaginatedResponse(total=total, count=len(events), data=events)
+
+
+@app.get("/api/v1/actuations")
+async def get_filtered_actuations(
+    actuation_filter: Annotated[ActuationsRequest, Query()],
+    x_access_token: Annotated[str | None, Header()] = None,
+):
+    """Method to get paginated actuation events filtered
+    by different filters and their total count
+    """
+    verify_token(x_access_token)
+    total, events = Database.instance.get_actuation_events_by_filter(**actuation_filter.__dict__)
+    return PaginatedResponse(total=total, count=len(events), data=events)
+
+
+@app.get("/api/v1/detections/{event_id}/image")
+async def download_image(
+    event_id: int,
+    x_access_token: Annotated[str | None, Header()] = None,
+):
+    """Method used to download the image (detection or classification)
+    associated to the detection event
+    """
+    verify_token(x_access_token)
+    event = Database.instance.get_detection_event_by_id(event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    image_path = Path(ServerConfig.WADAS_ROOT_DIR) / (
+        event.classification_img_path or event.detection_img_path
+    )
+
+    if (ext := image_path.suffix) == ".png":
+        media_type = "image/png"
+    elif ext in [".jpg", ".jpeg"]:
+        media_type = "image/jpeg"
+    else:
+        logger.error("Image extension unknown for %s", image_path)
+        raise HTTPException(status_code=500, detail="Generic Error")
+
+    if not os.path.isfile(image_path):
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    return FileResponse(image_path, media_type=media_type, filename=f"{event_id}{ext}")
 
 
 # Static pages mounted under the site root
