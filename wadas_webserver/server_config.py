@@ -37,7 +37,7 @@ class ServerConfig:
     CERT_FILEPATH = CERT_FOLDER / "cert.pem"
     KEY_FILEPATH = CERT_FOLDER / "key.pem"
 
-    WADAS_ROOT_DIR = CURRENT_DIRECTORY / "../"
+    WADAS_ROOT_DIR = CURRENT_DIRECTORY.parent
 
     instance = None
 

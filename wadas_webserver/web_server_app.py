@@ -195,7 +195,7 @@ async def download_image(
         logger.error("Image extension unknown for %s", image_path)
         raise HTTPException(status_code=500, detail="Generic Error")
 
-    if not os.path.isfile(image_path):
+    if not image_path.is_file():
         raise HTTPException(status_code=404, detail="Image not found")
 
     return FileResponse(image_path, media_type=media_type, filename=f"{event_id}{ext}")
