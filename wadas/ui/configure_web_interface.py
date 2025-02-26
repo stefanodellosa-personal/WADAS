@@ -34,8 +34,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ui.error_message_dialog import WADASErrorMessage
 from wadas.domain.database import DataBase, DBUser
+from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
