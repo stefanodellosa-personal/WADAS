@@ -129,6 +129,7 @@ class DetectionPipeline:
         labels = txt_animalclasses[self.language]
 
         if max(logits) < classification_threshold:
+            logger.debug("Classification value under threshold.")
             return ["", 0]
 
         return [labels[np.argmax(logits)], max(logits)]

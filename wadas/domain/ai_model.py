@@ -145,15 +145,18 @@ class AiModel:
         logger.info("Running classification on %s image...", img_path)
         img = Image.open(img_path).convert("RGB")
 
-        classified_animals = self.detection_pipeline.classify(
-            img, results, AiModel.classification_threshold
-        )
+        if not (
+            classified_animals := self.detection_pipeline.classify(
+                img, results, AiModel.classification_threshold
+            )
+        ):
+            logger.debug("No classification image crops to save.")
 
-        for detection in classified_animals:
+        for classified_animal in classified_animals:
             # Cropping detection result(s) from original image leveraging detected boxes
-            cropped_image = img.crop(detection["xyxy"])
+            cropped_image = img.crop(classified_animal["xyxy"])
             cropped_image_path = os.path.join(
-                "classification_output", f"{detection['id']}_cropped_image.jpg"
+                "classification_output", f"{classified_animal['id']}_cropped_image.jpg"
             )
             cropped_image.save(cropped_image_path)
             logger.debug("Saved crop of image at %s.", cropped_image_path)
