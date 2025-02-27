@@ -78,7 +78,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                                 f"animal from camera {cur_img['img_id']}!"
                             )
                         else:
-                            logger.info("No animals to classify.")
+                            logger.info("No animal classified.")
                             message = ""
                     else:
                         message = "WADAS has detected an animal from camera %s!" % id

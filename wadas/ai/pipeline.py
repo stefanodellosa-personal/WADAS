@@ -109,7 +109,6 @@ class DetectionPipeline:
             # Performing classification
             classification_result = self.classify_crop(cropped_image, classification_threshold)
             if classification_result[0]:
-
                 classified_animals.append(
                     {
                         "id": classification_id,
@@ -129,7 +128,7 @@ class DetectionPipeline:
         labels = txt_animalclasses[self.language]
 
         if max(logits) < classification_threshold:
-            logger.debug("Classification value under threshold.")
+            logger.info("Classification value under selected threshold.")
             return ["", 0]
 
         return [labels[np.argmax(logits)], max(logits)]
