@@ -15,7 +15,7 @@
 #
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2024-08-14
-# Description: Module containing AI Model based logic (detection & classification).
+# Description: Test for AI video pipeline
 
 import os
 
@@ -26,13 +26,24 @@ from wadas.domain.ai_model import AiModel
 
 
 @pytest.fixture
-def ai_pipeline():
-    model = AiModel()
-    assert model.check_model()
-    return model
+def init():
+    AiModel.classification_threshold = 0.5
+    AiModel.detection_threshold = 0.5
+    AiModel.language = "en"
+    AiModel.detection_device = "auto"
+    AiModel.classification_device = "auto"
 
 
-def test_video_detection_and_classification(ai_pipeline):
+def test_video_detection_and_classification(init):
+    ai_pipeline = AiModel()
+
+    assert ai_pipeline.classification_threshold == 0.5
+    assert ai_pipeline.detection_threshold == 0.5
+    assert ai_pipeline.language == "en"
+    assert ai_pipeline.classification_device == "auto"
+    assert ai_pipeline.detection_device == "auto"
+    assert ai_pipeline.check_model()
+
     # This one is the video of a bear
     VIDEO_URL = "https://videos.pexels.com/video-files/857097/857097-hd_1280_720_30fps.mp4"
     for result, frame in ai_pipeline.process_video(VIDEO_URL, True):
@@ -56,7 +67,15 @@ def test_video_detection_and_classification(ai_pipeline):
             assert classified_animals[0]["xyxy"].dtype == np.float32
 
 
-def test_video_detection_and_classification_empty(ai_pipeline):
+def test_video_detection_and_classification_empty(init):
+    ai_pipeline = AiModel()
+
+    assert ai_pipeline.classification_threshold == 0.5
+    assert ai_pipeline.detection_threshold == 0.5
+    assert ai_pipeline.language == "en"
+    assert ai_pipeline.classification_device == "auto"
+    assert ai_pipeline.detection_device == "auto"
+    assert ai_pipeline.check_model()
     # This one is the video of a waterfall => No animals
     VIDEO_URL = "https://videos.pexels.com/video-files/6981411/6981411-hd_1920_1080_25fps.mp4"
     animals = []
