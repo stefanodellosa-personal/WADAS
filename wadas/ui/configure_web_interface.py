@@ -19,6 +19,7 @@
 import base64
 import logging
 import subprocess
+import sys
 import time
 from enum import Enum
 from pathlib import Path
@@ -197,7 +198,7 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         if script_path.exists():
             try:
                 subprocess.Popen(
-                    ["python", script_path, f"--enc_conn_str={enc_conn_str}", f"--project_uuid={self.project_uuid}"],
+                    [sys.executable, script_path, f"--enc_conn_str={enc_conn_str}", f"--project_uuid={self.project_uuid}"],
 
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
