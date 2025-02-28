@@ -27,8 +27,8 @@ from wadas.domain.ai_model import AiModel
 
 @pytest.fixture
 def init():
-    AiModel.classification_threshold = 0.5
-    AiModel.detection_threshold = 0.5
+    AiModel.classification_threshold = 0.8
+    AiModel.detection_threshold = 0.8
     AiModel.language = "en"
     AiModel.detection_device = "auto"
     AiModel.classification_device = "auto"
@@ -37,8 +37,8 @@ def init():
 def test_video_detection_and_classification(init):
     ai_pipeline = AiModel()
 
-    assert ai_pipeline.classification_threshold == 0.5
-    assert ai_pipeline.detection_threshold == 0.5
+    assert ai_pipeline.classification_threshold == 0.8
+    assert ai_pipeline.detection_threshold == 0.8
     assert ai_pipeline.language == "en"
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
@@ -70,8 +70,8 @@ def test_video_detection_and_classification(init):
 def test_video_detection_and_classification_empty(init):
     ai_pipeline = AiModel()
 
-    assert ai_pipeline.classification_threshold == 0.5
-    assert ai_pipeline.detection_threshold == 0.5
+    assert ai_pipeline.classification_threshold == 0.8
+    assert ai_pipeline.detection_threshold == 0.8
     assert ai_pipeline.language == "en"
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
