@@ -25,7 +25,7 @@ import bcrypt
 from fastapi import FastAPI, Header, HTTPException, Query, status
 from jose import JWTError, jwt
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, Response
 from starlette.staticfiles import StaticFiles
 
 from wadas_webserver.database import Database
@@ -153,7 +153,7 @@ async def get_filtered_detections(
     by different filters and their total count
     """
     verify_token(x_access_token)
-    total, events = Database.instance.get_detection_events_by_filter(**detection_filter.__dict__)
+    total, events = Database.instance.get_detection_events_by_filter(detection_filter)
     return PaginatedResponse(total=total, count=len(events), data=events)
 
 
@@ -166,7 +166,7 @@ async def get_filtered_actuations(
     by different filters and their total count
     """
     verify_token(x_access_token)
-    total, events = Database.instance.get_actuation_events_by_filter(**actuation_filter.__dict__)
+    total, events = Database.instance.get_actuation_events_by_filter(actuation_filter)
     return PaginatedResponse(total=total, count=len(events), data=events)
 
 
@@ -201,11 +201,46 @@ async def download_image(
     return FileResponse(image_path, media_type=media_type, filename=f"{event_id}{ext}")
 
 
+@app.get("/api/v1/detections/export")
+async def export_filtered_detections(
+    detection_filter: Annotated[DetectionsRequest, Query()],
+    x_access_token: Annotated[str | None, Header()] = None,
+):
+    """Method to download a csv file containing the detection events filtered
+    by specified filters
+    """
+    verify_token(x_access_token)
+    content = Database.instance.export_detection_events_as_csv(detection_filter)
+    return Response(
+        content=content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=data.csv"},
+    )
+
+
+@app.get("/api/v1/actuations/export")
+async def export_filtered_actuations(
+    actuation_filter: Annotated[ActuationsRequest, Query()],
+    x_access_token: Annotated[str | None, Header()] = None,
+):
+    """Method to download a csv file containing the actuation events filtered
+    by specified filters
+    """
+    # verify_token(x_access_token)
+    content = Database.instance.export_actuation_events_as_csv(actuation_filter)
+    return Response(
+        content=content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=data.csv"},
+    )
+
+
 # Static pages mounted under the site root
-app.mount(
-    "/",
-    StaticFiles(
-        directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend"), html=True
-    ),
-    name="frontend",
-)
+frontend_path = Path(__file__).parent / "frontend"
+if not frontend_path.exists():
+    os.mkdir(frontend_path)
+    app.mount(
+        "/",
+        StaticFiles(directory=os.path.join(frontend_path), html=True),
+        name="frontend",
+    )

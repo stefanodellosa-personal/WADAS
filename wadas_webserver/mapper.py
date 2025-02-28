@@ -87,3 +87,23 @@ class Mapper:
         return ClassifiedAnimal(
             animal=db_animal.classified_animal, probability=db_animal.probability
         )
+
+    @staticmethod
+    def map_db_detectionevent_to_attr_list(db_detevent: DB_DetectionEvent):
+        classified_animals = [x.classified_animal for x in db_detevent.classified_animals]
+        return [
+            db_detevent.db_id,
+            db_detevent.camera.camera_id,
+            db_detevent.time_stamp.strftime("%Y-%m-%d %H:%M"),
+            db_detevent.detected_animals,
+            len(classified_animals),
+            classified_animals,
+        ]
+
+    @staticmethod
+    def map_db_actuationevent_to_attr_list(db_actevent: DB_ActuationEvent):
+        return [
+            db_actevent.time_stamp.strftime("%Y-%m-%d %H:%M"),
+            db_actevent.actuator.actuator_id,
+            db_actevent.command,
+        ]

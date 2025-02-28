@@ -18,6 +18,7 @@
 # Description: Module containing generic utility functions.
 import logging
 import os
+import sys
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 
@@ -63,16 +64,27 @@ def setup_logger():
     logging_level = logging.INFO
 
     # WADAS webserver log file
-    file_handler = RotatingFileHandler(
-        os.path.join(log_dir, "WADAS_webserver.log"),
-        maxBytes=10 * 1024 * 1024,
-        backupCount=3,
-    )
+    log_file = os.path.join(log_dir, "WADAS_webserver.log")
+    file_handler = RotatingFileHandler(log_file, maxBytes=10 * 1024 * 1024, backupCount=3)
     file_handler.setLevel(logging_level)
     file_handler.setFormatter(formatter)
+
     logger = logging.getLogger()
     logger.setLevel(logging_level)
     logger.addHandler(file_handler)
+
+    class LoggerWriter:
+        def __init__(self, write_func):
+            self.write_func = write_func
+
+        def write(self, message):
+            if message.strip():
+                self.write_func(message.strip())
+
+        def flush(self):
+            pass  # needed for compatibility with sys.stderr
+
+    sys.stderr = LoggerWriter(logger.error)
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):

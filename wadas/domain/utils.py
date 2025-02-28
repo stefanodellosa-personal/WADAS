@@ -26,8 +26,6 @@ import socket
 import uuid
 from logging.handlers import RotatingFileHandler
 
-import psutil
-
 
 def get_timestamp():
     """Method to prepare timestamp string to apply to images naming"""
@@ -95,27 +93,7 @@ def is_valid_database_name(val):
     return bool(re.match(r"^[a-zA-Z1-9_]+$", val))
 
 
-def is_webserver_running():
-    """Method to check if the WADAS web server process is alive"""
-    current_pid = os.getpid()
-    script_name = "wadas_webserver_main.py"
-
-    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
-        try:
-            if proc.info["pid"] == current_pid:
-                continue
-
-            cmdline = proc.info["cmdline"]
-            if (
-                proc.info["name"] == "python.exe" and cmdline and script_name in " ".join(cmdline)
-            ):  # TODO: handle Linux use cases
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            continue
-    return False
-
-
-def send_data_on_socket(port, command):
+def send_data_on_local_socket(port, command):
     """Method to communicate over a local socket
     (mainly used to communicate with WADAS web server process)
     """
