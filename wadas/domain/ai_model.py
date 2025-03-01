@@ -196,21 +196,28 @@ class AiModel:
         logger.info("Running classification on %s image...", img_path)
         img = Image.open(img_path).convert("RGB")
 
-        classified_animals = self.detection_pipeline.classify(
-            img, results, AiModel.classification_threshold
-        )
-
-        for detection in classified_animals:
-            # Cropping detection result(s) from original image leveraging detected boxes
-            cropped_image = img.crop(detection["xyxy"])
-            cropped_image_path = os.path.join(
-                "classification_output", f"{detection['id']}_cropped_image.jpg"
+        classified_animals = None
+        classified_img_path = None
+        if not (
+            classified_animals := self.detection_pipeline.classify(
+                img, results, AiModel.classification_threshold
             )
-            cropped_image.save(cropped_image_path)
-            logger.debug("Saved crop of image at %s.", cropped_image_path)
+        ):
+            logger.debug("No classified animals, skipping img crops saving.")
+        else:
+            for classified_animal in classified_animals:
+                # Cropping detection result(s) from original image leveraging detected boxes
+                cropped_image = img.crop(classified_animal["xyxy"])
+                cropped_image_path = os.path.join(
+                    "classification_output", f"{classified_animal['id']}_cropped_image.jpg"
+                )
+                cropped_image.save(cropped_image_path)
+                logger.debug("Saved crop of image at %s.", cropped_image_path)
 
-        img_path = self.build_classification_square(img, classified_animals, img_path)
-        return img_path, classified_animals
+            classified_img_path = self.build_classification_square(
+                img, classified_animals, img_path
+            )
+        return classified_img_path, classified_animals
 
     def build_classification_square(self, img, classified_animals, img_path):
         """Build square on classified animals."""

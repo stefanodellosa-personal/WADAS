@@ -83,7 +83,7 @@ class TestModelMode(OperationMode):
                     f"animal from camera {detection_event.classification_img_path}!"
                 )
             else:
-                logger.info("No animals to classify.")
+                logger.info("No animal classified.")
                 message = ""
 
         # Send notification
