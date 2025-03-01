@@ -22,6 +22,7 @@ import datetime
 import logging
 import os
 import re
+import socket
 import uuid
 from logging.handlers import RotatingFileHandler
 
@@ -90,3 +91,18 @@ def is_valid_uuid4(val):
 
 def is_valid_database_name(val):
     return bool(re.match(r"^[a-zA-Z1-9_]+$", val))
+
+
+def send_data_on_local_socket(port, command):
+    """Method to communicate over a local socket
+    (mainly used to communicate with WADAS web server process)
+    """
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = ("localhost", port)
+    client_socket.connect(server_address)
+    try:
+        client_socket.sendall(command.value.encode("utf-8"))
+        data = client_socket.recv(1024).decode("utf-8")
+        return data
+    finally:
+        client_socket.close()
