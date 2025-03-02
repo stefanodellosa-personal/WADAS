@@ -74,8 +74,6 @@ class OperationMode(QObject):
         self.last_detection = ""
         self.last_classification = ""
         self.last_classified_animals_str = ""
-        self.url = ""
-        self.file_path = ""
         self.camera_thread = []
         self.ftp_thread = None
         self.actuators_server_thread = None

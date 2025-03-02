@@ -23,12 +23,10 @@ import os
 import cv2
 import numpy as np
 import PIL
-import requests
 from PIL import Image
 from PytorchWildlife import utils as pw_utils
 
 from wadas.ai import DetectionPipeline
-from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -165,24 +163,6 @@ class AiModel:
                 logger.info("No detected animals for frame %s. Skipping image.", frame_count)
 
             frame_count += 1
-
-    def process_image_from_url(self, url, img_id, save_detection_image):
-        """Method to run detection model on image provided by URL"""
-
-        logger.info("Processing image from url: %s", url)
-        # Opening the image from url
-        img = Image.open(requests.get(url, stream=True).raw).convert("RGB")
-
-        # Save image to disk
-        os.makedirs("url_imgs", exist_ok=True)
-        img_path = os.path.join(
-            "url_imgs", "image_" + str(img_id) + "_" + str(get_timestamp()) + ".jpg"
-        )
-        img.save(img_path)
-        logger.info("Saved processed image at: %s", img_path)
-
-        results, detected_img_path = self.process_image(img_path, save_detection_image)
-        return [img_path, results, detected_img_path]
 
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s)."""

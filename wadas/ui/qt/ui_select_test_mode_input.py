@@ -106,7 +106,7 @@ class Ui_DialogSelectTestModeInput(object):
         self.radioButton_image.setText(QCoreApplication.translate("DialogSelectTestModeInput", u"Image", None))
         self.radioButton_file.setText(QCoreApplication.translate("DialogSelectTestModeInput", u"File", None))
         self.pushButton_select_file.setText(QCoreApplication.translate("DialogSelectTestModeInput", u"Select File", None))
-        self.lineEdit_url.setPlaceholderText(QCoreApplication.translate("DialogSelectTestModeInput", u"https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg", None))
+        self.lineEdit_url.setPlaceholderText("")
         self.label_error.setText("")
     # retranslateUi
 

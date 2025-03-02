@@ -44,6 +44,8 @@ class DialogSelectTestModeInput(QDialog, Ui_DialogSelectTestModeInput):
         self.file_path = ""
 
         # Slots
+        self.ui.radioButton_image.clicked.connect(self.validate)
+        self.ui.radioButton_video.clicked.connect(self.validate)
         self.ui.radioButton_url.clicked.connect(self.validate)
         self.ui.radioButton_file.clicked.connect(self.validate)
         self.ui.radioButton_url.clicked.connect(self.on_input_radio_button_clicked)
@@ -54,6 +56,7 @@ class DialogSelectTestModeInput(QDialog, Ui_DialogSelectTestModeInput):
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
 
         self.on_input_radio_button_clicked()
+        self.validate() #TODO: remove for 1.0 release
 
     def on_input_radio_button_clicked(self):
         """Method to handle input method selection via radio buttons"""

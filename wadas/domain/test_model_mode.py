@@ -18,6 +18,10 @@
 # Description: Module containing MainWindow class and methods.
 
 import logging
+import os
+
+import requests
+from PIL import Image
 
 from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.operation_mode import OperationMode
@@ -31,14 +35,37 @@ class TestModelMode(OperationMode):
         super(TestModelMode, self).__init__()
         self.modename = "test_model_mode"
         self.url = ""
+        self.file_path = ""
         self.last_classified_animals_str = ""
         self.type = OperationMode.OperationModeTypes.TestModelMode
+
+    def _get_image_from_url(self, url):
+        """Method to get image from url"""
+
+        logger.info("Processing image from url: %s", url)
+        # Opening the image from url
+        img = Image.open(requests.get(url, stream=True).raw).convert("RGB")
+
+        # Save image to disk
+        os.makedirs("url_imgs", exist_ok=True)
+        img_path = os.path.join("url_imgs", "image_test_model_" + str(get_timestamp()) + ".jpg")
+        img.save(img_path)
+        logger.info("Saved processed image at: %s", img_path)
+
+        return img_path
+
+    def _get_video_from_url(self):
+        """Method to get video from url"""
+
+        # TODO: fill up logic
+        pass
 
     def run(self):
         """WADAS test model operation mode"""
 
-        if not self.url:
-            logger.error("Invalid URL. Aborting.")
+        if not self.url and not self.file_path:
+            logger.error("Missing required input. Aborting test model mode.")
+            self.execution_completed()
             return
 
         # Initialize ai model
@@ -49,10 +76,8 @@ class TestModelMode(OperationMode):
 
         # Run detection model
         if self.url:
-            det_data = self.ai_model.process_image_from_url(self.url, "test_model", True)
-            img_path = det_data[0]
-            det_results = det_data[1]
-            detected_img_path = det_data[2]
+            img_path = self._get_image_from_url(self.url)
+            det_results, detected_img_path = self.ai_model.process_image(img_path, True)
             self.last_detection = detected_img_path
         else:
             # Local file based detection TODO: fill up logic

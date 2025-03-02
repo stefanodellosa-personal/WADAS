@@ -491,7 +491,7 @@ class MainWindow(QMainWindow):
 
             return select_test_mode_input_dlg.url, select_test_mode_input_dlg.file_path
         else:
-            logger.warning("Test model mode input selection aborted.")
+            logger.info("Test model mode input selection aborted.")
             return "", ""
 
     def custom_species_dialog(self):
