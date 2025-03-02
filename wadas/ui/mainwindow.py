@@ -68,10 +68,10 @@ from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
 from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
 from wadas.ui.configure_web_interface import DialogConfigureWebInterface
 from wadas.ui.error_message_dialog import WADASErrorMessage
-from wadas.ui.insert_url_dialog import InsertUrlDialog
 from wadas.ui.license_dialog import LicenseDialog
 from wadas.ui.select_animal_species import DialogSelectAnimalSpecies
 from wadas.ui.select_mode_dialog import DialogSelectMode
+from wadas.ui.select_test_mode_input import DialogSelectTestModeInput
 from wadas.ui.select_usb_cameras_dialog import DialogSelectLocalCameras
 from wadas.ui.terms_n_conditions_dialog import TermsAndConditionsDialog
 from wadas.ui.qt.ui_mainwindow import Ui_MainWindow
@@ -279,9 +279,11 @@ class MainWindow(QMainWindow):
         if OperationMode.cur_operation_mode:
             match OperationMode.cur_operation_mode.type:
                 case OperationMode.OperationModeTypes.TestModelMode:
-                    OperationMode.cur_operation_mode.url = self.url_input_dialog()
-                    if not OperationMode.cur_operation_mode.url:
-                        logger.error("Cannot proceed without a valid URL. Please run again.")
+                    url, file_path = self.test_model_mode_input_dialog()
+                    OperationMode.cur_operation_mode.url = url
+                    OperationMode.cur_operation_mode.file_path = file_path
+                    if not OperationMode.cur_operation_mode.url and OperationMode.cur_operation_mode.file_path:
+                        logger.error("Cannot proceed without a valid input. Please run again.")
                         return
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
                     if not OperationMode.cur_custom_classification_species:
@@ -476,15 +478,20 @@ class MainWindow(QMainWindow):
             if cur_notifier and cur_notifier.enabled) or "None"
         self.ui.label_notification_method.setText(notifier_lable_text)
 
-    def url_input_dialog(self):
+    def test_model_mode_input_dialog(self):
         """Method to run dialog for insertion of a URL to fetch image from."""
 
-        inserturl_dialog = InsertUrlDialog()
-        if inserturl_dialog.exec_():
-            logger.debug("Provided URL from dialog: %s", inserturl_dialog.url)
-            return inserturl_dialog.url
+        if (select_test_mode_input_dlg := DialogSelectTestModeInput()).exec():
+            if select_test_mode_input_dlg.url:
+                logger.debug("Provided URL from dialog: %s", select_test_mode_input_dlg.url)
+            elif select_test_mode_input_dlg.file_path:
+                logger.debug("Provided file path from dialog: %s", select_test_mode_input_dlg.url)
+            else:
+                logger.error("Invalid input provided. Aborting Test Model Mode...")
+
+            return select_test_mode_input_dlg.url, select_test_mode_input_dlg.file_path
         else:
-            logger.warning("URL insertion aborted.")
+            logger.warning("Test model mode input selection aborted.")
             return ""
 
     def custom_species_dialog(self):
