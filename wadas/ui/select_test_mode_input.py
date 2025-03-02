@@ -59,6 +59,10 @@ class DialogSelectTestModeInput(QDialog, Ui_DialogSelectTestModeInput):
         """Method to handle input method selection via radio buttons"""
 
         url_checked = self.ui.radioButton_url.isChecked()
+        if url_checked:
+            self.ui.lineEdit_file.setText("")
+        else:
+            self.ui.lineEdit_url.setText("")
         self.ui.lineEdit_url.setEnabled(url_checked)
         self.ui.lineEdit_file.setEnabled(not url_checked)
         self.ui.pushButton_select_file.setEnabled(not url_checked)
@@ -67,9 +71,9 @@ class DialogSelectTestModeInput(QDialog, Ui_DialogSelectTestModeInput):
         """Method to select input from file"""
 
         input_file_type = "image" if self.ui.radioButton_image.isChecked() else "video"
-        input_file_extensions = "JPEG (*.jpg, *.jpeg), PNG (*.png), BMP (*.bmp), TIFF (*.tiff, *.tif)" \
+        input_file_extensions = "JPEG (*.jpg *.jpeg);;PNG (*.png);;BMP (*.bmp);;TIFF (*.tiff *.tif)" \
             if self.ui.radioButton_image.isChecked() else\
-            "mp4 (*.mp4), AVI (*.AVI),  MOV (*.mov), MKV (*.mkv), WMV (*.wmv)"
+            "mp4 (*.mp4);;AVI (*.AVI);;MOV (*.mov);;MKV (*.mkv);;WMV (*.wmv)"
 
         file_name = QFileDialog.getOpenFileName(
             self, f"Open {input_file_type} file", os.getcwd(), input_file_extensions
