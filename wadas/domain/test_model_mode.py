@@ -48,11 +48,15 @@ class TestModelMode(OperationMode):
         self.run_progress.emit(10)
 
         # Run detection model
-        det_data = self.ai_model.process_image_from_url(self.url, "test_model", True)
-        img_path = det_data[0]
-        det_results = det_data[1]
-        detected_img_path = det_data[2]
-        self.last_detection = detected_img_path
+        if self.url:
+            det_data = self.ai_model.process_image_from_url(self.url, "test_model", True)
+            img_path = det_data[0]
+            det_results = det_data[1]
+            detected_img_path = det_data[2]
+            self.last_detection = detected_img_path
+        else:
+            # Local file based detection TODO: fill up logic
+            pass
 
         # Check if detection has returned results
         if not detected_img_path or not det_results:
