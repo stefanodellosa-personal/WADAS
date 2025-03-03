@@ -75,39 +75,8 @@ class TestModelMode(OperationMode):
 
         return img_path
 
-    def run(self):
-        """WADAS test model operation mode"""
-
-        if not self.url and not self.file_path:
-            logger.error("Missing required input. Aborting test model mode.")
-            self.execution_completed()
-            return
-
-        # Initialize ai model
-        self.init_model()
-
-        self.check_for_termination_requests()
-        self.run_progress.emit(10)
-
-        # Run detection model
-        if url := self.url:
-            if self.is_video(url):
-                # TODO: fill up logic
-                pass
-            else:
-                # Image-based detection
-                img_path = self._get_image_from_url(url)
-                det_results, detected_img_path = self.ai_model.process_image(img_path, True)
-                self.last_detection = detected_img_path
-        else:
-            if self.is_video(self.file_path):
-                # TODO: fill up logic
-                pass
-            else:
-                # Image-based detection
-                img_path = self.image_to_rgb(self.file_path)
-                det_results, detected_img_path = self.ai_model.process_image(img_path, True)
-                self.last_detection = detected_img_path
+    def process_detected_results(self, img_path, det_results, detected_img_path):
+        """Method to process results of detection"""
 
         # Check if detection has returned results
         if not detected_img_path or not det_results:
@@ -143,6 +112,43 @@ class TestModelMode(OperationMode):
 
         # Send notification
         self.send_notification(detection_event, message)
+
+    def run(self):
+        """WADAS test model operation mode"""
+
+        if not self.url and not self.file_path:
+            logger.error("Missing required input. Aborting test model mode.")
+            self.execution_completed()
+            return
+
+        # Initialize ai model
+        self.init_model()
+
+        self.check_for_termination_requests()
+        self.run_progress.emit(10)
+
+        # Run detection model
+        if url := self.url:
+            if self.is_video(url):
+                # TODO: fill up logic
+                pass
+            else:
+                # Image-based detection
+                img_path = self._get_image_from_url(url)
+                det_results, detected_img_path = self.ai_model.process_image(img_path, True)
+                self.last_detection = detected_img_path
+        else:
+            if self.is_video(self.file_path):
+                for det_results, detected_img_path, video_frame_path in self.ai_model.process_video(
+                    self.file_path, True
+                ):
+                    self.process_detected_results(video_frame_path, det_results, detected_img_path)
+            else:
+                # Image-based detection
+                img_path = self.image_to_rgb(self.file_path)
+                det_results, detected_img_path = self.ai_model.process_image(img_path, True)
+                self.last_detection = detected_img_path
+
         self.execution_completed()
 
     def check_for_termination_requests(self):

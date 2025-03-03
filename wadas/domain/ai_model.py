@@ -59,6 +59,7 @@ class AiModel:
         os.makedirs("detection_output", exist_ok=True)
         os.makedirs("classification_output", exist_ok=True)
         os.makedirs("wadas_motion_detection", exist_ok=True)
+        os.makedirs("video_frames", exist_ok=True)
 
         logger.debug(
             "Detection threshold: %s, Classification threshold: %s.",
@@ -129,6 +130,7 @@ class AiModel:
 
         logger.info("Running detection on video %s ...", video_path)
 
+        video_filename = os.path.basename(video_path)
         # Initialize frame counter
         frame_count = 0
         while True:
@@ -150,15 +152,21 @@ class AiModel:
 
             if len(results["detections"].xyxy) > 0:
                 if save_detection_image:
+                    # Saving original video frame
+                    logger.debug("Saving video frame...")
+                    frame_path = os.path.join(
+                        "video_frames", f"{video_filename}_frame_{frame_count}.jpg"
+                    )
+                    frame.save(frame_path)
                     # Saving the detection results
                     logger.info("Saving detection results for frame %s...", frame_count)
                     detected_img_path = os.path.join("detection_output", f"frame_{frame_count}.jpg")
                     # Needs to be saved first as save_detection_images expects a path inside results
                     frame.save(detected_img_path)
                     results["img_id"] = detected_img_path
-                    yield results, detected_img_path
+                    yield results, detected_img_path, frame_path
                 else:
-                    yield results, None
+                    yield results, None, None
             else:
                 logger.info("No detected animals for frame %s. Skipping image.", frame_count)
 

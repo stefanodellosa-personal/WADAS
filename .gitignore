@@ -58,6 +58,7 @@ debug/
 wadas_motion_detection/
 demo_output/
 log/
+video_frames/
 # Images
 #*.png
 #*.jpg
