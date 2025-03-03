@@ -234,6 +234,7 @@ def load_configuration_from_file(file_path):
         AiModel.classification_device = (
             classification_device if classification_device in available_ai_devices else "auto"
         )
+        AiModel.video_downsampling = wadas_config["ai_model"]["ai_video_downsampling"]
 
         # Operation Mode
         if operation_mode := wadas_config["operation_mode"]:
@@ -317,6 +318,7 @@ def save_configuration_to_file(file_, project_uuid):
             "ai_language": AiModel.language,
             "ai_detection_device": AiModel.detection_device,
             "ai_classification_device": AiModel.classification_device,
+            "ai_video_downsampling": AiModel.video_downsampling,
         },
         "operation_mode": operation_mode,
         "ftps_server": FTPsServer.ftps_server.serialize() if FTPsServer.ftps_server else "",
