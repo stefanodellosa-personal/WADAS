@@ -42,6 +42,7 @@ from PySide6.QtWidgets import (
 from validators import email as valid_email
 
 from wadas.domain.database import DataBase, DBUser
+from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.domain.utils import send_data_on_local_socket
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface

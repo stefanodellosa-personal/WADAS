@@ -174,6 +174,7 @@ class MainWindow(QMainWindow):
         self.ui.actionRecent_configuration.triggered.connect(self.open_last_saved_file)
         self.ui.actionConfigure_database.triggered.connect(self.configure_database)
         self.ui.actionConfigure_web_interface.triggered.connect(self.configure_web_interface)
+        self.ui.actionExit.triggered.connect(self.close)
 
     def _connect_mode_ui_slots(self):
         """Function to connect UI slot with operation_mode signals."""
@@ -435,8 +436,11 @@ class MainWindow(QMainWindow):
         self.ui.actionSelectLocalCameras.setEnabled(not running)
         self.ui.actionConfigure_FTP_Cameras.setEnabled(not running)
         self.ui.actionOpen_configuration_file.setEnabled(not running)
+        self.ui.actionOpen_configuration_file_menu.setEnabled(not running)
+        self.ui.actionSave_configuration_as_menu.setEnabled(not running)
         self.ui.actionSave_configuration_as.setEnabled(not running)
         self.ui.actionSave_configuration.setEnabled(not running)
+        self.ui.actionRecent_configuration.setEnabled(not running)
         self.ui.actionConfigure_actuators.setEnabled(not running)
         self.ui.actionConfigure_camera_to_actuator_associations.setEnabled(not running)
         self.ui.actionConfigure_WA.setEnabled(not running)

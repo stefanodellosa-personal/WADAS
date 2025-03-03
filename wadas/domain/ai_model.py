@@ -115,6 +115,57 @@ class AiModel:
 
         return results, detected_img_path
 
+    def process_video(self, video_path, save_detection_image: bool, downsample: int = 30):
+        """Method to run detection model on provided video."""
+
+        logger.debug("Selected detection device: %s", AiModel.detection_device)
+
+        try:
+            video = cv2.VideoCapture(video_path)
+            if not video.isOpened():
+                logger.error("Error opening video file %s. Aborting.", video_path)
+                return None, None
+        except FileNotFoundError:
+            logger.error("%s is not a valid video path. Aborting.", video_path)
+            return None, None
+
+        logger.info("Running detection on video %s ...", video_path)
+
+        # Initialize frame counter
+        frame_count = 0
+        while True:
+
+            ret, frame = video.read()
+            if not ret:
+                break
+
+            if frame_count % downsample:
+                # Skip frames based on downsample value
+                frame_count += 1
+                continue
+
+            # Convert frame to PIL image
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = Image.fromarray(frame)
+
+            results = self.detection_pipeline.run_detection(frame, AiModel.detection_threshold)
+
+            if len(results["detections"].xyxy) > 0:
+                if save_detection_image:
+                    # Saving the detection results
+                    logger.info("Saving detection results for frame %s...", frame_count)
+                    detected_img_path = os.path.join("detection_output", f"frame_{frame_count}.jpg")
+                    # Needs to be saved first as save_detection_images expects a path inside results
+                    frame.save(detected_img_path)
+                    results["img_id"] = detected_img_path
+                    yield results, detected_img_path
+                else:
+                    yield results, None
+            else:
+                logger.info("No detected animals for frame %s. Skipping image.", frame_count)
+
+            frame_count += 1
+
     def process_image_from_url(self, url, img_id, save_detection_image):
         """Method to run detection model on image provided by URL"""
 
@@ -145,21 +196,28 @@ class AiModel:
         logger.info("Running classification on %s image...", img_path)
         img = Image.open(img_path).convert("RGB")
 
-        classified_animals = self.detection_pipeline.classify(
-            img, results, AiModel.classification_threshold
-        )
-
-        for detection in classified_animals:
-            # Cropping detection result(s) from original image leveraging detected boxes
-            cropped_image = img.crop(detection["xyxy"])
-            cropped_image_path = os.path.join(
-                "classification_output", f"{detection['id']}_cropped_image.jpg"
+        classified_animals = None
+        classified_img_path = None
+        if not (
+            classified_animals := self.detection_pipeline.classify(
+                img, results, AiModel.classification_threshold
             )
-            cropped_image.save(cropped_image_path)
-            logger.debug("Saved crop of image at %s.", cropped_image_path)
+        ):
+            logger.debug("No classified animals, skipping img crops saving.")
+        else:
+            for classified_animal in classified_animals:
+                # Cropping detection result(s) from original image leveraging detected boxes
+                cropped_image = img.crop(classified_animal["xyxy"])
+                cropped_image_path = os.path.join(
+                    "classification_output", f"{classified_animal['id']}_cropped_image.jpg"
+                )
+                cropped_image.save(cropped_image_path)
+                logger.debug("Saved crop of image at %s.", cropped_image_path)
 
-        img_path = self.build_classification_square(img, classified_animals, img_path)
-        return img_path, classified_animals
+            classified_img_path = self.build_classification_square(
+                img, classified_animals, img_path
+            )
+        return classified_img_path, classified_animals
 
     def build_classification_square(self, img, classified_animals, img_path):
         """Build square on classified animals."""

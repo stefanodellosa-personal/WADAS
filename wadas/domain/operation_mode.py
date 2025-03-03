@@ -160,6 +160,8 @@ class OperationMode(QObject):
                 # Update detection event into db, if enabled
                 if db := DataBase.get_enabled_db():
                     db.update_detection_event(detection_event)
+            else:
+                logger.debug("No classified animals or classification results below threshold.")
 
     def ftp_camera_exist(self):
         """Method that returns True if at least an FTP camera exists, False otherwise."""
