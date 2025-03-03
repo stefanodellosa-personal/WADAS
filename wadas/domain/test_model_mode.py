@@ -19,6 +19,7 @@
 
 import logging
 import os
+import re
 
 import requests
 from PIL import Image
@@ -39,26 +40,40 @@ class TestModelMode(OperationMode):
         self.last_classified_animals_str = ""
         self.type = OperationMode.OperationModeTypes.TestModelMode
 
+    def is_video(self, str):
+        video_formats = r"\.(mp4|avi|mov|mkv|wmv)$"
+
+        return True if re.search(video_formats, str, re.IGNORECASE) else False
+
     def _get_image_from_url(self, url):
         """Method to get image from url"""
 
         logger.info("Processing image from url: %s", url)
         # Opening the image from url
-        img = Image.open(requests.get(url, stream=True).raw).convert("RGB")
+        img = requests.get(url, stream=True).raw
 
-        # Save image to disk
-        os.makedirs("url_imgs", exist_ok=True)
-        img_path = os.path.join("url_imgs", "image_test_model_" + str(get_timestamp()) + ".jpg")
-        img.save(img_path)
-        logger.info("Saved processed image at: %s", img_path)
-
-        return img_path
+        return self.image_to_rgb(img)
 
     def _get_video_from_url(self):
         """Method to get video from url"""
 
         # TODO: fill up logic
         pass
+
+    def image_to_rgb(self, image):
+        """Method to convert image to RGB format"""
+
+        converted_img = Image.open(image).convert("RGB")
+
+        # Save image to disk
+        os.makedirs("test_model_images", exist_ok=True)
+        img_path = os.path.join(
+            "test_model_images", "image_test_model_" + str(get_timestamp()) + ".jpg"
+        )
+        converted_img.save(img_path)
+        logger.info("Saved processed image at: %s", img_path)
+
+        return img_path
 
     def run(self):
         """WADAS test model operation mode"""
@@ -75,13 +90,24 @@ class TestModelMode(OperationMode):
         self.run_progress.emit(10)
 
         # Run detection model
-        if self.url:
-            img_path = self._get_image_from_url(self.url)
-            det_results, detected_img_path = self.ai_model.process_image(img_path, True)
-            self.last_detection = detected_img_path
+        if url := self.url:
+            if self.is_video(url):
+                # TODO: fill up logic
+                pass
+            else:
+                # Image-based detection
+                img_path = self._get_image_from_url(url)
+                det_results, detected_img_path = self.ai_model.process_image(img_path, True)
+                self.last_detection = detected_img_path
         else:
-            # Local file based detection TODO: fill up logic
-            pass
+            if self.is_video(self.file_path):
+                # TODO: fill up logic
+                pass
+            else:
+                # Image-based detection
+                img_path = self.image_to_rgb(self.file_path)
+                det_results, detected_img_path = self.ai_model.process_image(img_path, True)
+                self.last_detection = detected_img_path
 
         # Check if detection has returned results
         if not detected_img_path or not det_results:

@@ -282,7 +282,7 @@ class MainWindow(QMainWindow):
                     url, file_path = self.test_model_mode_input_dialog()
                     OperationMode.cur_operation_mode.url = url
                     OperationMode.cur_operation_mode.file_path = file_path
-                    if not OperationMode.cur_operation_mode.url and OperationMode.cur_operation_mode.file_path:
+                    if not OperationMode.cur_operation_mode.url and not OperationMode.cur_operation_mode.file_path:
                         logger.error("Cannot proceed without a valid input. Please run again.")
                         return
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:

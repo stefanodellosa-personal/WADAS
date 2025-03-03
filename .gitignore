@@ -53,6 +53,7 @@ bower_components/
 classification_output/
 detection_output/
 url_imgs/
+test_model_images/
 debug/
 wadas_motion_detection/
 demo_output/
