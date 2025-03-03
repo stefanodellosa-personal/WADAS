@@ -42,7 +42,6 @@ from PySide6.QtWidgets import (
 from validators import email as valid_email
 
 from wadas.domain.database import DataBase, DBUser
-from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.domain.utils import send_data_on_local_socket
 from wadas.ui.error_message_dialog import WADASErrorMessage
 from wadas.ui.qt.ui_configure_web_interface import Ui_DialogConfigureWebInterface
@@ -199,7 +198,8 @@ class DialogConfigureWebInterface(QDialog, Ui_DialogConfigureWebInterface):
         if script_path.exists():
             try:
                 subprocess.Popen(
-                    [sys.executable, script_path, f"--enc_conn_str={enc_conn_str}", f"--project_uuid={self.project_uuid}"],
+                    [sys.executable, script_path, f"--enc_conn_str={enc_conn_str}",
+                     f"--project_uuid={self.project_uuid}"],
 
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
