@@ -54,11 +54,36 @@ class TestModelMode(OperationMode):
 
         return self.image_to_rgb(img)
 
-    def _get_video_from_url(self):
-        """Method to get video from url"""
+    def _get_video_from_url(self, url):
+        """Method to get video from URL and save it to disk"""
 
-        # TODO: fill up logic
-        pass
+        logger.info("Processing video from url: %s", url)
+
+        os.makedirs("test_model_media", exist_ok=True)
+
+        # Extract file extension
+        file_extension = os.path.splitext(url.split("?")[0])[1]
+
+        video_path = os.path.join(
+            "test_model_media", f"video_test_model_{get_timestamp()}{file_extension}"
+        )
+
+        try:
+            # Download video in streaming mode
+            with requests.get(url, stream=True, allow_redirects=True) as response:
+                response.raise_for_status()  # Raise exception for HTTP errors
+
+                # Write video to file
+                with open(video_path, "wb") as video_file:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        video_file.write(chunk)
+
+            logger.info("Saved video at: %s", video_path)
+            return video_path
+
+        except requests.exceptions.RequestException:
+            logger.exception("Failed to download video:")
+            return None
 
     def image_to_rgb(self, image):
         """Method to convert image to RGB format"""
@@ -130,8 +155,15 @@ class TestModelMode(OperationMode):
         # Run detection model
         if url := self.url:
             if self.is_video(url):
-                # TODO: fill up logic
-                pass
+                if video_path := self._get_video_from_url(url):
+                    for (
+                        det_results,
+                        detected_img_path,
+                        video_frame_path,
+                    ) in self.ai_model.process_video(video_path, True):
+                        self.process_detected_results(
+                            video_frame_path, det_results, detected_img_path
+                        )
             else:
                 # Image-based detection
                 img_path = self._get_image_from_url(url)
