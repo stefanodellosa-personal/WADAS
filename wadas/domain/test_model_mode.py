@@ -48,11 +48,24 @@ class TestModelMode(OperationMode):
     def _get_image_from_url(self, url):
         """Method to get image from url"""
 
-        logger.info("Processing image from url: %s", url)
-        # Opening the image from url
-        img = requests.get(url, stream=True).raw
+        logger.info("Processing image from URL: %s", url)
 
-        return self.image_to_rgb(img)
+        try:
+            response = requests.get(url, stream=True, timeout=10)
+            response.raise_for_status()  # Generate exception for HTTP errors (es. 404, 500)
+
+            return self.image_to_rgb(response.raw)
+
+        except requests.exceptions.ConnectionError:
+            logger.error("Failed to connect to URL: %s", url)
+        except requests.exceptions.Timeout:
+            logger.error("Request timed out for URL: %s", url)
+        except requests.exceptions.HTTPError as err:
+            logger.error("HTTP error %s for URL: %s", err.response.status_code, url)
+        except requests.exceptions.RequestException:
+            logger.exception("Error downloading image from URL: %s", url)
+
+        return None
 
     def _get_video_from_url(self, url):
         """Method to get video from URL and save it to disk"""
@@ -91,9 +104,9 @@ class TestModelMode(OperationMode):
         converted_img = Image.open(image).convert("RGB")
 
         # Save image to disk
-        os.makedirs("test_model_images", exist_ok=True)
+        os.makedirs("test_model_media", exist_ok=True)
         img_path = os.path.join(
-            "test_model_images", "image_test_model_" + str(get_timestamp()) + ".jpg"
+            "test_model_media", "image_test_model_" + str(get_timestamp()) + ".jpg"
         )
         converted_img.save(img_path)
         logger.info("Saved processed image at: %s", img_path)
@@ -164,11 +177,16 @@ class TestModelMode(OperationMode):
                         self.process_detected_results(
                             video_frame_path, det_results, detected_img_path
                         )
+                else:
+                    logger.error("No video file provided. Aborting.")
             else:
                 # Image-based detection
-                img_path = self._get_image_from_url(url)
-                det_results, detected_img_path = self.ai_model.process_image(img_path, True)
-                self.last_detection = detected_img_path
+                if img_path := self._get_image_from_url(url):
+                    det_results, detected_img_path = self.ai_model.process_image(img_path, True)
+                    self.last_detection = detected_img_path
+                    self.process_detected_results(img_path, det_results, detected_img_path)
+                else:
+                    logger.error("No image file provided. Aborting.")
         else:
             if self.is_video(self.file_path):
                 for det_results, detected_img_path, video_frame_path in self.ai_model.process_video(
@@ -180,6 +198,7 @@ class TestModelMode(OperationMode):
                 img_path = self.image_to_rgb(self.file_path)
                 det_results, detected_img_path = self.ai_model.process_image(img_path, True)
                 self.last_detection = detected_img_path
+                self.process_detected_results(img_path, det_results, detected_img_path)
 
         self.execution_completed()
 
