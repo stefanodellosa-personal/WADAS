@@ -39,6 +39,7 @@ class AiModel:
     classification_threshold = 0.5
     detection_threshold = 0.5
     language = "en"
+    video_downsampling = 30
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -114,7 +115,7 @@ class AiModel:
 
         return results, detected_img_path
 
-    def process_video(self, video_path, save_detection_image: bool, downsample: int = 30):
+    def process_video(self, video_path, save_detection_image: bool):
         """Method to run detection model on provided video."""
 
         logger.debug("Selected detection device: %s", AiModel.detection_device)
@@ -139,7 +140,7 @@ class AiModel:
             if not ret:
                 break
 
-            if frame_count % downsample:
+            if frame_count % self.video_downsampling:
                 # Skip frames based on downsample value
                 frame_count += 1
                 continue
