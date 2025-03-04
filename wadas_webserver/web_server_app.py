@@ -16,13 +16,15 @@
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2025-02-21
 # Description: Module containing FastAPI exposed endpoints.
+import json
 import logging
 import os
 from pathlib import Path
 from typing import Annotated
 
 import bcrypt
-from fastapi import FastAPI, Header, HTTPException, Query, status
+from fastapi import FastAPI, Header, HTTPException, Query, Request, status
+from fastapi.responses import RedirectResponse
 from jose import JWTError, jwt
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse, Response
@@ -53,6 +55,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(404)
+async def not_found_redirect(request: Request, exc: HTTPException):
+    if not request.url.path.startswith("/api/v1/"):
+        return RedirectResponse(url="/")
+    return Response(
+        status_code=404, content=json.dumps({"msg": exc.detail}), media_type="application/json"
+    )
 
 
 def verify_token(token, token_type="access") -> User:
@@ -239,8 +250,9 @@ async def export_filtered_actuations(
 frontend_path = Path(__file__).parent / "frontend"
 if not frontend_path.exists():
     os.mkdir(frontend_path)
-    app.mount(
-        "/",
-        StaticFiles(directory=os.path.join(frontend_path), html=True),
-        name="frontend",
-    )
+
+app.mount(
+    "/",
+    StaticFiles(directory=os.path.join(frontend_path), html=True),
+    name="frontend",
+)
