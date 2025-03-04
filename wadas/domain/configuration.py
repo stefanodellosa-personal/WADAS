@@ -57,8 +57,8 @@ def check_version_compatibility(config_file_version):
         return False
     if wadas_version > config_file_version:
         # Example of compatibility check to list here:
-        # if config_file_version == Version("0.5.0") and wadas_version == Version("0.5.1"):
-        #    return True
+        if config_file_version == Version("0.5.1") and wadas_version == Version("0.6.0"):
+            return True
         # NOTE: prerequisite to this is that new yaml keys, absent in previous version, are handled
         # at load_configuration_from_file() time.
         return False
