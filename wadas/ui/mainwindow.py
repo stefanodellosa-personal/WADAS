@@ -796,7 +796,7 @@ class MainWindow(QMainWindow):
     def configure_web_interface(self):
         """Method to trigger web interface configuration dialog"""
 
-        if DialogConfigureWebInterface().exec():
+        if DialogConfigureWebInterface(self.uuid).exec():
             logger.info("Web interface configured.")
 
     def update_en_camera_list(self):

@@ -96,6 +96,6 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
                                 self.last_classified_animals_str,
                             )
                     else:
-                        logger.info("No animals to classify.")
+                        logger.info("No animal classified.")
 
         self.execution_completed()
