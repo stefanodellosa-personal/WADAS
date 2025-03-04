@@ -1,0 +1,217 @@
+import * as React from "react";
+import {useEffect, useState} from "react";
+import {Alert, Button, Col, Container, Row} from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+import CustomNavbar from "./components/CustomNavbar";
+import Select, {MultiValue} from "react-select";
+import DatePick from "./components/DatePick";
+import {tryWithRefreshing} from "./lib/utils";
+import {useNavigate} from 'react-router-dom';
+import CustomSpinner from "./components/CustomSpinner";
+import {ActuationEvent, ActuationEventResponse, ActuatorTypesResponse, CommandsResponse} from "./types/types";
+import {fetchActuationEvents, fetchActuatorTypes, fetchCommands} from "./lib/api";
+import ActuationsScrollableTable from "./components/ActuationsScrollableTable";
+
+
+type ActuatorTypeOption = {
+    value: string;
+    label: string;
+}
+
+type CommandOption = {
+    value: string;
+    label: string;
+}
+
+const ActuationEvents = () => {
+    const pageSize = 20;
+    const [actuatorTypeOptions, setActuatorTypeOptions] = useState<ActuatorTypeOption[]>([]);
+    const [commandOptions, setCommandOptions] = useState<CommandOption[]>([]);
+    const [actuations, setActuations] = useState<ActuationEvent[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [selectedActuatorType, setSelectedActuatorType] = useState<MultiValue<ActuatorTypeOption>>([]);
+    const [selectedCommand, setSelectedCommand] = useState<MultiValue<CommandOption>>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const navigate = useNavigate();
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [endDate, setEndDate] = useState<Date | null>(null);
+
+
+    const updateDateRange = (dates: [Date | null, Date | null]) => {
+        const [start, end] = dates;
+        setStartDate(start);
+        setEndDate(end);
+    };
+
+    const updateActuationData = async (page = 1) => {
+        try {
+            const offset = (page - 1) * pageSize;
+            const actuationsResponse: ActuationEventResponse = await tryWithRefreshing(() =>
+                fetchActuationEvents(
+                    offset,
+                    null,
+                    selectedActuatorType.map(actType => actType.value),
+                    selectedCommand.map(command => command.value),
+                    startDate,
+                    endDate
+                )
+            );
+            setActuations(actuationsResponse.data)
+            setTotalPages(Math.ceil(actuationsResponse.total / pageSize));
+            setCurrentPage(page);
+            setLoading(false);
+        } catch (e) {
+            if (e instanceof Error && e.message.includes("Unauthorized")) {
+                console.error("Refresh token failed, redirecting to login...");
+                navigate("/");
+            } else {
+                setError("Generic Error. Please contact the administrator.");
+                setLoading(false);
+            }
+        }
+    };
+
+    useEffect(() => {
+        const fillActuatorTypeOptions = async () => {
+            try {
+                const actuatorTypesResponse: ActuatorTypesResponse = await tryWithRefreshing(fetchActuatorTypes);
+                let optionsArray = actuatorTypesResponse.data.map(actuatorType => ({
+                    value: actuatorType,
+                    label: actuatorType
+                }));
+
+                setActuatorTypeOptions(optionsArray)
+                setLoading(false);
+            } catch (e) {
+                if (e instanceof Error && e.message.includes("Unauthorized")) {
+                    console.error("Refresh token failed, redirecting to login...");
+                    navigate("/");
+                } else {
+                    setError("Generic Error. Please contact the administrator.");
+                }
+            }
+        };
+
+        const fillCommandOptions = async () => {
+            try {
+                const commandsResponse: CommandsResponse = await tryWithRefreshing(fetchCommands);
+                let optionsArray = commandsResponse.data.map(command => ({
+                    value: command,
+                    label: command
+                }));
+
+                setCommandOptions(optionsArray)
+                setLoading(false);
+            } catch (e) {
+                if (e instanceof Error && e.message.includes("Unauthorized")) {
+                    console.error("Refresh token failed, redirecting to login...");
+                    navigate("/");
+                } else {
+                    setError("Generic Error. Please contact the administrator.");
+                }
+            }
+        };
+
+        fillActuatorTypeOptions();
+        fillCommandOptions();
+        updateActuationData();
+    }, []);
+
+    // Gestore del cambio di selezione
+    const handleChangeActuatorType = (selected: MultiValue<ActuatorTypeOption>) => {
+        setSelectedActuatorType(selected);
+    };
+
+    const handleChangeCommand = (selected: MultiValue<CommandOption>) => {
+        setSelectedCommand(selected);
+    };
+
+
+    const exportResults = () => () => {
+        return undefined;
+    }
+
+    return (
+        <div className={"padded-div"}>
+            <CustomNavbar/>
+            <Container className={"mt-1"}>
+                {loading ? (
+                    <Container style={{flex: 1, display: "flex", flexDirection: "column"}}>
+                        <CustomSpinner/>
+                    </Container>
+                ) : error ? (
+                    <Alert variant="danger">{error}</Alert>
+                ) : (
+                    <Container style={{flex: 1, display: "flex", flexDirection: "column"}}>
+                        <Container style={{display: "flex", flexDirection: "column"}}>
+                            <Container className="mt-3">
+                                <Row className="mb-3">
+                                    <Col md={3}>
+                                        <Select
+                                            id="multi-select"
+                                            isMulti
+                                            options={actuatorTypeOptions}
+                                            value={selectedActuatorType}
+                                            onChange={handleChangeActuatorType}
+                                            placeholder={<div className={"custom-placeholder"}>select
+                                                actuator types...</div>}
+                                        />
+                                    </Col>
+                                    <Col md={3}>
+                                        <Select
+                                            id="multi-select"
+                                            isMulti
+                                            options={commandOptions}
+                                            value={selectedCommand}
+                                            onChange={handleChangeCommand}
+                                            placeholder={<div className={"custom-placeholder"}>select
+                                                actuation commands...</div>}
+                                        />
+                                    </Col>
+                                    <Col md={3}>
+                                        <DatePick
+                                            startDate={startDate}
+                                            endDate={endDate}
+                                            onDateChange={updateDateRange}
+                                        />
+                                    </Col>
+                                    <Col md={1}>
+                                        <Button
+                                            variant="primary"
+                                            className="custom-button dark-background"
+                                            onClick={() => updateActuationData(1)}>
+                                            Apply
+                                        </Button>
+                                    </Col>
+
+                                    <Col md={2} className="d-flex">
+                                        <Button
+                                            variant="primary"
+                                            className="custom-button ms-auto"
+                                            onClick={exportResults()}>
+                                            Export results
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            </Container>
+
+                            <Container style={{flex: 1, overflow: "hidden"}}>
+                                <ActuationsScrollableTable
+                                    actuations={actuations}
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={updateActuationData}
+                                />
+                            </Container>
+                        </Container>
+                    </Container>
+                )}
+
+            </Container>
+        </div>
+    );
+};
+
+export default ActuationEvents;
