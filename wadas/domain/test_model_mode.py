@@ -43,7 +43,7 @@ class TestModelMode(OperationMode):
     def is_video(self, str):
         video_formats = r"\.(mp4|avi|mov|mkv|wmv)$"
 
-        return True if re.search(video_formats, str, re.IGNORECASE) else False
+        return bool(re.search(video_formats, str, re.IGNORECASE))
 
     def _get_image_from_url(self, url):
         """Method to get image from url"""
