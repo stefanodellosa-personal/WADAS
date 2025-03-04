@@ -248,8 +248,7 @@ async def export_filtered_actuations(
 
 # Static pages mounted under the site root
 frontend_path = Path(__file__).parent / "frontend"
-if not frontend_path.exists():
-    os.mkdir(frontend_path)
+os.makedirs(frontend_path, exist_ok=True)
 
 app.mount(
     "/",
