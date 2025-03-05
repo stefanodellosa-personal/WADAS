@@ -45,17 +45,20 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.label_errorMEssage.setStyleSheet("color: red")
         self.ui.lineEdit_classificationThreshold.setText(str(AiModel.classification_threshold))
         self.ui.lineEdit_detectionThreshold.setText(str(AiModel.detection_threshold))
+        self.ui.lineEdit_video_downsampling.setText(str(AiModel.video_downsampling))
         self.populate_language_dropdown()
+        self.available_ai_devices = ov.Core().get_available_devices()
+        self.available_ai_devices.append("auto")
+        self.populate_ai_devices_dropdowns()
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
         self.ui.lineEdit_classificationThreshold.textChanged.connect(self.validate_data)
         self.ui.lineEdit_detectionThreshold.textChanged.connect(self.validate_data)
+        self.ui.lineEdit_video_downsampling.textChanged.connect(self.validate_data)
 
         self.validate_data()
-        self.available_ai_devices = ov.Core().get_available_devices()
-        self.available_ai_devices.append("auto")
-        self.populate_ai_devices_dropdowns()
+
 
     def populate_language_dropdown(self):
         """Populate the dropdown with the list of available actuators."""
@@ -87,20 +90,31 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         """Method to validate input values."""
 
         valid = True
-        if (
+        error_message = ""
+        if not self.ui.lineEdit_classificationThreshold.text():
+            error_message = "No classification threshold provided. Please insert a value between 0 and 1."
+            valid = False
+        elif (
             cthreshold := float(self.ui.lineEdit_classificationThreshold.text())
         ) > 1 or cthreshold < 0:
-            self.ui.label_errorMEssage.setText(
-                "Invalid classification threshold. Please insert a value between 0 and 1."
-            )
+            error_message = "Invalid classification threshold. Please insert a value between 0 and 1."
+            valid = False
+
+        if not self.ui.lineEdit_detectionThreshold.text():
+            error_message = "No detection threshold provided. Please insert a value between 0 and 1."
             valid = False
         elif (dthreshold := float(self.ui.lineEdit_detectionThreshold.text())) > 1 or dthreshold < 0:
-            self.ui.label_errorMEssage.setText(
-                "Invalid detection threshold. Please insert a value between 0 and 1."
-            )
+            error_message = "Invalid detection threshold. Please insert a value between 0 and 1."
             valid = False
-        else:
-            self.ui.label_errorMEssage.setText("")
+
+        if not self.ui.lineEdit_video_downsampling.text():
+            error_message = "No video down sampling value provided. Please insert a value > 0."
+            valid = False
+        elif int(self.ui.lineEdit_video_downsampling.text()) <= 0:
+            error_message = "Invalid video down sampling value. Please insert a value > 0."
+            valid = False
+
+        self.ui.label_errorMEssage.setText(error_message)
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(valid)
 
     def accept_and_close(self):
@@ -111,5 +125,6 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         AiModel.language = self.ui.comboBox_class_lang.currentText()
         AiModel.detection_device = self.ui.comboBox_detection_dev.currentText()
         AiModel.classification_device = self.ui.comboBox_class_dev.currentText()
+        AiModel.video_downsampling = int(self.ui.lineEdit_video_downsampling.text())
 
         self.accept()

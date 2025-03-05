@@ -23,12 +23,10 @@ import os
 import cv2
 import numpy as np
 import PIL
-import requests
 from PIL import Image
 from PytorchWildlife import utils as pw_utils
 
 from wadas.ai import DetectionPipeline
-from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +39,7 @@ class AiModel:
     classification_threshold = 0.5
     detection_threshold = 0.5
     language = "en"
+    video_downsampling = 30
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -61,6 +60,7 @@ class AiModel:
         os.makedirs("detection_output", exist_ok=True)
         os.makedirs("classification_output", exist_ok=True)
         os.makedirs("wadas_motion_detection", exist_ok=True)
+        os.makedirs("video_frames", exist_ok=True)
 
         logger.debug(
             "Detection threshold: %s, Classification threshold: %s.",
@@ -115,7 +115,7 @@ class AiModel:
 
         return results, detected_img_path
 
-    def process_video(self, video_path, save_detection_image: bool, downsample: int = 30):
+    def process_video(self, video_path, save_detection_image: bool):
         """Method to run detection model on provided video."""
 
         logger.debug("Selected detection device: %s", AiModel.detection_device)
@@ -131,6 +131,7 @@ class AiModel:
 
         logger.info("Running detection on video %s ...", video_path)
 
+        video_filename = os.path.basename(video_path)
         # Initialize frame counter
         frame_count = 0
         while True:
@@ -139,7 +140,7 @@ class AiModel:
             if not ret:
                 break
 
-            if frame_count % downsample:
+            if frame_count % self.video_downsampling:
                 # Skip frames based on downsample value
                 frame_count += 1
                 continue
@@ -152,37 +153,25 @@ class AiModel:
 
             if len(results["detections"].xyxy) > 0:
                 if save_detection_image:
+                    # Saving original video frame
+                    logger.debug("Saving video frame...")
+                    frame_path = os.path.join(
+                        "video_frames", f"{video_filename}_frame_{frame_count}.jpg"
+                    )
+                    frame.save(frame_path)
                     # Saving the detection results
                     logger.info("Saving detection results for frame %s...", frame_count)
                     detected_img_path = os.path.join("detection_output", f"frame_{frame_count}.jpg")
                     # Needs to be saved first as save_detection_images expects a path inside results
                     frame.save(detected_img_path)
                     results["img_id"] = detected_img_path
-                    yield results, detected_img_path
+                    yield results, detected_img_path, frame_path
                 else:
-                    yield results, None
+                    yield results, None, None
             else:
                 logger.info("No detected animals for frame %s. Skipping image.", frame_count)
 
             frame_count += 1
-
-    def process_image_from_url(self, url, img_id, save_detection_image):
-        """Method to run detection model on image provided by URL"""
-
-        logger.info("Processing image from url: %s", url)
-        # Opening the image from url
-        img = Image.open(requests.get(url, stream=True).raw).convert("RGB")
-
-        # Save image to disk
-        os.makedirs("url_imgs", exist_ok=True)
-        img_path = os.path.join(
-            "url_imgs", "image_" + str(img_id) + "_" + str(get_timestamp()) + ".jpg"
-        )
-        img.save(img_path)
-        logger.info("Saved processed image at: %s", img_path)
-
-        results, detected_img_path = self.process_image(img_path, save_detection_image)
-        return [img_path, results, detected_img_path]
 
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s)."""
