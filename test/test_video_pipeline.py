@@ -32,6 +32,7 @@ def init():
     AiModel.language = "en"
     AiModel.detection_device = "auto"
     AiModel.classification_device = "auto"
+    AiModel.video_downsampling = 30
 
 
 def test_video_detection_and_classification(init):
@@ -42,11 +43,12 @@ def test_video_detection_and_classification(init):
     assert ai_pipeline.language == "en"
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
+    assert ai_pipeline.video_downsampling == 30
     assert ai_pipeline.check_model()
 
     # This one is the video of a bear
     VIDEO_URL = "https://videos.pexels.com/video-files/857097/857097-hd_1280_720_30fps.mp4"
-    for result, frame in ai_pipeline.process_video(VIDEO_URL, True):
+    for result, _detected_image_path, frame_path in ai_pipeline.process_video(VIDEO_URL, True):
         assert result is not None
         assert result["detections"].xyxy.shape == (1, 4)
         assert result["detections"].xyxy.dtype == np.float32
@@ -55,7 +57,7 @@ def test_video_detection_and_classification(init):
         assert result["detections"].confidence.shape == (1,)
         assert result["detections"].confidence.dtype == np.float32
 
-        img_path, classified_animals = ai_pipeline.classify(frame, result)
+        img_path, classified_animals = ai_pipeline.classify(frame_path, result)
 
         assert classified_animals is not None
         if len(classified_animals) > 0:
@@ -75,6 +77,7 @@ def test_video_detection_and_classification_empty(init):
     assert ai_pipeline.language == "en"
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
+    assert ai_pipeline.video_downsampling == 30
     assert ai_pipeline.check_model()
     # This one is the video of a waterfall => No animals
     VIDEO_URL = "https://videos.pexels.com/video-files/6981411/6981411-hd_1920_1080_25fps.mp4"

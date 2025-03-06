@@ -36,6 +36,7 @@ def init():
     AiModel.language = ""
     AiModel.detection_device = "auto"
     AiModel.classification_device = "auto"
+    AiModel.video_downsampling = 30
     OperationMode.cur_operation_mode = None
 
 
@@ -51,6 +52,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {}
 database: ''
@@ -82,6 +84,7 @@ def test_load_incompatible_older_version_config(mock_file, init):
     assert AiModel.detection_threshold == 0
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
@@ -99,6 +102,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -148,6 +152,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -172,6 +177,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {}
 database: ''
@@ -202,6 +208,7 @@ def test_load_wrong_format_config(mock_file, init):
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
     assert AiModel.language == ""
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -223,6 +230,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -261,6 +269,7 @@ def test_load_actuator_server_config(mock_file, init):
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
+    assert AiModel.video_downsampling == 30
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
     assert OperationMode.cur_operation_mode is None
@@ -288,6 +297,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -324,6 +334,7 @@ ai_model:
   ai_language: xyz
   ai_detection_device: auto
   ai_classification_device: auto
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -365,6 +376,7 @@ def test_load_actuators_config(mock_file, init):
     assert AiModel.language == "xyz"
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -398,6 +410,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -422,6 +435,7 @@ ai_model:
   ai_language: it
   ai_detection_device: auto
   ai_classification_device: auto
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -454,6 +468,7 @@ def test_load_ai_model_config(mock_file, init):
     assert AiModel.language == "it"
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -465,6 +480,7 @@ def test_save_ai_model_config(mock_file, init):
     AiModel.language = "it"
     AiModel.classification_device = "GPU"
     AiModel.detection_device = "CPU"
+    AiModel.video_downsampling = 30
     save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
     assert (
         mock_file.dump()
@@ -476,6 +492,7 @@ ai_model:
   ai_detect_threshold: 0.76
   ai_detection_device: CPU
   ai_language: it
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -500,6 +517,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params:
   detection_per_second: 12
@@ -541,6 +559,7 @@ def test_load_camera_detection_params_config(mock_file, init):
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -564,6 +583,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params:
   detection_per_second: 12
   min_contour_area: 345
@@ -592,6 +612,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras:
 - actuators: []
   enabled: true
@@ -736,6 +757,7 @@ def test_load_cameras_config(mock_file, init):
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -752,6 +774,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras:
 - actuators: []
   enabled: true
@@ -812,6 +835,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_no_credentials(mock_file, i
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -828,6 +852,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras:
 - actuators: []
   enabled: true
@@ -888,6 +913,7 @@ def test_load_cameras_config_with_ftp_and_no_folder_and_no_credentials(mock_file
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -904,6 +930,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras:
 - actuators: []
   enabled: true
@@ -964,6 +991,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file,
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -980,6 +1008,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras:
 - actuators: []
   enabled: true
@@ -1040,6 +1069,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_different_credentials(mock_
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -1089,6 +1119,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras:
 - actuators: []
@@ -1151,6 +1182,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 ftps_server:
@@ -1202,6 +1234,7 @@ def test_load_ftps_server_config(mock_file, init):
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -1218,6 +1251,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -1274,6 +1308,7 @@ def test_load_ftps_server_config_with_existing_server(mock_file, init):
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -1301,6 +1336,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -1335,6 +1371,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -1386,6 +1423,7 @@ def test_load_notification_config_with_no_credentials(mock_file, init):
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -1402,6 +1440,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -1453,6 +1492,7 @@ def test_load_notification_config_with_same_credentials(mock_file, init):
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -1469,6 +1509,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -1520,6 +1561,7 @@ def test_load_notification_config_with_different_credentials(mock_file, init):
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
 
@@ -1536,6 +1578,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -1589,6 +1632,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -1625,6 +1669,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -1657,6 +1702,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -1690,6 +1736,7 @@ def test_load_test_model_mode_config(mock_file, init):
     assert AiModel.language == ""
     assert AiModel.detection_device == "auto"
     assert AiModel.classification_device == "auto"
+    assert AiModel.video_downsampling == 30
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode
 
@@ -1708,6 +1755,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -1733,6 +1781,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -1776,6 +1825,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -1801,6 +1851,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -1846,6 +1897,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
@@ -1871,6 +1923,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 cameras: []
 camera_detection_params: {{}}
 database: ''
@@ -1919,6 +1972,7 @@ ai_model:
   ai_detect_threshold: 0
   ai_detection_device: auto
   ai_language: ''
+  ai_video_downsampling: 30
 camera_detection_params: {{}}
 cameras: []
 database: ''
