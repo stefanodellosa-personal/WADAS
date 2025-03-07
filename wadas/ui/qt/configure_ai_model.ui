@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>217</height>
+    <height>242</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>180</y>
+     <y>210</y>
      <width>381</width>
      <height>32</height>
     </rect>
@@ -35,23 +35,10 @@
      <x>10</x>
      <y>10</y>
      <width>381</width>
-     <height>171</height>
+     <height>201</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_classificationThreshold">
-      <property name="toolTip">
-       <string>Min classification probability to trigger notification.</string>
-      </property>
-      <property name="text">
-       <string>Classification accuracy threshold (probability)</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QComboBox" name="comboBox_class_lang"/>
-    </item>
     <item row="0" column="0">
      <widget class="QLabel" name="label_detectionThreshold">
       <property name="toolTip">
@@ -62,17 +49,30 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="1">
-     <widget class="QLabel" name="label_errorMEssage">
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_3">
       <property name="text">
-       <string/>
+       <string>Ai classification device</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="lineEdit_detectionThreshold">
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_classificationThreshold">
       <property name="toolTip">
-       <string>Min detection probability to trigger notification.</string>
+       <string>Min classification probability to trigger notification.</string>
+      </property>
+      <property name="text">
+       <string>Classification accuracy threshold (probability)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="comboBox_class_dev"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Ai detection device</string>
       </property>
      </widget>
     </item>
@@ -86,19 +86,15 @@
     <item row="3" column="1">
      <widget class="QComboBox" name="comboBox_detection_dev"/>
     </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>Ai classification device</string>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="lineEdit_detectionThreshold">
+      <property name="toolTip">
+       <string>Min detection probability to trigger notification.</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Ai detection device</string>
-      </property>
-     </widget>
+    <item row="2" column="1">
+     <widget class="QComboBox" name="comboBox_class_lang"/>
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="label">
@@ -107,8 +103,22 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="1">
-     <widget class="QComboBox" name="comboBox_class_dev"/>
+    <item row="6" column="0" colspan="2">
+     <widget class="QLabel" name="label_errorMEssage">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Video downsampling</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLineEdit" name="lineEdit_video_downsampling"/>
     </item>
    </layout>
   </widget>
