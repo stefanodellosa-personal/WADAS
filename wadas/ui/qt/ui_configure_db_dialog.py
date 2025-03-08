@@ -24,7 +24,7 @@ class Ui_ConfigureDBDialog(object):
     def setupUi(self, ConfigureDBDialog):
         if not ConfigureDBDialog.objectName():
             ConfigureDBDialog.setObjectName(u"ConfigureDBDialog")
-        ConfigureDBDialog.resize(417, 468)
+        ConfigureDBDialog.resize(417, 472)
         self.buttonBox = QDialogButtonBox(ConfigureDBDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setGeometry(QRect(10, 440, 401, 32))

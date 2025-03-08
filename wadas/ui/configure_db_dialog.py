@@ -64,7 +64,6 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.lineEdit_db_username.textChanged.connect(self.validate)
         self.ui.lineEdit_db_password.textChanged.connect(self.validate)
         self.ui.lineEdit_db_name.textChanged.connect(self.validate)
-        self.ui.checkBox_new_db.clicked.connect(self.on_checkbox_new_db_checked)
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.on_cancel_clicked)
         self.ui.checkBox_enable_db.clicked.connect(self.on_enable_state_changed)
 
@@ -292,7 +291,6 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                         "Cannot create the db as it already exists! Please delete it or rename it before proceed."
                     self.show_status_dialog("Database creation status", message, False)
                     return
-        self.init_db_from_dialog_params()
 
         if db := DataBase.get_instance():
             # Populate DB with existing cameras and actuators
