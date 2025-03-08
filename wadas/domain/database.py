@@ -1119,12 +1119,12 @@ class MariaDBDataBase(DataBase):
         with temp_engine.connect() as conn:
             # Create db if not already existing
             conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {self.database_name}"))
-            logger.info("Database '%s' successfully created or already exists.", self.database_name)
+            logger.info("Database '%s' successfully created.", self.database_name)
         try:
             Base.metadata.create_all(DataBase.wadas_db_engine)
             logger.info("Tables created successfully in '%s'.", self.database_name)
         except Exception:
-            logger.error("Error while creating the tables...")
+            logger.exception("Error while creating the tables...")
             return False
         return True
 
