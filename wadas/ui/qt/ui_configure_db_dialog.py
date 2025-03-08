@@ -24,7 +24,7 @@ class Ui_ConfigureDBDialog(object):
     def setupUi(self, ConfigureDBDialog):
         if not ConfigureDBDialog.objectName():
             ConfigureDBDialog.setObjectName(u"ConfigureDBDialog")
-        ConfigureDBDialog.resize(425, 476)
+        ConfigureDBDialog.resize(417, 468)
         self.buttonBox = QDialogButtonBox(ConfigureDBDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setGeometry(QRect(10, 440, 401, 32))
@@ -142,16 +142,6 @@ class Ui_ConfigureDBDialog(object):
 
         self.gridLayout_mysql.addWidget(self.lineEdit_db_port, 8, 2, 1, 1)
 
-        self.pushButton_create_db = QPushButton(self.gridLayoutWidget_2)
-        self.pushButton_create_db.setObjectName(u"pushButton_create_db")
-
-        self.gridLayout_mysql.addWidget(self.pushButton_create_db, 5, 3, 1, 1)
-
-        self.checkBox_new_db = QCheckBox(self.gridLayoutWidget_2)
-        self.checkBox_new_db.setObjectName(u"checkBox_new_db")
-
-        self.gridLayout_mysql.addWidget(self.checkBox_new_db, 5, 0, 1, 3)
-
         self.line_3 = QFrame(self.gridLayoutWidget_2)
         self.line_3.setObjectName(u"line_3")
         self.line_3.setFrameShape(QFrame.Shape.HLine)
@@ -165,6 +155,11 @@ class Ui_ConfigureDBDialog(object):
         self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.gridLayout_mysql.addWidget(self.line_2, 4, 0, 1, 4)
+
+        self.checkBox_new_db = QCheckBox(self.gridLayoutWidget_2)
+        self.checkBox_new_db.setObjectName(u"checkBox_new_db")
+
+        self.gridLayout_mysql.addWidget(self.checkBox_new_db, 5, 0, 1, 4)
 
         self.label_error_2 = QLabel(ConfigureDBDialog)
         self.label_error_2.setObjectName(u"label_error_2")
@@ -202,8 +197,7 @@ class Ui_ConfigureDBDialog(object):
         self.label_6.setText(QCoreApplication.translate("ConfigureDBDialog", u"Version:", None))
         self.radioButton_SQLite.setText(QCoreApplication.translate("ConfigureDBDialog", u"SQLite", None))
         self.label_db_version.setText("")
-        self.pushButton_create_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"Create new DB", None))
-        self.checkBox_new_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"New database (requires creations before test)", None))
+        self.checkBox_new_db.setText(QCoreApplication.translate("ConfigureDBDialog", u"New database (triggers new db creation)", None))
         self.label_error_2.setText(QCoreApplication.translate("ConfigureDBDialog", u"NOTE: DB enablement will trigger autosave when modifying configuration.", None))
     # retranslateUi
 
