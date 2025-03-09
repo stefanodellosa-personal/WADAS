@@ -132,6 +132,7 @@ const DetectionEvents = () => {
         fillCamerasOptions();
         fillAnimalsOptions();
         updateDetectionData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [prevClickedCamera]);
 
     // Gestore del cambio di selezione
@@ -159,7 +160,7 @@ const DetectionEvents = () => {
             const url = window.URL.createObjectURL(responseBlob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "data.csv";
+            a.download = "detection_events.csv";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
