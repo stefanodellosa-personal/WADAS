@@ -9,7 +9,7 @@ import {tryWithRefreshing} from "./lib/utils";
 import {useNavigate} from 'react-router-dom';
 import CustomSpinner from "./components/CustomSpinner";
 import {ActuationEvent, ActuationEventResponse, ActuatorTypesResponse, CommandsResponse} from "./types/types";
-import {fetchActuationEvents, fetchActuatorTypes, fetchCommands} from "./lib/api";
+import {fetchActuationEvents, fetchActuatorTypes, fetchCommands, fetchExportActuationEvents} from "./lib/api";
 import ActuationsScrollableTable from "./components/ActuationsScrollableTable";
 
 
@@ -29,9 +29,11 @@ const ActuationEvents = () => {
     const [commandOptions, setCommandOptions] = useState<CommandOption[]>([]);
     const [actuations, setActuations] = useState<ActuationEvent[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [exportLoading, setExportLoading] = useState<boolean>(false);
     const [selectedActuatorType, setSelectedActuatorType] = useState<MultiValue<ActuatorTypeOption>>([]);
     const [selectedCommand, setSelectedCommand] = useState<MultiValue<CommandOption>>([]);
     const [error, setError] = useState<string | null>(null);
+    const [exportError, setExportError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const navigate = useNavigate();
@@ -117,6 +119,7 @@ const ActuationEvents = () => {
         fillActuatorTypeOptions();
         fillCommandOptions();
         updateActuationData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Gestore del cambio di selezione
@@ -129,8 +132,37 @@ const ActuationEvents = () => {
     };
 
 
-    const exportResults = () => () => {
-        return undefined;
+    const exportResults = () => async () => {
+        setExportLoading(true);
+        try {
+            const responseBlob: Blob = await tryWithRefreshing(() =>
+                fetchExportActuationEvents(
+                    null,
+                    selectedActuatorType.map(actType => actType.value),
+                    selectedCommand.map(command => command.value),
+                    startDate,
+                    endDate
+                )
+            );
+
+            const url = window.URL.createObjectURL(responseBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "actuation_events.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (e) {
+            if (e instanceof Error && e.message.includes("Unauthorized")) {
+                console.error("Refresh token failed, redirecting to login...");
+                navigate("/");
+            } else {
+                setExportError("Problem exporting data");
+            }
+        } finally {
+            setExportLoading(false);
+        }
     }
 
     return (
@@ -187,12 +219,19 @@ const ActuationEvents = () => {
                                     </Col>
 
                                     <Col md={2} className="d-flex">
-                                        <Button
-                                            variant="primary"
-                                            className="custom-button ms-auto"
-                                            onClick={exportResults()}>
-                                            Export results
-                                        </Button>
+                                        {exportLoading ? (
+                                            <CustomSpinner className={"mt-1 ms-auto me-5"}/>
+                                        ) : exportError ? (
+                                            <Alert variant="danger" className={"m-0 p-2"}
+                                                   style={{fontSize: "12px"}}>{exportError}</Alert>
+                                        ) : (
+                                            <Button
+                                                variant="primary"
+                                                className="custom-button ms-auto"
+                                                onClick={exportResults()}>
+                                                Export results
+                                            </Button>)
+                                        }
                                     </Col>
                                 </Row>
                             </Container>

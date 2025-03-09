@@ -210,3 +210,24 @@ export async function fetchExportDetectionEvents(
         return response.blob();
     })
 }
+
+export async function fetchExportActuationEvents(
+    detectionId: number | null = null,
+    filterTypes: string[] = [],
+    filterCommands: string[] = [],
+    startDate: Date | null = null,
+    endDate: Date | null = null
+): Promise<Blob> {
+    let params = buildActuationEventsParamString(
+        detectionId,
+        filterTypes,
+        filterCommands,
+        startDate,
+        endDate
+    )
+
+    const url = baseUrl + "api/v1/actuations/export?" + params.toString();
+    return await apiGET(url, (response) => {
+        return response.blob();
+    })
+}
