@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 from wadas.domain.db_model import Base
 from wadas_webserver.database import Database
-from wadas_webserver.view_model import Camera, DetectionEvent
+from wadas_webserver.view_model import Camera, DetectionEvent, DetectionsRequest
 
 
 def populate_fake_db(engine):
@@ -52,7 +52,8 @@ def test_get_detection_events(database):
 
 
 def test_get_detection_events_by_camera_id(database):
-    count, detection_events = database.get_detection_events_by_filter(camera_ids=[1])
+    request = DetectionsRequest(camera_ids=[1])
+    count, detection_events = database.get_detection_events_by_filter(request)
     assert len(detection_events) > 0
     assert isinstance(detection_events[0], DetectionEvent)
     assert all(event.camera_id == 1 for event in detection_events)
@@ -61,9 +62,20 @@ def test_get_detection_events_by_camera_id(database):
 def test_get_detection_events_by_date(database):
     datefrom = datetime(2025, 1, 19)
     dateto = datetime(2025, 1, 21)
-    count, detection_events = database.get_detection_events_by_filter(
-        date_from=datefrom, date_to=dateto
-    )
+    request = DetectionsRequest(date_from=datefrom, date_to=dateto)
+    count, detection_events = database.get_detection_events_by_filter(request)
     assert len(detection_events) > 0
     assert isinstance(detection_events[0], DetectionEvent)
     assert all(datefrom <= event.timestamp <= dateto for event in detection_events)
+
+
+def test_get_detection_events_by_animal(database):
+    animals = ["cat"]
+    request = DetectionsRequest(classified_animals=animals)
+    count, detection_events = database.get_detection_events_by_filter(request)
+    assert len(detection_events) > 0
+    assert isinstance(detection_events[0], DetectionEvent)
+    assert all(
+        any(animal.animal in animals for animal in event.classified_animals)
+        for event in detection_events
+    )
