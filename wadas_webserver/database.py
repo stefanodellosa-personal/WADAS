@@ -213,7 +213,7 @@ class Database:
                 .order_by(DB_Actuator.type)
                 .all()
             )
-            return [x[0] for x in result]
+            return [x[0].value for x in result]
 
     def get_known_actuation_commands(self) -> List[str]:
         """Method to get all the known commands for actuation events"""
