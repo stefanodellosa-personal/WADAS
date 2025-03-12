@@ -7,7 +7,7 @@ import Select, {MultiValue} from "react-select";
 import DatePick from "./components/DatePick";
 import {tryWithRefreshing} from "./lib/utils";
 import DetectionsScrollableTable from "./components/DetectionsScrollableTable";
-import {useNavigate, useLocation} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import CustomSpinner from "./components/CustomSpinner";
 import {AnimalsResponse, Camera, CamerasResponse, DetectionEvent, DetectionEventResponse} from "./types/types";
 import {fetchAnimalsNames, fetchCameras, fetchDetectionEvents, fetchExportDetectionEvents} from "./lib/api";
