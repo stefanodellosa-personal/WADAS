@@ -129,14 +129,15 @@ class AiModel:
             logger.error("%s is not a valid video path. Aborting.", video_path)
             return None, None
 
-        logger.debug("Setting video FPS to %s", self.video_fps)
-        video.set(cv2.CAP_PROP_FPS, self.video_fps)
+        logger.info("Running detection on video %s ...", video_path)
         fps = video.get(cv2.CAP_PROP_FPS)
-        if fps != self.video_fps:
-            logger.error("Error setting video FPS. Aborting.")
+        if fps == 0:
+            logger.error("Error reading video FPS. Aborting.")
             return None, None
 
-        logger.info("Running detection on video %s ...", video_path)
+        logger.debug("Video FPS: %s", fps)
+
+        downsample = int(fps / self.video_fps)
 
         video_filename = os.path.basename(video_path)
         # Initialize frame counter
@@ -146,6 +147,11 @@ class AiModel:
             ret, frame = video.read()
             if not ret:
                 break
+
+            if frame_count % downsample:
+                # Skip frames based on downsample value
+                frame_count += 1
+                continue
 
             # Convert frame to PIL image
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
