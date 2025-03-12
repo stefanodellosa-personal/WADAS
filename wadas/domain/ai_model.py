@@ -137,7 +137,7 @@ class AiModel:
 
         logger.debug("Video FPS: %s", fps)
 
-        downsample = max(int(round(fps / self.video_fps), 1))
+        downsample = max(int(round(fps / self.video_fps)), 1)
 
         video_filename = os.path.basename(video_path)
         # Initialize frame counter
