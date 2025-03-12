@@ -45,7 +45,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.label_errorMEssage.setStyleSheet("color: red")
         self.ui.lineEdit_classificationThreshold.setText(str(AiModel.classification_threshold))
         self.ui.lineEdit_detectionThreshold.setText(str(AiModel.detection_threshold))
-        self.ui.lineEdit_video_downsampling.setText(str(AiModel.video_downsampling))
+        self.ui.lineEdit_video_fps.setText(str(AiModel.video_fps))
         self.populate_language_dropdown()
         self.available_ai_devices = ov.Core().get_available_devices()
         self.available_ai_devices.append("auto")
@@ -55,7 +55,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
         self.ui.lineEdit_classificationThreshold.textChanged.connect(self.validate_data)
         self.ui.lineEdit_detectionThreshold.textChanged.connect(self.validate_data)
-        self.ui.lineEdit_video_downsampling.textChanged.connect(self.validate_data)
+        self.ui.lineEdit_video_fps.textChanged.connect(self.validate_data)
 
         self.validate_data()
 
@@ -107,10 +107,10 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
             error_message = "Invalid detection threshold. Please insert a value between 0 and 1."
             valid = False
 
-        if not self.ui.lineEdit_video_downsampling.text():
+        if not self.ui.lineEdit_video_fps.text():
             error_message = "No video down sampling value provided. Please insert a value > 0."
             valid = False
-        elif int(self.ui.lineEdit_video_downsampling.text()) <= 0:
+        elif int(self.ui.lineEdit_video_fps.text()) <= 0:
             error_message = "Invalid video down sampling value. Please insert a value > 0."
             valid = False
 
@@ -125,6 +125,6 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         AiModel.language = self.ui.comboBox_class_lang.currentText()
         AiModel.detection_device = self.ui.comboBox_detection_dev.currentText()
         AiModel.classification_device = self.ui.comboBox_class_dev.currentText()
-        AiModel.video_downsampling = int(self.ui.lineEdit_video_downsampling.text())
+        AiModel.video_fps = int(self.ui.lineEdit_video_fps.text())
 
         self.accept()

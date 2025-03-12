@@ -39,7 +39,7 @@ class AiModel:
     classification_threshold = 0.5
     detection_threshold = 0.5
     language = "en"
-    video_downsampling = 30
+    video_fps = 1
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -130,6 +130,14 @@ class AiModel:
             return None, None
 
         logger.info("Running detection on video %s ...", video_path)
+        fps = video.get(cv2.CAP_PROP_FPS)
+        if fps == 0:
+            logger.error("Error reading video FPS. Aborting.")
+            return None, None
+
+        logger.debug("Video FPS: %s", fps)
+
+        downsample = int(fps / self.video_fps)
 
         video_filename = os.path.basename(video_path)
         # Initialize frame counter
@@ -140,7 +148,7 @@ class AiModel:
             if not ret:
                 break
 
-            if frame_count % self.video_downsampling:
+            if frame_count % downsample:
                 # Skip frames based on downsample value
                 frame_count += 1
                 continue

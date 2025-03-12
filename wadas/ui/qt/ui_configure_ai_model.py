@@ -95,10 +95,10 @@ class Ui_DialogConfigureAi(object):
 
         self.gridLayout.addWidget(self.label_4, 5, 0, 1, 1)
 
-        self.lineEdit_video_downsampling = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_video_downsampling.setObjectName(u"lineEdit_video_downsampling")
+        self.lineEdit_video_fps = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_video_fps.setObjectName(u"lineEdit_video_fps")
 
-        self.gridLayout.addWidget(self.lineEdit_video_downsampling, 5, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_video_fps, 5, 1, 1, 1)
 
 
         self.retranslateUi(DialogConfigureAi)
@@ -128,6 +128,6 @@ class Ui_DialogConfigureAi(object):
 #endif // QT_CONFIG(tooltip)
         self.label.setText(QCoreApplication.translate("DialogConfigureAi", u"Classification label language", None))
         self.label_errorMEssage.setText("")
-        self.label_4.setText(QCoreApplication.translate("DialogConfigureAi", u"Video downsampling", None))
+        self.label_4.setText(QCoreApplication.translate("DialogConfigureAi", u"Video fps", None))
     # retranslateUi
 
