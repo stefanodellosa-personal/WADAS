@@ -135,9 +135,11 @@ class AiModel:
             logger.error("Error reading video FPS. Aborting.")
             return None, None
 
-        logger.debug("Video FPS: %s", fps)
+        logger.debug("Video original FPS: %s", fps)
 
         downsample = max(int(round(fps / self.video_fps)), 1)
+
+        logger.info("Effective FPS: %s", round(fps / downsample))
 
         video_filename = os.path.basename(video_path)
         # Initialize frame counter
