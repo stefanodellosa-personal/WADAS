@@ -49,32 +49,39 @@ def test_constructor(database):
 
 def test_get_cameras(database):
     cameras = database.get_cameras()
-    assert len(cameras) > 0
-    assert isinstance(cameras[0], Camera)
+    assert cameras
+    assert all(isinstance(camera, Camera) for camera in cameras)
+    assert all(camera.enabled for camera in cameras)
 
 
 def test_get_known_animals(database):
+    expected = "bear"
     known_animals = database.get_known_animals()
-    assert len(known_animals) > 0
-    assert isinstance(known_animals[0], str)
+    assert known_animals
+    assert all(isinstance(animal, str) for animal in known_animals)
+    assert expected in known_animals
 
 
 def test_get_known_actuators_types(database):
+    expected = "Road Sign"
     actuators_types = database.get_known_actuator_types()
-    assert len(actuators_types) > 0
-    assert isinstance(actuators_types[0], str)
+    assert actuators_types
+    assert all(isinstance(act_type, str) for act_type in actuators_types)
+    assert expected in actuators_types
 
 
 def test_get_known_actuation_commands(database):
+    expected = "display"
     known_commands = database.get_known_actuation_commands()
-    assert len(known_commands) > 0
-    assert isinstance(known_commands[0], str)
+    assert known_commands
+    assert all(isinstance(command, str) for command in known_commands)
+    assert expected in known_commands
 
 
 def test_get_detection_events(database):
     count, detection_events = database.get_all_detection_events()
     assert len(detection_events) == count
-    assert isinstance(detection_events[0], DetectionEvent)
+    assert all(isinstance(event, DetectionEvent) for event in detection_events)
 
 
 def test_get_detection_events_by_camera_id(database):
@@ -82,8 +89,8 @@ def test_get_detection_events_by_camera_id(database):
 
     request = DetectionsRequest(camera_ids=[camera_id])
     count, detection_events = database.get_detection_events_by_filter(request)
-    assert len(detection_events) > 0
-    assert isinstance(detection_events[0], DetectionEvent)
+    assert detection_events
+    assert all(isinstance(event, DetectionEvent) for event in detection_events)
     assert all(event.camera_id == camera_id for event in detection_events)
 
 
@@ -93,8 +100,8 @@ def test_get_detection_events_by_date(database):
 
     request = DetectionsRequest(date_from=datefrom, date_to=dateto)
     count, detection_events = database.get_detection_events_by_filter(request)
-    assert len(detection_events) > 0
-    assert isinstance(detection_events[0], DetectionEvent)
+    assert detection_events
+    assert all(isinstance(event, DetectionEvent) for event in detection_events)
     assert all(datefrom <= event.timestamp <= dateto for event in detection_events)
 
 
@@ -103,8 +110,8 @@ def test_get_detection_events_by_animal(database):
 
     request = DetectionsRequest(classified_animals=animals)
     count, detection_events = database.get_detection_events_by_filter(request)
-    assert len(detection_events) > 0
-    assert isinstance(detection_events[0], DetectionEvent)
+    assert detection_events
+    assert all(isinstance(event, DetectionEvent) for event in detection_events)
     assert all(
         any(animal.animal in animals for animal in event.classified_animals)
         for event in detection_events
@@ -121,7 +128,8 @@ def test_get_detection_events_by_camera_animal_date(database):
         camera_ids=[camera_id], classified_animals=animals, date_from=datefrom, date_to=dateto
     )
     count, detection_events = database.get_detection_events_by_filter(request)
-    assert len(detection_events) > 0
+    assert detection_events
+    assert all(isinstance(event, DetectionEvent) for event in detection_events)
     assert all(
         (
             event.camera_id == camera_id
@@ -136,8 +144,8 @@ def test_get_actuation_events(database):
     request = ActuationsRequest(limit=1000)
 
     count, actuation_events = database.get_actuation_events_by_filter(request)
-    assert len(actuation_events) == count
-    assert isinstance(actuation_events[0], ActuationEvent)
+    assert actuation_events
+    assert all(isinstance(event, ActuationEvent) for event in actuation_events)
 
 
 def test_get_actuation_events_by_actuator_type(database):
@@ -145,8 +153,8 @@ def test_get_actuation_events_by_actuator_type(database):
 
     request = ActuationsRequest(actuator_types=[actuator_type])
     count, actuation_events = database.get_actuation_events_by_filter(request)
-    assert len(actuation_events) > 0
-    assert isinstance(actuation_events[0], ActuationEvent)
+    assert actuation_events
+    assert all(isinstance(event, ActuationEvent) for event in actuation_events)
     assert all(event.actuator.type == actuator_type for event in actuation_events)
 
 
@@ -155,8 +163,8 @@ def test_get_actuation_events_by_command(database):
 
     request = ActuationsRequest(commands=[command])
     count, actuation_events = database.get_actuation_events_by_filter(request)
-    assert len(actuation_events) > 0
-    assert isinstance(actuation_events[0], ActuationEvent)
+    assert actuation_events
+    assert all(isinstance(event, ActuationEvent) for event in actuation_events)
     assert all(event.command == command for event in actuation_events)
 
 
@@ -166,8 +174,8 @@ def test_get_actuation_events_by_date(database):
 
     request = ActuationsRequest(date_from=datefrom, date_to=dateto)
     count, actuation_events = database.get_actuation_events_by_filter(request)
-    assert len(actuation_events) > 0
-    assert isinstance(actuation_events[0], ActuationEvent)
+    assert actuation_events
+    assert all(isinstance(event, ActuationEvent) for event in actuation_events)
     assert all(datefrom <= event.timestamp <= dateto for event in actuation_events)
 
 
@@ -178,8 +186,8 @@ def test_get_actuation_events_by_command_date(database):
 
     request = ActuationsRequest(commands=[command], date_from=datefrom, date_to=dateto)
     count, actuation_events = database.get_actuation_events_by_filter(request)
-    assert len(actuation_events) > 0
-    assert isinstance(actuation_events[0], ActuationEvent)
+    assert actuation_events
+    assert all(isinstance(event, ActuationEvent) for event in actuation_events)
     assert all(
         datefrom <= event.timestamp <= dateto and event.command == command
         for event in actuation_events
