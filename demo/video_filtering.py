@@ -56,9 +56,14 @@ class ObjectTracker:
     """Tracks objects and smooths their class predictions over time"""
 
     def __init__(
-        self, process_var=30, measurement_var=1, class_process_var=0.00, class_measurement_var=0.1
+        self,
+        process_var=30,
+        measurement_var=1,
+        class_process_var=0.00,
+        class_measurement_var=0.1,
+        max_missed=5,
     ):
-        self.trackers = {}  # ObjectID -> (KalmanFilter, KalmanClassSmoother)
+        self.trackers = {}  # ObjectID -> (KalmanFilter, KalmanClassSmoother, missed_count)
         self.next_id = 0
 
         # Kalman filter settings
@@ -66,6 +71,7 @@ class ObjectTracker:
         self.measurement_var = measurement_var
         self.class_process_var = class_process_var
         self.class_measurement_var = class_measurement_var
+        self.max_missed = max_missed
 
     def compute_centroid(self, xyxy):
         """Compute centroid of a bounding box"""
@@ -134,9 +140,15 @@ class ObjectTracker:
                         cls: KalmanFilter([p], self.class_process_var, self.class_measurement_var)
                         for cls, p in class_probs.items()
                     },  # Class smoothers
+                    0,  # Missed count
                 )
             else:
                 self.trackers[obj_id][0].extra = {"h": h, "w": w}
+                self.trackers[obj_id] = (
+                    self.trackers[obj_id][0],
+                    self.trackers[obj_id][1],
+                    0,
+                )  # Reset missed count
 
             # Update position
             position_filter = self.trackers[obj_id][0]
@@ -168,16 +180,66 @@ class ObjectTracker:
                 {"id": obj_id, "classification": classification_result, "xyxy": smoothed_pos}
             )
 
+        # Increment missed count for unmatched trackers
+        for obj_id in self.trackers.keys():
+            if obj_id not in [track["id"] for track in updated_tracks]:
+                self.trackers[obj_id] = (
+                    self.trackers[obj_id][0],
+                    self.trackers[obj_id][1],
+                    self.trackers[obj_id][2] + 1,
+                )
+                if self.trackers[obj_id][2] <= self.max_missed:
+                    # Process unmatched tracked objects
+                    position_filter = self.trackers[obj_id][0]
+                    smoothed_pos = position_filter.update(position_filter.x)
+
+                    # Convert smoothed_pos to xyxy
+                    h, w = position_filter.extra["h"], position_filter.extra["w"]
+                    smoothed_pos = [
+                        smoothed_pos[0] - w / 2,
+                        smoothed_pos[1] - h / 2,
+                        smoothed_pos[0] + w / 2,
+                        smoothed_pos[1] + h / 2,
+                    ]
+
+                    # Convert to int
+                    smoothed_pos = [int(p) for p in smoothed_pos]
+
+                    # Update classification
+                    class_filters = self.trackers[obj_id][1]
+                    smoothed_probs = {
+                        cls: class_filters[cls].update([class_filters[cls].x[0]])[0]
+                        for cls in class_filters.keys()
+                    }
+
+                    # Build classification result
+                    logits = np.array(list(smoothed_probs.values()))
+                    labels = list(smoothed_probs.keys())
+                    classification_result = labels[np.argmax(logits)], max(logits)
+
+                    updated_tracks.append(
+                        {
+                            "id": obj_id,
+                            "classification": classification_result,
+                            "xyxy": smoothed_pos,
+                        }
+                    )
+
+        # Remove lost tracks
         self.trackers = {
-            k["id"]: self.trackers[k["id"]] for k in updated_tracks
-        }  # Remove lost tracks
+            k["id"]: self.trackers[k["id"]]
+            for k in updated_tracks
+            if self.trackers[k["id"]][2] <= self.max_missed
+        }
+
         return updated_tracks
 
 
 def draw_bbox(frame, animal, color=(0, 0, 255)):
     """Draw bounding box on frame"""
     x1, y1, x2, y2 = animal["xyxy"]
-    label = f"[{animal['id']}] {animal['classification'][0]}: {animal['classification'][1]:.2f}"
+    # label = f"[{animal['id']}] {animal['classification'][0]}: {animal['classification'][1]:.2f}"
+    label = animal["classification"][0]
     cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
     cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
@@ -185,8 +247,9 @@ def draw_bbox(frame, animal, color=(0, 0, 255)):
 def main(video):
 
     ai_pipeline = AiModel()
-    # ai_pipeline.classification_threshold = 0.0
-    ai_pipeline.video_fps = 5
+    ai_pipeline.classification_threshold = 0.0
+    ai_pipeline.detection_threshold = 0.0
+    ai_pipeline.video_fps = 4
 
     tracker = ObjectTracker()
     idx = 0
