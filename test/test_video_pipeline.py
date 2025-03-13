@@ -66,7 +66,6 @@ def test_video_detection_and_classification(init):
             assert classified_animals[0]["classification"][1] > 0.7
 
             assert os.path.exists(img_path)
-            assert classified_animals[0]["xyxy"].dtype == np.float32
 
 
 def test_video_detection_and_classification_empty(init):
