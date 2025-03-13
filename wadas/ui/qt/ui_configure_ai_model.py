@@ -128,6 +128,6 @@ class Ui_DialogConfigureAi(object):
 #endif // QT_CONFIG(tooltip)
         self.label.setText(QCoreApplication.translate("DialogConfigureAi", u"Classification label language", None))
         self.label_errorMEssage.setText("")
-        self.label_4.setText(QCoreApplication.translate("DialogConfigureAi", u"Video fps", None))
+        self.label_4.setText(QCoreApplication.translate("DialogConfigureAi", u"Video FPS", None))
     # retranslateUi
 
