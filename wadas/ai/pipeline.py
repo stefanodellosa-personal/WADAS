@@ -20,6 +20,7 @@
 import logging
 
 import numpy as np
+import torch
 from PIL import Image
 from PytorchWildlife.data import transforms as pw_trans
 
@@ -102,15 +103,27 @@ class DetectionPipeline:
 
         classification_id = 0
         classified_animals = []
-        for xyxy in results["detections"].xyxy:
-            # Cropping detection result(s) from original image leveraging detected boxes
-            cropped_image = img.crop(xyxy)
 
-            # Performing classification
-            classification_result, detections = self.classify_crop(
-                cropped_image, classification_threshold
-            )
-            if classification_result[0]:
+        tensors = torch.concatenate(
+            [
+                self.classifier.preprocessImage(img.crop(xyxy))
+                for xyxy in results["detections"].xyxy
+            ],
+            axis=0,
+        )
+
+        logits = self.classifier.predictOnBatch(tensors)
+        labels = txt_animalclasses[self.language]
+
+        for idx, xyxy in enumerate(results["detections"].xyxy):
+            # Cropping detection result(s) from original image leveraging detected boxes
+
+            crop_logits = logits[idx, :]
+            detections = {key: val.item() for key, val in zip(labels, crop_logits)}
+            classification_result = [labels[np.argmax(crop_logits)], max(crop_logits)]
+            if max(crop_logits) < classification_threshold:
+                logger.info("Classification value under selected threshold.")
+            else:
                 classified_animals.append(
                     {
                         "id": classification_id,
@@ -122,17 +135,3 @@ class DetectionPipeline:
                 classification_id += 1
 
         return classified_animals
-
-    def classify_crop(self, crop_img, classification_threshold):
-        """Classify animal on a crop (portion of original image)"""
-
-        tensor_cropped = self.classifier.preprocessImage(crop_img)
-        logits = self.classifier.predictOnBatch(tensor_cropped)[0,]
-        labels = txt_animalclasses[self.language]
-
-        detections = {key: val.item() for key, val in zip(labels, logits)}
-        if max(logits) < classification_threshold:
-            logger.info("Classification value under selected threshold.")
-            return ["", 0], detections
-
-        return [labels[np.argmax(logits)], max(logits)], detections
