@@ -15,23 +15,25 @@ class KalmanFilter:
     """Kalman filter for smoothing detection coordinates or class probabilities"""
 
     def __init__(self, initial_value, process_variance=1, measurement_variance=10, extra=None):
-        self.x = np.array(initial_value, dtype=np.float32)  # State estimate
+        self.x = np.array(initial_value, dtype=np.float32)  # State estimate [x, y, vx, vy]
+        self.dim = len(initial_value) // 2  # Dimension of state
         self.P = np.eye(len(initial_value)) * 100.0  # Initial uncertainty
         self.Q = np.eye(len(initial_value)) * process_variance  # Process noise
-        self.R = np.eye(len(initial_value)) * measurement_variance  # Measurement noise
+        self.R = np.eye(len(initial_value[: self.dim])) * measurement_variance  # Measurement noise
         self.extra = extra
 
     def update(self, measurement):
         """Kalman update step"""
-        # Prediction (assume constant velocity)
+        # Prediction
+        self.x[: self.dim] += self.x[self.dim :]  # Update position with velocity
         self.P += self.Q
 
         # Kalman Gain
-        K = self.P @ np.linalg.inv(self.P + self.R)
+        K = self.P[: self.dim, : self.dim] @ np.linalg.inv(self.P[: self.dim, : self.dim] + self.R)
 
         # Update state estimate
-        self.x += K @ (np.array(measurement) - self.x)
-        self.P = (np.eye(len(self.x)) - K) @ self.P
+        self.x[: self.dim] += K @ (np.array(measurement) - self.x[: self.dim])
+        self.P[: self.dim, : self.dim] = (np.eye(self.dim) - K) @ self.P[: self.dim, : self.dim]
 
         return self.x
 
@@ -87,7 +89,7 @@ class ObjectTracker:
         track_boxes = []
         for t in track_ids:
             h, w = self.trackers[t][0].extra["h"], self.trackers[t][0].extra["w"]
-            x, y = self.trackers[t][0].x
+            x, y, _, __ = self.trackers[t][0].x
             xyxy = [x - w / 2, y - h / 2, x + w / 2, y + h / 2]
             track_boxes.append(xyxy)
         detected_boxes = [det["xyxy"] for det in detections]
@@ -134,10 +136,12 @@ class ObjectTracker:
             if obj_id not in self.trackers:
                 self.trackers[obj_id] = (
                     KalmanFilter(
-                        [x, y], self.process_var, self.measurement_var, extra={"h": h, "w": w}
-                    ),  # Position tracker
+                        [x, y, 0, 0], self.process_var, self.measurement_var, extra={"h": h, "w": w}
+                    ),  # Position tracker with speed
                     {
-                        cls: KalmanFilter([p], self.class_process_var, self.class_measurement_var)
+                        cls: KalmanFilter(
+                            [p, 0], self.class_process_var, self.class_measurement_var
+                        )
                         for cls, p in class_probs.items()
                     },  # Class smoothers
                     0,  # Missed count
@@ -191,7 +195,7 @@ class ObjectTracker:
                 if self.trackers[obj_id][2] <= self.max_missed:
                     # Process unmatched tracked objects
                     position_filter = self.trackers[obj_id][0]
-                    smoothed_pos = position_filter.update(position_filter.x)
+                    smoothed_pos = position_filter.update(position_filter.x[:2])
 
                     # Convert smoothed_pos to xyxy
                     h, w = position_filter.extra["h"], position_filter.extra["w"]
