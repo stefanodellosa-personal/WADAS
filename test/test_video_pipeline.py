@@ -32,7 +32,7 @@ def init():
     AiModel.language = "en"
     AiModel.detection_device = "auto"
     AiModel.classification_device = "auto"
-    AiModel.video_downsampling = 30
+    AiModel.video_fps = 1
 
 
 def test_video_detection_and_classification(init):
@@ -43,7 +43,7 @@ def test_video_detection_and_classification(init):
     assert ai_pipeline.language == "en"
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
-    assert ai_pipeline.video_downsampling == 30
+    assert ai_pipeline.video_fps == 1
     assert ai_pipeline.check_model()
 
     # This one is the video of a bear
@@ -77,7 +77,7 @@ def test_video_detection_and_classification_empty(init):
     assert ai_pipeline.language == "en"
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
-    assert ai_pipeline.video_downsampling == 30
+    assert ai_pipeline.video_fps == 1
     assert ai_pipeline.check_model()
     # This one is the video of a waterfall => No animals
     VIDEO_URL = "https://videos.pexels.com/video-files/6981411/6981411-hd_1920_1080_25fps.mp4"
