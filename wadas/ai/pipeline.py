@@ -107,13 +107,16 @@ class DetectionPipeline:
             cropped_image = img.crop(xyxy)
 
             # Performing classification
-            classification_result = self.classify_crop(cropped_image, classification_threshold)
+            classification_result, detections = self.classify_crop(
+                cropped_image, classification_threshold
+            )
             if classification_result[0]:
                 classified_animals.append(
                     {
                         "id": classification_id,
                         "classification": classification_result,
-                        "xyxy": xyxy,
+                        "xyxy": xyxy.astype(int).tolist(),
+                        "class_probs": detections,
                     }
                 )
                 classification_id += 1
@@ -127,8 +130,9 @@ class DetectionPipeline:
         logits = self.classifier.predictOnBatch(tensor_cropped)[0,]
         labels = txt_animalclasses[self.language]
 
+        detections = {key: val.item() for key, val in zip(labels, logits)}
         if max(logits) < classification_threshold:
             logger.info("Classification value under selected threshold.")
-            return ["", 0]
+            return ["", 0], detections
 
-        return [labels[np.argmax(logits)], max(logits)]
+        return [labels[np.argmax(logits)], max(logits)], detections
