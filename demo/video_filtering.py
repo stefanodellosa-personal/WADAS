@@ -105,7 +105,7 @@ class ObjectTracker:
         # Assign IDs
         matches = {}
         for r, c in zip(row_ind, col_ind):
-            if iou_matrix[r, c] > 0.3:  # Threshold for same object
+            if iou_matrix[r, c] > 0.1:  # Threshold for same object
                 matches[c] = track_ids[r]
             else:
                 matches[c] = self.next_id
@@ -253,9 +253,9 @@ def main(video):
     ai_pipeline = AiModel()
     ai_pipeline.classification_threshold = 0.0
     ai_pipeline.detection_threshold = 0.0
-    ai_pipeline.video_fps = 4
+    ai_pipeline.video_fps = 10
 
-    tracker = ObjectTracker()
+    tracker = ObjectTracker(max_missed=10)
     idx = 0
     for result, _detected_image_path, frame_path in ai_pipeline.process_video(video, True):
         frame = np.array(Image.open(frame_path).convert("RGB"))
