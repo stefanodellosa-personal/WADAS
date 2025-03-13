@@ -182,19 +182,21 @@ class ObjectTracker:
 
         return matches
 
-    def update(self, detections: list[dict[any]]) -> list[dict[any]]:
+    def update(self, detections: list[dict[any]], img_size: tuple[int]) -> list[dict[any]]:
         """
         Updates the object tracker with the given detections.
         Args:
             detections (list[dict[any]]): A list of detected objects, where each item is a dict
                                           containing the bounding box coordinates under the
                                           key "xyxy" and the class probabilities
+            img_size (tuple[int]): The size of the image frame.
         Returns:
             list[dict[any]]: A list of updated tracks, where each track is a dictionary
                              containing the track ID, the smoothed bounding box coordinates
                              under the key "xyxy", and the smoothed class probabilities.
         """
 
+        frame_width, frame_height = img_size
         # Compute the detections
         matches = self.associate_detections(detections)
 
@@ -308,6 +310,12 @@ class ObjectTracker:
             k["id"]: self.trackers[k["id"]]
             for k in updated_tracks
             if self.trackers[k["id"]][2] <= self.max_missed
+            and not (
+                k["xyxy"][0] <= 5
+                or k["xyxy"][1] <= 5
+                or k["xyxy"][2] >= frame_width - 5
+                or k["xyxy"][3] >= frame_height - 5
+            )
         }
 
         return updated_tracks

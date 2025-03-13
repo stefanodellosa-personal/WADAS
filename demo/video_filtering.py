@@ -36,7 +36,7 @@ def main(video):
             for animal in classified_animals:
                 draw_bbox(frame, animal)
 
-        tracked_animal = tracker.update(classified_animals)
+        tracked_animal = tracker.update(classified_animals, frame.shape[:2])
 
         if classified_animals:
             for animal in tracked_animal:
