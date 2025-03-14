@@ -17,7 +17,9 @@
 # Date: 2024-10-11
 # Description: This module implements OpenVINO related classes and functionalities.
 
+import numpy as np
 import torch
+from PytorchWildlife.data import transforms as pw_trans
 from PytorchWildlife.models import detection as pw_detection
 from torchvision.transforms import InterpolationMode, transforms
 
@@ -146,6 +148,25 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
         self.model = OVModel("detection_model.xml", device)
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
 
+    def get_class_names(self):
+        """Get class names"""
+        return self.CLASS_NAMES
+
+    def run(self, img_array: np.ndarray, detection_threshold: float):
+        """Run detection model"""
+        # Initializing the Yolo-specific transform for the image
+        transform = pw_trans.MegaDetector_v5_Transform(
+            target_size=self.IMAGE_SIZE,
+            stride=self.STRIDE,
+        )
+
+        # Performing the detection on the single image
+        results = self.single_image_detection(
+            transform(img_array), img_array.shape, None, detection_threshold
+        )
+
+        return results
+
     @staticmethod
     def check_model():
         """Check if detection model is initialized"""
@@ -201,3 +222,11 @@ class Classifier:
         """
         preprocessimage = self.transforms(croppedimage)
         return preprocessimage.unsqueeze(dim=0)
+
+    def predictOnImages(self, images) -> torch.Tensor:
+        """Predict on a single image"""
+        tensor = torch.concatenate(
+            [self.preprocessImage(img) for img in images],
+            axis=0,
+        )
+        return self.predictOnBatch(tensor, withsoftmax=False)
