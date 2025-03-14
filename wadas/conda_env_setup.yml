@@ -30,3 +30,4 @@ dependencies:
       - PytorchWildlife==1.0.2.16
       - pytest==8.3.3
       - openvino==2024.5.0
+      - ray==2.43.0
