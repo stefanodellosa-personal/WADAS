@@ -168,7 +168,7 @@ class AiModel:
         logger.info("Running detection on video %s ...", video_path)
         tracker = ObjectTracker(max_missed=10)
 
-        frames = (x[0] for x in self.get_video_frames(video_path))
+        frames = tuple(frame for frame, _ in self.get_video_frames(video_path))
         tracked_animals = []
 
         # Run the detection model on the video frames
