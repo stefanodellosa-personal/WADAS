@@ -120,8 +120,7 @@ def test_classification(detection_pipeline):
     assert classified_animals[0]["classification"][0] == "bear"
     assert classified_animals[0]["classification"][1].item() > 0.96
 
-    assert classified_animals[0]["xyxy"].flatten().tolist() == [289, 175, 645, 424]
-    assert classified_animals[0]["xyxy"].dtype == np.float32
+    assert classified_animals[0]["xyxy"] == [289, 175, 645, 424]
 
 
 def test_classification_dog_overlapping(detection_pipeline):
@@ -143,8 +142,7 @@ def test_classification_dog_overlapping(detection_pipeline):
     assert classified_animals[0]["classification"][0] == "dog"
     assert classified_animals[0]["classification"][1].item() > 0.84
 
-    assert classified_animals[0]["xyxy"].flatten().tolist() == [554, 368, 1045, 616]
-    assert classified_animals[0]["xyxy"].dtype == np.float32
+    assert classified_animals[0]["xyxy"] == [554, 368, 1045, 616]
 
 
 @pytest.fixture(scope="module")

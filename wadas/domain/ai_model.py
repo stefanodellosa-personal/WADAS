@@ -40,6 +40,7 @@ class AiModel:
     detection_threshold = 0.5
     language = "en"
     video_fps = 1
+    distributed_inference = False
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -52,6 +53,7 @@ class AiModel:
             detection_device=AiModel.detection_device,
             classification_device=AiModel.classification_device,
             language=AiModel.language,
+            distributed_inference=AiModel.distributed_inference,
         )
 
         self.original_image = ""
@@ -115,11 +117,8 @@ class AiModel:
 
         return results, detected_img_path
 
-    def process_video(self, video_path, save_detection_image: bool):
-        """Method to run detection model on provided video."""
-
-        logger.debug("Selected detection device: %s", AiModel.detection_device)
-
+    def get_video_frames(self, video_path):
+        """Method to extract frames from video."""
         try:
             video = cv2.VideoCapture(video_path)
             if not video.isOpened():
@@ -129,7 +128,6 @@ class AiModel:
             logger.error("%s is not a valid video path. Aborting.", video_path)
             return None, None
 
-        logger.info("Running detection on video %s ...", video_path)
         fps = video.get(cv2.CAP_PROP_FPS)
         if fps == 0:
             logger.error("Error reading video FPS. Aborting.")
@@ -141,7 +139,6 @@ class AiModel:
 
         logger.info("Effective FPS: %s", round(fps / downsample))
 
-        video_filename = os.path.basename(video_path)
         # Initialize frame counter
         frame_count = 0
         while True:
@@ -158,6 +155,19 @@ class AiModel:
             # Convert frame to PIL image
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = Image.fromarray(frame)
+
+            yield frame, frame_count
+            frame_count += 1
+
+    def process_video(self, video_path, save_detection_image: bool):
+        """Method to run detection model on provided video."""
+
+        logger.debug("Selected detection device: %s", AiModel.detection_device)
+
+        logger.info("Running detection on video %s ...", video_path)
+        video_filename = os.path.basename(video_path)
+
+        for frame, frame_count in self.get_video_frames(video_path):
 
             results = self.detection_pipeline.run_detection(frame, AiModel.detection_threshold)
 
@@ -180,8 +190,6 @@ class AiModel:
                     yield results, None, None
             else:
                 logger.info("No detected animals for frame %s. Skipping image.", frame_count)
-
-            frame_count += 1
 
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s)."""
