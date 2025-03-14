@@ -223,10 +223,10 @@ class Classifier:
         preprocessimage = self.transforms(croppedimage)
         return preprocessimage.unsqueeze(dim=0)
 
-    def predictOnImages(self, images) -> torch.Tensor:
+    def predictOnImages(self, images, withsoftmax=True) -> torch.Tensor:
         """Predict on a single image"""
         tensor = torch.concatenate(
             [self.preprocessImage(img) for img in images],
             axis=0,
         )
-        return self.predictOnBatch(tensor, withsoftmax=False)
+        return self.predictOnBatch(tensor, withsoftmax=withsoftmax)
