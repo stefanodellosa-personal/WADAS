@@ -149,7 +149,7 @@ class ObjectTracker:
             return {i: self.next_id + i for i in range(len(detections))}  # Assign new IDs
 
         # Compute IoU matrix
-        track_ids = list(self.trackers.keys())
+        track_ids = tuple(self.trackers.keys())
         track_boxes = []
         for t in track_ids:
             h, w = self.trackers[t][0].extra["h"], self.trackers[t][0].extra["w"]
@@ -253,7 +253,7 @@ class ObjectTracker:
 
             # Build classification result
             logits = np.array(list(smoothed_probs.values()))
-            labels = list(smoothed_probs.keys())
+            labels = tuple(smoothed_probs.keys())
             classification_result = labels[np.argmax(logits)], max(logits)
 
             updated_tracks.append(
@@ -261,7 +261,7 @@ class ObjectTracker:
             )
 
         # Increment missed count for unmatched trackers
-        for obj_id in self.trackers.keys():
+        for obj_id in self.trackers:
             if obj_id not in [track["id"] for track in updated_tracks]:
                 self.trackers[obj_id] = (
                     self.trackers[obj_id][0],
@@ -289,12 +289,12 @@ class ObjectTracker:
                     class_filters = self.trackers[obj_id][1]
                     smoothed_probs = {
                         cls: class_filters[cls].update([class_filters[cls].x[0]])[0]
-                        for cls in class_filters.keys()
+                        for cls in class_filters
                     }
 
                     # Build classification result
                     logits = np.array(list(smoothed_probs.values()))
-                    labels = list(smoothed_probs.keys())
+                    labels = tuple(smoothed_probs.keys())
                     classification_result = labels[np.argmax(logits)], max(logits)
 
                     updated_tracks.append(

@@ -25,7 +25,6 @@ def main(video):
     ai_pipeline.video_fps = 10
 
     tracker = ObjectTracker(max_missed=10)
-    idx = 0
     for result, _detected_image_path, frame_path in ai_pipeline.process_video(video, True):
         frame = np.array(Image.open(frame_path).convert("RGB"))
         frame_copy = frame.copy()
@@ -38,15 +37,12 @@ def main(video):
 
         tracked_animal = tracker.update(classified_animals, frame.shape[:2])
 
-        if classified_animals:
+        if tracked_animal:
             for animal in tracked_animal:
                 draw_bbox(frame_copy, animal)
 
         cv2.imshow("Detection & Classification", frame)
         cv2.imshow("Detection & Classification with Tracking", frame_copy)
-        if idx == 0:
-            cv2.waitKey(0)
-        idx += 1
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
