@@ -64,9 +64,17 @@ class DetectionPipeline:
 
     def run_model(self, fn, *args, **kwargs):
         """Method to run model locally or remotely."""
+        is_lst = isinstance(args[0], (list, tuple))
         if self.distributed_inference:
-            return ray.get(fn.remote(*args, **kwargs))
-        return fn(*args, **kwargs)
+            if is_lst:
+                return ray.get([fn.remote(arg0, *args[1:], **kwargs) for arg0 in args[0]])
+            else:
+                return ray.get(fn.remote(*args, **kwargs))
+        else:
+            if is_lst:
+                return [fn(arg0, *args[1:], **kwargs) for arg0 in args[0]]
+            else:
+                return fn(*args, **kwargs)
 
     def set_language(self, language):
         if language not in txt_animalclasses:
@@ -86,15 +94,24 @@ class DetectionPipeline:
 
     def run_detection(self, img: Image, detection_threshold: float):
         """Method to run detection model on provided image."""
+        detection_results = []
+        if isinstance(img, (list, tuple)):
+            # Convert list of images to numpy array
+            img_array = [np.array(_img) for _img in img]
+        else:
+            img_array = [np.array(img)]
 
-        img_array = np.array(img)
+        # Performing the detection on the list of images
 
-        # Performing the detection on the single image
-        results = self.run_model(self.detection_model.run, img_array, detection_threshold)
+        if self.distributed_inference:
+            results_lst = ray.get(
+                [self.detection_model.run.remote(img, detection_threshold) for img in img_array]
+            )
+        else:
+            results_lst = [self.detection_model.run(img, detection_threshold) for img in img_array]
 
-        # Checks for non animal in results and filter them out
-        if results:
-            # Get the index of the animal class
+        for results in results_lst:
+            # Checks for non animal in results and filter them out
             animal_idx = np.where(results["detections"].class_id == self.animal_class_idx)
             # Filter out the non animal detections
             results["labels"] = [
@@ -106,39 +123,53 @@ class DetectionPipeline:
             results["detections"].confidence = results["detections"].confidence[animal_idx]
             results["detections"].class_id = results["detections"].class_id[animal_idx]
 
-        return results
+            detection_results.append(results)
+
+        if len(detection_results) == 1:
+            return detection_results[0]
+        else:
+            return detection_results
 
     def classify(self, img, results, classification_threshold):
         """Method to perform classification on detection result(s)."""
+        if not isinstance(results, (list, tuple)):
+            results = [results]
 
-        if not results:
-            return ""
+        if not isinstance(img, (list, tuple)):
+            img = [img]
 
-        classification_id = 0
-        classified_animals = []
+        if len(img) != len(results):
+            raise ValueError("Number of images and results must match.")
 
-        crops = [img.crop(xyxy) for xyxy in results["detections"].xyxy]
+        class_request = tuple(zip(img, results))
 
-        logits = self.run_model(self.classifier.predictOnImages, crops)
+        logits_lst = self.run_model(self.classifier.predictOnImages, class_request)
         labels = txt_animalclasses[self.language]
+        total_classification = []
+        for logits, res in zip(logits_lst, results):
+            classification_id = 0
+            classified_animals = []
+            for idx, xyxy in enumerate(res["detections"].xyxy):
+                # Cropping detection result(s) from original image leveraging detected boxes
 
-        for idx, xyxy in enumerate(results["detections"].xyxy):
-            # Cropping detection result(s) from original image leveraging detected boxes
+                crop_logits = logits[idx, :]
+                detections = {key: val.item() for key, val in zip(labels, crop_logits)}
+                classification_result = [labels[np.argmax(crop_logits)], max(crop_logits)]
+                if max(crop_logits) < classification_threshold:
+                    logger.info("Classification value under selected threshold.")
+                else:
+                    classified_animals.append(
+                        {
+                            "id": classification_id,
+                            "classification": classification_result,
+                            "xyxy": xyxy.astype(int).tolist(),
+                            "class_probs": detections,
+                        }
+                    )
+                    classification_id += 1
 
-            crop_logits = logits[idx, :]
-            detections = {key: val.item() for key, val in zip(labels, crop_logits)}
-            classification_result = [labels[np.argmax(crop_logits)], max(crop_logits)]
-            if max(crop_logits) < classification_threshold:
-                logger.info("Classification value under selected threshold.")
-            else:
-                classified_animals.append(
-                    {
-                        "id": classification_id,
-                        "classification": classification_result,
-                        "xyxy": xyxy.astype(int).tolist(),
-                        "class_probs": detections,
-                    }
-                )
-                classification_id += 1
+            total_classification.append(classified_animals)
 
-        return classified_animals
+        if len(total_classification) == 1:
+            return total_classification[0]
+        return total_classification
