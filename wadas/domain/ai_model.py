@@ -80,14 +80,6 @@ class AiModel:
         """Method to check if model is initialized."""
         return DetectionPipeline.download_models()
 
-    import logging
-    import os
-
-    from PIL import Image, ImageFile, UnidentifiedImageError
-
-    logger = logging.getLogger(__name__)
-    ImageFile.LOAD_TRUNCATED_IMAGES = True  # Permette di caricare immagini troncate
-
     def process_image(self, img_path, save_detection_image: bool):
         """Method to run detection model on provided image."""
 
