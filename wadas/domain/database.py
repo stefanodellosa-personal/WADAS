@@ -25,7 +25,7 @@ from enum import Enum
 import keyring
 from pymysql import OperationalError
 from sqlalchemy import and_, create_engine, delete, select, text, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, InterfaceError
 from sqlalchemy.exc import OperationalError as SQLiteOperationalError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
@@ -280,54 +280,57 @@ class DataBase(ABC):
 
         logger.debug("Inserting object into db...")
         if session := cls.create_session():
-            foreign_key = []
-            if isinstance(domain_object, DetectionEvent):
-                # If Camera associated to the detection event is not in db abort insertion
-                foreign_key.append(
-                    session.query(ORMCamera.db_id)
-                    .filter(
-                        and_(
-                            ORMCamera.camera_id == domain_object.camera_id,
-                            ORMCamera.deletion_date.is_(None),
-                        )
-                    )
-                    .scalar()
-                )
-                if not foreign_key:
-                    logger.error(
-                        "Unable to add Detection event into db as %s camera id is not found in db.",
-                        domain_object.camera_id,
-                    )
-                    return
-            if isinstance(domain_object, ActuationEvent):
-                # If Actuator associated to the actuation event is not in db abort insertion
-                foreign_key.append(
-                    session.query(ORMActuator.db_id)
-                    .filter(
-                        and_(
-                            ORMActuator.actuator_id == domain_object.actuator_id,
-                            ORMActuator.deletion_date.is_(None),
-                        )
-                    )
-                    .scalar()
-                )
-                if not foreign_key:
-                    logger.error(
-                        "Unable to add Actuation event into db as %s actuator id is not found"
-                        " in db.",
-                        domain_object.actuator_id,
-                    )
-                    return
-                # If detection event associated to the actuation event is not in db abort insertion
-                foreign_key.append(cls.get_detection_event_id(domain_object.detection_event))
-                if not foreign_key[1]:
-                    logger.error(
-                        "Unable to add Actuation event into db as %s detection event id is not"
-                        " found in db.",
-                        domain_object.detection_event,
-                    )
-                    return
             try:
+                foreign_key = []
+                if isinstance(domain_object, DetectionEvent):
+                    # If Camera associated to the detection event is not in db abort insertion
+                    foreign_key.append(
+                        session.query(ORMCamera.db_id)
+                        .filter(
+                            and_(
+                                ORMCamera.camera_id == domain_object.camera_id,
+                                ORMCamera.deletion_date.is_(None),
+                            )
+                        )
+                        .scalar()
+                    )
+                    if not foreign_key:
+                        logger.error(
+                            "Unable to add Detection event into db as %s "
+                            "camera id is not found in db.",
+                            domain_object.camera_id,
+                        )
+                        return
+                if isinstance(domain_object, ActuationEvent):
+                    # If Actuator associated to the actuation event is not in db abort insertion
+                    foreign_key.append(
+                        session.query(ORMActuator.db_id)
+                        .filter(
+                            and_(
+                                ORMActuator.actuator_id == domain_object.actuator_id,
+                                ORMActuator.deletion_date.is_(None),
+                            )
+                        )
+                        .scalar()
+                    )
+                    if not foreign_key:
+                        logger.error(
+                            "Unable to add Actuation event into db as %s actuator id is not found"
+                            " in db.",
+                            domain_object.actuator_id,
+                        )
+                        return
+                    # If detection event associated to the actuation event is not in db
+                    # abort insertion
+                    foreign_key.append(cls.get_detection_event_id(domain_object.detection_event))
+                    if not foreign_key[1]:
+                        logger.error(
+                            "Unable to add Actuation event into db as %s detection event id is not"
+                            " found in db.",
+                            domain_object.detection_event,
+                        )
+                        return
+
                 orm_object = DataBase.domain_to_orm(domain_object, foreign_key)
                 session.add(orm_object)
 
@@ -349,6 +352,11 @@ class DataBase(ABC):
                 logger.exception(
                     "Error while inserting object %s into db.", type(domain_object).__name__
                 )
+            except InterfaceError:
+                session.rollback()
+                logger.error("Database connection lost: %s. Insert operation failed.")
+            finally:
+                session.close()
         else:
             logger.error("Failed to insert object into db as session could not been created.")
 
