@@ -264,12 +264,17 @@ class DataBase(ABC):
                 logger.exception(
                     "SQLAlchemy error occurred while running the query: %s.", str(stmt)
                 )
+            except InterfaceError:
+                session.rollback()
+                logger.error("Database connection lost. Update operation failed.")
             except Exception:
                 # Handle other unexpected errors
                 session.rollback()
                 logger.exception(
                     "SQLAlchemy error occurred while running the query: %s.", str(stmt)
                 )
+            finally:
+                session.close()
         else:
             logger.error("DB session not initialized.")
         return False
@@ -373,18 +378,18 @@ class DataBase(ABC):
             logger.error("Unable to update detection event as detection event not found in db.")
 
         if session := cls.create_session():
-            # Update detection_event table
-            stmt = (
-                update(ORMDetectionEvent)
-                .where(and_(ORMDetectionEvent.db_id == detection_event_db_id))
-                .values(
-                    classification=detection_event.classification,
-                    classification_img_path=detection_event.classification_img_path,
-                )
-            )
-            cls.run_query(stmt)
-
             try:
+                # Update detection_event table
+                stmt = (
+                    update(ORMDetectionEvent)
+                    .where(and_(ORMDetectionEvent.db_id == detection_event_db_id))
+                    .values(
+                        classification=detection_event.classification,
+                        classification_img_path=detection_event.classification_img_path,
+                    )
+                )
+                cls.run_query(stmt)
+
                 if detection_event_db_id:
                     # Create ClassifiedAnimals table entries and link them with detection event
                     for classified_animal in detection_event.classified_animals:
@@ -396,6 +401,9 @@ class DataBase(ABC):
                         session.add(orm_obj)
                     session.commit()
 
+            except InterfaceError:
+                session.rollback()
+                logger.error("Database connection lost: %s. Update operation failed.")
             except SQLAlchemyError:
                 # Rollback the transaction in case of an error
                 session.rollback()
@@ -406,6 +414,8 @@ class DataBase(ABC):
                 logger.exception(
                     "Unexpected error occurred while updating detection event into db."
                 )
+            finally:
+                session.close()
         else:
             logger.error(
                 "Unable to update detection event into db as session could not be created."
@@ -524,6 +534,10 @@ class DataBase(ABC):
                     # Add the actuator to the camera actuators list
                     camera.actuators.append(actuator)
                     session.commit()
+
+                except InterfaceError:
+                    session.rollback()
+                    logger.error("Database connection lost. Update operation failed.")
                 except SQLAlchemyError:
                     # Rollback the transaction in case of an error
                     session.rollback()
@@ -538,6 +552,8 @@ class DataBase(ABC):
                         "Unexpected error occurred while updating actuator "
                         "association to camera into db."
                     )
+                finally:
+                    session.close()
         else:
             logger.debug("No db configured, skipping actuator association insert.")
 
@@ -754,89 +770,104 @@ class DataBase(ABC):
         """Method to align db tables with domain model"""
 
         if session := cls.create_session():
-            # Check if actuators in model are reflected into db
-            for actuator_id in Actuator.actuators:
-                cur_actuator = Actuator.actuators[actuator_id]
-                if actuator_db_id := cls.get_actuator_id(actuator_id):
-                    # Check actuator attributes type, enabled
-                    db_actuator = (
-                        session.query(ORMActuator).filter(ORMActuator.db_id == actuator_db_id).one()
-                    )
-                    if db_actuator.type != cur_actuator.type:
-                        # If type does not match, set to deleted the one in db
-                        cls.update_actuator_by_db_id(actuator_db_id, db_actuator.enabled, True)
-                        # Insert new actuator into db
-                        cls.insert_into_db(cur_actuator)
-                    if db_actuator.enabled != cur_actuator.enabled:
-                        cls.update_actuator(cur_actuator, False)
-                else:
-                    cls.insert_into_db(cur_actuator)
-
-            # Check if cameras in model are reflected into db
-            for camera in cameras:
-                if camera_db_id := cls.get_camera_id(camera.id):
-                    db_camera = (
-                        session.query(ORMCamera).filter(ORMCamera.db_id == camera_db_id).one()
-                    )
-                    if camera.type != db_camera.type:
-                        cls.update_camera_by_db_id(camera_db_id, db_camera.enabled, True)
-                        cls.insert_into_db(camera)
-                    if camera.enabled != db_camera.enabled:
-                        cls.update_camera(camera, False)
-                    if camera.actuators != db_camera.actuators:
-                        # Delete all associations for camera
-                        stmt = delete(camera_actuator_association).where(
-                            camera_actuator_association.c.camera_id == camera_db_id
+            try:
+                # Check if actuators in model are reflected into db
+                for actuator_id in Actuator.actuators:
+                    cur_actuator = Actuator.actuators[actuator_id]
+                    if actuator_db_id := cls.get_actuator_id(actuator_id):
+                        # Check actuator attributes type, enabled
+                        db_actuator = (
+                            session.query(ORMActuator)
+                            .filter(ORMActuator.db_id == actuator_db_id)
+                            .one()
                         )
-                        cls.run_query(stmt)
-                        # Pristine associations for camera
-                        for actuator in camera.actuators:
-                            actuator_db_id = cls.get_actuator_id(actuator.id)
-                            stmt = camera_actuator_association.insert().values(
-                                camera_id=camera_db_id, actuator_id=actuator_db_id
+                        if db_actuator.type != cur_actuator.type:
+                            # If type does not match, set to deleted the one in db
+                            cls.update_actuator_by_db_id(actuator_db_id, db_actuator.enabled, True)
+                            # Insert new actuator into db
+                            cls.insert_into_db(cur_actuator)
+                        if db_actuator.enabled != cur_actuator.enabled:
+                            cls.update_actuator(cur_actuator, False)
+                    else:
+                        cls.insert_into_db(cur_actuator)
+
+                # Check if cameras in model are reflected into db
+                for camera in cameras:
+                    if camera_db_id := cls.get_camera_id(camera.id):
+                        db_camera = (
+                            session.query(ORMCamera).filter(ORMCamera.db_id == camera_db_id).one()
+                        )
+                        if camera.type != db_camera.type:
+                            cls.update_camera_by_db_id(camera_db_id, db_camera.enabled, True)
+                            cls.insert_into_db(camera)
+                        if camera.enabled != db_camera.enabled:
+                            cls.update_camera(camera, False)
+                        if camera.actuators != db_camera.actuators:
+                            # Delete all associations for camera
+                            stmt = delete(camera_actuator_association).where(
+                                camera_actuator_association.c.camera_id == camera_db_id
                             )
-                        cls.run_query(stmt)
-                else:
-                    cls.insert_into_db(camera)
+                            cls.run_query(stmt)
+                            # Pristine associations for camera
+                            for actuator in camera.actuators:
+                                actuator_db_id = cls.get_actuator_id(actuator.id)
+                                stmt = camera_actuator_association.insert().values(
+                                    camera_id=camera_db_id, actuator_id=actuator_db_id
+                                )
+                            cls.run_query(stmt)
+                    else:
+                        cls.insert_into_db(camera)
 
-            # Check if actuators in db match the ones in domain
-            actuator_ids = session.query(ORMActuator.actuator_id).all()
-            actuator_ids_from_db = {actuator_id[0] for actuator_id in actuator_ids}
-            db_extra_actuators_ids = actuator_ids_from_db - Actuator.actuators.keys()
-            for extra_actuator_id in db_extra_actuators_ids:
-                deletion_date_time = get_precise_timestamp()
-                actuator_db_id = cls.get_actuator_id(extra_actuator_id)
-                stmt = (
-                    update(ORMActuator)
-                    .where(ORMActuator.db_id == actuator_db_id)
-                    .values(deletion_date=deletion_date_time)
-                )
-                cls.run_query(stmt)
-                # Delete camera association with actuators, if any
-                stmt = delete(camera_actuator_association).where(
-                    camera_actuator_association.c.actuator_id == extra_actuator_id
-                )
-                cls.run_query(stmt)
+                # Check if actuators in db match the ones in domain
+                actuator_ids = session.query(ORMActuator.actuator_id).all()
+                actuator_ids_from_db = {actuator_id[0] for actuator_id in actuator_ids}
+                db_extra_actuators_ids = actuator_ids_from_db - Actuator.actuators.keys()
+                for extra_actuator_id in db_extra_actuators_ids:
+                    deletion_date_time = get_precise_timestamp()
+                    actuator_db_id = cls.get_actuator_id(extra_actuator_id)
+                    stmt = (
+                        update(ORMActuator)
+                        .where(ORMActuator.db_id == actuator_db_id)
+                        .values(deletion_date=deletion_date_time)
+                    )
+                    cls.run_query(stmt)
+                    # Delete camera association with actuators, if any
+                    stmt = delete(camera_actuator_association).where(
+                        camera_actuator_association.c.actuator_id == extra_actuator_id
+                    )
+                    cls.run_query(stmt)
 
-            # Check if cameras in db match the ones in domain
-            camera_ids = session.query(ORMCamera.camera_id).all()
-            camera_ids_from_db = {camera_id[0] for camera_id in camera_ids}
-            camera_id_from_domain = {camera.id for camera in cameras}
-            db_extra_camera_ids = camera_ids_from_db - camera_id_from_domain
-            for extra_camera_id in db_extra_camera_ids:
-                deletion_date_time = get_precise_timestamp()
-                camera_db_id = cls.get_camera_id(extra_camera_id)
-                stmt = (
-                    update(ORMCamera)
-                    .where(ORMCamera.db_id == camera_db_id)
-                    .values(deletion_date=deletion_date_time)
-                )
-                cls.run_query(stmt)
-                # Delete camera association with actuators, if any
-                stmt = delete(camera_actuator_association).where(
-                    camera_actuator_association.c.camera_id == extra_camera_id
-                )
-                cls.run_query(stmt)
+                # Check if cameras in db match the ones in domain
+                camera_ids = session.query(ORMCamera.camera_id).all()
+                camera_ids_from_db = {camera_id[0] for camera_id in camera_ids}
+                camera_id_from_domain = {camera.id for camera in cameras}
+                db_extra_camera_ids = camera_ids_from_db - camera_id_from_domain
+                for extra_camera_id in db_extra_camera_ids:
+                    deletion_date_time = get_precise_timestamp()
+                    camera_db_id = cls.get_camera_id(extra_camera_id)
+                    stmt = (
+                        update(ORMCamera)
+                        .where(ORMCamera.db_id == camera_db_id)
+                        .values(deletion_date=deletion_date_time)
+                    )
+                    cls.run_query(stmt)
+                    # Delete camera association with actuators, if any
+                    stmt = delete(camera_actuator_association).where(
+                        camera_actuator_association.c.camera_id == extra_camera_id
+                    )
+                    cls.run_query(stmt)
+
+            except InterfaceError:
+                session.rollback()
+                logger.error("Database connection lost. Update operation failed.")
+            except SQLAlchemyError:
+                session.rollback()
+                logger.exception("An error occurred while sanitizing the db.")
+            except Exception:
+                session.rollback()
+                logger.exception("Unexpected error occurred while sanitizing the in db.")
+            finally:
+                session.close()
         else:
             logger.error("Could not sanitize db as session has not been created.")
 
@@ -849,6 +880,10 @@ class DataBase(ABC):
                 return session.execute(stmt)
             else:
                 return None
+
+        except InterfaceError:
+            session.rollback()
+            logger.error("Database connection lost. Update operation failed.")
         except Exception:
             logger.error("Please make sure db is healthy and properly configured.")
             return None
@@ -870,6 +905,10 @@ class DataBase(ABC):
                     username,
                 )
                 return None
+
+        except InterfaceError:
+            session.rollback()
+            logger.error("Database connection lost. Update operation failed.")
         except SQLAlchemyError:
             logger.error("Could not fetch data for user '%s'.", username)
             return None
@@ -894,6 +933,10 @@ class DataBase(ABC):
                     username,
                 )
                 return False
+
+        except InterfaceError:
+            session.rollback()
+            logger.error("Database connection lost: %s. Update operation failed.")
         except SQLAlchemyError:
             session.rollback()
             logger.error("Could not update email for user '%s'.", username)
@@ -919,6 +962,10 @@ class DataBase(ABC):
                     username,
                 )
                 return False
+
+        except InterfaceError:
+            session.rollback()
+            logger.error("Database connection lost: %s. Update operation failed.")
         except SQLAlchemyError:
             session.rollback()
             logger.error("Could not update role for user '%s'.", username)
@@ -948,6 +995,10 @@ class DataBase(ABC):
                     username,
                 )
                 return False
+
+        except InterfaceError:
+            session.rollback()
+            logger.error("Database connection lost: %s. Update operation failed.")
         except SQLAlchemyError:
             session.rollback()
             logger.error("Could not update password for user '%s'.", username)
@@ -974,6 +1025,10 @@ class DataBase(ABC):
                     "Could not delete user %s since session has not been created.", username
                 )
                 return None
+
+        except InterfaceError:
+            session.rollback()
+            logger.error("Database connection lost: %s. Update operation failed.")
         except SQLAlchemyError:
             session.rollback()
             logger.error("Could not delete user '%s'.", username)
