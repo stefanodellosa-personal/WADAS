@@ -154,7 +154,7 @@ class DataBase(ABC):
         if not DataBase.wadas_db:
             return False
 
-        DataBase.wadas_db_engine = create_engine(DataBase.wadas_db.get_connection_string())
+        DataBase.wadas_db_engine = cls.get_engine()
         if log:
             logger.info("%s database initialized.", db_type.value)
         return True
@@ -172,7 +172,15 @@ class DataBase(ABC):
                 raise RuntimeError("The database and db engine have not been initialized.")
             else:
                 logger.debug("Initializing engine...")
-                DataBase.wadas_db_engine = create_engine(DataBase.wadas_db.get_connection_string())
+                DataBase.wadas_db_engine = (
+                    create_engine(DataBase.wadas_db.get_connection_string())
+                    if (DataBase.wadas_db.type == DataBase.DBTypes.SQLITE)
+                    else create_engine(
+                        DataBase.wadas_db.get_connection_string(),
+                        pool_recycle=1800,  # Recycle connection every 30 minutes
+                        pool_pre_ping=True,  # Check if connection is still valid
+                    )
+                )
         return DataBase.wadas_db_engine
 
     @classmethod
@@ -1122,7 +1130,9 @@ class MySQLDataBase(DataBase):
         except OperationalError:
             # If db does not exist, creates it
             logger.info("Creating Database...")
-            temp_engine = create_engine(self.get_connection_string())
+            temp_engine = create_engine(
+                self.get_connection_string(), pool_recycle=1800, pool_pre_ping=True
+            )
             with temp_engine.connect() as conn:
                 conn.execute(f"CREATE DATABASE {self.database_name}")
             logger.info("Database '%s' successfully created.", self.database_name)
@@ -1177,7 +1187,9 @@ class MariaDBDataBase(DataBase):
         """Method to create a new database."""
         logger.info("Creating or verifying the existence of the database...")
 
-        temp_engine = create_engine(self.get_connection_string(create=True))
+        temp_engine = create_engine(
+            self.get_connection_string(create=True), pool_recycle=1800, pool_pre_ping=True
+        )
 
         with temp_engine.connect() as conn:
             # Create db if not already existing
