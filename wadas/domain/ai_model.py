@@ -205,7 +205,21 @@ class AiModel:
             return ""
 
         logger.info("Running classification on %s image...", img_path)
-        img = Image.open(img_path).convert("RGB")
+
+        try:
+            img = Image.open(img_path)
+            img.load()
+        except FileNotFoundError:
+            logger.error("%s is not a valid image path. Aborting.", img_path)
+            return None, None
+        except UnidentifiedImageError:
+            logger.error("%s is not a valid image file. Aborting.", img_path)
+            return None, None
+        except OSError:
+            logger.error("%s could not be opened.", img_path)
+            return None, None
+
+        img = img.convert("RGB")
 
         classified_animals = None
         classified_img_path = None
