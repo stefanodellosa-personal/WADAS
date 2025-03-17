@@ -274,7 +274,7 @@ class DataBase(ABC):
                 )
             except InterfaceError:
                 session.rollback()
-                logger.error("Database connection lost. Update operation failed.")
+                logger.error("Database connection lost. Query operation failed.")
             except Exception:
                 # Handle other unexpected errors
                 session.rollback()
@@ -367,7 +367,7 @@ class DataBase(ABC):
                 )
             except InterfaceError:
                 session.rollback()
-                logger.error("Database connection lost: %s. Insert operation failed.")
+                logger.error("Database connection lost. Insert operation failed.")
             finally:
                 session.close()
         else:
@@ -411,7 +411,7 @@ class DataBase(ABC):
 
             except InterfaceError:
                 session.rollback()
-                logger.error("Database connection lost: %s. Update operation failed.")
+                logger.error("Database connection lost. Update operation failed.")
             except SQLAlchemyError:
                 # Rollback the transaction in case of an error
                 session.rollback()
@@ -545,7 +545,7 @@ class DataBase(ABC):
 
                 except InterfaceError:
                     session.rollback()
-                    logger.error("Database connection lost. Update operation failed.")
+                    logger.error("Database connection lost. Add actuator operation failed.")
                 except SQLAlchemyError:
                     # Rollback the transaction in case of an error
                     session.rollback()
@@ -867,7 +867,7 @@ class DataBase(ABC):
 
             except InterfaceError:
                 session.rollback()
-                logger.error("Database connection lost. Update operation failed.")
+                logger.error("Database connection lost. Sanitize db operation failed.")
             except SQLAlchemyError:
                 session.rollback()
                 logger.exception("An error occurred while sanitizing the db.")
@@ -891,7 +891,7 @@ class DataBase(ABC):
 
         except InterfaceError:
             session.rollback()
-            logger.error("Database connection lost. Update operation failed.")
+            logger.error("Database connection lost. Query operation failed.")
         except Exception:
             logger.error("Please make sure db is healthy and properly configured.")
             return None
@@ -916,7 +916,7 @@ class DataBase(ABC):
 
         except InterfaceError:
             session.rollback()
-            logger.error("Database connection lost. Update operation failed.")
+            logger.error("Database connection lost. Query operation failed.")
         except SQLAlchemyError:
             logger.error("Could not fetch data for user '%s'.", username)
             return None
@@ -944,7 +944,7 @@ class DataBase(ABC):
 
         except InterfaceError:
             session.rollback()
-            logger.error("Database connection lost: %s. Update operation failed.")
+            logger.error("Database connection lost. Update operation failed.")
         except SQLAlchemyError:
             session.rollback()
             logger.error("Could not update email for user '%s'.", username)
@@ -973,7 +973,7 @@ class DataBase(ABC):
 
         except InterfaceError:
             session.rollback()
-            logger.error("Database connection lost: %s. Update operation failed.")
+            logger.error("Database connection lost. Update operation failed.")
         except SQLAlchemyError:
             session.rollback()
             logger.error("Could not update role for user '%s'.", username)
@@ -1006,7 +1006,7 @@ class DataBase(ABC):
 
         except InterfaceError:
             session.rollback()
-            logger.error("Database connection lost: %s. Update operation failed.")
+            logger.error("Database connection lost. Update operation failed.")
         except SQLAlchemyError:
             session.rollback()
             logger.error("Could not update password for user '%s'.", username)
@@ -1036,7 +1036,7 @@ class DataBase(ABC):
 
         except InterfaceError:
             session.rollback()
-            logger.error("Database connection lost: %s. Update operation failed.")
+            logger.error("Database connection lost. Delete user operation failed.")
         except SQLAlchemyError:
             session.rollback()
             logger.error("Could not delete user '%s'.", username)
