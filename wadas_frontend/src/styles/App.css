@@ -87,6 +87,7 @@ th {
 }
 
 .nav-link {
+    padding: 10px;
     margin-right: 10px;
     margin-left: 10px;
     font-weight: 400;
@@ -120,6 +121,10 @@ hr {
     font-size: 14px;
     text-decoration: none;
     color: var(--custom-link-color);
+}
+
+.border-primary {
+    border-color: var(--custom-link-color) !important;
 }
 
 .custom-button {
@@ -199,7 +204,7 @@ hr {
     font-size: 14px;
 }
 
-.custom-input:focus, .custom-datepicker:focus{
+.custom-input:focus, .custom-datepicker:focus {
     outline: none;
     box-shadow: 0 0 0 1px var(--custom-link-color) !important;
     border-color: var(--custom-link-color) !important;

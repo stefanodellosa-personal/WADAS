@@ -1,71 +1,22 @@
-import * as React from 'react';
-import {useEffect, useState} from 'react';
-import 'react-datepicker/dist/react-datepicker.min.css';
-import {Col, Container, Row, Table, Modal, Button} from "react-bootstrap";
-import {Camera, DetectionEvent, ActuationEvent} from "../types/types";
-import {tryWithRefreshing} from "../lib/utils";
-import {downloadImage, fetchActuationEvents} from "../lib/api";
-import {useNavigate} from "react-router-dom";
-import CustomSpinner from "./CustomSpinner";
+import {ActuationEvent, Camera, DetectionEvent} from "../types/types";
+import {Button, Col, Container, Modal, Row, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
+import CustomSpinner from "./CustomSpinner";
 import ActuationEventsModal from "./ActuationEventsModal";
+import * as React from "react";
+import {useState} from "react";
 
-const DetailsContainer = (props: { currentEvent: DetectionEvent | null, cameras: Camera[] }) => {
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+const DetailsContainer = (props: {
+    currentEvent: DetectionEvent | null,
+    cameras: Camera[],
+    actuationEvents: ActuationEvent[],
+    imageUrl: string,
+    loading: boolean
+}) => {
+
     const [showImageModal, setShowImageModal] = useState<boolean>(false);
     const [showActuationModal, setShowActuationModal] = useState<boolean>(false);
-    const [actuationEvents, setActuationEvents] = useState<ActuationEvent[]>([]);
-    const navigate = useNavigate();
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fillImage = async () => {
-            if (!props.currentEvent) {
-                setImageUrl(null);
-                return;
-            }
-
-            setLoading(true);
-            try {
-                const eventId = props.currentEvent.id;
-                const downloadedBlob: Blob = await tryWithRefreshing(() => downloadImage(eventId));
-                setImageUrl(URL.createObjectURL(downloadedBlob));
-            } catch (e) {
-                if (e instanceof Error && e.message.includes("Unauthorized")) {
-                    console.error("Refresh token failed, redirecting to login...");
-                    navigate("/");
-                } else {
-                    setError("Generic Error. Please contact the administrator.");
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const fetchRelatedActuationEvents = async () => {
-            if (props.currentEvent !== null) {
-                const eventId = props.currentEvent.id;
-                try{
-                    const actuationEventsResponse = await tryWithRefreshing(
-                        () => fetchActuationEvents(0, eventId));
-                    setActuationEvents(actuationEventsResponse.data);
-                } catch (e) {
-                    if (e instanceof Error && e.message.includes("Unauthorized")) {
-                        console.error("Refresh token failed, redirecting to login...");
-                        navigate("/");
-                    } else {
-                        setError("Generic Error. Please contact the administrator.");
-                    }
-                } finally {
-                    setLoading(false);
-                }
-            }
-        }
-
-        fillImage();
-        fetchRelatedActuationEvents();
-    }, [props.currentEvent, navigate]);
 
     const handleImageClick = () => {
         setShowImageModal(true);
@@ -76,8 +27,8 @@ const DetailsContainer = (props: { currentEvent: DetectionEvent | null, cameras:
     };
 
     return (
-        <Container style={{height: "40vh"}}>
-            <Row>
+        <Container>
+            <Row className={"d-none d-lg-flex"}>
                 <Col md={6} className="position-relative">
                     {props.currentEvent === null ? (
                         <h5>No event selected</h5>
@@ -98,12 +49,12 @@ const DetailsContainer = (props: { currentEvent: DetectionEvent | null, cameras:
                                             <strong>Classification:</strong> {props.currentEvent.classification ? "yes" : "no"}
                                         </p>
 
-                                        {actuationEvents.length > 0 ? (
+                                        {props.actuationEvents.length > 0 ? (
                                             <Button
                                                 variant="link"
                                                 className="p-0 custom-link-big"
                                                 onClick={handleActuationClick}>
-                                                Related Actuation Events: {actuationEvents.length}
+                                                Related Actuation Events: {props.actuationEvents.length}
                                             </Button>
                                         ) : (
                                             <p>
@@ -149,11 +100,11 @@ const DetailsContainer = (props: { currentEvent: DetectionEvent | null, cameras:
                         <div></div>
                     ) : (
                         <div style={{textAlign: "center", padding: "10px", border: "1px solid #ddd"}}>
-                            {loading ? (
+                            {props.loading ? (
                                 <CustomSpinner/>
-                            ) : imageUrl ? (
+                            ) : props.imageUrl ? (
                                 <img
-                                    src={imageUrl}
+                                    src={props.imageUrl}
                                     alt="Detection"
                                     style={{maxWidth: "100%", maxHeight: "300px", cursor: "pointer"}}
                                     onClick={handleImageClick}
@@ -168,17 +119,16 @@ const DetailsContainer = (props: { currentEvent: DetectionEvent | null, cameras:
 
             <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered size="lg">
                 <Modal.Body className="d-flex justify-content-center">
-                    {imageUrl && <img src={imageUrl} alt="Detection or Classification Image"
-                                      style={{width: "100%", height: "auto"}}/>}
+                    {props.imageUrl && <img src={props.imageUrl} alt="Detection or Classification Image"
+                                            style={{width: "100%", height: "auto"}}/>}
                 </Modal.Body>
             </Modal>
 
-            <ActuationEventsModal actuations={actuationEvents}
+            <ActuationEventsModal actuations={props.actuationEvents}
                                   show={showActuationModal}
                                   onHide={() => setShowActuationModal(false)}>
             </ActuationEventsModal>
-        </Container>
-    );
-};
+        </Container>)
+}
 
 export default DetailsContainer;
