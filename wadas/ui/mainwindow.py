@@ -454,8 +454,21 @@ class MainWindow(QMainWindow):
 
         if OperationMode.cur_operation_mode_type:
             self.ui.label_op_mode.setText(OperationMode.cur_operation_mode_type.value)
+            match OperationMode.cur_operation_mode_type:
+                case OperationMode.OperationModeTypes.TunnelMode:
+                    classification_en_txt = "No"
+                case OperationMode.OperationModeTypes.AnimalDetectionMode:
+                    classification_en_txt = "No"
+                case OperationMode.OperationModeTypes.AnimalDetectionMode:
+                    classification_en_txt = "Yes"
+                case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
+                    classification_en_txt = "Yes (custom)"
+                case _:
+                    classification_en_txt = "Yes"
+            self.ui.label_classification_enablement.setText(classification_en_txt)
         else:
             self.ui.label_op_mode.setText("None")
+            self.ui.label_classification_enablement.setText("")
 
         if OperationMode.cur_operation_mode:
             filename = os.path.basename(OperationMode.cur_operation_mode.last_detection)
