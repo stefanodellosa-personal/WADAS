@@ -22,13 +22,13 @@ import os
 
 import cv2
 import numpy as np
-import PIL
-from PIL import Image
+from PIL import Image, ImageFile, UnidentifiedImageError
 from PytorchWildlife import utils as pw_utils
 
 from wadas.ai import DetectionPipeline
 
 logger = logging.getLogger(__name__)
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 class AiModel:
@@ -39,7 +39,8 @@ class AiModel:
     classification_threshold = 0.5
     detection_threshold = 0.5
     language = "en"
-    video_downsampling = 30
+    video_fps = 1
+    distributed_inference = False
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -52,6 +53,7 @@ class AiModel:
             detection_device=AiModel.detection_device,
             classification_device=AiModel.classification_device,
             language=AiModel.language,
+            distributed_inference=AiModel.distributed_inference,
         )
 
         self.original_image = ""
@@ -85,24 +87,25 @@ class AiModel:
 
         try:
             img = Image.open(img_path)
-            img.verify()
+            img.load()
         except FileNotFoundError:
             logger.error("%s is not a valid image path. Aborting.", img_path)
             return None, None
-        except PIL.UnidentifiedImageError:
+        except UnidentifiedImageError:
             logger.error("%s is not a valid image file. Aborting.", img_path)
+            return None, None
+        except OSError:
+            logger.error("%s could not be opened.", img_path)
             return None, None
 
         logger.info("Running detection on image %s ...", img_path)
 
-        # since .verify() closes the underlying file descriptor we need to re-open the file
-        img = Image.open(img_path).convert("RGB")
+        img = img.convert("RGB")
 
         results = self.detection_pipeline.run_detection(img, AiModel.detection_threshold)
-
         detected_img_path = ""
+
         if len(results["detections"].xyxy) > 0 and save_detection_image:
-            # Saving the detection results
             logger.info("Saving detection results...")
             results["img_id"] = img_path
             pw_utils.save_detection_images(
@@ -111,15 +114,15 @@ class AiModel:
             detected_img_path = os.path.join("detection_output", os.path.basename(img_path))
         else:
             logger.info("No detected animals for %s. Removing image.", img_path)
-            os.remove(img_path)
+            try:
+                os.remove(img_path)
+            except OSError:
+                logger.warning("Could not remove %s", img_path)
 
         return results, detected_img_path
 
-    def process_video(self, video_path, save_detection_image: bool):
-        """Method to run detection model on provided video."""
-
-        logger.debug("Selected detection device: %s", AiModel.detection_device)
-
+    def get_video_frames(self, video_path):
+        """Method to extract frames from video."""
         try:
             video = cv2.VideoCapture(video_path)
             if not video.isOpened():
@@ -129,9 +132,17 @@ class AiModel:
             logger.error("%s is not a valid video path. Aborting.", video_path)
             return None, None
 
-        logger.info("Running detection on video %s ...", video_path)
+        fps = video.get(cv2.CAP_PROP_FPS)
+        if fps == 0:
+            logger.error("Error reading video FPS. Aborting.")
+            return None, None
 
-        video_filename = os.path.basename(video_path)
+        logger.debug("Video original FPS: %s", fps)
+
+        downsample = max(int(round(fps / self.video_fps)), 1)
+
+        logger.info("Effective FPS: %s", round(fps / downsample))
+
         # Initialize frame counter
         frame_count = 0
         while True:
@@ -140,7 +151,7 @@ class AiModel:
             if not ret:
                 break
 
-            if frame_count % self.video_downsampling:
+            if frame_count % downsample:
                 # Skip frames based on downsample value
                 frame_count += 1
                 continue
@@ -148,6 +159,19 @@ class AiModel:
             # Convert frame to PIL image
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = Image.fromarray(frame)
+
+            yield frame, frame_count
+            frame_count += 1
+
+    def process_video(self, video_path, save_detection_image: bool):
+        """Method to run detection model on provided video."""
+
+        logger.debug("Selected detection device: %s", AiModel.detection_device)
+
+        logger.info("Running detection on video %s ...", video_path)
+        video_filename = os.path.basename(video_path)
+
+        for frame, frame_count in self.get_video_frames(video_path):
 
             results = self.detection_pipeline.run_detection(frame, AiModel.detection_threshold)
 
@@ -171,8 +195,6 @@ class AiModel:
             else:
                 logger.info("No detected animals for frame %s. Skipping image.", frame_count)
 
-            frame_count += 1
-
     def classify(self, img_path, results):
         """Method to perform classification on detection result(s)."""
 
@@ -183,7 +205,21 @@ class AiModel:
             return ""
 
         logger.info("Running classification on %s image...", img_path)
-        img = Image.open(img_path).convert("RGB")
+
+        try:
+            img = Image.open(img_path)
+            img.load()
+        except FileNotFoundError:
+            logger.error("%s is not a valid image path. Aborting.", img_path)
+            return None, None
+        except UnidentifiedImageError:
+            logger.error("%s is not a valid image file. Aborting.", img_path)
+            return None, None
+        except OSError:
+            logger.error("%s could not be opened.", img_path)
+            return None, None
+
+        img = img.convert("RGB")
 
         classified_animals = None
         classified_img_path = None
