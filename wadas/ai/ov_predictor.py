@@ -38,7 +38,7 @@ class OVBackend(AutoBackend):
         self.inference_mode = "LATENCY"
         self.ov_compiled_model = core.compile_model(
             ov_model,
-            device_name=ov_device,
+            device_name=ov_device.upper(),
             config={"PERFORMANCE_HINT": self.inference_mode},
         )
 

@@ -196,6 +196,16 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
         """Run detection model"""
         return self.single_image_detection(img_array, None, detection_threshold, None)
 
+    @staticmethod
+    def check_model():
+        """Check if detection model is initialized"""
+        return OVModel.check_model("MDV6b-yolov9c_openvino_model")
+
+    @staticmethod
+    def download_model(force: bool = False):
+        """Check if model is initialized"""
+        return OVModel.download_model("MDV6b-yolov9c_openvino_model", force)
+
 
 class Classifier:
     """Classifier class for classification model"""
