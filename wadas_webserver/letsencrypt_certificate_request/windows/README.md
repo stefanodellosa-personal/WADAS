@@ -1,6 +1,7 @@
 # Let's Encrypt Certificate Request Process [Windows]
 
 ### Prerequisites
+- Windows 10/11
 - Python3 installed and configured in $PATH variable
 - Machine's IP Address and Port 80 reachable from Internet (for Let's Encrypt validation phase)
 
