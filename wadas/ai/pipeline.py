@@ -23,7 +23,12 @@ import numpy as np
 import ray
 from PIL import Image
 
-from wadas.ai.models import Classifier, OVMegaDetectorV5, txt_animalclasses
+from wadas.ai.models import (
+    Classifier,
+    OVMegaDetectorV5,
+    OVMegaDetectorV6,
+    txt_animalclasses,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +42,7 @@ class DetectionPipeline:
         classification_device="auto",
         language="en",
         distributed_inference=False,
+        megadetector_version="v5",
     ):
         self.detection_device = detection_device
         self.classification_device = classification_device
@@ -46,7 +52,13 @@ class DetectionPipeline:
 
         # Initializing the MegaDetectorV5 model for image detection
         logger.info("Initializing detection model to device %s...", self.detection_device)
-        self.detection_model = self.initialize_model(OVMegaDetectorV5, device=self.detection_device)
+        if megadetector_version == "v5":
+            detection_csl = OVMegaDetectorV5
+        elif megadetector_version == "v6":
+            detection_csl = OVMegaDetectorV6
+        else:
+            raise ValueError("Invalid MegaDetector version: " + megadetector_version)
+        self.detection_model = self.initialize_model(detection_csl, device=self.detection_device)
         # Load classification model
         logger.info("Loading classification model to device %s...", self.classification_device)
         self.classifier = self.initialize_model(Classifier, device=self.classification_device)
