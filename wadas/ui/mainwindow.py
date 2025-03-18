@@ -459,8 +459,6 @@ class MainWindow(QMainWindow):
                     classification_en_txt = "No"
                 case OperationMode.OperationModeTypes.AnimalDetectionMode:
                     classification_en_txt = "No"
-                case OperationMode.OperationModeTypes.AnimalDetectionMode:
-                    classification_en_txt = "Yes"
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
                     classification_en_txt = "Yes (custom)"
                 case _:
