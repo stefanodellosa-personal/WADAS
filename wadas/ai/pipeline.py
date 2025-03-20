@@ -76,17 +76,12 @@ class DetectionPipeline:
 
     def run_model(self, fn, *args, **kwargs):
         """Method to run model locally or remotely."""
-        is_lst = isinstance(args[0], (list, tuple))
-        if self.distributed_inference:
-            if is_lst:
-                return ray.get([fn.remote(arg0, *args[1:], **kwargs) for arg0 in args[0]])
-            else:
-                return ray.get(fn.remote(*args, **kwargs))
+        func = fn.remote if self.distributed_inference else fn
+        if isinstance(args[0], (list, tuple)):
+            result = [func(arg0, *args[1:], **kwargs) for arg0 in args[0]]
         else:
-            if is_lst:
-                return [fn(arg0, *args[1:], **kwargs) for arg0 in args[0]]
-            else:
-                return fn(*args, **kwargs)
+            result = func(*args, **kwargs)
+        return ray.get(result) if self.distributed_inference else result
 
     def set_language(self, language):
         if language not in txt_animalclasses:
@@ -114,13 +109,9 @@ class DetectionPipeline:
             img_array = [np.array(img)]
 
         # Performing the detection on the list of images
-
-        if self.distributed_inference:
-            results_lst = ray.get(
-                [self.detection_model.run.remote(img, detection_threshold) for img in img_array]
-            )
-        else:
-            results_lst = [self.detection_model.run(img, detection_threshold) for img in img_array]
+        results_lst = self.run_model(
+            self.detection_model.run, img_array, detection_threshold=detection_threshold
+        )
 
         for results in results_lst:
             # Checks for non animal in results and filter them out
