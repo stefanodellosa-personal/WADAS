@@ -41,6 +41,7 @@ class AiModel:
     language = "en"
     video_fps = 1
     distributed_inference = False
+    detection_version = "v5"
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -54,6 +55,7 @@ class AiModel:
             classification_device=AiModel.classification_device,
             language=AiModel.language,
             distributed_inference=AiModel.distributed_inference,
+            megadetector_version=AiModel.detection_version,
         )
 
         self.original_image = ""
