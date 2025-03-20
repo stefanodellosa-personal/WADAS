@@ -101,7 +101,7 @@ def test_offline_video_detection_and_classification(init):
     assert ai_pipeline.check_model()
 
     # This one is the video of a bear
-    VIDEO_URL = "https://videos.pexels.com/video-files/857097/857097-hd_1280_720_30fps.mp4"
+    VIDEO_URL = "https://videos.pexels.com/video-files/7723475/7723475-hd_1920_1080_25fps.mp4"
     for classified_animals in ai_pipeline.process_video_offline(VIDEO_URL):
 
         assert classified_animals is not None
