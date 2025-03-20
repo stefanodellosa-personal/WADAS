@@ -62,7 +62,7 @@ class OVModel:
     @staticmethod
     def check_model(model_name):
         """Check if model is initialized"""
-        return os.path.isfile(os.path.join(__model_folder__, model_name))
+        return os.path.exists(os.path.join(__model_folder__, model_name))
 
     @staticmethod
     def download_model(model_name, force: bool = False):

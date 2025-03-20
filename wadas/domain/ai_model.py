@@ -22,14 +22,14 @@ import os
 
 import cv2
 import numpy as np
-import PIL
-from PIL import Image
+from PIL import Image, ImageFile, UnidentifiedImageError
 from PytorchWildlife import utils as pw_utils
 
 from wadas.ai import DetectionPipeline
 from wadas.ai.object_tracker import ObjectTracker
 
 logger = logging.getLogger(__name__)
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 class AiModel:
@@ -42,6 +42,7 @@ class AiModel:
     language = "en"
     video_fps = 1
     distributed_inference = False
+    detection_version = "v5"
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -55,6 +56,7 @@ class AiModel:
             classification_device=AiModel.classification_device,
             language=AiModel.language,
             distributed_inference=AiModel.distributed_inference,
+            megadetector_version=AiModel.detection_version,
         )
 
         self.original_image = ""
@@ -88,24 +90,25 @@ class AiModel:
 
         try:
             img = Image.open(img_path)
-            img.verify()
+            img.load()
         except FileNotFoundError:
             logger.error("%s is not a valid image path. Aborting.", img_path)
             return None, None
-        except PIL.UnidentifiedImageError:
+        except UnidentifiedImageError:
             logger.error("%s is not a valid image file. Aborting.", img_path)
+            return None, None
+        except OSError:
+            logger.error("%s could not be opened.", img_path)
             return None, None
 
         logger.info("Running detection on image %s ...", img_path)
 
-        # since .verify() closes the underlying file descriptor we need to re-open the file
-        img = Image.open(img_path).convert("RGB")
+        img = img.convert("RGB")
 
         results = self.detection_pipeline.run_detection(img, AiModel.detection_threshold)
-
         detected_img_path = ""
+
         if len(results["detections"].xyxy) > 0 and save_detection_image:
-            # Saving the detection results
             logger.info("Saving detection results...")
             results["img_id"] = img_path
             pw_utils.save_detection_images(
@@ -114,7 +117,10 @@ class AiModel:
             detected_img_path = os.path.join("detection_output", os.path.basename(img_path))
         else:
             logger.info("No detected animals for %s. Removing image.", img_path)
-            os.remove(img_path)
+            try:
+                os.remove(img_path)
+            except OSError:
+                logger.warning("Could not remove %s", img_path)
 
         return results, detected_img_path
 
@@ -228,7 +234,21 @@ class AiModel:
             return ""
 
         logger.info("Running classification on %s image...", img_path)
-        img = Image.open(img_path).convert("RGB")
+
+        try:
+            img = Image.open(img_path)
+            img.load()
+        except FileNotFoundError:
+            logger.error("%s is not a valid image path. Aborting.", img_path)
+            return None, None
+        except UnidentifiedImageError:
+            logger.error("%s is not a valid image file. Aborting.", img_path)
+            return None, None
+        except OSError:
+            logger.error("%s could not be opened.", img_path)
+            return None, None
+
+        img = img.convert("RGB")
 
         classified_animals = None
         classified_img_path = None
