@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
 )
 
 from wadas.domain.ai_model_downloader import AiModelsDownloader
+from wadas.ui.ai_model_downloader_selector_dialog import Dialog_AiModelDownloaderSelector
 from wadas.ui.qt.ui_ai_model_download import Ui_AiModelDownloadDialog
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -53,6 +54,15 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         self.ui.lineEdit_token.textChanged.connect(self.validate)
         self.ui.pushButton_download.clicked.connect(self.download_models)
         self.ui.pushButton_cancel.clicked.connect(self.cancel_download)
+        self.ui.pushButton_select_model_version.clicked.connect(self.on_select_model_version_clicked)
+
+    def on_select_model_version_clicked(self):
+        """Method to select Ai model versions to download"""
+
+        dialog = Dialog_AiModelDownloaderSelector()
+        if not dialog.exec():
+            # Go for default versions
+            pass
 
     def download_models(self):
         """Method to trigger the model download"""

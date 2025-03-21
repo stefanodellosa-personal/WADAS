@@ -28,6 +28,7 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox
 from wadas.ai.models import txt_animalclasses
 from wadas.domain.ai_model import AiModel
 from wadas.ui.qt.ui_configure_ai_model import Ui_DialogConfigureAi
+from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 det_models_dir_path = os.path.join(module_dir_path, "..", "..", "model", "detection")
@@ -59,6 +60,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.lineEdit_classificationThreshold.textChanged.connect(self.validate_data)
         self.ui.lineEdit_detectionThreshold.textChanged.connect(self.validate_data)
         self.ui.lineEdit_video_fps.textChanged.connect(self.validate_data)
+        self.ui.pushButton_download_models.clicked.connect(self.on_download_models_clicked)
 
         self.validate_data()
 
@@ -110,6 +112,12 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
             if bin_files:
                 model_version = bin_files[0].stem  # Remove .bin extension
                 self.ui.comboBox_classification_model_version.addItem(model_version)
+
+    def on_download_models_clicked(self):
+        """Method to trigger the download of Ai Models"""
+
+        ai_model_download_dlg = AiModelDownloadDialog()
+        ai_model_download_dlg.exec()
 
     def validate_data(self):
         """Method to validate input values."""

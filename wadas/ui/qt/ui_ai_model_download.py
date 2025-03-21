@@ -23,52 +23,66 @@ class Ui_AiModelDownloadDialog(object):
     def setupUi(self, AiModelDownloadDialog):
         if not AiModelDownloadDialog.objectName():
             AiModelDownloadDialog.setObjectName(u"AiModelDownloadDialog")
-        AiModelDownloadDialog.resize(399, 197)
+        AiModelDownloadDialog.resize(399, 227)
         self.gridLayoutWidget = QWidget(AiModelDownloadDialog)
         self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(10, 10, 381, 181))
+        self.gridLayoutWidget.setGeometry(QRect(10, 10, 381, 201))
         self.gridLayout = QGridLayout(self.gridLayoutWidget)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.progressBar = QProgressBar(self.gridLayoutWidget)
-        self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setValue(24)
+        self.label_3 = QLabel(self.gridLayoutWidget)
+        self.label_3.setObjectName(u"label_3")
 
-        self.gridLayout.addWidget(self.progressBar, 4, 0, 1, 2)
+        self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.lineEdit_token = QLineEdit(self.gridLayoutWidget)
+        self.lineEdit_token.setObjectName(u"lineEdit_token")
+        self.lineEdit_token.setEchoMode(QLineEdit.EchoMode.Password)
 
-        self.gridLayout.addItem(self.verticalSpacer, 5, 0, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_token, 5, 0, 1, 2)
 
         self.label = QLabel(self.gridLayoutWidget)
         self.label.setObjectName(u"label")
 
-        self.gridLayout.addWidget(self.label, 2, 0, 1, 2)
+        self.gridLayout.addWidget(self.label, 4, 0, 1, 2)
 
-        self.pushButton_cancel = QPushButton(self.gridLayoutWidget)
-        self.pushButton_cancel.setObjectName(u"pushButton_cancel")
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout.addWidget(self.pushButton_cancel, 6, 0, 1, 1)
-
-        self.pushButton_download = QPushButton(self.gridLayoutWidget)
-        self.pushButton_download.setObjectName(u"pushButton_download")
-
-        self.gridLayout.addWidget(self.pushButton_download, 6, 1, 1, 1)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout.addItem(self.verticalSpacer_2, 1, 0, 1, 1)
+        self.gridLayout.addItem(self.verticalSpacer, 7, 0, 1, 1)
 
         self.label_2 = QLabel(self.gridLayoutWidget)
         self.label_2.setObjectName(u"label_2")
 
         self.gridLayout.addWidget(self.label_2, 0, 0, 1, 2)
 
-        self.lineEdit_token = QLineEdit(self.gridLayoutWidget)
-        self.lineEdit_token.setObjectName(u"lineEdit_token")
-        self.lineEdit_token.setEchoMode(QLineEdit.EchoMode.Password)
+        self.pushButton_download = QPushButton(self.gridLayoutWidget)
+        self.pushButton_download.setObjectName(u"pushButton_download")
 
-        self.gridLayout.addWidget(self.lineEdit_token, 3, 0, 1, 2)
+        self.gridLayout.addWidget(self.pushButton_download, 8, 1, 1, 1)
+
+        self.pushButton_select_model_version = QPushButton(self.gridLayoutWidget)
+        self.pushButton_select_model_version.setObjectName(u"pushButton_select_model_version")
+
+        self.gridLayout.addWidget(self.pushButton_select_model_version, 2, 1, 1, 1)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout.addItem(self.verticalSpacer_2, 1, 0, 1, 1)
+
+        self.pushButton_cancel = QPushButton(self.gridLayoutWidget)
+        self.pushButton_cancel.setObjectName(u"pushButton_cancel")
+
+        self.gridLayout.addWidget(self.pushButton_cancel, 8, 0, 1, 1)
+
+        self.progressBar = QProgressBar(self.gridLayoutWidget)
+        self.progressBar.setObjectName(u"progressBar")
+        self.progressBar.setValue(24)
+
+        self.gridLayout.addWidget(self.progressBar, 6, 0, 1, 2)
+
+        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout.addItem(self.verticalSpacer_3, 3, 0, 1, 1)
 
 
         self.retranslateUi(AiModelDownloadDialog)
@@ -78,9 +92,11 @@ class Ui_AiModelDownloadDialog(object):
 
     def retranslateUi(self, AiModelDownloadDialog):
         AiModelDownloadDialog.setWindowTitle(QCoreApplication.translate("AiModelDownloadDialog", u"Download AI Models", None))
+        self.label_3.setText(QCoreApplication.translate("AiModelDownloadDialog", u"Select model(s) version (optional)", None))
         self.label.setText(QCoreApplication.translate("AiModelDownloadDialog", u"Insert your Hugging Face access token:", None))
-        self.pushButton_cancel.setText(QCoreApplication.translate("AiModelDownloadDialog", u"Cancel", None))
-        self.pushButton_download.setText(QCoreApplication.translate("AiModelDownloadDialog", u"Download Models", None))
         self.label_2.setText(QCoreApplication.translate("AiModelDownloadDialog", u"Ai Model files not found. Download is required to let WADAS work.", None))
+        self.pushButton_download.setText(QCoreApplication.translate("AiModelDownloadDialog", u"Download Models", None))
+        self.pushButton_select_model_version.setText(QCoreApplication.translate("AiModelDownloadDialog", u"Select version", None))
+        self.pushButton_cancel.setText(QCoreApplication.translate("AiModelDownloadDialog", u"Cancel", None))
     # retranslateUi
 
