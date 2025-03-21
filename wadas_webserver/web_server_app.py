@@ -28,7 +28,6 @@ from fastapi.responses import RedirectResponse
 from jose import JWTError, jwt
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse, Response
-from starlette.staticfiles import StaticFiles
 
 from wadas_webserver.database import Database
 from wadas_webserver.server_config import ServerConfig
@@ -250,8 +249,16 @@ async def export_filtered_actuations(
 frontend_path = Path(__file__).parent / "frontend"
 os.makedirs(frontend_path, exist_ok=True)
 
-app.mount(
-    "/",
-    StaticFiles(directory=os.path.join(frontend_path), html=True),
-    name="frontend",
-)
+
+@app.get("/{full_path:path}")
+async def catch_all(full_path: str):
+    static_file = frontend_path / full_path
+    if static_file.exists() and static_file.is_file():
+        return FileResponse(static_file)
+
+    # serve index.html for every path to allow React to handle the routes
+    index_path = frontend_path / "index.html"
+    if not index_path.exists():
+        raise HTTPException(status_code=404, detail="Frontend not found")
+
+    return FileResponse(index_path)
