@@ -25,6 +25,7 @@ import sys
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 from packaging.version import Version
+from pathlib import Path
 import uuid
 
 import keyring
@@ -469,9 +470,10 @@ class MainWindow(QMainWindow):
             self.ui.label_classification_enablement.setText("")
 
         if OperationMode.cur_operation_mode:
-            filename = os.path.basename(OperationMode.cur_operation_mode.last_detection)
-            last_dir = os.path.basename(os.path.dirname(OperationMode.cur_operation_mode.last_detection))
-            self.ui.label_last_detection.setText(f"{last_dir}/{filename}")
+            path = Path(OperationMode.cur_operation_mode.last_detection)
+            filename = path.name
+            last_dir = path.parent.name
+            self.ui.label_last_detection.setText(os.path.join(last_dir, filename))
             self.ui.label_classified_animal.setText(
                 str(OperationMode.cur_operation_mode.last_classified_animals_str)
             )
