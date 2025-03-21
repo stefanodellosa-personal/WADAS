@@ -24,6 +24,7 @@ from PytorchWildlife.models import detection as pw_detection
 from torchvision.transforms import InterpolationMode, transforms
 
 from wadas.ai.openvino_model import OVModel
+from wadas.ai.ov_predictor import OVPredictor
 
 txt_animalclasses = {
     "fr": [
@@ -148,24 +149,17 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
         self.model = OVModel("detection_model.xml", device)
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
 
+        self.transform = pw_trans.MegaDetector_v5_Transform(
+            target_size=self.IMAGE_SIZE, stride=self.STRIDE
+        )
+
     def get_class_names(self):
         """Get class names"""
         return self.CLASS_NAMES
 
     def run(self, img_array: np.ndarray, detection_threshold: float):
         """Run detection model"""
-        # Initializing the Yolo-specific transform for the image
-        transform = pw_trans.MegaDetector_v5_Transform(
-            target_size=self.IMAGE_SIZE,
-            stride=self.STRIDE,
-        )
-
-        # Performing the detection on the single image
-        results = self.single_image_detection(
-            transform(img_array), img_array.shape, None, detection_threshold
-        )
-
-        return results
+        return self.single_image_detection(img_array, None, detection_threshold, None)
 
     @staticmethod
     def check_model():
@@ -176,6 +170,41 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
     def download_model(force: bool = False):
         """Check if model is initialized"""
         return OVModel.download_model("detection_model", force)
+
+
+class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
+    """MegaDetectorV6 class for detection model"""
+
+    IMAGE_SIZE = 640
+
+    def __init__(self, device):
+        self.predictor = OVPredictor(ov_device=device)
+        self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
+
+        self.predictor.setup_model("MDV6b-yolov9c_openvino_model", verbose=False)
+
+        self.predictor.args.imgsz = self.IMAGE_SIZE
+        self.predictor.args.save = (
+            False  # Will see if we want to use ultralytics native inference saving functions.
+        )
+
+    def get_class_names(self):
+        """Get class names"""
+        return self.CLASS_NAMES
+
+    def run(self, img_array: np.ndarray, detection_threshold: float):
+        """Run detection model"""
+        return self.single_image_detection(img_array, None, detection_threshold, None)
+
+    @staticmethod
+    def check_model():
+        """Check if detection model is initialized"""
+        return OVModel.check_model("MDV6b-yolov9c_openvino_model")
+
+    @staticmethod
+    def download_model(force: bool = False):
+        """Check if model is initialized"""
+        return OVModel.download_model("MDV6b-yolov9c_openvino_model", force)
 
 
 class Classifier:
@@ -223,10 +252,13 @@ class Classifier:
         preprocessimage = self.transforms(croppedimage)
         return preprocessimage.unsqueeze(dim=0)
 
-    def predictOnImages(self, images, withsoftmax=True) -> torch.Tensor:
+    def predictOnImages(self, request, withsoftmax=True) -> torch.Tensor:
+        img, results = request
+        if results["detections"].xyxy.shape[0] == 0:
+            return
         """Predict on a single image"""
         tensor = torch.concatenate(
-            [self.preprocessImage(img) for img in images],
+            [self.preprocessImage(img.crop(xyxy)) for xyxy in results["detections"].xyxy],
             axis=0,
         )
         return self.predictOnBatch(tensor, withsoftmax=withsoftmax)
