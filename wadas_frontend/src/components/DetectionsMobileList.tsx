@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useRef, useState} from "react";
+import {useRef} from "react";
 import {Card, Container} from "react-bootstrap";
 import {Camera, DetectionEvent} from "../types/types";
 import {DateTime} from "luxon";
@@ -25,8 +25,13 @@ const DetectionsMobileList = (props: {
     };
 
     return (
-        <Container className="h-100 p-0">
-            <div style={{display: "flex", flexDirection: "column", height: "75vh", marginBottom: "40px"}}>
+        <Container className="p-0">
+            <div style={{display: "flex", flexDirection: "column", height: "80dvh"}}>
+                <PaginationBar
+                    currentPage={props.currentPage}
+                    totalPages={props.totalPages}
+                    onPageChange={handlePageChange}
+                />
                 <div ref={scrollRef} style={{overflowY: "auto", flexGrow: 1, paddingRight: "5px"}}>
                     {props.detections.map((item) => {
                         const camera = props.knownCameras.find((camera) => camera.id === item.camera_id);
@@ -58,12 +63,6 @@ const DetectionsMobileList = (props: {
                     })}
                 </div>
             </div>
-
-            <PaginationBar
-                currentPage={props.currentPage}
-                totalPages={props.totalPages}
-                onPageChange={handlePageChange}
-            />
         </Container>
     );
 };
