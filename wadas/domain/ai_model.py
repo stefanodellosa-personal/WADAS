@@ -43,6 +43,7 @@ class AiModel:
     video_fps = 1
     distributed_inference = False
     detection_version = "v5"
+    classification_version = "v1.2"
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection

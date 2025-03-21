@@ -110,15 +110,15 @@ class Ui_DialogConfigureAi(object):
 
         self.gridLayout.addWidget(self.label_6, 1, 0, 1, 1)
 
-        self.comboBox = QComboBox(self.gridLayoutWidget)
-        self.comboBox.setObjectName(u"comboBox")
+        self.comboBox_detection_model_version = QComboBox(self.gridLayoutWidget)
+        self.comboBox_detection_model_version.setObjectName(u"comboBox_detection_model_version")
 
-        self.gridLayout.addWidget(self.comboBox, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.comboBox_detection_model_version, 0, 1, 1, 1)
 
-        self.comboBox_2 = QComboBox(self.gridLayoutWidget)
-        self.comboBox_2.setObjectName(u"comboBox_2")
+        self.comboBox_classification_model_version = QComboBox(self.gridLayoutWidget)
+        self.comboBox_classification_model_version.setObjectName(u"comboBox_classification_model_version")
 
-        self.gridLayout.addWidget(self.comboBox_2, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.comboBox_classification_model_version, 1, 1, 1, 1)
 
 
         self.retranslateUi(DialogConfigureAi)

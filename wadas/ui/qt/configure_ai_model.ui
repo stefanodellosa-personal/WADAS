@@ -153,10 +153,10 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QComboBox" name="comboBox"/>
+     <widget class="QComboBox" name="comboBox_detection_model_version"/>
     </item>
     <item row="1" column="1">
-     <widget class="QComboBox" name="comboBox_2"/>
+     <widget class="QComboBox" name="comboBox_classification_model_version"/>
     </item>
    </layout>
   </widget>
