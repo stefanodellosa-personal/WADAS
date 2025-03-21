@@ -52,12 +52,16 @@ class DetectionPipeline:
 
         # Initializing the MegaDetectorV5 model for image detection
         logger.info("Initializing detection model to device %s...", self.detection_device)
-        if megadetector_version == "v5":
-            detection_csl = OVMegaDetectorV5
-        elif megadetector_version == "v6":
-            detection_csl = OVMegaDetectorV6
-        else:
-            raise ValueError("Invalid MegaDetector version: " + megadetector_version)
+        match megadetector_version:
+            case "MDV5-yolov5":
+                detection_csl = OVMegaDetectorV5
+            case "MDV6b-yolov9c":
+                detection_csl = OVMegaDetectorV6
+            case "MDV6-yolov10n":
+                detection_csl = OVMegaDetectorV6
+            case _:
+                raise ValueError("Invalid MegaDetector version: " + megadetector_version)
+
         self.detection_model = self.initialize_model(detection_csl, device=self.detection_device)
         # Load classification model
         logger.info("Loading classification model to device %s...", self.classification_device)
