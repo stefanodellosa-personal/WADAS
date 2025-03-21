@@ -471,9 +471,7 @@ class MainWindow(QMainWindow):
 
         if OperationMode.cur_operation_mode:
             path = Path(OperationMode.cur_operation_mode.last_detection)
-            filename = path.name
-            last_dir = path.parent.name
-            self.ui.label_last_detection.setText(os.path.join(last_dir, filename))
+            self.ui.label_last_detection.setText(os.path.join(path.parent.name, path.name))
             self.ui.label_classified_animal.setText(
                 str(OperationMode.cur_operation_mode.last_classified_animals_str)
             )
