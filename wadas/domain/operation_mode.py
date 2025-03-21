@@ -72,7 +72,6 @@ class OperationMode(QObject):
         self.type = None
         self.ai_model = None
         self.last_detection = ""
-        self.last_classification = ""
         self.last_classified_animals_str = ""
         self.camera_thread = []
         self.ftp_thread = None
@@ -152,7 +151,7 @@ class OperationMode(QObject):
                 detection_event.original_image, detection_event.detected_animals
             )
             if classified_img_path and classified_animals:
-                self.last_classification = classified_img_path
+                self.last_detection = classified_img_path
                 self._format_classified_animals_string(classified_animals)
                 detection_event.classified_animals = classified_animals
                 detection_event.classification_img_path = classified_img_path
