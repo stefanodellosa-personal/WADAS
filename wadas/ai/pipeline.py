@@ -20,10 +20,15 @@
 import logging
 
 import numpy as np
+import ray
 from PIL import Image
-from PytorchWildlife.data import transforms as pw_trans
 
-from wadas.ai.models import Classifier, OVMegaDetectorV5, txt_animalclasses
+from wadas.ai.models import (
+    Classifier,
+    OVMegaDetectorV5,
+    OVMegaDetectorV6,
+    txt_animalclasses,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,20 +36,52 @@ logger = logging.getLogger(__name__)
 class DetectionPipeline:
     """Class containing AI Model functionalities (detection & classification)"""
 
-    def __init__(self, detection_device="auto", classification_device="auto", language="en"):
+    def __init__(
+        self,
+        detection_device="auto",
+        classification_device="auto",
+        language="en",
+        distributed_inference=False,
+        megadetector_version="v5",
+    ):
         self.detection_device = detection_device
         self.classification_device = classification_device
+        self.distributed_inference = distributed_inference
+        if self.distributed_inference:
+            ray.init()
+
         # Initializing the MegaDetectorV5 model for image detection
         logger.info("Initializing detection model to device %s...", self.detection_device)
-        self.detection_model = OVMegaDetectorV5(device=self.detection_device)
+        if megadetector_version == "v5":
+            detection_csl = OVMegaDetectorV5
+        elif megadetector_version == "v6":
+            detection_csl = OVMegaDetectorV6
+        else:
+            raise ValueError("Invalid MegaDetector version: " + megadetector_version)
+        self.detection_model = self.initialize_model(detection_csl, device=self.detection_device)
         # Load classification model
         logger.info("Loading classification model to device %s...", self.classification_device)
-        self.classifier = Classifier(self.classification_device)
+        self.classifier = self.initialize_model(Classifier, device=self.classification_device)
         # Get the index of the animal class of the detection model
         self.animal_class_idx = next(
-            key for key, value in self.detection_model.CLASS_NAMES.items() if value == "animal"
+            key for key, value in OVMegaDetectorV5.CLASS_NAMES.items() if value == "animal"
         )
         self.language = language
+
+    def initialize_model(self, cls, *args, **kwargs):
+        """Method to initialize model locally or remotely."""
+        if self.distributed_inference:
+            return ray.remote(cls).remote(*args, **kwargs)
+        return cls(*args, **kwargs)
+
+    def run_model(self, fn, *args, **kwargs):
+        """Method to run model locally or remotely."""
+        func = fn.remote if self.distributed_inference else fn
+        if isinstance(args[0], (list, tuple)):
+            result = [func(arg0, *args[1:], **kwargs) for arg0 in args[0]]
+        else:
+            result = func(*args, **kwargs)
+        return ray.get(result) if self.distributed_inference else result
 
     def set_language(self, language):
         if language not in txt_animalclasses:
@@ -64,23 +101,20 @@ class DetectionPipeline:
 
     def run_detection(self, img: Image, detection_threshold: float):
         """Method to run detection model on provided image."""
+        detection_results = []
+        if isinstance(img, (list, tuple)):
+            # Convert list of images to numpy array
+            img_array = [np.array(_img) for _img in img]
+        else:
+            img_array = [np.array(img)]
 
-        img_array = np.array(img)
-
-        # Initializing the Yolo-specific transform for the image
-        transform = pw_trans.MegaDetector_v5_Transform(
-            target_size=self.detection_model.IMAGE_SIZE,
-            stride=self.detection_model.STRIDE,
+        # Performing the detection on the list of images
+        results_lst = self.run_model(
+            self.detection_model.run, img_array, detection_threshold=detection_threshold
         )
 
-        # Performing the detection on the single image
-        results = self.detection_model.single_image_detection(
-            transform(img_array), img_array.shape, None, detection_threshold
-        )
-
-        # Checks for non animal in results and filter them out
-        if results:
-            # Get the index of the animal class
+        for results in results_lst:
+            # Checks for non animal in results and filter them out
             animal_idx = np.where(results["detections"].class_id == self.animal_class_idx)
             # Filter out the non animal detections
             results["labels"] = [
@@ -92,43 +126,53 @@ class DetectionPipeline:
             results["detections"].confidence = results["detections"].confidence[animal_idx]
             results["detections"].class_id = results["detections"].class_id[animal_idx]
 
-        return results
+            detection_results.append(results)
+
+        if len(detection_results) == 1:
+            return detection_results[0]
+        else:
+            return detection_results
 
     def classify(self, img, results, classification_threshold):
         """Method to perform classification on detection result(s)."""
+        if not isinstance(results, (list, tuple)):
+            results = [results]
 
-        if not results:
-            return ""
+        if not isinstance(img, (list, tuple)):
+            img = [img]
 
-        classification_id = 0
-        classified_animals = []
-        for xyxy in results["detections"].xyxy:
-            # Cropping detection result(s) from original image leveraging detected boxes
-            cropped_image = img.crop(xyxy)
+        if len(img) != len(results):
+            raise ValueError("Number of images and results must match.")
 
-            # Performing classification
-            classification_result = self.classify_crop(cropped_image, classification_threshold)
-            if classification_result[0]:
-                classified_animals.append(
-                    {
-                        "id": classification_id,
-                        "classification": classification_result,
-                        "xyxy": xyxy,
-                    }
-                )
-                classification_id += 1
+        class_request = tuple(zip(img, results))
 
-        return classified_animals
-
-    def classify_crop(self, crop_img, classification_threshold):
-        """Classify animal on a crop (portion of original image)"""
-
-        tensor_cropped = self.classifier.preprocessImage(crop_img)
-        logits = self.classifier.predictOnBatch(tensor_cropped)[0,]
+        logits_lst = self.run_model(self.classifier.predictOnImages, class_request)
         labels = txt_animalclasses[self.language]
+        total_classification = []
+        for logits, res in zip(logits_lst, results):
+            classification_id = 0
+            classified_animals = []
+            for idx, xyxy in enumerate(res["detections"].xyxy):
+                # Cropping detection result(s) from original image leveraging detected boxes
 
-        if max(logits) < classification_threshold:
-            logger.info("Classification value under selected threshold.")
-            return ["", 0]
+                crop_logits = logits[idx, :]
+                detections = {key: val.item() for key, val in zip(labels, crop_logits)}
+                classification_result = [labels[np.argmax(crop_logits)], max(crop_logits)]
+                if max(crop_logits) < classification_threshold:
+                    logger.info("Classification value under selected threshold.")
+                else:
+                    classified_animals.append(
+                        {
+                            "id": classification_id,
+                            "classification": classification_result,
+                            "xyxy": xyxy.astype(int).tolist(),
+                            "class_probs": detections,
+                        }
+                    )
+                    classification_id += 1
 
-        return [labels[np.argmax(logits)], max(logits)]
+            total_classification.append(classified_animals)
+
+        if len(total_classification) == 1:
+            return total_classification[0]
+        return total_classification

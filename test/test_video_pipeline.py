@@ -32,7 +32,7 @@ def init():
     AiModel.language = "en"
     AiModel.detection_device = "auto"
     AiModel.classification_device = "auto"
-    AiModel.video_downsampling = 30
+    AiModel.video_fps = 1
 
 
 def test_video_detection_and_classification(init):
@@ -43,7 +43,7 @@ def test_video_detection_and_classification(init):
     assert ai_pipeline.language == "en"
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
-    assert ai_pipeline.video_downsampling == 30
+    assert ai_pipeline.video_fps == 1
     assert ai_pipeline.check_model()
 
     # This one is the video of a bear
@@ -66,7 +66,6 @@ def test_video_detection_and_classification(init):
             assert classified_animals[0]["classification"][1] > 0.7
 
             assert os.path.exists(img_path)
-            assert classified_animals[0]["xyxy"].dtype == np.float32
 
 
 def test_video_detection_and_classification_empty(init):
@@ -77,13 +76,55 @@ def test_video_detection_and_classification_empty(init):
     assert ai_pipeline.language == "en"
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
-    assert ai_pipeline.video_downsampling == 30
+    assert ai_pipeline.video_fps == 1
     assert ai_pipeline.check_model()
     # This one is the video of a waterfall => No animals
     VIDEO_URL = "https://videos.pexels.com/video-files/6981411/6981411-hd_1920_1080_25fps.mp4"
     animals = []
     for result, frame in ai_pipeline.process_video(VIDEO_URL, True):
         _, classified_animals = ai_pipeline.classify(frame, result)
+        if classified_animals:
+            animals.append(classified_animals)
+
+    assert len(animals) == 0
+
+
+def test_offline_video_detection_and_classification(init):
+    ai_pipeline = AiModel()
+
+    assert ai_pipeline.classification_threshold == 0.8
+    assert ai_pipeline.detection_threshold == 0.8
+    assert ai_pipeline.language == "en"
+    assert ai_pipeline.classification_device == "auto"
+    assert ai_pipeline.detection_device == "auto"
+    assert ai_pipeline.video_fps == 1
+    assert ai_pipeline.check_model()
+
+    # This one is the video of a bear
+    VIDEO_URL = "https://videos.pexels.com/video-files/7723475/7723475-hd_1920_1080_25fps.mp4"
+    for classified_animals in ai_pipeline.process_video_offline(VIDEO_URL):
+
+        assert classified_animals is not None
+        if len(classified_animals) > 0:
+            assert classified_animals[0]["id"] == 0
+            assert classified_animals[0]["classification"][0] == "bear"
+            assert classified_animals[0]["classification"][1] > 0.7
+
+
+def test_offline_video_detection_and_classification_empty(init):
+    ai_pipeline = AiModel()
+
+    assert ai_pipeline.classification_threshold == 0.8
+    assert ai_pipeline.detection_threshold == 0.8
+    assert ai_pipeline.language == "en"
+    assert ai_pipeline.classification_device == "auto"
+    assert ai_pipeline.detection_device == "auto"
+    assert ai_pipeline.video_fps == 1
+    assert ai_pipeline.check_model()
+    # This one is the video of a waterfall => No animals
+    VIDEO_URL = "https://videos.pexels.com/video-files/6981411/6981411-hd_1920_1080_25fps.mp4"
+    animals = []
+    for classified_animals in ai_pipeline.process_video_offline(VIDEO_URL):
         if classified_animals:
             animals.append(classified_animals)
 

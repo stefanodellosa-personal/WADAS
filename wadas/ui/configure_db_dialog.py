@@ -52,11 +52,9 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_error.setStyleSheet("color: red")
         self.ui.pushButton_test_db.setEnabled(False)
-        self.ui.pushButton_create_db.setEnabled(True)
 
         # Slots
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
-        self.ui.pushButton_create_db.clicked.connect(self.create_db)
         self.ui.pushButton_test_db.clicked.connect(self.test_db)
         self.ui.radioButton_MySQL.clicked.connect(self.on_radioButton_checked)
         self.ui.radioButton_SQLite.clicked.connect(self.on_radioButton_checked)
@@ -66,7 +64,6 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         self.ui.lineEdit_db_username.textChanged.connect(self.validate)
         self.ui.lineEdit_db_password.textChanged.connect(self.validate)
         self.ui.lineEdit_db_name.textChanged.connect(self.validate)
-        self.ui.checkBox_new_db.clicked.connect(self.on_checkbox_new_db_checked)
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.on_cancel_clicked)
         self.ui.checkBox_enable_db.clicked.connect(self.on_enable_state_changed)
 
@@ -93,7 +90,6 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
         else:
             self.ui.checkBox_enable_db.setChecked(wadas_db.enabled)
             self.ui.lineEdit_db_host.setText(wadas_db.host)
-            self.ui.pushButton_create_db.setEnabled(False)
             self.ui.label_db_version.setText(wadas_db.version)
             if wadas_db.type:
                 match wadas_db.type:
@@ -117,12 +113,10 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                         unrecognized_db_type_dlg = WADASErrorMessage("Unrecognized DB type",
                                                                      "Database type is not recognized or supported.")
                         unrecognized_db_type_dlg.exec()
-                        self.ui.pushButton_create_db.setEnabled(True)
             else:
                 unrecognized_db_type_dlg = WADASErrorMessage("No DB type",
                                                              "Database type is not configured.")
                 unrecognized_db_type_dlg.exec()
-                self.ui.pushButton_create_db.setEnabled(True)
         self.on_radioButton_checked(True)
 
     def on_radioButton_checked(self, init_dialog=False):
@@ -144,12 +138,6 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             self.ui.lineEdit_db_name.setPlaceholderText("")
             if not self.ui.lineEdit_db_host.text():
                 self.ui.lineEdit_db_host.setPlaceholderText("wadas_db.sqlite")
-        self.validate()
-
-    def on_checkbox_new_db_checked(self):
-        """Method to handle new db checkbox states."""
-
-        self.ui.pushButton_create_db.setEnabled(self.ui.checkBox_new_db.isChecked())
         self.validate()
 
     def _update_common_params(self, wadas_db):
@@ -198,6 +186,11 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
             else:
                 self._update_mysql_params(wadas_db)
 
+        if create_db:= self.ui.checkBox_new_db.isChecked():
+            self.create_db()
+
+        if create_db and not self.db_created:
+            return
         self.accept()
 
     def ask_db_type_change(self):
@@ -298,7 +291,6 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
                         "Cannot create the db as it already exists! Please delete it or rename it before proceed."
                     self.show_status_dialog("Database creation status", message, False)
                     return
-        self.init_db_from_dialog_params()
 
         if db := DataBase.get_instance():
             # Populate DB with existing cameras and actuators
@@ -383,7 +375,7 @@ class ConfigureDBDialog(QDialog, Ui_ConfigureDBDialog):
 
         if valid:
             self.ui.label_error.setText("")
-            self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(valid)
+            self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
             enable_test = valid if not self.ui.checkBox_new_db.isChecked() else (valid and self.db_created)
 
             self.ui.pushButton_test_db.setEnabled(enable_test)
