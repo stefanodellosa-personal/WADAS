@@ -25,6 +25,7 @@ import sys
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 from packaging.version import Version
+from pathlib import Path
 import uuid
 
 import keyring
@@ -454,16 +455,23 @@ class MainWindow(QMainWindow):
 
         if OperationMode.cur_operation_mode_type:
             self.ui.label_op_mode.setText(OperationMode.cur_operation_mode_type.value)
+            match OperationMode.cur_operation_mode_type:
+                case OperationMode.OperationModeTypes.TunnelMode:
+                    classification_en_txt = "No"
+                case OperationMode.OperationModeTypes.AnimalDetectionMode:
+                    classification_en_txt = "No"
+                case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
+                    classification_en_txt = "Yes (custom)"
+                case _:
+                    classification_en_txt = "Yes"
+            self.ui.label_classification_enablement.setText(classification_en_txt)
         else:
             self.ui.label_op_mode.setText("None")
+            self.ui.label_classification_enablement.setText("")
 
         if OperationMode.cur_operation_mode:
-            self.ui.label_last_detection.setText(
-                os.path.basename(OperationMode.cur_operation_mode.last_detection)
-            )
-            self.ui.label_last_classification.setText(
-                os.path.basename(OperationMode.cur_operation_mode.last_classification)
-            )
+            path = Path(OperationMode.cur_operation_mode.last_detection)
+            self.ui.label_last_detection.setText(os.path.join(path.parent.name, path.name))
             self.ui.label_classified_animal.setText(
                 str(OperationMode.cur_operation_mode.last_classified_animals_str)
             )
