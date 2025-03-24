@@ -31,6 +31,7 @@ from PySide6.QtWidgets import (
 )
 
 from wadas.domain.ai_model_downloader import AiModelsDownloader
+from wadas.ui.error_message_dialog import WADASErrorMessage
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -41,6 +42,8 @@ class Dialog_AiModelDownloaderSelector(QDialog):
     def __init__(self, hf_token):
         super().__init__()
 
+        self.selected_detection_models = []
+        self.selected_classification_models = []
         self.setWindowTitle("Select AI Models to download")
         self.setWindowIcon(QIcon(str(Path(module_dir_path, "..", "img", "mainwindow_icon.jpg").resolve())))
 
@@ -54,45 +57,44 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         vertical_layout_detection = QVBoxLayout(groupBox_detection)
 
         detection_models, classification_models = AiModelsDownloader.get_available_models(hf_token)
-        for model in detection_models:
-            checkbox = QCheckBox(model, self)
-            vertical_layout_detection.addWidget(checkbox)
+        if detection_models and classification_models:
+            for model in detection_models:
+                checkbox = QCheckBox(model, self)
+                vertical_layout_detection.addWidget(checkbox)
 
-        scroll_area_detection = QScrollArea(self)
-        scroll_area_detection.setWidgetResizable(True)
-        scroll_area_detection.setWidget(groupBox_detection)
+            scroll_area_detection = QScrollArea(self)
+            scroll_area_detection.setWidgetResizable(True)
+            scroll_area_detection.setWidget(groupBox_detection)
 
 
-        groupBox_classification = QGroupBox("Classification models", self)
-        vertical_layout_classification = QVBoxLayout(groupBox_classification)
+            groupBox_classification = QGroupBox("Classification models", self)
+            vertical_layout_classification = QVBoxLayout(groupBox_classification)
 
-        for model in classification_models:
-            checkbox = QCheckBox(model, self)
-            vertical_layout_classification.addWidget(checkbox)
+            for model in classification_models:
+                checkbox = QCheckBox(model, self)
+                vertical_layout_classification.addWidget(checkbox)
 
-        scroll_area_classification = QScrollArea(self)
-        scroll_area_classification.setWidgetResizable(True)
-        scroll_area_classification.setWidget(groupBox_classification)
+            scroll_area_classification = QScrollArea(self)
+            scroll_area_classification.setWidgetResizable(True)
+            scroll_area_classification.setWidget(groupBox_classification)
 
-        main_layout.addWidget(scroll_area_detection)
-        main_layout.addWidget(scroll_area_classification)
+            main_layout.addWidget(scroll_area_detection)
+            main_layout.addWidget(scroll_area_classification)
 
-        main_layout.addWidget(self.buttonBox)
+            main_layout.addWidget(self.buttonBox)
+        else:
+            WADASErrorMessage("Error while downloading WADAS models",
+                              "An error occurred while fetching available models list."
+                              " Please retry.").exec()
 
     def accept(self):
         """Method to accept and close dialog"""
-        selected_detection_models = []
-        selected_classification_models = []
 
         for checkbox in self.findChildren(QCheckBox):
             if "Detection" in checkbox.parent().title() and checkbox.isChecked():
-                selected_detection_models.append(checkbox.text())
+                self.selected_detection_models.append(checkbox.text())
 
             if "Classification" in checkbox.parent().title() and checkbox.isChecked():
-                selected_classification_models.append(checkbox.text())
+                self.selected_classification_models.append(checkbox.text())
 
         super().accept()
-
-
-
-

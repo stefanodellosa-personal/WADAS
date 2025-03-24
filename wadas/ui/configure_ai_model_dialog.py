@@ -98,21 +98,21 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.comboBox_detection_model_version.clear()
         self.ui.comboBox_classification_model_version.clear()
 
-        det_models_dir = Path(det_models_dir_path)
-        det_models_directories = (d for d in det_models_dir.iterdir() if d.is_dir())
-        for directory in det_models_directories:
-            bin_files = [f for f in directory.iterdir() if f.suffix == ".bin"]
-            if bin_files:
-                model_version = bin_files[0].stem  # Remove .bin extension
-                self.ui.comboBox_detection_model_version.addItem(model_version)
+        if (det_models_dir := Path(det_models_dir_path)).is_dir():
+            det_models_directories = (d for d in det_models_dir.iterdir() if d.is_dir())
+            for directory in det_models_directories:
+                bin_files = [f for f in directory.iterdir() if f.suffix == ".bin"]
+                if bin_files:
+                    model_version = bin_files[0].stem  # Remove .bin extension
+                    self.ui.comboBox_detection_model_version.addItem(model_version)
 
-        class_models_dir = Path(class_models_dir_path)
-        class_models_directories = (d for d in class_models_dir.iterdir() if d.is_dir())
-        for directory in class_models_directories:
-            bin_files = [f for f in directory.iterdir() if f.suffix == ".bin"]
-            if bin_files:
-                model_version = bin_files[0].stem  # Remove .bin extension
-                self.ui.comboBox_classification_model_version.addItem(model_version)
+        if (class_models_dir := Path(class_models_dir_path)).is_dir():
+            class_models_directories = (d for d in class_models_dir.iterdir() if d.is_dir())
+            for directory in class_models_directories:
+                bin_files = [f for f in directory.iterdir() if f.suffix == ".bin"]
+                if bin_files:
+                    model_version = bin_files[0].stem  # Remove .bin extension
+                    self.ui.comboBox_classification_model_version.addItem(model_version)
 
     def on_download_models_clicked(self):
         """Method to trigger the download of Ai Models"""
@@ -161,5 +161,5 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         AiModel.classification_device = self.ui.comboBox_class_dev.currentText()
         AiModel.video_fps = int(self.ui.lineEdit_video_fps.text())
         AiModel.detection_version = self.ui.comboBox_detection_model_version.currentText()
-        AiModel.classification_version = self.ui.comboBox_classification_model_version.setCurrentText()
+        AiModel.classification_version = self.ui.comboBox_classification_model_version.CurrentText()
         self.accept()

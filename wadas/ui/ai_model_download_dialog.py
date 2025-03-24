@@ -42,6 +42,8 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         self.setWindowTitle("Download AI Models")
         self.setWindowIcon(QIcon(str(Path(module_dir_path, "..", "img", "mainwindow_icon.jpg").resolve())))
 
+        self.det_models = []
+        self.class_models = []
         self.thread = None
         self.downloader = None
         self.stop_flag = False
@@ -60,7 +62,7 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         self.ui.pushButton_select_model_version.clicked.connect(self.on_select_model_version_button_clicked)
         self.ui.checkBox_select_versions.clicked.connect(self.on_select_model_version_checkbox_clicked)
         welcome_message = "Download WADAS models from Huggingface.co/wadas-it/wadas" if not no_model else\
-            "Ai Model files not found. Download from Huggingface.co/wadas-it/wadas is required to let WADAS work."
+            "Ai Model files not found. Download them from Huggingface.co/wadas-it/wadas."
         self.ui.label_welcome_message.setText(welcome_message)
 
     def on_select_model_version_checkbox_clicked(self):
@@ -75,6 +77,9 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         if not dialog.exec():
             self.ui.checkBox_select_versions.setChecked(False)
             self.ui.pushButton_select_model_version.setVisible(False)
+        else:
+            self.det_models = dialog.selected_detection_models
+            self.class_models = dialog.selected_classification_models
 
     def download_models(self):
         """Method to trigger the model download"""
@@ -83,6 +88,10 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         if not token:
             QMessageBox.critical(self, "Error", "Token field cannot be empty.")
             return
+
+        if not self.ui.checkBox_select_versions.isChecked():
+            # Fetch default versions if no custom selection is checked
+            self.det_models, self.class_models = AiModelsDownloader.get_default_models(self.ui.lineEdit_token.text())
 
         self.ui.progressBar.setVisible(True)
         self.ui.progressBar.setEnabled(True)
@@ -93,7 +102,7 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         self.thread = QThread()
 
         # Move downloader to a dedicated thread
-        self.downloader = AiModelsDownloader(token)
+        self.downloader = AiModelsDownloader(token, self.det_models, self.class_models)
         self.downloader.moveToThread(self.thread)
 
         # Connect signals

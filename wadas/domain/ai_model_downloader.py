@@ -23,7 +23,7 @@ import shutil
 from pathlib import Path
 
 import yaml
-from huggingface_hub import hf_hub_download
+from huggingface_hub import hf_hub_download, list_repo_files
 from PySide6.QtCore import QObject, Signal
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,6 @@ MODEL_FILES = [
 ]
 REPO_ID = "wadas-it/wadas"
 SAVE_DIRECTORY = Path(module_dir_path, "..", "..", "model").resolve()
-MODEL_FILES = []
 CONFIG_FILE = "wadas_models.yaml"
 
 
@@ -48,31 +47,67 @@ class AiModelsDownloader(QObject):
     run_progress = Signal(int)
     error_happened = Signal(str)
 
-    def __init__(self, token):
+    def __init__(self, token, det_model_files, class_model_files):
         super(AiModelsDownloader, self).__init__()
         self.token = token
         self.stop_flag = False
+        self.det_model_directories = det_model_files
+        self.class_model_directories = class_model_files
 
     def run(self):
-        """Ai Model Download running in a dedicated thread"""
+        """AI Model Download running in a dedicated thread"""
         try:
             os.makedirs(SAVE_DIRECTORY, exist_ok=True)
-            for i, file_name in enumerate(MODEL_FILES):
+
+            # convert path to string
+            absolute_det_dir_path = [
+                str(Path("detection", item).as_posix()) for item in self.det_model_directories
+            ]
+            absolute_class_dir_path = [
+                str(Path("classification", item).as_posix())
+                for item in self.class_model_directories
+            ]
+            models_folders = absolute_det_dir_path + absolute_class_dir_path
+            remote_files = []
+            # Get list of all files in the repository
+            try:
+                all_files = list_repo_files(repo_id=REPO_ID, use_auth_token=self.token)
+            except Exception as e:
+                self.error_happened.emit(f"Error listing files: {str(e)}")
+                return
+
+            for folder in models_folders:
                 if self.stop_flag:
                     break
 
-                # Temporary download to the Hugging Face cache
-                cached_file_path = hf_hub_download(
-                    repo_id=REPO_ID, filename=file_name, use_auth_token=self.token
-                )
+                # Filter only files that belongs to current folder
+                cur_dir_remote_files = [f for f in all_files if f.startswith(str(folder))]
+                # Add cur dir files to total list files
+                remote_files.extend(cur_dir_remote_files)
 
-                target_file_path = os.path.join(SAVE_DIRECTORY, file_name)
+            for i, remote_file_path in enumerate(remote_files):
+                if self.stop_flag:
+                    break
 
-                # Move the file from the cache to the target directory
-                shutil.move(cached_file_path, target_file_path)
+                local_file_path = os.path.join(SAVE_DIRECTORY, remote_file_path)
 
-                self.run_progress.emit((i + 1) * 100 // len(MODEL_FILES))
+                # Download the file
+                try:
+                    cached_file_path = hf_hub_download(
+                        repo_id=REPO_ID, filename=remote_file_path, use_auth_token=self.token
+                    )
+                    # Make sure destination dir exists
+                    os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+                    shutil.move(cached_file_path, local_file_path)
+
+                    if remote_files:
+                        self.run_progress.emit((i + 1) * 100 // len(remote_files))
+                except Exception as e:
+                    self.error_happened.emit(f"Error downloading {remote_file_path}: {str(e)}")
+                    continue
+
             self.run_finished.emit()
+
         except Exception as e:
             self.error_happened.emit(str(e))
 
@@ -98,6 +133,25 @@ class AiModelsDownloader(QObject):
                 detection_models = config.get("detection_models", [])
                 classification_models = config.get("classification_models", [])
                 return detection_models, classification_models
-        except Exception as e:
-            print(f"Error loading YAML file: {e}")
+        except Exception:
+            return [], []
+
+    @classmethod
+    def get_default_models(self, token):
+        """Returns the default detection and classification models from the YAML config file."""
+        try:
+            # Download configuration file from Hugging Face
+            config_file_path = hf_hub_download(
+                repo_id=REPO_ID, filename=CONFIG_FILE, use_auth_token=token
+            )
+
+            with open(config_file_path, "r") as file:
+                config = yaml.safe_load(file)
+                default_detection_model = config.get("default_detection_model", None)
+                default_classification_model = config.get("default_classification_model", None)
+                return (
+                    [default_detection_model] if default_detection_model else [],
+                    [default_classification_model] if default_classification_model else [],
+                )
+        except Exception:
             return [], []
