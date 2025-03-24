@@ -32,6 +32,12 @@ from wadas.ai.models import (
 
 logger = logging.getLogger(__name__)
 
+NAME_TO_DETECTOR = {
+    "MDV5-yolov5": OVMegaDetectorV5,
+    "MDV6b-yolov9c": OVMegaDetectorV6,
+    "MDV6-yolov10n": OVMegaDetectorV6,
+}
+
 
 class DetectionPipeline:
     """Class containing AI Model functionalities (detection & classification)"""
@@ -52,15 +58,8 @@ class DetectionPipeline:
 
         # Initializing the MegaDetectorV5 model for image detection
         logger.info("Initializing detection model to device %s...", self.detection_device)
-        match megadetector_version:
-            case "MDV5-yolov5":
-                detection_csl = OVMegaDetectorV5
-            case "MDV6b-yolov9c":
-                detection_csl = OVMegaDetectorV6
-            case "MDV6-yolov10n":
-                detection_csl = OVMegaDetectorV6
-            case _:
-                raise ValueError("Invalid MegaDetector version: " + megadetector_version)
+        if not (detection_csl := NAME_TO_DETECTOR.get(megadetector_version)):
+            raise ValueError("Invalid MegaDetector version: " + megadetector_version)
 
         self.detection_model = self.initialize_model(detection_csl, device=self.detection_device)
         # Load classification model

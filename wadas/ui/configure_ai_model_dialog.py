@@ -19,20 +19,21 @@
 
 
 import os
-import openvino as ov
 from pathlib import Path
 
+import openvino as ov
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
 from wadas.ai.models import txt_animalclasses
 from wadas.domain.ai_model import AiModel
-from wadas.ui.qt.ui_configure_ai_model import Ui_DialogConfigureAi
 from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
+from wadas.ui.qt.ui_configure_ai_model import Ui_DialogConfigureAi
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
-det_models_dir_path = os.path.join(module_dir_path, "..", "..", "model", "detection")
-class_models_dir_path = os.path.join(module_dir_path, "..", "..", "model", "classification")
+det_models_dir_path = Path(module_dir_path, "..", "..", "model", "detection").resolve()
+class_models_dir_path = Path(module_dir_path, "..", "..", "model", "classification").resolve()
+
 
 class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
     """Class to instantiate UI dialog to configure Ai model parameters."""
@@ -98,7 +99,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.comboBox_classification_model_version.clear()
 
         det_models_dir = Path(det_models_dir_path)
-        det_models_directories = [d for d in det_models_dir.iterdir() if d.is_dir()]
+        det_models_directories = (d for d in det_models_dir.iterdir() if d.is_dir())
         for directory in det_models_directories:
             bin_files = [f for f in directory.iterdir() if f.suffix == ".bin"]
             if bin_files:
@@ -106,7 +107,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
                 self.ui.comboBox_detection_model_version.addItem(model_version)
 
         class_models_dir = Path(class_models_dir_path)
-        class_models_directories = [d for d in class_models_dir.iterdir() if d.is_dir()]
+        class_models_directories = (d for d in class_models_dir.iterdir() if d.is_dir())
         for directory in class_models_directories:
             bin_files = [f for f in directory.iterdir() if f.suffix == ".bin"]
             if bin_files:

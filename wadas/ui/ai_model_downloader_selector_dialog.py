@@ -18,17 +18,20 @@
 # Description: Module containing Ai Model downloader selector class and methods.
 
 import os
+from pathlib import Path
+
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QDialog,
-    QGroupBox,
-    QVBoxLayout,
     QCheckBox,
-    QScrollArea,
+    QDialog,
     QDialogButtonBox,
+    QGroupBox,
+    QScrollArea,
+    QVBoxLayout,
 )
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
+
 
 class Dialog_AiModelDownloaderSelector(QDialog):
     """Class to implement AI model downloader selector dialog."""
@@ -37,7 +40,7 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         super().__init__()
 
         self.setWindowTitle("Select AI Models to download")
-        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon(str(Path(module_dir_path, "..", "img", "mainwindow_icon.jpg").resolve())))
 
         main_layout = QVBoxLayout(self)
 
