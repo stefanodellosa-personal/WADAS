@@ -1,16 +1,17 @@
 import * as React from "react";
 import {useEffect, useState} from "react";
-import {Alert, Button, Col, Container, Row} from "react-bootstrap";
+import {Alert, Button, Col, Container, Modal, Row} from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import CustomNavbar from "./components/CustomNavbar";
 import Select, {MultiValue} from "react-select";
 import DatePick from "./components/DatePick";
-import {tryWithRefreshing} from "./lib/utils";
+import {isMobile, tryWithRefreshing} from "./lib/utils";
 import {useNavigate} from 'react-router-dom';
 import CustomSpinner from "./components/CustomSpinner";
 import {ActuationEvent, ActuationEventResponse, ActuatorTypesResponse, CommandsResponse} from "./types/types";
 import {fetchActuationEvents, fetchActuatorTypes, fetchCommands, fetchExportActuationEvents} from "./lib/api";
 import ActuationsScrollableTable from "./components/ActuationsScrollableTable";
+import ActuationsMobileList from "./components/ActuationsMobileList";
 
 
 type ActuatorTypeOption = {
@@ -25,6 +26,7 @@ type CommandOption = {
 
 const ActuationEvents = () => {
     const pageSize = 20;
+    const [showFilters, setShowFilters] = useState(false);
     const [actuatorTypeOptions, setActuatorTypeOptions] = useState<ActuatorTypeOption[]>([]);
     const [commandOptions, setCommandOptions] = useState<CommandOption[]>([]);
     const [actuations, setActuations] = useState<ActuationEvent[]>([]);
@@ -39,6 +41,7 @@ const ActuationEvents = () => {
     const navigate = useNavigate();
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
+    const [mobileFlag, setMobileFlag] = useState(isMobile());
 
 
     const updateDateRange = (dates: [Date | null, Date | null]) => {
@@ -176,11 +179,102 @@ const ActuationEvents = () => {
                 ) : error ? (
                     <Alert variant="danger">{error}</Alert>
                 ) : (
-                    <Container style={{flex: 1, display: "flex", flexDirection: "column"}}>
-                        <Container style={{display: "flex", flexDirection: "column"}}>
-                            <Container className="mt-3">
-                                <Row className="mb-3">
-                                    <Col md={3}>
+                    <>
+                        {!mobileFlag ? (
+                            // Desktop view
+                            <Container style={{flex: 1, display: "flex", flexDirection: "column"}}>
+                                <Container style={{display: "flex", flexDirection: "column"}}>
+                                    <Container className="mt-3">
+                                        <Row className="mb-3">
+                                            <Col md={3}>
+                                                <Select
+                                                    id="multi-select"
+                                                    isMulti
+                                                    options={actuatorTypeOptions}
+                                                    value={selectedActuatorType}
+                                                    onChange={handleChangeActuatorType}
+                                                    placeholder={<div className={"custom-placeholder"}>select
+                                                        actuator types...</div>}
+                                                />
+                                            </Col>
+                                            <Col md={3}>
+                                                <Select
+                                                    id="multi-select"
+                                                    isMulti
+                                                    options={commandOptions}
+                                                    value={selectedCommand}
+                                                    onChange={handleChangeCommand}
+                                                    placeholder={<div className={"custom-placeholder"}>select
+                                                        actuation commands...</div>}
+                                                />
+                                            </Col>
+                                            <Col md={3}>
+                                                <DatePick
+                                                    startDate={startDate}
+                                                    endDate={endDate}
+                                                    onDateChange={updateDateRange}
+                                                />
+                                            </Col>
+                                            <Col md={1}>
+                                                <Button
+                                                    variant="primary"
+                                                    className="custom-button dark-background"
+                                                    onClick={() => updateActuationData(1)}>
+                                                    Apply
+                                                </Button>
+                                            </Col>
+
+                                            <Col md={2} className="d-flex">
+                                                {exportLoading ? (
+                                                    <CustomSpinner className={"mt-1 ms-auto me-5"}/>
+                                                ) : exportError ? (
+                                                    <Alert variant="danger" className={"m-0 p-2"}
+                                                           style={{fontSize: "12px"}}>{exportError}</Alert>
+                                                ) : (
+                                                    <Button
+                                                        variant="primary"
+                                                        className="custom-button ms-auto"
+                                                        onClick={exportResults()}>
+                                                        Export results
+                                                    </Button>)
+                                                }
+                                            </Col>
+                                        </Row>
+                                    </Container>
+
+                                    <Container style={{flex: 1, overflow: "hidden"}}>
+                                        <ActuationsScrollableTable
+                                            actuations={actuations}
+                                            currentPage={currentPage}
+                                            totalPages={totalPages}
+                                            onPageChange={updateActuationData}
+                                        />
+                                    </Container>
+                                </Container>
+                            </Container>
+                        ) : (
+                            // Mobile view
+                            <Container>
+                                <Row className="mb-3 mt-3 d-flex align-items-center">
+                                    <Col xs={8}>
+                                        <h3>Actuation Events</h3>
+                                    </Col>
+                                    <Col xs={4} className="d-flex justify-content-end">
+                                        <Button
+                                            variant="primary"
+                                            className="custom-button dark-background"
+                                            onClick={() => setShowFilters(true)}
+                                        >
+                                            Filter
+                                        </Button>
+                                    </Col>
+                                </Row>
+
+                                <Modal show={showFilters} onHide={() => setShowFilters(false)}>
+                                    <Modal.Header closeButton>
+                                        <Modal.Title>Filters</Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>
                                         <Select
                                             id="multi-select"
                                             isMulti
@@ -190,8 +284,6 @@ const ActuationEvents = () => {
                                             placeholder={<div className={"custom-placeholder"}>select
                                                 actuator types...</div>}
                                         />
-                                    </Col>
-                                    <Col md={3}>
                                         <Select
                                             id="multi-select"
                                             isMulti
@@ -200,52 +292,41 @@ const ActuationEvents = () => {
                                             onChange={handleChangeCommand}
                                             placeholder={<div className={"custom-placeholder"}>select
                                                 actuation commands...</div>}
+                                            className="mt-3"
+                                            styles={{
+                                                container: (baseStyles, state) => ({
+                                                    ...baseStyles,
+                                                    marginBottom: "1rem !important",
+                                                }),
+                                            }}
                                         />
-                                    </Col>
-                                    <Col md={3}>
                                         <DatePick
                                             startDate={startDate}
                                             endDate={endDate}
                                             onDateChange={updateDateRange}
                                         />
-                                    </Col>
-                                    <Col md={1}>
                                         <Button
                                             variant="primary"
                                             className="custom-button dark-background"
-                                            onClick={() => updateActuationData(1)}>
+                                            style={{marginTop: "1rem"}}
+                                            onClick={() => {
+                                                updateActuationData(1);
+                                                setShowFilters(false);
+                                            }}>
                                             Apply
                                         </Button>
-                                    </Col>
-
-                                    <Col md={2} className="d-flex">
-                                        {exportLoading ? (
-                                            <CustomSpinner className={"mt-1 ms-auto me-5"}/>
-                                        ) : exportError ? (
-                                            <Alert variant="danger" className={"m-0 p-2"}
-                                                   style={{fontSize: "12px"}}>{exportError}</Alert>
-                                        ) : (
-                                            <Button
-                                                variant="primary"
-                                                className="custom-button ms-auto"
-                                                onClick={exportResults()}>
-                                                Export results
-                                            </Button>)
-                                        }
-                                    </Col>
-                                </Row>
-                            </Container>
-
-                            <Container style={{flex: 1, overflow: "hidden"}}>
-                                <ActuationsScrollableTable
+                                    </Modal.Body>
+                                </Modal>
+                                <ActuationsMobileList
                                     actuations={actuations}
                                     currentPage={currentPage}
                                     totalPages={totalPages}
                                     onPageChange={updateActuationData}
                                 />
+
                             </Container>
-                        </Container>
-                    </Container>
+                        )}
+                    </>
                 )}
 
             </Container>

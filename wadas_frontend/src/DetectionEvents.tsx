@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import CustomNavbar from "./components/CustomNavbar";
 import Select, {MultiValue} from "react-select";
 import DatePick from "./components/DatePick";
-import {tryWithRefreshing} from "./lib/utils";
+import {isMobile, tryWithRefreshing} from "./lib/utils";
 import DetectionsScrollableTable from "./components/DetectionsScrollableTable";
 import DetectionsMobileList from "./components/DetectionsMobileList";
 import {useLocation, useNavigate} from 'react-router-dom';
@@ -46,7 +46,7 @@ const DetectionEvents = () => {
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [currentEvent, setCurrentEvent] = useState<DetectionEvent | null>(null)
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+    const [mobileFlag, setMobileFlag] = useState(isMobile());
 
 
     const updateDateRange = (dates: [Date | null, Date | null]) => {
@@ -179,8 +179,8 @@ const DetectionEvents = () => {
                     <Alert variant="danger">{error}</Alert>
                 ) : (
                     <>
-                        {/*Desktop view*/}
-                        {!isMobile ? (
+                        {!mobileFlag ? (
+                            // Desktop view
                             <Container style={{flex: 1, display: "flex", flexDirection: "column"}}>
                                 <Container style={{height: "45vh", display: "flex", flexDirection: "column"}}>
                                     <Container className="mt-3">
@@ -276,6 +276,7 @@ const DetectionEvents = () => {
                             </Container>
 
                         ) : (
+                            // Mobile view
                             <Container>
                                 <Row className="mb-3 mt-3 d-flex align-items-center">
                                     <Col xs={8}>
@@ -323,10 +324,7 @@ const DetectionEvents = () => {
                                         <DatePick
                                             startDate={startDate}
                                             endDate={endDate}
-                                            onDateChange={(dates) => {
-                                                setStartDate(dates[0]);
-                                                setEndDate(dates[1]);
-                                            }}
+                                            onDateChange={updateDateRange}
                                         />
                                         <Button
                                             variant="primary"
