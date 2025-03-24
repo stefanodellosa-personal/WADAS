@@ -18,6 +18,7 @@
 # Description: Module containing Ai Model Downloader Dialog class and methods.
 
 import os
+from pathlib import Path
 
 from PySide6.QtCore import QThread
 from PySide6.QtGui import QIcon
@@ -35,11 +36,11 @@ module_dir_path = os.path.dirname(os.path.abspath(__file__))
 class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
     """Class to implement AI model download dialog."""
 
-    def __init__(self):
+    def __init__(self, no_model=False):
         super().__init__()
         self.ui = Ui_AiModelDownloadDialog()
         self.setWindowTitle("Download AI Models")
-        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon(str(Path(module_dir_path, "..", "img", "mainwindow_icon.jpg").resolve())))
 
         self.thread = None
         self.downloader = None
@@ -51,18 +52,29 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         self.ui.progressBar.setValue(0)
         self.ui.progressBar.setEnabled(False)
         self.ui.pushButton_download.setEnabled(False)
+        self.ui.pushButton_select_model_version.setVisible(False)
+        self.ui.progressBar.setVisible(False)
         self.ui.lineEdit_token.textChanged.connect(self.validate)
         self.ui.pushButton_download.clicked.connect(self.download_models)
         self.ui.pushButton_cancel.clicked.connect(self.cancel_download)
-        self.ui.pushButton_select_model_version.clicked.connect(self.on_select_model_version_clicked)
+        self.ui.pushButton_select_model_version.clicked.connect(self.on_select_model_version_button_clicked)
+        self.ui.checkBox_select_versions.clicked.connect(self.on_select_model_version_checkbox_clicked)
+        welcome_message = "Download WADAS models from Huggingface.co/wadas-it/wadas" if not no_model else\
+            "Ai Model files not found. Download from Huggingface.co/wadas-it/wadas is required to let WADAS work."
+        self.ui.label_welcome_message.setText(welcome_message)
 
-    def on_select_model_version_clicked(self):
+    def on_select_model_version_checkbox_clicked(self):
+        """Method to enable select model button basing on checkbox status"""
+
+        self.ui.pushButton_select_model_version.setVisible(self.ui.checkBox_select_versions.isChecked())
+
+    def on_select_model_version_button_clicked(self):
         """Method to select Ai model versions to download"""
 
-        dialog = Dialog_AiModelDownloaderSelector()
+        dialog = Dialog_AiModelDownloaderSelector(self.ui.lineEdit_token.text())
         if not dialog.exec():
-            # Go for default versions
-            pass
+            self.ui.checkBox_select_versions.setChecked(False)
+            self.ui.pushButton_select_model_version.setVisible(False)
 
     def download_models(self):
         """Method to trigger the model download"""
@@ -72,6 +84,7 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
             QMessageBox.critical(self, "Error", "Token field cannot be empty.")
             return
 
+        self.ui.progressBar.setVisible(True)
         self.ui.progressBar.setEnabled(True)
         self.ui.pushButton_download.setEnabled(False)
         self.ui.pushButton_cancel.setEnabled(True)

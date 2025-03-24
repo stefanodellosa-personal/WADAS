@@ -30,13 +30,15 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from wadas.domain.ai_model_downloader import AiModelsDownloader
+
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
 class Dialog_AiModelDownloaderSelector(QDialog):
     """Class to implement AI model downloader selector dialog."""
 
-    def __init__(self):
+    def __init__(self, hf_token):
         super().__init__()
 
         self.setWindowTitle("Select AI Models to download")
@@ -51,7 +53,7 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         groupBox_detection = QGroupBox("Detection models", self)
         vertical_layout_detection = QVBoxLayout(groupBox_detection)
 
-        detection_models = ["Model 1", "Model 2", "Model 3"] #TODO: add logic to fetch list from hf
+        detection_models, classification_models = AiModelsDownloader.get_available_models(hf_token)
         for model in detection_models:
             checkbox = QCheckBox(model, self)
             vertical_layout_detection.addWidget(checkbox)
@@ -64,8 +66,6 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         groupBox_classification = QGroupBox("Classification models", self)
         vertical_layout_classification = QVBoxLayout(groupBox_classification)
 
-
-        classification_models = ["Model A", "Model B", "Model C"] #TODO: add logic to fetch list from hf
         for model in classification_models:
             checkbox = QCheckBox(model, self)
             vertical_layout_classification.addWidget(checkbox)
@@ -80,7 +80,7 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         main_layout.addWidget(self.buttonBox)
 
     def accept(self):
-        """"""
+        """Method to accept and close dialog"""
         selected_detection_models = []
         selected_classification_models = []
 
@@ -92,10 +92,6 @@ class Dialog_AiModelDownloaderSelector(QDialog):
                 selected_classification_models.append(checkbox.text())
 
         super().accept()
-
-    def reject(self):
-        """"""
-        super().reject()
 
 
 

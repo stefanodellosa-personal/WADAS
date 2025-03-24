@@ -20,7 +20,9 @@
 import logging
 import os
 import shutil
+from pathlib import Path
 
+import yaml
 from huggingface_hub import hf_hub_download
 from PySide6.QtCore import QObject, Signal
 
@@ -34,8 +36,9 @@ MODEL_FILES = [
     "classification_model.bin",
 ]
 REPO_ID = "wadas-it/wadas"
-SAVE_DIRECTORY = os.path.join(module_dir_path, "..", "..", "model")
-MODEL_PATHS = [os.path.join(SAVE_DIRECTORY, f) for f in MODEL_FILES]
+SAVE_DIRECTORY = Path(module_dir_path, "..", "..", "model").resolve()
+MODEL_FILES = []
+CONFIG_FILE = "wadas_models.yaml"
 
 
 class AiModelsDownloader(QObject):
@@ -79,3 +82,22 @@ class AiModelsDownloader(QObject):
         if self.thread().isInterruptionRequested():
             self.stop_flag = True
             logger.error("Ai Models download cancelled by user.")
+
+    @classmethod
+    def get_available_models(self, token):
+        """Returns the names of available models from a YAML config file downloaded
+        from Hugging Face."""
+        try:
+            # Download configuration file from Hugging Face
+            config_file_path = hf_hub_download(
+                repo_id=REPO_ID, filename=CONFIG_FILE, use_auth_token=token
+            )
+
+            with open(config_file_path, "r") as file:
+                config = yaml.safe_load(file)
+                detection_models = config.get("detection_models", [])
+                classification_models = config.get("classification_models", [])
+                return detection_models, classification_models
+        except Exception as e:
+            print(f"Error loading YAML file: {e}")
+            return [], []
