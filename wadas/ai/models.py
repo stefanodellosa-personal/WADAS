@@ -17,6 +17,8 @@
 # Date: 2024-10-11
 # Description: This module implements OpenVINO related classes and functionalities.
 
+from pathlib import Path
+
 import numpy as np
 import torch
 from PytorchWildlife.data import transforms as pw_trans
@@ -146,7 +148,9 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
     """MegaDetectorV5 class for detection model"""
 
     def __init__(self, device):
-        self.model = OVModel("detection_model.xml", device)
+        self.model = OVModel(
+            Path("detection", "MDV5-yolov5_openvino_model", "MDV5-yolov5.xml"), device
+        )
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
 
         self.transform = pw_trans.MegaDetector_v5_Transform(
@@ -164,7 +168,9 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
     @staticmethod
     def check_model():
         """Check if detection model is initialized"""
-        return OVModel.check_model("detection_model.xml")
+        return OVModel.check_model(
+            Path("detection", "MDV5-yolov5_openvino_model", "MDV5-yolov5.xml")
+        )
 
     @staticmethod
     def download_model(force: bool = False):
@@ -213,7 +219,7 @@ class Classifier:
     CROP_SIZE = 182
 
     def __init__(self, device):
-        self.model = OVModel("classification_model.xml", device)
+        self.model = OVModel(Path("classification", "DFv1.2_openvino_model", "DFv1.2.xml"), device)
         self.transforms = transforms.Compose(
             [
                 transforms.Resize(
@@ -233,7 +239,7 @@ class Classifier:
     @staticmethod
     def check_model():
         """Check if classification model is initialized"""
-        return OVModel.check_model("classification_model.xml")
+        return OVModel.check_model(Path("classification", "DFv1.2_openvino_model", "DFv1.2.xml"))
 
     @staticmethod
     def download_model(force: bool = False):

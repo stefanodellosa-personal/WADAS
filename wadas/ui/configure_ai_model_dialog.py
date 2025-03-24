@@ -118,7 +118,8 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         """Method to trigger the download of Ai Models"""
 
         ai_model_download_dlg = AiModelDownloadDialog()
-        ai_model_download_dlg.exec()
+        if ai_model_download_dlg.exec():
+            self.populate_ai_models_version_dropdown()
 
     def validate_data(self):
         """Method to validate input values."""
