@@ -42,14 +42,17 @@ class AiModel:
     language = "en"
     video_fps = 1
     distributed_inference = False
-    detection_version = "v5"
-    classification_version = "v1.2"
+    detection_version = "MDV5-yolov5"
+    classification_version = "DFv1.2"
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
         logger.info(
-            "Initializing AI model for image detection on %s and classification on %s device(s)...",
+            "Initializing %s AI detection model for image detection on '%s' device and"
+            " %s model for classification on '%s' device...",
+            AiModel.detection_version,
             AiModel.detection_device,
+            AiModel.classification_version,
             AiModel.classification_device,
         )
         self.detection_pipeline = DetectionPipeline(

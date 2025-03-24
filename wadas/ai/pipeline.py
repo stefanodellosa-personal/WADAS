@@ -48,7 +48,7 @@ class DetectionPipeline:
         classification_device="auto",
         language="en",
         distributed_inference=False,
-        megadetector_version="v5",
+        megadetector_version="MDV5-yolov5",
     ):
         self.detection_device = detection_device
         self.classification_device = classification_device

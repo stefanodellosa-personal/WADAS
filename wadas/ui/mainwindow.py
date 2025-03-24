@@ -363,27 +363,22 @@ class MainWindow(QMainWindow):
         """Update status of toolbar and related buttons (actions)."""
 
         if not OperationMode.cur_operation_mode_type:
-            self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
         elif OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode:
-            self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(True)
         elif (
             OperationMode.cur_operation_mode_type != OperationMode.OperationModeTypes.TestModelMode
             and not cameras
         ):
-            self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
             logger.warning("No camera configured. Please configure camera(s) to run the selected operation mode.")
         elif (
             OperationMode.cur_operation_mode_type != OperationMode.OperationModeTypes.TestModelMode
             and not self.camera_enabled()
         ):
-            self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
             logger.warning("No camera enabled. Please enable at least a camera to run the selected operation mode.")
         else:
-            self.ui.actionConfigure_Ai_model.setEnabled(True)
             valid_configuration = True
             if self.enabled_email_notifier_exists() and not self.load_status["valid_email_keyring"]:
                 valid_configuration = False
