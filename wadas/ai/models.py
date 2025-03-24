@@ -187,7 +187,9 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
         self.predictor = OVPredictor(ov_device=device)
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
 
-        self.predictor.setup_model("MDV6b-yolov9c_openvino_model", verbose=False)
+        self.predictor.setup_model(
+            Path("detection", "MDV6b-yolov9c_openvino_model", "MDV6b-yolov9c.xml"), verbose=False
+        )
 
         self.predictor.args.imgsz = self.IMAGE_SIZE
         self.predictor.args.save = (
@@ -205,7 +207,9 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
     @staticmethod
     def check_model():
         """Check if detection model is initialized"""
-        return OVModel.check_model("MDV6b-yolov9c_openvino_model")
+        return OVModel.check_model(
+            Path("detection", "MDV6b-yolov9c_openvino_model", "MDV6b-yolov9c.xml")
+        )
 
     @staticmethod
     def download_model(force: bool = False):
