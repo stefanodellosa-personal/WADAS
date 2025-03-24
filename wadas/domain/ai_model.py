@@ -26,6 +26,7 @@ from PIL import Image, ImageFile, UnidentifiedImageError
 from PytorchWildlife import utils as pw_utils
 
 from wadas.ai import DetectionPipeline
+from wadas.ai.object_tracker import ObjectTracker
 
 logger = logging.getLogger(__name__)
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -41,6 +42,7 @@ class AiModel:
     language = "en"
     video_fps = 1
     distributed_inference = False
+    detection_version = "v5"
 
     def __init__(self):
         # Initializing the MegaDetectorV5 model for image detection
@@ -54,6 +56,7 @@ class AiModel:
             classification_device=AiModel.classification_device,
             language=AiModel.language,
             distributed_inference=AiModel.distributed_inference,
+            megadetector_version=AiModel.detection_version,
         )
 
         self.original_image = ""
@@ -162,6 +165,32 @@ class AiModel:
 
             yield frame, frame_count
             frame_count += 1
+
+    def process_video_offline(self, video_path):
+        """Method to run detection model on provided video."""
+
+        logger.debug("Selected detection device: %s", AiModel.detection_device)
+
+        logger.info("Running detection on video %s ...", video_path)
+        tracker = ObjectTracker(max_missed=10)
+
+        frames = tuple(frame for frame, _ in self.get_video_frames(video_path))
+        tracked_animals = []
+
+        # Run the detection model on the video frames
+        detection_lists = self.detection_pipeline.run_detection(frames, AiModel.detection_threshold)
+
+        # Classify detected animals on all frames
+        classification_lists = self.detection_pipeline.classify(
+            frames, detection_lists, AiModel.classification_threshold
+        )
+
+        for frame, classified_animals in zip(frames, classification_lists):
+            array = np.array(frame)
+            tracked_animal = tracker.update(classified_animals, array.shape[:2])
+            tracked_animals.append(tracked_animal)
+
+        return tracked_animals
 
     def process_video(self, video_path, save_detection_image: bool):
         """Method to run detection model on provided video."""

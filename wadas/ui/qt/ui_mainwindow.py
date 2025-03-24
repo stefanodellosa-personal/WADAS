@@ -158,24 +158,6 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.line, 0, 1, 1, 1)
 
-        self.label_image = QLabel(self.centralwidget)
-        self.label_image.setObjectName(u"label_image")
-        self.label_image.setEnabled(True)
-        sizePolicy.setHeightForWidth(self.label_image.sizePolicy().hasHeightForWidth())
-        self.label_image.setSizePolicy(sizePolicy)
-        self.label_image.setMinimumSize(QSize(400, 300))
-        self.label_image.setMaximumSize(QSize(800, 600))
-
-        self.gridLayout.addWidget(self.label_image, 0, 0, 1, 1)
-
-        self.plainTextEdit_log = QPlainTextEdit(self.centralwidget)
-        self.plainTextEdit_log.setObjectName(u"plainTextEdit_log")
-        sizePolicy.setHeightForWidth(self.plainTextEdit_log.sizePolicy().hasHeightForWidth())
-        self.plainTextEdit_log.setSizePolicy(sizePolicy)
-        self.plainTextEdit_log.setMinimumSize(QSize(400, 100))
-
-        self.gridLayout.addWidget(self.plainTextEdit_log, 1, 0, 1, 3)
-
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.label_op_mode_title = QLabel(self.centralwidget)
@@ -197,6 +179,17 @@ class Ui_MainWindow(object):
         self.label_op_mode.setSizePolicy(sizePolicy2)
 
         self.verticalLayout.addWidget(self.label_op_mode)
+
+        self.label_5 = QLabel(self.centralwidget)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setFont(font)
+
+        self.verticalLayout.addWidget(self.label_5)
+
+        self.label_classification_enablement = QLabel(self.centralwidget)
+        self.label_classification_enablement.setObjectName(u"label_classification_enablement")
+
+        self.verticalLayout.addWidget(self.label_classification_enablement)
 
         self.label_3 = QLabel(self.centralwidget)
         self.label_3.setObjectName(u"label_3")
@@ -270,19 +263,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.label_last_detection)
 
-        self.label_last_classification_title = QLabel(self.centralwidget)
-        self.label_last_classification_title.setObjectName(u"label_last_classification_title")
-        self.label_last_classification_title.setFont(font)
-
-        self.verticalLayout.addWidget(self.label_last_classification_title)
-
-        self.label_last_classification = QLabel(self.centralwidget)
-        self.label_last_classification.setObjectName(u"label_last_classification")
-        sizePolicy2.setHeightForWidth(self.label_last_classification.sizePolicy().hasHeightForWidth())
-        self.label_last_classification.setSizePolicy(sizePolicy2)
-
-        self.verticalLayout.addWidget(self.label_last_classification)
-
         self.label_classified_animal_title = QLabel(self.centralwidget)
         self.label_classified_animal_title.setObjectName(u"label_classified_animal_title")
         self.label_classified_animal_title.setFont(font)
@@ -296,6 +276,24 @@ class Ui_MainWindow(object):
 
 
         self.gridLayout.addLayout(self.verticalLayout, 0, 2, 1, 1)
+
+        self.label_image = QLabel(self.centralwidget)
+        self.label_image.setObjectName(u"label_image")
+        self.label_image.setEnabled(True)
+        sizePolicy.setHeightForWidth(self.label_image.sizePolicy().hasHeightForWidth())
+        self.label_image.setSizePolicy(sizePolicy)
+        self.label_image.setMinimumSize(QSize(400, 300))
+        self.label_image.setMaximumSize(QSize(800, 600))
+
+        self.gridLayout.addWidget(self.label_image, 0, 0, 1, 1)
+
+        self.plainTextEdit_log = QPlainTextEdit(self.centralwidget)
+        self.plainTextEdit_log.setObjectName(u"plainTextEdit_log")
+        sizePolicy.setHeightForWidth(self.plainTextEdit_log.sizePolicy().hasHeightForWidth())
+        self.plainTextEdit_log.setSizePolicy(sizePolicy)
+        self.plainTextEdit_log.setMinimumSize(QSize(400, 100))
+
+        self.gridLayout.addWidget(self.plainTextEdit_log, 1, 0, 1, 3)
 
         self.gridLayout.setRowStretch(0, 300)
         self.gridLayout.setColumnStretch(0, 300)
@@ -431,9 +429,10 @@ class Ui_MainWindow(object):
         self.actionConfigure_web_interface.setToolTip(QCoreApplication.translate("MainWindow", u"Configure web interface", None))
 #endif // QT_CONFIG(tooltip)
         self.actionExit.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
-        self.label_image.setText(QCoreApplication.translate("MainWindow", u"Detecion viewer", None))
         self.label_op_mode_title.setText(QCoreApplication.translate("MainWindow", u"Operation mode:", None))
         self.label_op_mode.setText("")
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"Classification", None))
+        self.label_classification_enablement.setText("")
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Notification method:", None))
         self.label_notification_method.setText("")
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Database:", None))
@@ -442,10 +441,9 @@ class Ui_MainWindow(object):
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Enabled Actuator(s)", None))
         self.label_last_detection_title.setText(QCoreApplication.translate("MainWindow", u"Last detection:", None))
         self.label_last_detection.setText("")
-        self.label_last_classification_title.setText(QCoreApplication.translate("MainWindow", u"Last classification:", None))
-        self.label_last_classification.setText("")
         self.label_classified_animal_title.setText(QCoreApplication.translate("MainWindow", u"Classified animal(s):", None))
         self.label_classified_animal.setText("")
+        self.label_image.setText(QCoreApplication.translate("MainWindow", u"Detecion viewer", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
