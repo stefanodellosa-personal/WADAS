@@ -250,7 +250,9 @@ class Classifier:
     @staticmethod
     def download_model(force: bool = False):
         """Download classification model"""
-        return OVModel.download_model("classification_model", force)
+        return OVModel.download_model(
+            Path("classification", "DFv1.2_openvino_model", "DFv1.2"), force
+        )
 
     def predictOnBatch(self, batchtensor, withsoftmax=True):
         """Predict on a batch of images"""
