@@ -175,7 +175,9 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
     @staticmethod
     def download_model(force: bool = False):
         """Check if model is initialized"""
-        return OVModel.download_model("detection_model", force)
+        return OVModel.download_model(
+            Path("detection", "MDV5-yolov5_openvino_model", "MDV5-yolov5"), force
+        )
 
 
 class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
@@ -212,7 +214,9 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
     @staticmethod
     def download_model(force: bool = False):
         """Check if model is initialized"""
-        return OVModel.download_model("MDV6b-yolov9c_openvino_model", force)
+        return OVModel.download_model(
+            Path("detection", "MDV6b-yolov9c_openvino_model", "MDV6b-yolov9c"), force
+        )
 
 
 class Classifier:
