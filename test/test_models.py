@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 import requests
@@ -9,6 +11,10 @@ from wadas.ai.openvino_model import OVModel
 from wadas.ai.pipeline import DetectionPipeline
 
 TEST_URL = "https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg"
+NAME_TO_PATH = {
+    "MDV5-yolov5": Path("detection", "MDV5-yolov5_openvino_model", "MDV5-yolov5.xml"),
+    "MDV6b-yolov9c": Path("detection", "MDV6b-yolov9c_openvino_model", "MDV6b-yolov9c.xml"),
+}
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -164,8 +170,11 @@ def test_classification_dog_overlapping(detection_pipeline):
 
 
 @pytest.fixture(scope="module")
-def ov_model():
-    model_name = "detection_model.xml"
+def ov_model(version="MDV5-yolov5"):
+    model_name = NAME_TO_PATH.get(version)
+    if model_name is None:
+        raise ValueError(f"Version '{version}' not found in NAME_TO_PATH")
+
     device = "CPU"
     return OVModel(model_name, device)
 
@@ -175,8 +184,8 @@ def test_get_available_device(ov_model):
     assert "CPU" in devices
 
 
-def test_compile_model(ov_model):
-    model_name = "detection_model.xml"
+def test_compile_model_MDV5(ov_model):
+    model_name = NAME_TO_PATH.get("MDV5-yolov5")
     model = ov_model.load_model(model_name)
     compiled_model = ov_model.compile_model(model)
     assert compiled_model is not None
