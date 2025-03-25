@@ -55,12 +55,14 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         self.ui.progressBar.setEnabled(False)
         self.ui.pushButton_download.setEnabled(False)
         self.ui.pushButton_select_model_version.setVisible(False)
+        self.ui.pushButton_select_model_version.setEnabled(False)
         self.ui.progressBar.setVisible(False)
         self.ui.lineEdit_token.textChanged.connect(self.validate)
         self.ui.pushButton_download.clicked.connect(self.download_models)
         self.ui.pushButton_cancel.clicked.connect(self.cancel_download)
         self.ui.pushButton_select_model_version.clicked.connect(self.on_select_model_version_button_clicked)
         self.ui.checkBox_select_versions.clicked.connect(self.on_select_model_version_checkbox_clicked)
+
         welcome_message = "Download WADAS models from Huggingface.co/wadas-it/wadas" if not no_model else\
             "Ai Model files not found. Download them from Huggingface.co/wadas-it/wadas."
         self.ui.label_welcome_message.setText(welcome_message)
@@ -69,6 +71,7 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         """Method to enable select model button basing on checkbox status"""
 
         self.ui.pushButton_select_model_version.setVisible(self.ui.checkBox_select_versions.isChecked())
+        self.update_select_model_button_enablement()
 
     def on_select_model_version_button_clicked(self):
         """Method to select Ai model versions to download"""
@@ -80,6 +83,11 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         else:
             self.det_models = dialog.selected_detection_models
             self.class_models = dialog.selected_classification_models
+
+    def update_select_model_button_enablement(self):
+        """Method to enable/disable select model versions button"""
+
+        self.ui.pushButton_select_model_version.setEnabled(bool(self.ui.lineEdit_token.text()))
 
     def download_models(self):
         """Method to trigger the model download"""
@@ -151,6 +159,7 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
     def validate(self):
         """Method to validate the dialog input fields"""
 
+        self.update_select_model_button_enablement()
         self.ui.pushButton_download.setEnabled(bool(self.ui.lineEdit_token.text()))
 
     def closeEvent(self, event):
