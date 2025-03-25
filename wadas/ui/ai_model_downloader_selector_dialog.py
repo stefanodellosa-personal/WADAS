@@ -33,8 +33,9 @@ from PySide6.QtWidgets import (
 from wadas.domain.ai_model_downloader import AiModelsDownloader
 from wadas.ui.error_message_dialog import WADASErrorMessage
 
-module_dir_path = os.path.dirname(os.path.abspath(__file__))
-
+module_dir_path = Path(__file__).resolve().parent
+ai_det_models_dir_path = (module_dir_path / ".." / ".." / "model" / "detection").resolve()
+ai_class_models_dir_path = (module_dir_path / ".." / ".." / "model" / "classification").resolve()
 
 class Dialog_AiModelDownloaderSelector(QDialog):
     """Class to implement AI model downloader selector dialog."""
@@ -57,9 +58,14 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         vertical_layout_detection = QVBoxLayout(groupBox_detection)
 
         detection_models, classification_models = AiModelsDownloader.get_available_models(hf_token)
+        local_det_models = [d.name.replace("_openvino_model", "") for d in ai_det_models_dir_path.iterdir() if d.is_dir()]
+        local_class_models = [d.name.replace("_openvino_model", "") for d in ai_class_models_dir_path.iterdir() if d.is_dir()]
         if detection_models and classification_models:
             for model in detection_models:
                 checkbox = QCheckBox(model, self)
+                if model in local_det_models:
+                    checkbox.setChecked(True)
+                    checkbox.setEnabled(False)
                 vertical_layout_detection.addWidget(checkbox)
 
             scroll_area_detection = QScrollArea(self)
@@ -72,6 +78,9 @@ class Dialog_AiModelDownloaderSelector(QDialog):
 
             for model in classification_models:
                 checkbox = QCheckBox(model, self)
+                if model in local_class_models:
+                    checkbox.setChecked(True)
+                    checkbox.setEnabled(False)
                 vertical_layout_classification.addWidget(checkbox)
 
             scroll_area_classification = QScrollArea(self)
@@ -91,10 +100,11 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         """Method to accept and close dialog"""
 
         for checkbox in self.findChildren(QCheckBox):
-            if "Detection" in checkbox.parent().title() and checkbox.isChecked():
-                self.selected_detection_models.append(checkbox.text())
+            if checkbox.isEnabled():
+                if "Detection" in checkbox.parent().title() and checkbox.isChecked():
+                    self.selected_detection_models.append(checkbox.text())
 
-            if "Classification" in checkbox.parent().title() and checkbox.isChecked():
-                self.selected_classification_models.append(checkbox.text())
+                if "Classification" in checkbox.parent().title() and checkbox.isChecked():
+                    self.selected_classification_models.append(checkbox.text())
 
         super().accept()
