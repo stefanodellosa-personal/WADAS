@@ -18,10 +18,8 @@ def load_ov_model(weights, device, inference_mode="LATENCY"):
     core = ov.Core()
     w = str(weights[0] if isinstance(weights, list) else weights)
     w = Path(w)
-    print(w)
     if not w.is_file():  # if not *.xml
         w = next(w.glob("*.xml"))  # get *.xml file from *_openvino_model dir
-        print(w)
     ov_model = core.read_model(model=str(w), weights=w.with_suffix(".bin"))
     return core.compile_model(
         ov_model,
