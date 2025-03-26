@@ -78,9 +78,9 @@ class AiModel:
         )
 
     @staticmethod
-    def check_model():
+    def check_model(detection_model, classification_model):
         """Method to check if model is initialized."""
-        return DetectionPipeline.check_models()
+        return DetectionPipeline.check_models(detection_model, classification_model)
 
     @staticmethod
     def download_models():

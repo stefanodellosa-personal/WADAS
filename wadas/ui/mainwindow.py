@@ -259,7 +259,7 @@ class MainWindow(QMainWindow):
         self.instantiate_selected_model()
         # Satisfy preconditions independently of selected operation mode
         if not self.check_models():
-            logger.error("Cannot run this mode without AI models. Aborting.")
+            logger.error("Cannot run operation mode without AI models. Aborting.")
             return
         if OperationMode.cur_operation_mode.type != OperationMode.OperationModeTypes.TestModelMode:
             if not cameras:
@@ -615,11 +615,12 @@ class MainWindow(QMainWindow):
 
     def check_models(self):
         """Method to initialize classification model."""
-        if not AiModel.check_model():
+        if not AiModel.check_model(AiModel.detection_model_version, AiModel.classification_model_version):
             logger.warning("AI module not found. Downloading...")
             ai_download_dialog = AiModelDownloadDialog(True)
             if ai_download_dialog.exec():
-                return ai_download_dialog.download_success and AiModel.check_model()
+                return (ai_download_dialog.download_success and
+                        AiModel.check_model(AiModel.detection_model_version, AiModel.classification_model_version))
             else:
                 logger.error("Ai models files download cancelled by user. Aborting.")
                 return False

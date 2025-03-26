@@ -93,9 +93,21 @@ class DetectionPipeline:
         self.language = language
 
     @staticmethod
-    def check_models():
+    def check_models(detection_model, classification_model):
         """Method to check if models are initialized."""
-        return OVMegaDetectorV5.check_model() and Classifier.check_model()
+        detector = NAME_TO_DETECTOR.get(detection_model)
+        if detector is None:
+            logger.error("Unknown detection model version: %s", detection_model)
+            detector = False
+        if not (detection_model_status := detector.check_model()):
+            logger.error("Detection model version '%s' not found on the system.", detection_model)
+
+        if not (classification_model_status := Classifier.check_model()):
+            logger.error(
+                "Classification model version '%s' not found on the system.", classification_model
+            )
+
+        return detection_model_status and classification_model_status
 
     @staticmethod
     def download_models(force: bool = False):
