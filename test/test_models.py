@@ -36,7 +36,7 @@ def test_classification_model():
 @pytest.fixture
 def detection_pipeline():
     pipeline = DetectionPipeline(detection_device="cpu", classification_device="cpu")
-    assert pipeline.check_models()
+    assert pipeline.check_models("MDV5-yolov5", "DFv1.2")
     return pipeline
 
 
