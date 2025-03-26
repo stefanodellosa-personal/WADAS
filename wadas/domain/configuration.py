@@ -223,6 +223,10 @@ def load_configuration_from_file(file_path):
         # Ai model
         available_ai_devices = ov.Core().get_available_devices()
         available_ai_devices.append("auto")
+        AiModel.detection_model_version = wadas_config["ai_model"]["ai_detection_model_version"]
+        AiModel.classification_model_version = wadas_config["ai_model"][
+            "ai_classification_model_version"
+        ]
         AiModel.detection_threshold = wadas_config["ai_model"]["ai_detect_threshold"]
         AiModel.classification_threshold = wadas_config["ai_model"]["ai_class_threshold"]
         AiModel.language = wadas_config["ai_model"]["ai_language"]
@@ -313,6 +317,8 @@ def save_configuration_to_file(file_, project_uuid):
         "camera_detection_params": Camera.detection_params,
         "actuators": actuators,
         "ai_model": {
+            "ai_detection_model_version": AiModel.detection_model_version,
+            "ai_classification_model_version": AiModel.classification_model_version,
             "ai_detect_threshold": AiModel.detection_threshold,
             "ai_class_threshold": AiModel.classification_threshold,
             "ai_language": AiModel.language,
