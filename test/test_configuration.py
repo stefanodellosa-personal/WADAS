@@ -31,6 +31,8 @@ def init():
     cameras.clear()
     Camera.detection_params.clear()
     FastAPIActuatorServer.actuator_server = None
+    AiModel.classification_model_version = "MDV5-yolov5"
+    AiModel.classification_model_version = "DFv1.2"
     AiModel.classification_threshold = 0
     AiModel.detection_threshold = 0
     AiModel.language = ""
@@ -49,8 +51,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -80,6 +84,8 @@ def test_load_incompatible_older_version_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.detection_device == "auto"
@@ -99,8 +105,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -130,6 +138,8 @@ def test_load_empty_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.detection_device == "auto"
@@ -149,8 +159,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -172,6 +184,8 @@ version: {__version__}
 actuator_server:
 actuators: []
 ai_model:
+  ai_detection_model_version: MDV5-yolov5
+  ai_classification_model_version: DFv1.2
   ai_class_threshold: 0
   ai_classification_device: auto
   ai_detect_threshold: 0
@@ -203,6 +217,8 @@ def test_load_wrong_format_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.detection_device == "auto"
@@ -227,8 +243,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -266,6 +284,8 @@ def test_load_actuator_server_config(mock_file, init):
     assert FastAPIActuatorServer.actuator_server.thread is None
     assert FastAPIActuatorServer.actuator_server.server is None
     assert FastAPIActuatorServer.actuator_server.startup_time is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -294,8 +314,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -333,7 +355,9 @@ ai_model:
   ai_detect_threshold: 0.456
   ai_language: xyz
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_video_fps: 1
 cameras: []
 camera_detection_params: {{}}
@@ -371,6 +395,8 @@ def test_load_actuators_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0.123
     assert AiModel.detection_threshold == 0.456
     assert AiModel.language == "xyz"
@@ -407,8 +433,10 @@ actuators:
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -434,7 +462,9 @@ ai_model:
   ai_detect_threshold: 0.76
   ai_language: it
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_video_fps: 1
 cameras: []
 camera_detection_params: {{}}
@@ -463,6 +493,8 @@ def test_load_ai_model_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0.98
     assert AiModel.detection_threshold == 0.76
     assert AiModel.language == "it"
@@ -475,6 +507,8 @@ def test_load_ai_model_config(mock_file, init):
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
 def test_save_ai_model_config(mock_file, init):
+    AiModel.classification_model_version = "MDV5-yolov5"
+    AiModel.classification_model_version = "DFv1.2"
     AiModel.classification_threshold = 0.98
     AiModel.detection_threshold = 0.76
     AiModel.language = "it"
@@ -489,8 +523,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0.98
   ai_classification_device: GPU
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0.76
   ai_detection_device: CPU
+  ai_detection_model_version: MDV5-yolov5
   ai_language: it
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -514,8 +550,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -554,6 +592,8 @@ def test_load_camera_detection_params_config(mock_file, init):
         "threshold": 89,
     }
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -580,8 +620,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params:
@@ -609,8 +651,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras:
@@ -752,6 +796,8 @@ def test_load_cameras_config(mock_file, init):
     ]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -771,8 +817,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras:
@@ -830,6 +878,8 @@ def test_load_cameras_config_with_ftp_and_folder_and_no_credentials(mock_file, i
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -849,8 +899,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras:
@@ -908,6 +960,8 @@ def test_load_cameras_config_with_ftp_and_no_folder_and_no_credentials(mock_file
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -927,8 +981,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras:
@@ -986,6 +1042,8 @@ def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file,
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -1005,8 +1063,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras:
@@ -1064,6 +1124,8 @@ def test_load_cameras_config_with_ftp_and_folder_and_different_credentials(mock_
     ] == [Camera.CameraTypes.FTP_CAMERA, "Camera1", "/Documents/ftp/Camera1", True, []]
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -1116,8 +1178,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -1179,8 +1243,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1229,6 +1295,8 @@ def test_load_ftps_server_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -1248,8 +1316,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1303,6 +1373,8 @@ def test_load_ftps_server_config_with_existing_server(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -1333,8 +1405,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -1368,8 +1442,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1418,6 +1494,8 @@ def test_load_notification_config_with_no_credentials(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -1437,8 +1515,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1487,6 +1567,8 @@ def test_load_notification_config_with_same_credentials(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -1506,8 +1588,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1556,6 +1640,8 @@ def test_load_notification_config_with_different_credentials(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -1575,8 +1661,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1629,8 +1717,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -1666,8 +1756,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -1699,8 +1791,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1731,6 +1825,8 @@ def test_load_test_model_mode_config(mock_file, init):
     assert cameras == []
     assert Camera.detection_params == {}
     assert FastAPIActuatorServer.actuator_server is None
+    assert AiModel.detection_model_version == "MDV5-yolov5"
+    assert AiModel.classification_model_version == "DFv1.2"
     assert AiModel.classification_threshold == 0
     assert AiModel.detection_threshold == 0
     assert AiModel.language == ""
@@ -1752,8 +1848,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -1778,8 +1876,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1822,8 +1922,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -1848,8 +1950,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1894,8 +1998,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
@@ -1918,10 +2024,14 @@ version: {__version__}
 actuator_server:
 actuators: []
 ai_model:
+
+
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 cameras: []
@@ -1969,8 +2079,10 @@ actuators: []
 ai_model:
   ai_class_threshold: 0
   ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
   ai_detect_threshold: 0
   ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
   ai_language: ''
   ai_video_fps: 1
 camera_detection_params: {{}}
