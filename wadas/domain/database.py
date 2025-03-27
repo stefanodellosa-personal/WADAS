@@ -83,6 +83,7 @@ class DataBase(ABC):
 
     wadas_db = None  # Singleton instance of the database
     wadas_db_engine = None  # Singleton engine associated with the database
+    max_reconn_retries = 3  # Max number of retry for re-connecting
 
     def __init__(self, host, enabled=True, version=__dbversion__):
         """Constructor is not public, no external code should call this directly"""
@@ -215,18 +216,43 @@ class DataBase(ABC):
         DataBase.wadas_db = None
 
     @classmethod
-    def create_session(cls):
-        """Method to create a session to perform operation with the db"""
+    def create_session(cls, retry_count=0):
+        """Method to create a session to perform operations with the DB"""
 
         try:
-            if engine := cls.get_engine():
+            engine = cls.get_engine()
+            if engine:
+                # If db is not SQLite, check engine status (SQLite has no pre-existing sessions)
+                if DataBase.wadas_db.type != DataBase.DBTypes.SQLITE:
+                    with engine.connect() as connection:
+                        if connection.invalidated:
+                            logger.warning("Connection invalidated, disposing engine...")
+                            engine.dispose()
+                            DataBase.wadas_db_engine = None  # Force new engine
+                            engine = cls.get_engine()
+
                 Session = sessionmaker(bind=engine)
                 return Session()
             else:
                 logger.error("Unable to create a session as DB engine is not initialized.")
                 return None
+        except OperationalError:
+            if retry_count < cls.max_reconn_retries:
+                logger.warning(
+                    "Database connection lost. Retrying... "
+                    "(retry_count + 1/cls.max_reconn_retries)",
+                    retry_count + 1,
+                    cls.max_reconn_retries,
+                )
+                if DataBase.wadas_db_engine:
+                    DataBase.wadas_db_engine.dispose()
+                DataBase.wadas_db_engine = None  # Force creation of new enging at next attempt
+                return cls.create_session(retry_count=retry_count + 1)  # Retry to create session
+            else:
+                logger.error("Max retries reached. Could not create a session.")
+                return None
         except Exception:
-            logger.exception("An error occurred while creating a session")
+            logger.exception("An unexpected error occurred while creating a session")
             return None
 
     @classmethod
