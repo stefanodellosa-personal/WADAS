@@ -58,12 +58,15 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         vertical_layout_detection = QVBoxLayout(groupBox_detection)
 
         detection_models, classification_models = AiModelsDownloader.get_available_models(hf_token)
+        # Make sure local directories exists prior to download
+        ai_det_models_dir_path.mkdir(parents=True, exist_ok=True)
+        ai_class_models_dir_path.mkdir(parents=True, exist_ok=True)
         local_det_models = [d.name.replace("_openvino_model", "") for d in ai_det_models_dir_path.iterdir() if d.is_dir()]
         local_class_models = [d.name.replace("_openvino_model", "") for d in ai_class_models_dir_path.iterdir() if d.is_dir()]
         if detection_models and classification_models:
             for model in detection_models:
                 checkbox = QCheckBox(model, self)
-                if model in local_det_models:
+                if local_det_models and model in local_det_models:
                     checkbox.setChecked(True)
                     checkbox.setEnabled(False)
                 vertical_layout_detection.addWidget(checkbox)
@@ -78,7 +81,7 @@ class Dialog_AiModelDownloaderSelector(QDialog):
 
             for model in classification_models:
                 checkbox = QCheckBox(model, self)
-                if model in local_class_models:
+                if local_class_models and model in local_class_models:
                     checkbox.setChecked(True)
                     checkbox.setEnabled(False)
                 vertical_layout_classification.addWidget(checkbox)
