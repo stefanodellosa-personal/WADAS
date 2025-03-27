@@ -36,7 +36,7 @@ MODEL_FILES = [
     "classification_model.bin",
 ]
 REPO_ID = "wadas-it/wadas"
-SAVE_DIRECTORY = Path(module_dir_path, "..", "..", "model").resolve()
+SAVE_DIRECTORY = (Path(module_dir_path).parent.parent / "model").resolve()
 CONFIG_FILE = "wadas_models.yaml"
 
 
@@ -61,11 +61,10 @@ class AiModelsDownloader(QObject):
 
             # convert path to string
             absolute_det_dir_path = [
-                str(Path("detection", item).as_posix()) for item in self.det_model_directories
+                Path("detection", item).as_posix() for item in self.det_model_directories
             ]
             absolute_class_dir_path = [
-                str(Path("classification", item).as_posix())
-                for item in self.class_model_directories
+                Path("classification", item).as_posix() for item in self.class_model_directories
             ]
             models_folders = absolute_det_dir_path + absolute_class_dir_path
             remote_files = []
@@ -89,7 +88,7 @@ class AiModelsDownloader(QObject):
                 if self.stop_flag:
                     break
 
-                local_file_path = os.path.join(SAVE_DIRECTORY, remote_file_path)
+                local_file_path = Path(SAVE_DIRECTORY, remote_file_path)
 
                 # Download the file
                 try:
@@ -103,7 +102,7 @@ class AiModelsDownloader(QObject):
                     if remote_files:
                         self.run_progress.emit((i + 1) * 100 // len(remote_files))
                 except Exception as e:
-                    self.error_happened.emit(f"Error downloading {remote_file_path}: {str(e)}")
+                    self.error_happened.emit(f"Error downloading {remote_file_path}: {e}")
                     continue
 
             self.run_finished.emit()
@@ -128,13 +127,13 @@ class AiModelsDownloader(QObject):
                 repo_id=REPO_ID, filename=CONFIG_FILE, use_auth_token=token
             )
 
-            with open(config_file_path, "r") as file:
-                config = yaml.safe_load(file)
-                detection_models = config.get("detection_models", [])
-                classification_models = config.get("classification_models", [])
+            with open(config_file_path, "r") as file_:
+                config = yaml.safe_load(file_)
+                detection_models = config.get("detection_models", ())
+                classification_models = config.get("classification_models", ())
                 return detection_models, classification_models
         except Exception:
-            return [], []
+            return (), ()
 
     @classmethod
     def get_default_models(self, token):
@@ -154,4 +153,4 @@ class AiModelsDownloader(QObject):
                     [default_classification_model] if default_classification_model else [],
                 )
         except Exception:
-            return [], []
+            return (), ()

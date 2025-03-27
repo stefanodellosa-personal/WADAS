@@ -40,7 +40,7 @@ class AiModelDownloadDialog(QDialog, Ui_AiModelDownloadDialog):
         super().__init__()
         self.ui = Ui_AiModelDownloadDialog()
         self.setWindowTitle("Download AI Models")
-        self.setWindowIcon(QIcon(str(Path(module_dir_path, "..", "img", "mainwindow_icon.jpg").resolve())))
+        self.setWindowIcon(QIcon((Path(module_dir_path).parent / "img" / "mainwindow_icon.jpg").resolve().as_posix()))
 
         self.det_models = []
         self.class_models = []

@@ -31,8 +31,8 @@ from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
 from wadas.ui.qt.ui_configure_ai_model import Ui_DialogConfigureAi
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
-det_models_dir_path = Path(module_dir_path, "..", "..", "model", "detection").resolve()
-class_models_dir_path = Path(module_dir_path, "..", "..", "model", "classification").resolve()
+det_models_dir_path = (Path(module_dir_path).parent.parent / "model" / "detection").resolve()
+class_models_dir_path = (Path(module_dir_path).parent.parent / "model" / "classification").resolve()
 
 
 class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
@@ -44,7 +44,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
 
         # UI
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(str(Path(module_dir_path, "..", "img", "mainwindow_icon.jpg").resolve())))
+        self.setWindowIcon(QIcon((Path(module_dir_path).parent / "img" / "mainwindow_icon.jpg").resolve().as_posix()))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_errorMEssage.setStyleSheet("color: red")
         self.ui.lineEdit_classificationThreshold.setText(str(AiModel.classification_threshold))

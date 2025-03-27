@@ -34,8 +34,8 @@ from wadas.domain.ai_model_downloader import AiModelsDownloader
 from wadas.ui.error_message_dialog import WADASErrorMessage
 
 module_dir_path = Path(__file__).resolve().parent
-ai_det_models_dir_path = (module_dir_path / ".." / ".." / "model" / "detection").resolve()
-ai_class_models_dir_path = (module_dir_path / ".." / ".." / "model" / "classification").resolve()
+ai_det_models_dir_path = (Path(module_dir_path).parent.parent / "model" / "detection").resolve()
+ai_class_models_dir_path = (Path(module_dir_path).parent.parent / "model" / "classification").resolve()
 
 class Dialog_AiModelDownloaderSelector(QDialog):
     """Class to implement AI model downloader selector dialog."""
@@ -46,7 +46,7 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         self.selected_detection_models = []
         self.selected_classification_models = []
         self.setWindowTitle("Select AI Models to download")
-        self.setWindowIcon(QIcon(str(Path(module_dir_path, "..", "img", "mainwindow_icon.jpg").resolve())))
+        self.setWindowIcon(QIcon((Path(module_dir_path).parent / "img" / "mainwindow_icon.jpg").resolve().as_posix()))
 
         main_layout = QVBoxLayout(self)
 
