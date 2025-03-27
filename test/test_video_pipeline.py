@@ -44,7 +44,7 @@ def test_video_detection_and_classification(init):
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
     assert ai_pipeline.video_fps == 1
-    assert ai_pipeline.check_model()
+    assert ai_pipeline.check_model("MDV5-yolov5", "DFv1.2")
 
     # This one is the video of a bear
     VIDEO_URL = "https://videos.pexels.com/video-files/857097/857097-hd_1280_720_30fps.mp4"
@@ -77,7 +77,7 @@ def test_video_detection_and_classification_empty(init):
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
     assert ai_pipeline.video_fps == 1
-    assert ai_pipeline.check_model()
+    assert ai_pipeline.check_model("MDV5-yolov5", "DFv1.2")
     # This one is the video of a waterfall => No animals
     VIDEO_URL = "https://videos.pexels.com/video-files/6981411/6981411-hd_1920_1080_25fps.mp4"
     animals = []
@@ -98,7 +98,7 @@ def test_offline_video_detection_and_classification(init):
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
     assert ai_pipeline.video_fps == 1
-    assert ai_pipeline.check_model()
+    assert ai_pipeline.check_model("MDV5-yolov5", "DFv1.2")
 
     # This one is the video of a bear
     VIDEO_URL = "https://videos.pexels.com/video-files/7723475/7723475-hd_1920_1080_25fps.mp4"
@@ -120,7 +120,7 @@ def test_offline_video_detection_and_classification_empty(init):
     assert ai_pipeline.classification_device == "auto"
     assert ai_pipeline.detection_device == "auto"
     assert ai_pipeline.video_fps == 1
-    assert ai_pipeline.check_model()
+    assert ai_pipeline.check_model("MDV5-yolov5", "DFv1.2")
     # This one is the video of a waterfall => No animals
     VIDEO_URL = "https://videos.pexels.com/video-files/6981411/6981411-hd_1920_1080_25fps.mp4"
     animals = []
