@@ -48,7 +48,7 @@ class OVBackend(AutoBackend):
         if not w.is_file():  # if not *.xml
             w = next(w.glob("*.xml"))  # get *.xml file from *_openvino_model dir
         self.inference_mode = "LATENCY"
-        self.ov_compiled_model = load_ov_model(w, device, self.inference_mode)
+        self.ov_compiled_model = load_ov_model(w, ov_device, self.inference_mode)
 
 
 class OVPredictor(DetectionPredictor):
