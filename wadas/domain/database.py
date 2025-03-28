@@ -220,8 +220,7 @@ class DataBase(ABC):
         """Method to create a session to perform operations with the DB"""
 
         try:
-            engine = cls.get_engine()
-            if engine:
+            if engine := cls.get_engine():
                 # If db is not SQLite, check engine status (SQLite has no pre-existing sessions)
                 if DataBase.wadas_db.type != DataBase.DBTypes.SQLITE:
                     with engine.connect() as connection:
@@ -239,14 +238,13 @@ class DataBase(ABC):
         except OperationalError:
             if retry_count < cls.max_reconn_retries:
                 logger.warning(
-                    "Database connection lost. Retrying... "
-                    "(retry_count + 1/cls.max_reconn_retries)",
+                    "Database connection lost. Retrying... (%s/%s)",
                     retry_count + 1,
                     cls.max_reconn_retries,
                 )
                 if DataBase.wadas_db_engine:
                     DataBase.wadas_db_engine.dispose()
-                DataBase.wadas_db_engine = None  # Force creation of new enging at next attempt
+                DataBase.wadas_db_engine = None  # Force creation of new engine at next attempt
                 return cls.create_session(retry_count=retry_count + 1)  # Retry to create session
             else:
                 logger.error("Max retries reached. Could not create a session.")
