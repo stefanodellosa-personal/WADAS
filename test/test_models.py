@@ -12,8 +12,8 @@ from wadas.ai.pipeline import DetectionPipeline
 
 TEST_URL = "https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg"
 NAME_TO_PATH = {
-    "MDV5-yolov5": Path("detection", "MDV5-yolov5_openvino_model", "MDV5-yolov5.xml"),
-    "MDV6b-yolov9c": Path("detection", "MDV6b-yolov9c_openvino_model", "MDV6b-yolov9c.xml"),
+    "MDV5-yolov5": Path("detection", "MDV5-yolov5", "MDV5-yolov5.xml"),
+    "MDV6b-yolov9c": Path("detection", "MDV6b-yolov9c", "MDV6b-yolov9c.xml"),
 }
 
 
