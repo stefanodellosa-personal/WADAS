@@ -17,6 +17,7 @@
 # Date: 2024-10-11
 # Description: This module implements OpenVINO related classes and functionalities.
 
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import numpy as np
@@ -147,12 +148,11 @@ txt_animalclasses = {
 class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
     """MegaDetectorV5 class for detection model"""
 
-    def __init__(self, device):
+    def __init__(self, device, model_name="MDV5-yolov5"):
         self.model = OVModel(
-            Path("detection", "MDV5-yolov5_openvino_model", "MDV5-yolov5.xml"), device
+            Path("detection", f"{model_name}_openvino_model", f"{model_name}.xml"), device
         )
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
-
         self.transform = pw_trans.MegaDetector_v5_Transform(
             target_size=self.IMAGE_SIZE, stride=self.STRIDE
         )
@@ -180,16 +180,18 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
         )
 
 
-class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
+class OVMegaDetectorV6(pw_detection.MegaDetectorV6, ABC):
     """MegaDetectorV6 class for detection model"""
 
     IMAGE_SIZE = 640
 
-    def __init__(self, device):
+    def __init__(self, device, model_name):
         self.predictor = OVPredictor(ov_device=device)
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
-
-        self.predictor.setup_model(Path("detection", "MDV6b-yolov9c_openvino_model"), verbose=False)
+        self.model_name = model_name
+        self.predictor.setup_model(
+            Path("detection", f"{self.model_name}_openvino_model"), verbose=False
+        )
 
         self.predictor.args.imgsz = self.IMAGE_SIZE
         self.predictor.args.save = (
@@ -205,6 +207,23 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
         return self.single_image_detection(img_array, None, detection_threshold, None)
 
     @staticmethod
+    @abstractmethod
+    def check_model():
+        """Check if detection model is initialized"""
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def download_model(force: bool = False):
+        """Check if model is initialized"""
+        pass
+
+
+class OVMegaDetectorV6YOLO9(OVMegaDetectorV6):
+    def __init__(self, device, model_name):
+        super().__init__(device, model_name)
+
+    @staticmethod
     def check_model():
         """Check if detection model is initialized"""
         return OVModel.check_model(
@@ -216,6 +235,25 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
         """Check if model is initialized"""
         return OVModel.download_model(
             Path("detection", "MDV6b-yolov9c_openvino_model", "MDV6b-yolov9c"), force
+        )
+
+
+class OVMegaDetectorV6YOLO10(OVMegaDetectorV6):
+    def __init__(self, device, model_name):
+        super().__init__(device, model_name)
+
+    @staticmethod
+    def check_model():
+        """Check if detection model is initialized"""
+        return OVModel.check_model(
+            Path("detection", "MDV6-yolov10n_openvino_model", "MDV6-yolov10n.xml")
+        )
+
+    @staticmethod
+    def download_model(force: bool = False):
+        """Check if model is initialized"""
+        return OVModel.download_model(
+            Path("detection", "MDV6-yolov10n_openvino_model", "MDV6-yolov10n"), force
         )
 
 
