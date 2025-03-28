@@ -1,10 +1,9 @@
-import * as React from 'react';
-import {useState} from 'react';
+import * as React from "react";
+import {useRef, useState} from "react";
 import {Container, Table} from "react-bootstrap";
 import {Camera, DetectionEvent} from "../types/types";
 import {DateTime} from "luxon";
 import PaginationBar from "./PaginationBar";
-
 
 const DetectionsScrollableTable = (props: {
     detections: DetectionEvent[];
@@ -14,18 +13,25 @@ const DetectionsScrollableTable = (props: {
     onPageChange: (page: number) => void;
     onRowSelected: (row: DetectionEvent) => void;
 }) => {
-
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     const handleRowClick = (event: DetectionEvent) => {
         setSelectedEventId(event.id);
         props.onRowSelected(event);
     };
 
+    const handlePageChange = (newPage: number) => {
+        props.onPageChange(newPage);
+
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = 0;
+        }
+    };
+
     return (
-        /* Scrollable Table */
         <Container className="h-100 p-0">
-            <div style={{overflowX: "auto", maxHeight: "80%", border: "1px solid #ddd"}}>
+            <div ref={scrollRef} style={{overflowX: "auto", maxHeight: "80%", border: "1px solid #ddd"}}>
                 <Table hover responsive striped>
                     <thead>
                     <tr>
@@ -68,14 +74,13 @@ const DetectionsScrollableTable = (props: {
                     </tbody>
                 </Table>
             </div>
-
-            <PaginationBar currentPage={props.currentPage}
-                           totalPages={props.totalPages}
-                           onPageChange={props.onPageChange}/>
+            <PaginationBar
+                currentPage={props.currentPage}
+                totalPages={props.totalPages}
+                onPageChange={handlePageChange}
+            />
         </Container>
-
-    )
-
-}
+    );
+};
 
 export default DetectionsScrollableTable;
