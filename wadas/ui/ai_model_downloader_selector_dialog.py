@@ -61,8 +61,8 @@ class Dialog_AiModelDownloaderSelector(QDialog):
         # Make sure local directories exists prior to download
         ai_det_models_dir_path.mkdir(parents=True, exist_ok=True)
         ai_class_models_dir_path.mkdir(parents=True, exist_ok=True)
-        local_det_models = [d.name.replace("_openvino_model", "") for d in ai_det_models_dir_path.iterdir() if d.is_dir()]
-        local_class_models = [d.name.replace("_openvino_model", "") for d in ai_class_models_dir_path.iterdir() if d.is_dir()]
+        local_det_models = [d.name for d in ai_det_models_dir_path.iterdir() if d.is_dir()]
+        local_class_models = [d.name for d in ai_class_models_dir_path.iterdir() if d.is_dir()]
         if detection_models and classification_models:
             for model in detection_models:
                 checkbox = QCheckBox(model, self)

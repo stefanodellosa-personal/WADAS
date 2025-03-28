@@ -19,7 +19,7 @@ def load_ov_model(weights, device, inference_mode="LATENCY"):
     w = str(weights[0] if isinstance(weights, list) else weights)
     w = Path(w)
     if not w.is_file():  # if not *.xml
-        w = next(w.glob("*.xml"))  # get *.xml file from *_openvino_model dir
+        w = next(w.glob("*.xml"))  # get *.xml file from model dir
     ov_model = core.read_model(model=str(w), weights=w.with_suffix(".bin"))
     return core.compile_model(
         ov_model,
@@ -46,7 +46,7 @@ class OVBackend(AutoBackend):
         w = str(weights[0] if isinstance(weights, list) else weights)
         w = Path(w)
         if not w.is_file():  # if not *.xml
-            w = next(w.glob("*.xml"))  # get *.xml file from *_openvino_model dir
+            w = next(w.glob("*.xml"))  # get *.xml file from model dir
         self.inference_mode = "LATENCY"
         self.ov_compiled_model = load_ov_model(w, ov_device, self.inference_mode)
 
