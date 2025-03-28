@@ -181,7 +181,7 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
 
 
 class OVMegaDetectorV6(pw_detection.MegaDetectorV6, ABC):
-    """MegaDetectorV6 class for detection model"""
+    """MegaDetectorV6 base class for detection model"""
 
     IMAGE_SIZE = 640
 
@@ -220,6 +220,8 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6, ABC):
 
 
 class OVMegaDetectorV6YOLO9(OVMegaDetectorV6):
+    """MegaDetectorV6 YOLO9 class for detection model"""
+
     def __init__(self, device, model_name):
         super().__init__(device, model_name)
 
@@ -239,6 +241,8 @@ class OVMegaDetectorV6YOLO9(OVMegaDetectorV6):
 
 
 class OVMegaDetectorV6YOLO10(OVMegaDetectorV6):
+    """MegaDetectorV6 YOLO10 class for detection model"""
+
     def __init__(self, device, model_name):
         super().__init__(device, model_name)
 
