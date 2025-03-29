@@ -227,9 +227,6 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6, WadasAiModel, ABC):
 class OVMegaDetectorV6YOLO9(OVMegaDetectorV6):
     """MegaDetectorV6 YOLO9 class for detection model"""
 
-    def __init__(self, device, model_name):
-        super().__init__(device, model_name)
-
     @staticmethod
     def check_model():
         """Check if detection model is initialized"""
@@ -247,9 +244,6 @@ class OVMegaDetectorV6YOLO9(OVMegaDetectorV6):
 
 class OVMegaDetectorV6YOLO10(OVMegaDetectorV6):
     """MegaDetectorV6 YOLO10 class for detection model"""
-
-    def __init__(self, device, model_name):
-        super().__init__(device, model_name)
 
     @staticmethod
     def check_model():
