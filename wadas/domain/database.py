@@ -23,10 +23,11 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 import keyring
-from pymysql import OperationalError
+from mariadb import OperationalError as mariadbOperationalerror
+from pymysql import OperationalError as pymysqlOperationalError
 from sqlalchemy import and_, create_engine, delete, select, text, update
 from sqlalchemy.exc import IntegrityError, InterfaceError
-from sqlalchemy.exc import OperationalError as SQLiteOperationalError
+from sqlalchemy.exc import OperationalError as SQLAlchemyOperationalError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
@@ -83,6 +84,7 @@ class DataBase(ABC):
 
     wadas_db = None  # Singleton instance of the database
     wadas_db_engine = None  # Singleton engine associated with the database
+    max_reconn_retries = 3  # Max number of retry for re-connecting
 
     def __init__(self, host, enabled=True, version=__dbversion__):
         """Constructor is not public, no external code should call this directly"""
@@ -215,18 +217,41 @@ class DataBase(ABC):
         DataBase.wadas_db = None
 
     @classmethod
-    def create_session(cls):
-        """Method to create a session to perform operation with the db"""
+    def create_session(cls, retry_count=0):
+        """Method to create a session to perform operations with the DB"""
 
         try:
             if engine := cls.get_engine():
+                # If db is not SQLite, check engine status (SQLite has no pre-existing sessions)
+                if DataBase.wadas_db.type != DataBase.DBTypes.SQLITE:
+                    with engine.connect() as connection:
+                        if connection.invalidated:
+                            logger.warning("Connection invalidated, disposing engine...")
+                            engine.dispose()
+                            DataBase.wadas_db_engine = None  # Force new engine
+                            engine = cls.get_engine()
+
                 Session = sessionmaker(bind=engine)
                 return Session()
             else:
                 logger.error("Unable to create a session as DB engine is not initialized.")
                 return None
+        except (SQLAlchemyOperationalError, mariadbOperationalerror, pymysqlOperationalError):
+            if retry_count < cls.max_reconn_retries:
+                logger.warning(
+                    "Database connection lost. Retrying... (%s/%s)",
+                    retry_count + 1,
+                    cls.max_reconn_retries,
+                )
+                if DataBase.wadas_db_engine:
+                    DataBase.wadas_db_engine.dispose()
+                DataBase.wadas_db_engine = None  # Force creation of new engine at next attempt
+                return cls.create_session(retry_count=retry_count + 1)  # Retry to create session
+            else:
+                logger.error("Max retries reached. Could not create a session.")
+                return None
         except Exception:
-            logger.exception("An error occurred while creating a session")
+            logger.exception("An unexpected error occurred while creating a session")
             return None
 
     @classmethod
@@ -1127,7 +1152,7 @@ class MySQLDataBase(DataBase):
             # Try to connect to db to check whether it exists
             with DataBase.wadas_db_engine.connect() as conn:
                 logger.debug("Database exists.")
-        except OperationalError:
+        except SQLAlchemyOperationalError:
             # If db does not exist, creates it
             logger.info("Creating Database...")
             temp_engine = create_engine(
@@ -1235,7 +1260,7 @@ class SQLiteDataBase(DataBase):
         if DataBase.wadas_db_engine:
             try:
                 Base.metadata.create_all(DataBase.wadas_db_engine)
-            except SQLiteOperationalError:
+            except SQLAlchemyOperationalError:
                 logger.exception("OperationalError during database creation.")
                 return False
             except SQLAlchemyError:
