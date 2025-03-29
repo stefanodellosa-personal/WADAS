@@ -23,10 +23,11 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 import keyring
-from pymysql import OperationalError
+from mariadb import OperationalError as mariadbOperationalerror
+from pymysql import OperationalError as pymysqlOperationalError
 from sqlalchemy import and_, create_engine, delete, select, text, update
 from sqlalchemy.exc import IntegrityError, InterfaceError
-from sqlalchemy.exc import OperationalError as SQLiteOperationalError
+from sqlalchemy.exc import OperationalError as SQLAlchemyOperationalError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
@@ -235,7 +236,7 @@ class DataBase(ABC):
             else:
                 logger.error("Unable to create a session as DB engine is not initialized.")
                 return None
-        except OperationalError:
+        except (SQLAlchemyOperationalError, mariadbOperationalerror, pymysqlOperationalError):
             if retry_count < cls.max_reconn_retries:
                 logger.warning(
                     "Database connection lost. Retrying... (%s/%s)",
@@ -1151,7 +1152,7 @@ class MySQLDataBase(DataBase):
             # Try to connect to db to check whether it exists
             with DataBase.wadas_db_engine.connect() as conn:
                 logger.debug("Database exists.")
-        except OperationalError:
+        except SQLAlchemyOperationalError:
             # If db does not exist, creates it
             logger.info("Creating Database...")
             temp_engine = create_engine(
@@ -1259,7 +1260,7 @@ class SQLiteDataBase(DataBase):
         if DataBase.wadas_db_engine:
             try:
                 Base.metadata.create_all(DataBase.wadas_db_engine)
-            except SQLiteOperationalError:
+            except SQLAlchemyOperationalError:
                 logger.exception("OperationalError during database creation.")
                 return False
             except SQLAlchemyError:
