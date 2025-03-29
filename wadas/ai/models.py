@@ -174,7 +174,6 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5, WadasAiModel):
     """MegaDetectorV5 class for detection model"""
 
     def __init__(self, device, model_name="MDV5-yolov5"):
-        super().__init__()
         self.model = OVModel(
             Path("detection", f"{model_name}_openvino_model", f"{model_name}.xml"), device
         )
@@ -208,7 +207,6 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6, WadasAiModel, ABC):
     IMAGE_SIZE = 640
 
     def __init__(self, device, model_name):
-        super().__init__()
         self.predictor = OVPredictor(ov_device=device)
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
         self.model_name = model_name
@@ -224,18 +222,6 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6, WadasAiModel, ABC):
     def run(self, img_array: np.ndarray, detection_threshold: float):
         """Run detection model"""
         return self.single_image_detection(img_array, None, detection_threshold, None)
-
-    @staticmethod
-    @abstractmethod
-    def check_model():
-        """Check if detection model is initialized"""
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def download_model(force: bool = False):
-        """Check if model is initialized"""
-        pass
 
 
 class OVMegaDetectorV6YOLO9(OVMegaDetectorV6):
@@ -253,7 +239,7 @@ class OVMegaDetectorV6YOLO9(OVMegaDetectorV6):
 
     @staticmethod
     def download_model(force: bool = False):
-        """Check if model is initialized"""
+        """Method to download the model."""
         return OVModel.download_model(
             Path("detection", "MDV6b-yolov9c_openvino_model", "MDV6b-yolov9c"), force
         )
@@ -274,7 +260,7 @@ class OVMegaDetectorV6YOLO10(OVMegaDetectorV6):
 
     @staticmethod
     def download_model(force: bool = False):
-        """Check if model is initialized"""
+        """Method to download the model."""
         return OVModel.download_model(
             Path("detection", "MDV6-yolov10n_openvino_model", "MDV6-yolov10n"), force
         )
