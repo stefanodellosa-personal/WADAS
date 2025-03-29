@@ -145,10 +145,36 @@ txt_animalclasses = {
 }
 
 
-class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
+class WadasAiModel(ABC):
+    """Base class for WADAS AI models."""
+
+    def get_class_names(self):
+        """Get class names"""
+        return self.CLASS_NAMES
+
+    @abstractmethod
+    def run(self, img_array: np.ndarray, detection_threshold: float):
+        """Method to run detection model"""
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def check_model():
+        """Check if detection model is initialized"""
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def download_model(force: bool = False):
+        """Method to download the model."""
+        pass
+
+
+class OVMegaDetectorV5(pw_detection.MegaDetectorV5, WadasAiModel):
     """MegaDetectorV5 class for detection model"""
 
     def __init__(self, device, model_name="MDV5-yolov5"):
+        super().__init__()
         self.model = OVModel(
             Path("detection", f"{model_name}_openvino_model", f"{model_name}.xml"), device
         )
@@ -156,10 +182,6 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
         self.transform = pw_trans.MegaDetector_v5_Transform(
             target_size=self.IMAGE_SIZE, stride=self.STRIDE
         )
-
-    def get_class_names(self):
-        """Get class names"""
-        return self.CLASS_NAMES
 
     def run(self, img_array: np.ndarray, detection_threshold: float):
         """Run detection model"""
@@ -174,18 +196,19 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
 
     @staticmethod
     def download_model(force: bool = False):
-        """Check if model is initialized"""
+        """Method to download the model."""
         return OVModel.download_model(
             Path("detection", "MDV5-yolov5_openvino_model", "MDV5-yolov5"), force
         )
 
 
-class OVMegaDetectorV6(pw_detection.MegaDetectorV6, ABC):
+class OVMegaDetectorV6(pw_detection.MegaDetectorV6, WadasAiModel, ABC):
     """MegaDetectorV6 base class for detection model"""
 
     IMAGE_SIZE = 640
 
     def __init__(self, device, model_name):
+        super().__init__()
         self.predictor = OVPredictor(ov_device=device)
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
         self.model_name = model_name
@@ -197,10 +220,6 @@ class OVMegaDetectorV6(pw_detection.MegaDetectorV6, ABC):
         self.predictor.args.save = (
             False  # Will see if we want to use ultralytics native inference saving functions.
         )
-
-    def get_class_names(self):
-        """Get class names"""
-        return self.CLASS_NAMES
 
     def run(self, img_array: np.ndarray, detection_threshold: float):
         """Run detection model"""
