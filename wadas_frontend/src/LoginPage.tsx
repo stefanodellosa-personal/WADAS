@@ -46,11 +46,9 @@ const LoginPage = () => {
                 localStorage.setItem("refreshToken", data.refresh_token);
                 navigate("/homepage");
             }
-
-
         } catch (err: any) {
             console.error(err.message);
-            setError("Generic Error. Please contact the administrator.");
+            setError(`Generic Error - ${err.message}. Please contact the administrator.`);
         }
     };
 

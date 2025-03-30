@@ -40,7 +40,7 @@ const EventDetails = (props: {
                     console.error("Refresh token failed, redirecting to login...");
                     navigate("/");
                 } else {
-                    setError("Generic Error. Please contact the administrator.");
+                    setError(`Generic Error - ${e.message}. Please contact the administrator.`);
                 }
             } finally {
                 setLoading(false);
@@ -59,7 +59,7 @@ const EventDetails = (props: {
                         console.error("Refresh token failed, redirecting to login...");
                         navigate("/");
                     } else {
-                        setError("Generic Error. Please contact the administrator.");
+                        setError(`Generic Error - ${e.message}. Please contact the administrator.`);
                     }
                 } finally {
                     setLoading(false);

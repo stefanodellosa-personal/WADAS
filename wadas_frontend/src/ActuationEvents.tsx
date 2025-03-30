@@ -72,7 +72,7 @@ const ActuationEvents = () => {
                 console.error("Refresh token failed, redirecting to login...");
                 navigate("/");
             } else {
-                setError("Generic Error. Please contact the administrator.");
+                setError(`Generic Error - ${e.message}. Please contact the administrator.`);
                 setLoading(false);
             }
         }
@@ -94,7 +94,7 @@ const ActuationEvents = () => {
                     console.error("Refresh token failed, redirecting to login...");
                     navigate("/");
                 } else {
-                    setError("Generic Error. Please contact the administrator.");
+                    setError(`Generic Error - ${e.message}. Please contact the administrator.`);
                 }
             }
         };
@@ -114,7 +114,7 @@ const ActuationEvents = () => {
                     console.error("Refresh token failed, redirecting to login...");
                     navigate("/");
                 } else {
-                    setError("Generic Error. Please contact the administrator.");
+                    setError(`Generic Error - ${e.message}. Please contact the administrator.`);
                 }
             }
         };
