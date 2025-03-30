@@ -3,6 +3,7 @@ import {Container, Table} from "react-bootstrap";
 import {ActuationEvent} from "../types/types";
 import {DateTime} from "luxon";
 import PaginationBar from "./PaginationBar";
+import {generateActuationEventId} from "../lib/utils";
 
 const ActuationsScrollableTable = (props: {
     actuations: ActuationEvent[];
@@ -11,9 +12,7 @@ const ActuationsScrollableTable = (props: {
     onPageChange: (page: number) => void;
 }) => {
 
-    const generateId = (event: ActuationEvent) => {
-        return event.actuator.id + "_" + event.timestamp;
-    }
+
 
     return (
         <Container className="p-0 d-flex flex-column" style={{height: "75vh"}}>
@@ -30,7 +29,7 @@ const ActuationsScrollableTable = (props: {
                     {props.actuations.map((item) => {
                         return (
                             <tr
-                                key={generateId(item)}
+                                key={generateActuationEventId(item)}
                             >
                                 <td>{DateTime.fromISO(item.timestamp).toFormat("yyyy-MM-dd HH:mm")}</td>
                                 <td>{item.actuator.name}</td>

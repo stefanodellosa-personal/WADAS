@@ -46,56 +46,58 @@ const LoginPage = () => {
                 localStorage.setItem("refreshToken", data.refresh_token);
                 navigate("/homepage");
             }
-
-
         } catch (err: any) {
             console.error(err.message);
-            setError("Generic Error. Please contact the administrator.");
+            setError(`Generic Error - ${err.message}. Please contact the administrator.`);
         }
     };
 
     return (
-        <Container className="d-flex justify-content-center align-items-center vh-100">
-            <Card style={{ width: "25rem" }}>
-                <Card.Body className="text-center">
-                    <Image src={logo} alt="WADAS Logo" width={100} className="mb-3" />
-                    <Card.Title className="mb-4">WADAS - Login</Card.Title>
+        <div style={{height: "100vh", display: "flex", justifyContent: "center", alignItems: "center"}}>
+            <Container className="d-flex justify-content-center">
+                <Card style={{width: "100%", maxWidth: "25rem"}}>
+                    <Card.Body className="text-center">
+                        <Image src={logo} alt="WADAS Logo" width={100} className="mb-3"/>
+                        <Card.Title className="mb-4">WADAS - Login</Card.Title>
 
-                    {error && <Alert variant="danger">{error}</Alert>}
-                    {success && <Alert variant="success">Login successful!</Alert>}
+                        {error && <Alert variant="danger">{error}</Alert>}
+                        {success && <Alert variant="success">Login successful!</Alert>}
 
-                    <Form onSubmit={handleSubmit}>
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label className={"text-semibold"}>Username</Form.Label>
-                            <Form.Control
-                                className={"custom-input"}
-                                type="text"
-                                placeholder="Enter your username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
-                        </Form.Group>
+                        <Form onSubmit={handleSubmit}>
+                            <Form.Group className="mb-3" controlId="formBasicEmail">
+                                <Form.Label className={"text-semibold"}>Username</Form.Label>
+                                <Form.Control
+                                    className={"custom-input"}
+                                    type="text"
+                                    placeholder="Enter your username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                            </Form.Group>
 
-                        <Form.Group className="mb-3" controlId="formBasicPassword">
-                            <Form.Label className={"text-semibold"}>Password</Form.Label>
-                            <Form.Control
-                                className={"custom-input"}
-                                type="password"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </Form.Group>
+                            <Form.Group className="mb-3" controlId="formBasicPassword">
+                                <Form.Label className={"text-semibold"}>Password</Form.Label>
+                                <Form.Control
+                                    className={"custom-input"}
+                                    type="password"
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                            </Form.Group>
 
-                        <div className="d-flex justify-content-center">
-                            <Button variant="primary" type="submit" className="w-50 custom-button dark-background mt-3">
-                                Login
-                            </Button>
-                        </div>
-                    </Form>
-                </Card.Body>
-            </Card>
-        </Container>
+                            <div className="d-flex justify-content-center">
+                                <Button variant="primary" type="submit"
+                                        className="w-50 custom-button dark-background mt-3">
+                                    Login
+                                </Button>
+                            </div>
+                        </Form>
+                    </Card.Body>
+                </Card>
+            </Container>
+        </div>
+
     );
 };
 
