@@ -28,10 +28,9 @@ async function apiGET(url: string, onReceived: (response: Response) => Object): 
         if (response.status === 401) {
             throw new Error("Unauthorized");
         } else {
-            throw new Error("Generic Error");
+            throw new Error(`Error Code: ${response.status}.`);
         }
     }
-
 }
 
 export async function fetchCameras(): Promise<CamerasResponse> {
