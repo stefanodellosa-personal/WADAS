@@ -121,12 +121,12 @@ class TelegramNotifier(Notifier):
                 if data["status"] == "ok":
                     logger.info("Telegram notification sent!")
                 else:
-                    for user_id in data["succeed_user_ids"]:
+                    if data["succeed_user_ids"]:
                         logger.info(
-                            "Telegram notification to UserID %s successfully sent.", user_id
+                            "Telegram notification to UserIDs %s successfully sent.",
+                            ",".join(data["succeed_user_ids"]),
                         )
                     logger.warning(
-                        "%s",
                         "Problem sending some Telegram notifications:\n\t%s",
                         "\n".join(data["error_msgs"]),
                     )
