@@ -259,7 +259,7 @@ class MainWindow(QMainWindow):
         self.instantiate_selected_model()
         # Satisfy preconditions independently of selected operation mode
         if not self.check_models():
-            logger.error("Cannot run this mode without AI models. Aborting.")
+            logger.error("Cannot run operation mode without AI models. Aborting.")
             return
         if OperationMode.cur_operation_mode.type != OperationMode.OperationModeTypes.TestModelMode:
             if not cameras:
@@ -363,27 +363,22 @@ class MainWindow(QMainWindow):
         """Update status of toolbar and related buttons (actions)."""
 
         if not OperationMode.cur_operation_mode_type:
-            self.ui.actionConfigure_Ai_model.setEnabled(False)
             self.ui.actionRun.setEnabled(False)
         elif OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode:
-            self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(True)
         elif (
             OperationMode.cur_operation_mode_type != OperationMode.OperationModeTypes.TestModelMode
             and not cameras
         ):
-            self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
             logger.warning("No camera configured. Please configure camera(s) to run the selected operation mode.")
         elif (
             OperationMode.cur_operation_mode_type != OperationMode.OperationModeTypes.TestModelMode
             and not self.camera_enabled()
         ):
-            self.ui.actionConfigure_Ai_model.setEnabled(True)
             self.ui.actionRun.setEnabled(False)
             logger.warning("No camera enabled. Please enable at least a camera to run the selected operation mode.")
         else:
-            self.ui.actionConfigure_Ai_model.setEnabled(True)
             valid_configuration = True
             if self.enabled_email_notifier_exists() and not self.load_status["valid_email_keyring"]:
                 valid_configuration = False
@@ -620,11 +615,12 @@ class MainWindow(QMainWindow):
 
     def check_models(self):
         """Method to initialize classification model."""
-        if not AiModel.check_model():
+        if not AiModel.check_model(AiModel.detection_model_version, AiModel.classification_model_version):
             logger.warning("AI module not found. Downloading...")
-            ai_download_dialog = AiModelDownloadDialog()
+            ai_download_dialog = AiModelDownloadDialog(True)
             if ai_download_dialog.exec():
-                return ai_download_dialog.download_success and AiModel.check_model()
+                return (ai_download_dialog.download_success and
+                        AiModel.check_model(AiModel.detection_model_version, AiModel.classification_model_version))
             else:
                 logger.error("Ai models files download cancelled by user. Aborting.")
                 return False

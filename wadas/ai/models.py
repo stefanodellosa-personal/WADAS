@@ -17,6 +17,9 @@
 # Date: 2024-10-11
 # Description: This module implements OpenVINO related classes and functionalities.
 
+from abc import ABC, abstractmethod
+from pathlib import Path
+
 import numpy as np
 import torch
 from PytorchWildlife.data import transforms as pw_trans
@@ -142,20 +145,42 @@ txt_animalclasses = {
 }
 
 
-class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
-    """MegaDetectorV5 class for detection model"""
-
-    def __init__(self, device):
-        self.model = OVModel("detection_model.xml", device)
-        self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
-
-        self.transform = pw_trans.MegaDetector_v5_Transform(
-            target_size=self.IMAGE_SIZE, stride=self.STRIDE
-        )
+class WadasAiModel(ABC):
+    """Base class for WADAS AI models."""
 
     def get_class_names(self):
         """Get class names"""
         return self.CLASS_NAMES
+
+    @abstractmethod
+    def run(self, img_array: np.ndarray, detection_threshold: float):
+        """Method to run detection model"""
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def check_model():
+        """Check if detection model is initialized"""
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def download_model(force: bool = False):
+        """Method to download the model."""
+        pass
+
+
+class OVMegaDetectorV5(pw_detection.MegaDetectorV5, WadasAiModel):
+    """MegaDetectorV5 class for detection model"""
+
+    def __init__(self, device, model_name="MDV5-yolov5"):
+        self.model = OVModel(
+            Path("detection", f"{model_name}_openvino_model", f"{model_name}.xml"), device
+        )
+        self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
+        self.transform = pw_trans.MegaDetector_v5_Transform(
+            target_size=self.IMAGE_SIZE, stride=self.STRIDE
+        )
 
     def run(self, img_array: np.ndarray, detection_threshold: float):
         """Run detection model"""
@@ -164,47 +189,75 @@ class OVMegaDetectorV5(pw_detection.MegaDetectorV5):
     @staticmethod
     def check_model():
         """Check if detection model is initialized"""
-        return OVModel.check_model("detection_model.xml")
+        return OVModel.check_model(
+            Path("detection", "MDV5-yolov5_openvino_model", "MDV5-yolov5.xml")
+        )
 
     @staticmethod
     def download_model(force: bool = False):
-        """Check if model is initialized"""
-        return OVModel.download_model("detection_model", force)
+        """Method to download the model."""
+        return OVModel.download_model(
+            Path("detection", "MDV5-yolov5_openvino_model", "MDV5-yolov5"), force
+        )
 
 
-class OVMegaDetectorV6(pw_detection.MegaDetectorV6):
-    """MegaDetectorV6 class for detection model"""
+class OVMegaDetectorV6(pw_detection.MegaDetectorV6, WadasAiModel, ABC):
+    """MegaDetectorV6 base class for detection model"""
 
     IMAGE_SIZE = 640
 
-    def __init__(self, device):
+    def __init__(self, device, model_name):
         self.predictor = OVPredictor(ov_device=device)
         self.device = "cpu"  # torch device, keep to CPU when using with OpenVINO
-
-        self.predictor.setup_model("MDV6b-yolov9c_openvino_model", verbose=False)
+        self.model_name = model_name
+        self.predictor.setup_model(
+            Path("detection", f"{self.model_name}_openvino_model"), verbose=False
+        )
 
         self.predictor.args.imgsz = self.IMAGE_SIZE
         self.predictor.args.save = (
             False  # Will see if we want to use ultralytics native inference saving functions.
         )
 
-    def get_class_names(self):
-        """Get class names"""
-        return self.CLASS_NAMES
-
     def run(self, img_array: np.ndarray, detection_threshold: float):
         """Run detection model"""
         return self.single_image_detection(img_array, None, detection_threshold, None)
 
+
+class OVMegaDetectorV6YOLO9(OVMegaDetectorV6):
+    """MegaDetectorV6 YOLO9 class for detection model"""
+
     @staticmethod
     def check_model():
         """Check if detection model is initialized"""
-        return OVModel.check_model("MDV6b-yolov9c_openvino_model")
+        return OVModel.check_model(
+            Path("detection", "MDV6b-yolov9c_openvino_model", "MDV6b-yolov9c.xml")
+        )
 
     @staticmethod
     def download_model(force: bool = False):
-        """Check if model is initialized"""
-        return OVModel.download_model("MDV6b-yolov9c_openvino_model", force)
+        """Method to download the model."""
+        return OVModel.download_model(
+            Path("detection", "MDV6b-yolov9c_openvino_model", "MDV6b-yolov9c"), force
+        )
+
+
+class OVMegaDetectorV6YOLO10(OVMegaDetectorV6):
+    """MegaDetectorV6 YOLO10 class for detection model"""
+
+    @staticmethod
+    def check_model():
+        """Check if detection model is initialized"""
+        return OVModel.check_model(
+            Path("detection", "MDV6-yolov10n_openvino_model", "MDV6-yolov10n.xml")
+        )
+
+    @staticmethod
+    def download_model(force: bool = False):
+        """Method to download the model."""
+        return OVModel.download_model(
+            Path("detection", "MDV6-yolov10n_openvino_model", "MDV6-yolov10n"), force
+        )
 
 
 class Classifier:
@@ -213,7 +266,7 @@ class Classifier:
     CROP_SIZE = 182
 
     def __init__(self, device):
-        self.model = OVModel("classification_model.xml", device)
+        self.model = OVModel(Path("classification", "DFv1.2_openvino_model", "DFv1.2.xml"), device)
         self.transforms = transforms.Compose(
             [
                 transforms.Resize(
@@ -233,12 +286,14 @@ class Classifier:
     @staticmethod
     def check_model():
         """Check if classification model is initialized"""
-        return OVModel.check_model("classification_model.xml")
+        return OVModel.check_model(Path("classification", "DFv1.2_openvino_model", "DFv1.2.xml"))
 
     @staticmethod
     def download_model(force: bool = False):
         """Download classification model"""
-        return OVModel.download_model("classification_model", force)
+        return OVModel.download_model(
+            Path("classification", "DFv1.2_openvino_model", "DFv1.2"), force
+        )
 
     def predictOnBatch(self, batchtensor, withsoftmax=True):
         """Predict on a batch of images"""

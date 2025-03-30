@@ -26,11 +26,18 @@ from PIL import Image
 from wadas.ai.models import (
     Classifier,
     OVMegaDetectorV5,
-    OVMegaDetectorV6,
+    OVMegaDetectorV6YOLO9,
+    OVMegaDetectorV6YOLO10,
     txt_animalclasses,
 )
 
 logger = logging.getLogger(__name__)
+
+NAME_TO_DETECTOR = {
+    "MDV5-yolov5": OVMegaDetectorV5,
+    "MDV6b-yolov9c": OVMegaDetectorV6YOLO9,
+    "MDV6-yolov10n": OVMegaDetectorV6YOLO10,
+}
 
 
 class DetectionPipeline:
@@ -42,7 +49,7 @@ class DetectionPipeline:
         classification_device="auto",
         language="en",
         distributed_inference=False,
-        megadetector_version="v5",
+        megadetector_version="MDV5-yolov5",
     ):
         self.detection_device = detection_device
         self.classification_device = classification_device
@@ -52,13 +59,12 @@ class DetectionPipeline:
 
         # Initializing the MegaDetectorV5 model for image detection
         logger.info("Initializing detection model to device %s...", self.detection_device)
-        if megadetector_version == "v5":
-            detection_csl = OVMegaDetectorV5
-        elif megadetector_version == "v6":
-            detection_csl = OVMegaDetectorV6
-        else:
+        if not (detection_csl := NAME_TO_DETECTOR.get(megadetector_version)):
             raise ValueError("Invalid MegaDetector version: " + megadetector_version)
-        self.detection_model = self.initialize_model(detection_csl, device=self.detection_device)
+
+        self.detection_model = self.initialize_model(
+            detection_csl, device=self.detection_device, model_name=megadetector_version
+        )
         # Load classification model
         logger.info("Loading classification model to device %s...", self.classification_device)
         self.classifier = self.initialize_model(Classifier, device=self.classification_device)
@@ -90,9 +96,21 @@ class DetectionPipeline:
         self.language = language
 
     @staticmethod
-    def check_models():
+    def check_models(detection_model, classification_model):
         """Method to check if models are initialized."""
-        return OVMegaDetectorV5.check_model() and Classifier.check_model()
+        detector = NAME_TO_DETECTOR.get(detection_model)
+        if detector is None:
+            logger.error("Unknown detection model version: %s", detection_model)
+            detector = False
+        if not (detection_model_status := detector.check_model()):
+            logger.error("Detection model version '%s' not found on the system.", detection_model)
+
+        if not (classification_model_status := Classifier.check_model()):
+            logger.error(
+                "Classification model version '%s' not found on the system.", classification_model
+            )
+
+        return detection_model_status and classification_model_status
 
     @staticmethod
     def download_models(force: bool = False):

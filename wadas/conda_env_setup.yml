@@ -23,6 +23,7 @@ dependencies:
   - sqlalchemy==2.0.34
   - mariadb==1.1.11
   - python-jose==3.3.0
+  - mariadb-connector-c=3.4.4
   - pip:
       - cv2-enumerate-cameras==1.1.15
       - intel-npu-acceleration-library==1.4.0

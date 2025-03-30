@@ -19,16 +19,20 @@
 
 
 import os
-import openvino as ov
+from pathlib import Path
 
+import openvino as ov
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
 from wadas.ai.models import txt_animalclasses
 from wadas.domain.ai_model import AiModel
+from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
 from wadas.ui.qt.ui_configure_ai_model import Ui_DialogConfigureAi
 
 module_dir_path = os.path.dirname(os.path.abspath(__file__))
+det_models_dir_path = (Path(module_dir_path).parent.parent / "model" / "detection").resolve()
+class_models_dir_path = (Path(module_dir_path).parent.parent / "model" / "classification").resolve()
 
 
 class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
@@ -40,7 +44,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
 
         # UI
         self.ui.setupUi(self)
-        self.setWindowIcon(QIcon(os.path.join(module_dir_path, "..", "img", "mainwindow_icon.jpg")))
+        self.setWindowIcon(QIcon((Path(module_dir_path).parent / "img" / "mainwindow_icon.jpg").resolve().as_posix()))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.ui.label_errorMEssage.setStyleSheet("color: red")
         self.ui.lineEdit_classificationThreshold.setText(str(AiModel.classification_threshold))
@@ -49,6 +53,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.populate_language_dropdown()
         self.available_ai_devices = ov.Core().get_available_devices()
         self.available_ai_devices.append("auto")
+        self.populate_ai_models_version_dropdown()
         self.populate_ai_devices_dropdowns()
 
         # Slots
@@ -56,6 +61,7 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         self.ui.lineEdit_classificationThreshold.textChanged.connect(self.validate_data)
         self.ui.lineEdit_detectionThreshold.textChanged.connect(self.validate_data)
         self.ui.lineEdit_video_fps.textChanged.connect(self.validate_data)
+        self.ui.pushButton_download_models.clicked.connect(self.on_download_models_clicked)
 
         self.validate_data()
 
@@ -85,6 +91,37 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
             self.ui.comboBox_class_dev.setCurrentText(AiModel.classification_device)
         else:
             self.ui.comboBox_detection_dev.setCurrentText("auto")
+
+    def populate_ai_models_version_dropdown(self):
+        """Method to populate Ai models versions dropdowns"""
+
+        self.ui.comboBox_detection_model_version.clear()
+        self.ui.comboBox_classification_model_version.clear()
+
+        if (det_models_dir := Path(det_models_dir_path)).is_dir():
+            det_models_directories = (d for d in det_models_dir.iterdir() if d.is_dir())
+            for directory in det_models_directories:
+                bin_files = [f for f in directory.iterdir() if f.suffix == ".bin"]
+                if bin_files:
+                    model_version = bin_files[0].stem  # Remove .bin extension
+                    self.ui.comboBox_detection_model_version.addItem(model_version)
+        self.ui.comboBox_detection_model_version.setCurrentText(AiModel.detection_model_version)
+
+        if (class_models_dir := Path(class_models_dir_path)).is_dir():
+            class_models_directories = (d for d in class_models_dir.iterdir() if d.is_dir())
+            for directory in class_models_directories:
+                bin_files = [f for f in directory.iterdir() if f.suffix == ".bin"]
+                if bin_files:
+                    model_version = bin_files[0].stem  # Remove .bin extension
+                    self.ui.comboBox_classification_model_version.addItem(model_version)
+        self.ui.comboBox_classification_model_version.setCurrentText(AiModel.classification_model_version)
+
+    def on_download_models_clicked(self):
+        """Method to trigger the download of Ai Models"""
+
+        ai_model_download_dlg = AiModelDownloadDialog()
+        if ai_model_download_dlg.exec():
+            self.populate_ai_models_version_dropdown()
 
     def validate_data(self):
         """Method to validate input values."""
@@ -126,5 +163,6 @@ class ConfigureAiModel(QDialog, Ui_DialogConfigureAi):
         AiModel.detection_device = self.ui.comboBox_detection_dev.currentText()
         AiModel.classification_device = self.ui.comboBox_class_dev.currentText()
         AiModel.video_fps = int(self.ui.lineEdit_video_fps.text())
-
+        AiModel.detection_model_version = self.ui.comboBox_detection_model_version.currentText()
+        AiModel.classification_model_version = self.ui.comboBox_classification_model_version.currentText()
         self.accept()

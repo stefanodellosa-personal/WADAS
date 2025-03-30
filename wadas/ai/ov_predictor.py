@@ -23,7 +23,7 @@ def load_ov_model(weights, device, inference_mode="LATENCY"):
     ov_model = core.read_model(model=str(w), weights=w.with_suffix(".bin"))
     return core.compile_model(
         ov_model,
-        device_name=device.upper(),
+        device_name=str(device).upper(),
         config={"PERFORMANCE_HINT": inference_mode},
     )
 
@@ -43,14 +43,12 @@ class OVBackend(AutoBackend):
         verbose=True,
     ):
         super().__init__(weights, torch.device(device), dnn, data, fp16, batch, fuse, verbose)
-        core = ov.Core()
         w = str(weights[0] if isinstance(weights, list) else weights)
         w = Path(w)
         if not w.is_file():  # if not *.xml
             w = next(w.glob("*.xml"))  # get *.xml file from *_openvino_model dir
-        ov_model = core.read_model(model=str(w), weights=w.with_suffix(".bin"))
         self.inference_mode = "LATENCY"
-        self.ov_compiled_model = load_ov_model(ov_model, device, self.inference_mode)
+        self.ov_compiled_model = load_ov_model(w, ov_device, self.inference_mode)
 
 
 class OVPredictor(DetectionPredictor):
