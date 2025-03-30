@@ -121,7 +121,15 @@ class TelegramNotifier(Notifier):
                 if data["status"] == "ok":
                     logger.info("Telegram notification sent!")
                 else:
-                    logger.warning("%s", "\n".join(data["error_msgs"]))
+                    if data["succeed_user_ids"]:
+                        logger.info(
+                            "Telegram notification to UserIDs %s successfully sent.",
+                            ",".join(data["succeed_user_ids"]),
+                        )
+                    logger.warning(
+                        "Problem sending some Telegram notifications:\n\t%s",
+                        "\n".join(data["error_msgs"]),
+                    )
             else:
                 logger.error(
                     "Problem sending Telegram notifications: %s - %s",
@@ -144,11 +152,7 @@ class TelegramNotifier(Notifier):
             data["image_b64"] = image_to_base64(img_path)
 
         res = requests.post(self.NOTIFICATION_URL, json=data, verify=False)
-        if res.status_code == 200:
-            logger.info("Telegram notifications sent!")
-            return res.status_code, res.json()
-        else:
-            return res.status_code, res.text
+        return res.status_code, res.json() if res.status_code == 200 else res.text
 
     def serialize(self):
         """Method to serialize Telegram notifier object into file."""
