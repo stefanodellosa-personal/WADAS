@@ -54,6 +54,7 @@ from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.test_model_mode import TestModelMode
+from wadas.domain.tunnel_mode import TunnelMode
 from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.about_dialog import AboutDialog
 from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
@@ -66,6 +67,7 @@ from wadas.ui.configure_db_dialog import ConfigureDBDialog
 from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
+from wadas.ui.configure_tunnel_mode import DialogConfigureTunnelMode
 from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
 from wadas.ui.configure_web_interface import DialogConfigureWebInterface
 from wadas.ui.error_message_dialog import WADASErrorMessage
@@ -292,6 +294,9 @@ class MainWindow(QMainWindow):
                     else:
                         OperationMode.cur_operation_mode.custom_target_species = (
                             OperationMode.cur_custom_classification_species)
+                case OperationMode.OperationModeTypes.TunnelMode:
+                    if (configure_tunnel_mode_dlg := DialogConfigureTunnelMode()).exec():
+                        pass
 
             db_status_log = "Database not configured."
             if (db := DataBase.get_instance()):
@@ -344,6 +349,8 @@ class MainWindow(QMainWindow):
                     OperationMode.cur_operation_mode = BearDetectionMode()
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
                     OperationMode.cur_operation_mode = CustomClassificationMode()
+                case OperationMode.OperationModeTypes.TunnelMode:
+                    OperationMode.cur_operation_mode = TunnelMode()
                 # add case for new operation modes
 
     def on_run_completion(self):

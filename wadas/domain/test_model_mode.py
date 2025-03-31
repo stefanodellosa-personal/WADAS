@@ -15,7 +15,7 @@
 #
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2024-08-16
-# Description: Module containing MainWindow class and methods.
+# Description: Module containing Test Model mode class and methods.
 
 import logging
 import os
