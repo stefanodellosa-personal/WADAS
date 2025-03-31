@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>652</width>
-    <height>418</height>
+    <height>180</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,29 +19,22 @@
      <property name="sizeConstraint">
       <enum>QLayout::SizeConstraint::SetFixedSize</enum>
      </property>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="pushButton_new_tunnel">
-       <property name="text">
-        <string>new tunnel</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>TextLabel</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>Select camera</string>
+        <string>Select camera for tunnel entrance 1</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="comboBox_tunnel"/>
+     <item row="3" column="1">
+      <widget class="QComboBox" name="comboBox_camera_2"/>
+     </item>
+     <item row="4" column="0" colspan="2">
+      <widget class="QLabel" name="label_error">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_7">
@@ -50,13 +43,61 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="comboBox_camera"/>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="pushButton_add_new_tunnel">
+       <property name="text">
+        <string>add new tunnel</string>
+       </property>
+      </widget>
      </item>
-     <item row="3" column="0" colspan="2">
-      <widget class="QLabel" name="label_2">
+     <item row="0" column="0">
+      <widget class="QLineEdit" name="lineEdit_new_tunnel_name">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Select camera for tunnel entrance 2</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="comboBox_tunnel"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="comboBox_camera_1"/>
+     </item>
+     <item row="3" column="3">
+      <widget class="QPushButton" name="pushButton_direction_camera2">
+       <property name="text">
+        <string>select entrance direction</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLabel" name="label_direction_camera_2">
        <property name="text">
         <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLabel" name="label_direction_camera_1">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QPushButton" name="pushButton_direction_camera_1">
+       <property name="text">
+        <string>select entrance direction</string>
        </property>
       </widget>
      </item>
@@ -109,7 +150,4 @@
    </hints>
   </connection>
  </connections>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>
