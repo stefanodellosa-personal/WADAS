@@ -7,175 +7,72 @@
     <x>0</x>
     <y>0</y>
     <width>652</width>
-    <height>483</height>
+    <height>418</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Configure Tunnel Mode</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>440</y>
-     <width>631</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Orientation::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
-   </property>
-  </widget>
-  <widget class="QWidget" name="gridLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>631</width>
-     <height>431</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_entrance_direction">
-    <property name="sizeConstraint">
-     <enum>QLayout::SizeConstraint::SetFixedSize</enum>
-    </property>
-    <item row="5" column="0">
-     <widget class="QRadioButton" name="radioButton_bottom_frame">
-      <property name="text">
-       <string>At the bottom of the frame</string>
-      </property>
-      <attribute name="buttonGroup">
-       <string notr="true">buttonGroup</string>
-      </attribute>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap>../../img/in_down.png</pixmap>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="0">
-     <widget class="QRadioButton" name="radioButton_left_frame">
-      <property name="text">
-       <string>On the right of the frame</string>
-      </property>
-      <attribute name="buttonGroup">
-       <string notr="true">buttonGroup</string>
-      </attribute>
-     </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="pushButton_new_tunnel">
-      <property name="text">
-       <string>new tunnel</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_7">
-      <property name="text">
-       <string>Select tunnel</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>Select camera</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QRadioButton" name="radioButton_top_frame">
-      <property name="text">
-       <string>At the top of the frame</string>
-      </property>
-      <attribute name="buttonGroup">
-       <string notr="true">buttonGroup</string>
-      </attribute>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QLabel" name="label">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap>../../img/in_up.png</pixmap>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="1">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap>../../img/in_right.png</pixmap>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QComboBox" name="comboBox_camera"/>
-    </item>
-    <item row="1" column="1">
-     <widget class="QComboBox" name="comboBox_tunnel"/>
-    </item>
-    <item row="6" column="1">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap>../../img/in_left.png</pixmap>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0">
-     <widget class="QRadioButton" name="radioButton_right_frame">
-      <property name="text">
-       <string>On the right of the frame</string>
-      </property>
-      <attribute name="buttonGroup">
-       <string notr="true">buttonGroup</string>
-      </attribute>
-     </widget>
-    </item>
-    <item row="3" column="0" colspan="2">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>Select tunnel entrance direction with respect to the camera framing:</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout_entrance_direction">
+     <property name="sizeConstraint">
+      <enum>QLayout::SizeConstraint::SetFixedSize</enum>
+     </property>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="pushButton_new_tunnel">
+       <property name="text">
+        <string>new tunnel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Select camera</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="comboBox_tunnel"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Select tunnel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="comboBox_camera"/>
+     </item>
+     <item row="3" column="0" colspan="2">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>

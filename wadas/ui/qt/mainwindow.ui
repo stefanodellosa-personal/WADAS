@@ -335,6 +335,7 @@
    <addaction name="actionConfigure_FTP_Cameras"/>
    <addaction name="actionConfigure_actuators"/>
    <addaction name="actionConfigure_camera_to_actuator_associations"/>
+   <addaction name="actionconfigureTunnel"/>
    <addaction name="separator"/>
    <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionConfigure_WA"/>
@@ -640,6 +641,21 @@
    </property>
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionconfigureTunnel">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../icons/tunnel.png</normaloff>../../icons/tunnel.png</iconset>
+   </property>
+   <property name="text">
+    <string>configureTunnel</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure Tunnels to be used in tunnel mode</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>
