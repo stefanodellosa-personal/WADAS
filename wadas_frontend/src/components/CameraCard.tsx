@@ -1,5 +1,4 @@
 import * as React from 'react';
-import {useState} from "react";
 import {Badge, Button, Card} from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/App.css"
@@ -23,10 +22,10 @@ const CameraCard = (props: { camera: Camera, onActuatorsClick: (camera: Camera) 
             <Card.Body className="d-flex flex-column" style={{padding: "1.7rem"}}>
                 <Card.Title className="d-flex align-items-center mb-4">
                     <CameraIcon
-                        style={{width: "40px", height: "40px"}}
+                        style={{width: "2.5rem", height: "2.5rem"}}
                     />
                     <div className="ms-auto">
-                        <span className="d-block mb-2">{props.camera.name}</span>
+                        <span className="d-block mb-2" style={{fontSize:"1.10rem"}}>{props.camera.name}</span>
                         <span className="d-block card-subtitle">{props.camera.type}</span>
                     </div>
                 </Card.Title>
