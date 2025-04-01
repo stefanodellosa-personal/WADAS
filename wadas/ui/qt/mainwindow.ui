@@ -335,7 +335,7 @@
    <addaction name="actionConfigure_FTP_Cameras"/>
    <addaction name="actionConfigure_actuators"/>
    <addaction name="actionConfigure_camera_to_actuator_associations"/>
-   <addaction name="actionconfigureTunnel"/>
+   <addaction name="actionconfigure_Tunnel"/>
    <addaction name="separator"/>
    <addaction name="actionActionConfigureEmail"/>
    <addaction name="actionConfigure_WA"/>
@@ -643,7 +643,7 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionconfigureTunnel">
+  <action name="actionconfigure_Tunnel">
    <property name="icon">
     <iconset>
      <normaloff>../../icons/tunnel.png</normaloff>../../icons/tunnel.png</iconset>

@@ -170,6 +170,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_camera_to_actuator_associations.triggered.connect(
             self.configure_camera_to_actuators_associations
         )
+        self.ui.actionconfigure_Tunnel.triggered.connect(self.configure_tunnel)
         self.ui.actionLicense.triggered.connect(self.show_license)
         self.ui.actionAbout.triggered.connect(self.show_about)
         self.ui.actionConfigure_WA.triggered.connect(self.configure_whatsapp)
@@ -295,8 +296,8 @@ class MainWindow(QMainWindow):
                         OperationMode.cur_operation_mode.custom_target_species = (
                             OperationMode.cur_custom_classification_species)
                 case OperationMode.OperationModeTypes.TunnelMode:
-                    if (configure_tunnel_mode_dlg := DialogConfigureTunnelMode()).exec():
-                        pass
+                    #TODO: check tunnels are configured
+                    pass
 
             db_status_log = "Database not configured."
             if (db := DataBase.get_instance()):
@@ -619,6 +620,12 @@ class MainWindow(QMainWindow):
             )
             self.setWindowModified(True)
             self.update_toolbar_status()
+
+    def configure_tunnel(self):
+        """Method to configure tunnel list"""
+
+        if (DialogConfigureTunnelMode()).exec():
+            logger.info("Tunnel configured.")
 
     def check_models(self):
         """Method to initialize classification model."""
