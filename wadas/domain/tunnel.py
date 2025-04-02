@@ -37,10 +37,36 @@ class Tunnel:
         self.enabled = enabled
 
     @classmethod
-    def add_tunnel(cls):
+    def add_tunnel(cls, tunnel):
         """Method to add tunnel into the list"""
-        pass
+        if not cls.tunnel_exists(tunnel):
+            cls.tunnels.append(tunnel)
+            logger.info("%s tunnel added.")
+        else:
+            logger.error("%s tunnel already exists.")
 
     @classmethod
-    def remove_tunnel(cls):
+    def remove_tunnel(cls, tunnel):
         """Method to remove tunnel from the list"""
+        for cur_tunnel in set(cls.tunnels):
+            if cur_tunnel.id == tunnel.id:
+                cls.tunnels.remove(cur_tunnel)
+                logger.info("%s tunnel removed.")
+
+    @classmethod
+    def tunnel_exists(cls, tunnel):
+        """Method to check whether a tunnel is already in the list"""
+
+        for cur_tunnel in cls.tunnels:
+            if cur_tunnel.id == tunnel.id:
+                return True
+        return False
+
+    def serialize(self):
+        """Method to serialize Camera object into file."""
+        pass
+
+    @staticmethod
+    def deserialize(data):
+        """Method to deserialize Camera object from file."""
+        pass

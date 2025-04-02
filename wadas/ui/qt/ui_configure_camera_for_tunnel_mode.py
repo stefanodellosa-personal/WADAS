@@ -19,76 +19,76 @@ from PySide6.QtWidgets import (QAbstractButton, QApplication, QButtonGroup, QDia
     QDialogButtonBox, QGridLayout, QLabel, QLayout,
     QRadioButton, QSizePolicy, QWidget)
 
-class Ui_DialogConfigureTunnelMode(object):
-    def setupUi(self, DialogConfigureTunnelMode):
-        if not DialogConfigureTunnelMode.objectName():
-            DialogConfigureTunnelMode.setObjectName(u"DialogConfigureTunnelMode")
-        DialogConfigureTunnelMode.resize(394, 558)
-        self.gridLayout = QGridLayout(DialogConfigureTunnelMode)
+class Ui_DialogConfigureCameraForTunnelMode(object):
+    def setupUi(self, DialogConfigureCameraForTunnelMode):
+        if not DialogConfigureCameraForTunnelMode.objectName():
+            DialogConfigureCameraForTunnelMode.setObjectName(u"DialogConfigureCameraForTunnelMode")
+        DialogConfigureCameraForTunnelMode.resize(394, 558)
+        self.gridLayout = QGridLayout(DialogConfigureCameraForTunnelMode)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout_entrance_direction = QGridLayout()
         self.gridLayout_entrance_direction.setObjectName(u"gridLayout_entrance_direction")
         self.gridLayout_entrance_direction.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
-        self.label_6 = QLabel(DialogConfigureTunnelMode)
+        self.label_6 = QLabel(DialogConfigureCameraForTunnelMode)
         self.label_6.setObjectName(u"label_6")
 
         self.gridLayout_entrance_direction.addWidget(self.label_6, 1, 0, 1, 2)
 
-        self.radioButton_right_frame = QRadioButton(DialogConfigureTunnelMode)
-        self.buttonGroup = QButtonGroup(DialogConfigureTunnelMode)
+        self.radioButton_right_frame = QRadioButton(DialogConfigureCameraForTunnelMode)
+        self.buttonGroup = QButtonGroup(DialogConfigureCameraForTunnelMode)
         self.buttonGroup.setObjectName(u"buttonGroup")
         self.buttonGroup.addButton(self.radioButton_right_frame)
         self.radioButton_right_frame.setObjectName(u"radioButton_right_frame")
 
         self.gridLayout_entrance_direction.addWidget(self.radioButton_right_frame, 4, 0, 1, 1)
 
-        self.label_4 = QLabel(DialogConfigureTunnelMode)
+        self.label_4 = QLabel(DialogConfigureCameraForTunnelMode)
         self.label_4.setObjectName(u"label_4")
-        self.label_4.setPixmap(QPixmap(u"../../img/in_right.png"))
+        self.label_4.setPixmap(QPixmap(u"wadas/img/in_right.png"))
         self.label_4.setScaledContents(True)
 
         self.gridLayout_entrance_direction.addWidget(self.label_4, 5, 1, 1, 1)
 
-        self.radioButton_left_frame = QRadioButton(DialogConfigureTunnelMode)
+        self.radioButton_left_frame = QRadioButton(DialogConfigureCameraForTunnelMode)
         self.buttonGroup.addButton(self.radioButton_left_frame)
         self.radioButton_left_frame.setObjectName(u"radioButton_left_frame")
 
         self.gridLayout_entrance_direction.addWidget(self.radioButton_left_frame, 5, 0, 1, 1)
 
-        self.radioButton_bottom_frame = QRadioButton(DialogConfigureTunnelMode)
+        self.radioButton_bottom_frame = QRadioButton(DialogConfigureCameraForTunnelMode)
         self.buttonGroup.addButton(self.radioButton_bottom_frame)
         self.radioButton_bottom_frame.setObjectName(u"radioButton_bottom_frame")
 
         self.gridLayout_entrance_direction.addWidget(self.radioButton_bottom_frame, 3, 0, 1, 1)
 
-        self.radioButton_top_frame = QRadioButton(DialogConfigureTunnelMode)
+        self.radioButton_top_frame = QRadioButton(DialogConfigureCameraForTunnelMode)
         self.buttonGroup.addButton(self.radioButton_top_frame)
         self.radioButton_top_frame.setObjectName(u"radioButton_top_frame")
 
         self.gridLayout_entrance_direction.addWidget(self.radioButton_top_frame, 2, 0, 1, 1)
 
-        self.label = QLabel(DialogConfigureTunnelMode)
+        self.label = QLabel(DialogConfigureCameraForTunnelMode)
         self.label.setObjectName(u"label")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
         self.label.setSizePolicy(sizePolicy)
-        self.label.setPixmap(QPixmap(u"../../img/in_up.png"))
+        self.label.setPixmap(QPixmap(u"wadas/img/in_up.png"))
         self.label.setScaledContents(True)
 
         self.gridLayout_entrance_direction.addWidget(self.label, 2, 1, 1, 1)
 
-        self.label_3 = QLabel(DialogConfigureTunnelMode)
+        self.label_3 = QLabel(DialogConfigureCameraForTunnelMode)
         self.label_3.setObjectName(u"label_3")
-        self.label_3.setPixmap(QPixmap(u"../../img/in_left.png"))
+        self.label_3.setPixmap(QPixmap(u"wadas/img/in_left.png"))
         self.label_3.setScaledContents(True)
 
         self.gridLayout_entrance_direction.addWidget(self.label_3, 4, 1, 1, 1)
 
-        self.label_2 = QLabel(DialogConfigureTunnelMode)
+        self.label_2 = QLabel(DialogConfigureCameraForTunnelMode)
         self.label_2.setObjectName(u"label_2")
-        self.label_2.setPixmap(QPixmap(u"../../img/in_down.png"))
+        self.label_2.setPixmap(QPixmap(u"wadas/img/in_down.png"))
         self.label_2.setScaledContents(True)
 
         self.gridLayout_entrance_direction.addWidget(self.label_2, 3, 1, 1, 1)
@@ -96,7 +96,7 @@ class Ui_DialogConfigureTunnelMode(object):
 
         self.gridLayout.addLayout(self.gridLayout_entrance_direction, 0, 0, 1, 1)
 
-        self.buttonBox = QDialogButtonBox(DialogConfigureTunnelMode)
+        self.buttonBox = QDialogButtonBox(DialogConfigureCameraForTunnelMode)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
@@ -104,21 +104,21 @@ class Ui_DialogConfigureTunnelMode(object):
         self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
 
 
-        self.retranslateUi(DialogConfigureTunnelMode)
-        self.buttonBox.accepted.connect(DialogConfigureTunnelMode.accept)
-        self.buttonBox.rejected.connect(DialogConfigureTunnelMode.reject)
+        self.retranslateUi(DialogConfigureCameraForTunnelMode)
+        self.buttonBox.accepted.connect(DialogConfigureCameraForTunnelMode.accept)
+        self.buttonBox.rejected.connect(DialogConfigureCameraForTunnelMode.reject)
 
-        QMetaObject.connectSlotsByName(DialogConfigureTunnelMode)
+        QMetaObject.connectSlotsByName(DialogConfigureCameraForTunnelMode)
     # setupUi
 
-    def retranslateUi(self, DialogConfigureTunnelMode):
-        DialogConfigureTunnelMode.setWindowTitle(QCoreApplication.translate("DialogConfigureTunnelMode", u"Configure Tunnel Mode", None))
-        self.label_6.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"Select tunnel entrance direction with respect to the camera framing:", None))
-        self.radioButton_right_frame.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"On the left of the frame", None))
+    def retranslateUi(self, DialogConfigureCameraForTunnelMode):
+        DialogConfigureCameraForTunnelMode.setWindowTitle(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"Configure Camera for Tunnel Mode", None))
+        self.label_6.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"Select tunnel entrance direction with respect to the camera framing:", None))
+        self.radioButton_right_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"On the left of the frame", None))
         self.label_4.setText("")
-        self.radioButton_left_frame.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"On the right of the frame", None))
-        self.radioButton_bottom_frame.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"At the bottom of the frame", None))
-        self.radioButton_top_frame.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"At the top of the frame", None))
+        self.radioButton_left_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"On the right of the frame", None))
+        self.radioButton_bottom_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"At the bottom of the frame", None))
+        self.radioButton_top_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"At the top of the frame", None))
         self.label.setText("")
         self.label_3.setText("")
         self.label_2.setText("")

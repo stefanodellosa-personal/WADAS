@@ -23,7 +23,7 @@ class Ui_DialogConfigureTunnelMode(object):
     def setupUi(self, DialogConfigureTunnelMode):
         if not DialogConfigureTunnelMode.objectName():
             DialogConfigureTunnelMode.setObjectName(u"DialogConfigureTunnelMode")
-        DialogConfigureTunnelMode.resize(652, 180)
+        DialogConfigureTunnelMode.resize(652, 183)
         self.gridLayout = QGridLayout(DialogConfigureTunnelMode)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout_entrance_direction = QGridLayout()
@@ -79,10 +79,10 @@ class Ui_DialogConfigureTunnelMode(object):
 
         self.gridLayout_entrance_direction.addWidget(self.comboBox_camera_1, 2, 1, 1, 1)
 
-        self.pushButton_direction_camera2 = QPushButton(DialogConfigureTunnelMode)
-        self.pushButton_direction_camera2.setObjectName(u"pushButton_direction_camera2")
+        self.pushButton_direction_camera_2 = QPushButton(DialogConfigureTunnelMode)
+        self.pushButton_direction_camera_2.setObjectName(u"pushButton_direction_camera_2")
 
-        self.gridLayout_entrance_direction.addWidget(self.pushButton_direction_camera2, 3, 3, 1, 1)
+        self.gridLayout_entrance_direction.addWidget(self.pushButton_direction_camera_2, 3, 3, 1, 1)
 
         self.label_direction_camera_2 = QLabel(DialogConfigureTunnelMode)
         self.label_direction_camera_2.setObjectName(u"label_direction_camera_2")
@@ -124,7 +124,7 @@ class Ui_DialogConfigureTunnelMode(object):
         self.label_7.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"Select tunnel", None))
         self.pushButton_add_new_tunnel.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"add new tunnel", None))
         self.label.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"Select camera for tunnel entrance 2", None))
-        self.pushButton_direction_camera2.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"select entrance direction", None))
+        self.pushButton_direction_camera_2.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"select entrance direction", None))
         self.label_direction_camera_2.setText("")
         self.label_direction_camera_1.setText("")
         self.pushButton_direction_camera_1.setText(QCoreApplication.translate("DialogConfigureTunnelMode", u"select entrance direction", None))

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>652</width>
-    <height>180</height>
+    <height>183</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -74,7 +74,7 @@
       <widget class="QComboBox" name="comboBox_camera_1"/>
      </item>
      <item row="3" column="3">
-      <widget class="QPushButton" name="pushButton_direction_camera2">
+      <widget class="QPushButton" name="pushButton_direction_camera_2">
        <property name="text">
         <string>select entrance direction</string>
        </property>
