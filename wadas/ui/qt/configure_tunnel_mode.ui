@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>652</width>
-    <height>183</height>
+    <height>397</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,91 +19,129 @@
      <property name="sizeConstraint">
       <enum>QLayout::SizeConstraint::SetFixedSize</enum>
      </property>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>Select camera for tunnel entrance 1</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QComboBox" name="comboBox_camera_2"/>
-     </item>
-     <item row="4" column="0" colspan="2">
-      <widget class="QLabel" name="label_error">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="comboBox_tunnel"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>Select tunnel</string>
+        <string>Select tunnel:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="1" column="2">
       <widget class="QPushButton" name="pushButton_add_new_tunnel">
        <property name="text">
         <string>add new tunnel</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLineEdit" name="lineEdit_new_tunnel_name">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+     <item row="2" column="0" colspan="3">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Entrance1</string>
        </property>
+       <widget class="QWidget" name="gridLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>19</x>
+          <y>19</y>
+          <width>601</width>
+          <height>111</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Direction to the entrance:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Select camera for tunnel entrance 1</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="comboBox_camera_1"/>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="pushButton_direction_camera_1">
+           <property name="text">
+            <string>select entrance direction</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label_direction_camera_1">
+           <property name="text">
+            <string>no direction set</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Select camera for tunnel entrance 2</string>
+     <item row="3" column="0" colspan="3">
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string>Entrance2</string>
        </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="comboBox_tunnel"/>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="comboBox_camera_1"/>
-     </item>
-     <item row="3" column="3">
-      <widget class="QPushButton" name="pushButton_direction_camera_2">
-       <property name="text">
-        <string>select entrance direction</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QLabel" name="label_direction_camera_2">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QLabel" name="label_direction_camera_1">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="3">
-      <widget class="QPushButton" name="pushButton_direction_camera_1">
-       <property name="text">
-        <string>select entrance direction</string>
-       </property>
+       <widget class="QWidget" name="gridLayoutWidget_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>611</width>
+          <height>111</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Direction to the entrance:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="comboBox_camera_2"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label_direction_camera_2">
+           <property name="text">
+            <string>no direction set</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Select camera for tunnel entrance 2</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="pushButton_direction_camera_2">
+           <property name="text">
+            <string>select entrance direction</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
     </layout>
    </item>
-   <item row="1" column="0">
+   <item row="3" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
