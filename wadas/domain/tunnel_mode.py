@@ -31,4 +31,7 @@ class TunnelMode(OperationMode):
 
     def run(self):
         """Method to run Tunnel Mode."""
+        logger.info("Starting Tunnel Mode...")
+
+        # TODO: implement logic
         pass

@@ -33,7 +33,7 @@ class Tunnel:
     def __init__(self, id, camera_entrance_1, camera_entrance_2, enabled=True):
         self.id = id
         self.camera_entrance_1 = camera_entrance_1
-        self.camera_entrance_1 = camera_entrance_2
+        self.camera_entrance_2 = camera_entrance_2
         self.enabled = enabled
 
     @classmethod
@@ -54,6 +54,18 @@ class Tunnel:
                 logger.info("%s tunnel removed.")
 
     @classmethod
+    def update_tunnel(cls, id, camera1, camera2, enabled=True):
+        """Method to update existing tunnel"""
+
+        for cur_tunnel in cls.tunnels:
+            if cur_tunnel.id == id:
+                cur_tunnel.camera_entrance_1 = camera1
+                cur_tunnel.camera_entrance_2 = camera2
+                cur_tunnel.enabled = enabled
+                return True
+        return False
+
+    @classmethod
     def tunnel_exists(cls, tunnel):
         """Method to check whether a tunnel is already in the list"""
 
@@ -64,9 +76,13 @@ class Tunnel:
 
     def serialize(self):
         """Method to serialize Camera object into file."""
+
+        # TODO: implement logic
         pass
 
     @staticmethod
     def deserialize(data):
         """Method to deserialize Camera object from file."""
+
+        # TODO: implement logic
         pass

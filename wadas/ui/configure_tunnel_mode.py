@@ -57,6 +57,13 @@ class DialogConfigureTunnelMode(QDialog, Ui_DialogConfigureTunnelMode):
         self.initialize_camera1_combobox()
         self.initialize_camera2_combobox()
 
+    def initialize_tunnel_combobox(self):
+        """Method to initialize tunnel combobox with existing tunnel objects"""
+
+        self.ui.comboBox_tunnel.clear()
+        for tunnel in Tunnel.tunnels:
+            self.ui.comboBox_tunnel.addItem(tunnel.id)
+
     def initialize_camera1_combobox(self):
         """Method to initialize camera list dropdown with available cameras."""
 
@@ -78,6 +85,7 @@ class DialogConfigureTunnelMode(QDialog, Ui_DialogConfigureTunnelMode):
         self.ui.comboBox_camera_2.setCurrentText("")
 
     def update_camera1_combobox(self):
+        """Method to update camera 1 combobox selection"""
 
         self.ui.comboBox_camera_1.currentIndexChanged.disconnect(self.update_camera1_combobox)
         cur_camera1 = self.ui.comboBox_camera_1.currentText()
@@ -87,6 +95,7 @@ class DialogConfigureTunnelMode(QDialog, Ui_DialogConfigureTunnelMode):
         self.ui.comboBox_camera_1.currentIndexChanged.connect(self.update_camera1_combobox)
 
     def update_camera2_combobox(self):
+        """Method to update camera 2 combobox selection"""
 
         self.ui.comboBox_camera_2.currentIndexChanged.disconnect(self.update_camera2_combobox)
         cur_camera2 = self.ui.comboBox_camera_2.currentText()
@@ -96,6 +105,7 @@ class DialogConfigureTunnelMode(QDialog, Ui_DialogConfigureTunnelMode):
         self.ui.comboBox_camera_2.currentIndexChanged.connect(self.update_camera2_combobox)
 
     def set_camera1_direction(self):
+        """Method to set camera 1 direction"""
 
         if (dlg := DialogConfigureCameraForTunnelMode(
             self.ui.label_direction_camera_1.text())).exec():
@@ -110,6 +120,8 @@ class DialogConfigureTunnelMode(QDialog, Ui_DialogConfigureTunnelMode):
                     self.ui.label_direction_camera_1.setText("RIGHT")
 
     def set_camera2_direction(self):
+        """Method to set camera 2 direction"""
+
         if (dlg := DialogConfigureCameraForTunnelMode(
             self.ui.label_direction_camera_2.text())).exec():
             match dlg.direction:
@@ -124,4 +136,9 @@ class DialogConfigureTunnelMode(QDialog, Ui_DialogConfigureTunnelMode):
 
     def accept_and_close(self):
         """Method to apply changed before closing dialog."""
+
+        for tunnel in Tunnel.tunnels:
+            if tunnel.id == self.ui.comboBox_tunnel.currentText():
+                Tunnel.update_tunnel(tunnel)
+
         self.accept()
