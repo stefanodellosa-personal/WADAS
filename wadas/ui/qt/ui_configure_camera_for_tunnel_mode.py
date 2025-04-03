@@ -34,13 +34,13 @@ class Ui_DialogConfigureCameraForTunnelMode(object):
 
         self.gridLayout_entrance_direction.addWidget(self.label_6, 1, 0, 1, 2)
 
-        self.radioButton_right_frame = QRadioButton(DialogConfigureCameraForTunnelMode)
+        self.radioButton_left_frame = QRadioButton(DialogConfigureCameraForTunnelMode)
         self.buttonGroup = QButtonGroup(DialogConfigureCameraForTunnelMode)
         self.buttonGroup.setObjectName(u"buttonGroup")
-        self.buttonGroup.addButton(self.radioButton_right_frame)
-        self.radioButton_right_frame.setObjectName(u"radioButton_right_frame")
+        self.buttonGroup.addButton(self.radioButton_left_frame)
+        self.radioButton_left_frame.setObjectName(u"radioButton_left_frame")
 
-        self.gridLayout_entrance_direction.addWidget(self.radioButton_right_frame, 4, 0, 1, 1)
+        self.gridLayout_entrance_direction.addWidget(self.radioButton_left_frame, 4, 0, 1, 1)
 
         self.label_4 = QLabel(DialogConfigureCameraForTunnelMode)
         self.label_4.setObjectName(u"label_4")
@@ -49,11 +49,11 @@ class Ui_DialogConfigureCameraForTunnelMode(object):
 
         self.gridLayout_entrance_direction.addWidget(self.label_4, 5, 1, 1, 1)
 
-        self.radioButton_left_frame = QRadioButton(DialogConfigureCameraForTunnelMode)
-        self.buttonGroup.addButton(self.radioButton_left_frame)
-        self.radioButton_left_frame.setObjectName(u"radioButton_left_frame")
+        self.radioButton_right_frame = QRadioButton(DialogConfigureCameraForTunnelMode)
+        self.buttonGroup.addButton(self.radioButton_right_frame)
+        self.radioButton_right_frame.setObjectName(u"radioButton_right_frame")
 
-        self.gridLayout_entrance_direction.addWidget(self.radioButton_left_frame, 5, 0, 1, 1)
+        self.gridLayout_entrance_direction.addWidget(self.radioButton_right_frame, 5, 0, 1, 1)
 
         self.radioButton_bottom_frame = QRadioButton(DialogConfigureCameraForTunnelMode)
         self.buttonGroup.addButton(self.radioButton_bottom_frame)
@@ -112,11 +112,11 @@ class Ui_DialogConfigureCameraForTunnelMode(object):
     # setupUi
 
     def retranslateUi(self, DialogConfigureCameraForTunnelMode):
-        DialogConfigureCameraForTunnelMode.setWindowTitle(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"Configure Camera for Tunnel Mode", None))
+        DialogConfigureCameraForTunnelMode.setWindowTitle(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"Configure camera for  Tunnel Mode", None))
         self.label_6.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"Select tunnel entrance direction with respect to the camera framing:", None))
-        self.radioButton_right_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"On the left of the frame", None))
+        self.radioButton_left_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"On the left of the frame", None))
         self.label_4.setText("")
-        self.radioButton_left_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"On the right of the frame", None))
+        self.radioButton_right_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"On the right of the frame", None))
         self.radioButton_bottom_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"At the bottom of the frame", None))
         self.radioButton_top_frame.setText(QCoreApplication.translate("DialogConfigureCameraForTunnelMode", u"At the top of the frame", None))
         self.label.setText("")

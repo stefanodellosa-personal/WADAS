@@ -96,10 +96,31 @@ class DialogConfigureTunnelMode(QDialog, Ui_DialogConfigureTunnelMode):
         self.ui.comboBox_camera_2.currentIndexChanged.connect(self.update_camera2_combobox)
 
     def set_camera1_direction(self):
-        (DialogConfigureCameraForTunnelMode()).exec()
+
+        if (dlg := DialogConfigureCameraForTunnelMode(
+            self.ui.label_direction_camera_1.text())).exec():
+            match dlg.direction:
+                case "UP":
+                    self.ui.label_direction_camera_1.setText("UP")
+                case "DOWN":
+                    self.ui.label_direction_camera_1.setText("DOWN")
+                case "LEFT":
+                    self.ui.label_direction_camera_1.setText("LEFT")
+                case "RIGHT":
+                    self.ui.label_direction_camera_1.setText("RIGHT")
 
     def set_camera2_direction(self):
-        (DialogConfigureCameraForTunnelMode()).exec()
+        if (dlg := DialogConfigureCameraForTunnelMode(
+            self.ui.label_direction_camera_2.text())).exec():
+            match dlg.direction:
+                case "UP":
+                    self.ui.label_direction_camera_2.setText("UP")
+                case "DOWN":
+                    self.ui.label_direction_camera_2.setText("DOWN")
+                case "LEFT":
+                    self.ui.label_direction_camera_2.setText("LEFT")
+                case "RIGHT":
+                    self.ui.label_direction_camera_2.setText("RIGHT")
 
     def accept_and_close(self):
         """Method to apply changed before closing dialog."""
