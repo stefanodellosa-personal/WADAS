@@ -20,15 +20,18 @@
 import logging
 import os
 import re
+from pathlib import Path
 
 import requests
 from PIL import Image
 
+from wadas.ai.object_counter import ObjectCounter, TrackingRegion
 from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
+module_dir_path = Path(__file__).parent
 
 
 class TestModelMode(OperationMode):
@@ -37,6 +40,7 @@ class TestModelMode(OperationMode):
         self.modename = "test_model_mode"
         self.url = ""
         self.file_path = ""
+        self.tunnel_mode = False
         self.last_classified_animals_str = ""
         self.type = OperationMode.OperationModeTypes.TestModelMode
 
@@ -169,14 +173,34 @@ class TestModelMode(OperationMode):
         if url := self.url:
             if self.is_video(url):
                 if video_path := self._get_video_from_url(url):
-                    for (
-                        det_results,
-                        detected_img_path,
-                        video_frame_path,
-                    ) in self.ai_model.process_video(video_path, True):
-                        self.process_detected_results(
-                            video_frame_path, det_results, detected_img_path
+                    if self.tunnel_mode:
+                        # Tunnel mode processing
+                        obj_counter = ObjectCounter(
+                            show=True,  # display the output
+                            region=TrackingRegion.DOWN,  # pass region points
+                            model=Path(
+                                module_dir_path,
+                                "..",
+                                "..",
+                                "model",
+                                "detection",
+                                "MDV6b-yolov9c_openvino_model",
+                            ).resolve(),  # model for object counting.
+                            classes=[0],  # count specific classes
                         )
+                        for detected_img_path in obj_counter.process_video_demo(video_path, True):
+                            self.update_image.emit(detected_img_path)
+                            self.update_info.emit()
+                    else:
+                        # Standard Detection from video processing
+                        for (
+                            det_results,
+                            detected_img_path,
+                            video_frame_path,
+                        ) in self.ai_model.process_video(video_path, True):
+                            self.process_detected_results(
+                                video_frame_path, det_results, detected_img_path
+                            )
                 else:
                     logger.error("No video file provided. Aborting.")
             else:
@@ -189,10 +213,34 @@ class TestModelMode(OperationMode):
                     logger.error("No image file provided. Aborting.")
         else:
             if self.is_video(self.file_path):
-                for det_results, detected_img_path, video_frame_path in self.ai_model.process_video(
-                    self.file_path, True
-                ):
-                    self.process_detected_results(video_frame_path, det_results, detected_img_path)
+                if self.tunnel_mode:
+                    # Process video for tunnel mode
+                    obj_counter = ObjectCounter(
+                        show=True,  # display the output
+                        region=TrackingRegion.DOWN,  # pass region points
+                        model=Path(
+                            module_dir_path,
+                            "..",
+                            "..",
+                            "model",
+                            "detection",
+                            "MDV6b-yolov9c_openvino_model",
+                        ).resolve(),  # model for object counting.
+                        classes=[0],  # count specific classes
+                    )
+                    for detected_img_path in obj_counter.process_video_demo(self.file_path, True):
+                        self.update_image.emit(detected_img_path)
+                        self.update_info.emit()
+                else:
+                    # Standard Detection processing from video
+                    for (
+                        det_results,
+                        detected_img_path,
+                        video_frame_path,
+                    ) in self.ai_model.process_video(self.file_path, True):
+                        self.process_detected_results(
+                            video_frame_path, det_results, detected_img_path
+                        )
             else:
                 # Image-based detection
                 img_path = self.image_to_rgb(self.file_path)

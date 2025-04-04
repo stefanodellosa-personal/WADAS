@@ -24,6 +24,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog
 
+from wadas.ai.object_counter import TrackingRegion
 from wadas.ui.qt.ui_configure_camera_for_tunnel_mode import Ui_DialogConfigureCameraForTunnelMode
 
 module_dir_path = Path(__file__).parent
@@ -32,7 +33,7 @@ module_dir_path = Path(__file__).parent
 class DialogConfigureCameraForTunnelMode(QDialog, Ui_DialogConfigureCameraForTunnelMode):
     """Class to configure camera for Tunnel mode"""
 
-    def __init__(self, direction=""):
+    def __init__(self, direction=None):
         super(DialogConfigureCameraForTunnelMode, self).__init__()
         self.ui = Ui_DialogConfigureCameraForTunnelMode()
         self.direction = direction
@@ -50,24 +51,24 @@ class DialogConfigureCameraForTunnelMode(QDialog, Ui_DialogConfigureCameraForTun
         """Initialize direction in UI if provided"""
 
         match self.direction:
-            case "UP":
+            case TrackingRegion.UP.value:
                 self.ui.radioButton_top_frame.setChecked(True)
-            case "DOWN":
+            case TrackingRegion.DOWN.value:
                 self.ui.radioButton_bottom_frame.setChecked(True)
-            case "LEFT":
+            case TrackingRegion.LEFT.value:
                 self.ui.radioButton_left_frame.setChecked(True)
-            case "RIGHT":
+            case TrackingRegion.RIGHT.value:
                 self.ui.radioButton_right_frame.setChecked(True)
 
     def accept_and_close(self):
         """Method to apply changed before closing dialog."""
 
         if self.ui.radioButton_top_frame.isChecked():
-            self.direction = "UP"
+            self.direction = TrackingRegion.UP
         if self.ui.radioButton_bottom_frame.isChecked():
-            self.direction = "DOWN"
+            self.direction = TrackingRegion.DOWN
         if self.ui.radioButton_left_frame.isChecked():
-            self.direction = "LEFT"
+            self.direction = TrackingRegion.LEFT
         if self.ui.radioButton_right_frame.isChecked():
-            self.direction = "RIGHT"
+            self.direction = TrackingRegion.RIGHT
         self.accept()

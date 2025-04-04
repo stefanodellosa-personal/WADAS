@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
 )
 
+from wadas.ai.object_counter import TrackingRegion
 from wadas.domain.camera import cameras
 from wadas.domain.tunnel import Tunnel
 from wadas.ui.configure_camera_for_tunnel_mode import DialogConfigureCameraForTunnelMode
@@ -107,32 +108,14 @@ class DialogConfigureTunnelMode(QDialog, Ui_DialogConfigureTunnelMode):
     def set_camera1_direction(self):
         """Method to set camera 1 direction"""
 
-        if (dlg := DialogConfigureCameraForTunnelMode(
-            self.ui.label_direction_camera_1.text())).exec():
-            match dlg.direction:
-                case "UP":
-                    self.ui.label_direction_camera_1.setText("UP")
-                case "DOWN":
-                    self.ui.label_direction_camera_1.setText("DOWN")
-                case "LEFT":
-                    self.ui.label_direction_camera_1.setText("LEFT")
-                case "RIGHT":
-                    self.ui.label_direction_camera_1.setText("RIGHT")
+        if (dlg := DialogConfigureCameraForTunnelMode(self.ui.label_direction_camera_1.text())).exec():
+            self.ui.label_direction_camera_1.setText(dlg.direction.value)
 
     def set_camera2_direction(self):
         """Method to set camera 2 direction"""
 
-        if (dlg := DialogConfigureCameraForTunnelMode(
-            self.ui.label_direction_camera_2.text())).exec():
-            match dlg.direction:
-                case "UP":
-                    self.ui.label_direction_camera_2.setText("UP")
-                case "DOWN":
-                    self.ui.label_direction_camera_2.setText("DOWN")
-                case "LEFT":
-                    self.ui.label_direction_camera_2.setText("LEFT")
-                case "RIGHT":
-                    self.ui.label_direction_camera_2.setText("RIGHT")
+        if (dlg := DialogConfigureCameraForTunnelMode(self.ui.label_direction_camera_2.text())).exec():
+            self.ui.label_direction_camera_2.setText(dlg.direction.value)
 
     def accept_and_close(self):
         """Method to apply changed before closing dialog."""

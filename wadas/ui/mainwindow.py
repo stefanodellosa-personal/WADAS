@@ -283,9 +283,10 @@ class MainWindow(QMainWindow):
         if OperationMode.cur_operation_mode:
             match OperationMode.cur_operation_mode.type:
                 case OperationMode.OperationModeTypes.TestModelMode:
-                    url, file_path = self.test_model_mode_input_dialog()
+                    url, file_path, tunnel_mode = self.test_model_mode_input_dialog()
                     OperationMode.cur_operation_mode.url = url
                     OperationMode.cur_operation_mode.file_path = file_path
+                    OperationMode.cur_operation_mode.tunnel_mode = tunnel_mode
                     if not OperationMode.cur_operation_mode.url and not OperationMode.cur_operation_mode.file_path:
                         logger.error("Cannot proceed without a valid input. Please run again.")
                         return
@@ -500,7 +501,8 @@ class MainWindow(QMainWindow):
             else:
                 logger.error("Invalid input provided. Aborting Test Model Mode...")
 
-            return select_test_mode_input_dlg.url, select_test_mode_input_dlg.file_path
+            return (select_test_mode_input_dlg.url, select_test_mode_input_dlg.file_path,
+                    select_test_mode_input_dlg.tunnel_mode)
         else:
             logger.info("Test model mode input selection aborted.")
             return "", ""

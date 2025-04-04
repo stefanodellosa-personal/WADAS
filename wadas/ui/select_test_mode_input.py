@@ -42,6 +42,7 @@ class DialogSelectTestModeInput(QDialog, Ui_DialogSelectTestModeInput):
         self.ui.lineEdit_url.setText("https://www.parks.it/tmpFoto/30079_4_PNALM.jpeg") #TODO: remove for 1.0 release
         self.url = ""
         self.file_path = ""
+        self.tunnel_mode = False
 
         # Slots
         self.ui.radioButton_image.clicked.connect(self.validate)
@@ -88,6 +89,7 @@ class DialogSelectTestModeInput(QDialog, Ui_DialogSelectTestModeInput):
         """When Ok is clicked, save url before closing."""
         self.url = self.ui.lineEdit_url.text()
         self.file_path = self.ui.lineEdit_file.text()
+        self.tunnel_mode = self.ui.checkBox_tunnel_mode.isChecked()
         self.accept()
 
     def is_supported_media(self, url, is_image):
