@@ -86,19 +86,29 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
     def on_remove_tunnel_clicked(self):
         """Method to remove a tunnel"""
 
-        for tunnel in set(self.local_tunnels):
-            if tunnel.id == self.ui.listWidget.currentItem():
-                self.local_tunnels.remove(tunnel)
+        selected_item = self.ui.listWidget.currentItem()
+        if selected_item:
+            selected_tunnel_id = selected_item.text()
+            for tunnel in list(self.local_tunnels):
+                if tunnel.id == selected_tunnel_id:
+                    self.local_tunnels.remove(tunnel)
+                    break
+            self.update_tunnels_list()
 
     def on_edit_tunnel_clicked(self):
         """Method to handle tunnel editing"""
 
-        for tunnel in self.local_tunnels:
-            if tunnel.id == self.ui.listWidget.currentItem():
-                if (dlg := DialogConfigureTunnel(self.cameras_not_in_tunnels, tunnel)).exec():
-                    tunnel = dlg.tunnel
-                self.update_tunnels_list()
-                break
+        selected_item = self.ui.listWidget.currentItem()
+        if selected_item:
+            selected_tunnel_id = selected_item.text()
+            for tunnel in self.local_tunnels:
+                if tunnel.id == selected_tunnel_id:
+                    if (dlg := DialogConfigureTunnel(self.cameras_not_in_tunnels, tunnel)).exec():
+                        tunnel.id = dlg.tunnel.id
+                        tunnel.camera_entrance_1 = dlg.tunnel.camera_entrance_1
+                        tunnel.camera_entrance_2 = dlg.tunnel.camera_entrance_2
+                    break
+            self.update_tunnels_list()
 
     def on_tunnel_selection_changed(self):
         """Method to handle list item selection"""
@@ -109,3 +119,9 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
         else:
             self.ui.pushButton_edit_tunnel.setEnabled(False)
             self.ui.pushButton_remove_tunnel.setEnabled(False)
+
+    def accept_and_close(self):
+        """Method to apply changed before closing dialog."""
+
+        Tunnel.tunnels = self.local_tunnels
+        self.accept()
