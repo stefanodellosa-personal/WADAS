@@ -90,6 +90,8 @@ class DialogSelectMode(QDialog, Ui_DialogSelectMode):
         elif self.ui.radioButton_custom_species_class_mode.isChecked():
             OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
             OperationMode.cur_custom_classification_species = self.ui.comboBox_select_species.currentText()
+        elif self.ui.radioButton_tunnel_mode.isChecked():
+            OperationMode.cur_operation_mode_type = OperationMode.OperationModeTypes.TunnelMode
 
         self.accept()
 

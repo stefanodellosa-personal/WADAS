@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QButtonGroup, QDialog,
-    QDialogButtonBox, QFrame, QGridLayout, QLabel,
-    QLineEdit, QPushButton, QRadioButton, QSizePolicy,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QButtonGroup, QCheckBox,
+    QDialog, QDialogButtonBox, QFrame, QGridLayout,
+    QLabel, QLineEdit, QPushButton, QRadioButton,
+    QSizePolicy, QWidget)
 
 class Ui_DialogSelectTestModeInput(object):
     def setupUi(self, DialogSelectTestModeInput):
@@ -88,6 +88,11 @@ class Ui_DialogSelectTestModeInput(object):
 
         self.gridLayout.addWidget(self.lineEdit_file, 3, 1, 1, 1)
 
+        self.checkBox_tunnel_mode = QCheckBox(self.gridLayoutWidget)
+        self.checkBox_tunnel_mode.setObjectName(u"checkBox_tunnel_mode")
+
+        self.gridLayout.addWidget(self.checkBox_tunnel_mode, 0, 2, 1, 1)
+
         self.label_error = QLabel(DialogSelectTestModeInput)
         self.label_error.setObjectName(u"label_error")
         self.label_error.setGeometry(QRect(10, 140, 541, 16))
@@ -107,6 +112,7 @@ class Ui_DialogSelectTestModeInput(object):
         self.radioButton_file.setText(QCoreApplication.translate("DialogSelectTestModeInput", u"File", None))
         self.pushButton_select_file.setText(QCoreApplication.translate("DialogSelectTestModeInput", u"Select File", None))
         self.lineEdit_url.setPlaceholderText("")
+        self.checkBox_tunnel_mode.setText(QCoreApplication.translate("DialogSelectTestModeInput", u"Tunnel mode", None))
         self.label_error.setText("")
     # retranslateUi
 

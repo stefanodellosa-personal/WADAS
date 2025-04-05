@@ -1,4 +1,4 @@
-from wadas.ai.object_counter import ObjectCounter
+from wadas.ai.object_counter import ObjectCounter, TrackingRegion
 import argparse
 
 
@@ -27,7 +27,7 @@ def main(video_path):
     # Initialize object counter object
     counter = ObjectCounter(
         show=True,  # display the output
-        region=region_points,  # pass region points
+        region=TrackingRegion.DOWN,  # pass region points
         model=model_path,  # model for object counting.
         classes=[0],  # count specific classes
     )
