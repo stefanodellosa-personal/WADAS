@@ -37,10 +37,10 @@ class Tunnel:
         self.enabled = enabled
 
     @classmethod
-    def add_tunnel(cls, tunnel):
+    def add_tunnel(cls, tunnel, entrance1, entrance2):
         """Method to add tunnel into the list"""
         if not cls.tunnel_exists(tunnel):
-            cls.tunnels.append(tunnel)
+            cls.tunnels.append(Tunnel(tunnel, entrance1, entrance2))
             logger.info("%s tunnel added.")
         else:
             logger.error("%s tunnel already exists.")

@@ -68,7 +68,7 @@ from wadas.ui.configure_camera_for_tunnel_mode import DialogConfigureCameraForTu
 from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
-from wadas.ui.configure_tunnel_mode import DialogConfigureTunnelMode
+from wadas.ui.configure_tunnels import DialogConfigureTunnels
 from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
 from wadas.ui.configure_web_interface import DialogConfigureWebInterface
 from wadas.ui.error_message_dialog import WADASErrorMessage
@@ -633,7 +633,7 @@ class MainWindow(QMainWindow):
     def configure_tunnel(self):
         """Method to configure tunnel list"""
 
-        if (DialogConfigureTunnelMode()).exec():
+        if (DialogConfigureTunnels()).exec():
             logger.info("Tunnel configured.")
 
     def check_models(self):
