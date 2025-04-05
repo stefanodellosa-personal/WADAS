@@ -81,6 +81,8 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
 
         if (dlg := DialogConfigureTunnel(self.cameras_not_in_tunnels)).exec():
             self.local_tunnels.append(dlg.tunnel)
+            self.cameras_not_in_tunnels.remove(dlg.tunnel.camera_entrance_1)
+            self.cameras_not_in_tunnels.remove(dlg.tunnel.camera_entrance_2)
             self.update_tunnels_list()
 
     def on_remove_tunnel_clicked(self):
@@ -91,6 +93,8 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
             selected_tunnel_id = selected_item.text()
             for tunnel in list(self.local_tunnels):
                 if tunnel.id == selected_tunnel_id:
+                    self.cameras_not_in_tunnels.append(tunnel.camera_entrance_1)
+                    self.cameras_not_in_tunnels.append(tunnel.camera_entrance_2)
                     self.local_tunnels.remove(tunnel)
                     break
             self.update_tunnels_list()
@@ -103,10 +107,20 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
             selected_tunnel_id = selected_item.text()
             for tunnel in self.local_tunnels:
                 if tunnel.id == selected_tunnel_id:
+                    orig_camera_1 = tunnel.camera_entrance_1
+                    orig_camera_2 = tunnel.camera_entrance_2
                     if (dlg := DialogConfigureTunnel(self.cameras_not_in_tunnels, tunnel)).exec():
                         tunnel.id = dlg.tunnel.id
                         tunnel.camera_entrance_1 = dlg.tunnel.camera_entrance_1
+                        tunnel.entrance_1_direction = dlg.tunnel.entrance_1_direction
+                        tunnel.entrance_2_direction = dlg.tunnel.entrance_2_direction
                         tunnel.camera_entrance_2 = dlg.tunnel.camera_entrance_2
+                        if (orig_camera_1 != tunnel.camera_entrance_1 and orig_camera_1 != tunnel.camera_entrance_2):
+                            self.cameras_not_in_tunnels.append(orig_camera_1)
+                        if (orig_camera_2 != tunnel.camera_entrance_1 and orig_camera_1 != tunnel.camera_entrance_2):
+                            self.cameras_not_in_tunnels.append(orig_camera_2)
+                            #TODO: remove newly edited cameras
+
                     break
             self.update_tunnels_list()
 

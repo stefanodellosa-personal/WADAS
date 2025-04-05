@@ -47,35 +47,6 @@ class Tunnel:
         self.enabled = enabled
 
     @classmethod
-    def add_tunnel(cls, tunnel, entrance1, entrance2):
-        """Method to add tunnel into the list"""
-        if not cls.tunnel_exists(tunnel):
-            cls.tunnels.append(Tunnel(tunnel, entrance1, entrance2))
-            logger.info("%s tunnel added.")
-        else:
-            logger.error("%s tunnel already exists.")
-
-    @classmethod
-    def remove_tunnel(cls, tunnel):
-        """Method to remove tunnel from the list"""
-        for cur_tunnel in set(cls.tunnels):
-            if cur_tunnel.id == tunnel.id:
-                cls.tunnels.remove(cur_tunnel)
-                logger.info("%s tunnel removed.")
-
-    @classmethod
-    def update_tunnel(cls, id, camera1, camera2, enabled=True):
-        """Method to update existing tunnel"""
-
-        for cur_tunnel in cls.tunnels:
-            if cur_tunnel.id == id:
-                cur_tunnel.camera_entrance_1 = camera1
-                cur_tunnel.camera_entrance_2 = camera2
-                cur_tunnel.enabled = enabled
-                return True
-        return False
-
-    @classmethod
     def tunnel_exists(cls, tunnel):
         """Method to check whether a tunnel is already in the list"""
 
