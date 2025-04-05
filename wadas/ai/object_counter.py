@@ -4,6 +4,7 @@ from enum import Enum
 
 import cv2
 import numpy as np
+from PIL import Image
 from ultralytics import solutions
 
 from wadas.ai.ov_predictor import __model_folder__, load_ov_model
@@ -131,10 +132,13 @@ class ObjectCounter(solutions.ObjectCounter):
             results = self.__call__(frame)
             if save_detection_image:
                 # Saving the detection results
-                logger.info("Saving detection results for frame %s...", i)
+                logger.debug("Saving detection results for frame %s...", i)
                 detected_img_path = os.path.join("detection_output", f"frame_{i}.jpg")
                 # Needs to be saved first as save_detection_images expects a path inside results
-                frame.save(detected_img_path)
+
+                # Convert the NumPy array to a PIL Image and save it
+                image = Image.fromarray(frame)
+                image.save(detected_img_path)
                 i = i + 1
 
                 yield detected_img_path

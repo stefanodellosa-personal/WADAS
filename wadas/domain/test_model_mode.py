@@ -155,6 +155,19 @@ class TestModelMode(OperationMode):
         # Send notification
         self.send_notification(detection_event, message)
 
+    def process_video_in_tunnel_mode(self, model_path, video_path):
+        """ "Method containing logic to trigger tunnel mode video processing"""
+
+        obj_counter = ObjectCounter(
+            show=False,  # display the output
+            region=TrackingRegion.DOWN,  # pass region points
+            model=model_path,  # model for object counting.
+            classes=[0],  # count specific classes
+        )
+        for detected_img_path in obj_counter.process_video_demo(video_path, True):
+            self.update_image.emit(detected_img_path)
+            self.update_info.emit()
+
     def run(self):
         """WADAS test model operation mode"""
 
@@ -175,22 +188,17 @@ class TestModelMode(OperationMode):
                 if video_path := self._get_video_from_url(url):
                     if self.tunnel_mode:
                         # Tunnel mode processing
-                        obj_counter = ObjectCounter(
-                            show=True,  # display the output
-                            region=TrackingRegion.DOWN,  # pass region points
-                            model=Path(
+                        self.process_video_in_tunnel_mode(
+                            Path(
                                 module_dir_path,
                                 "..",
                                 "..",
                                 "model",
                                 "detection",
                                 "MDV6b-yolov9c_openvino_model",
-                            ).resolve(),  # model for object counting.
-                            classes=[0],  # count specific classes
+                            ).resolve(),
+                            video_path,
                         )
-                        for detected_img_path in obj_counter.process_video_demo(video_path, True):
-                            self.update_image.emit(detected_img_path)
-                            self.update_info.emit()
                     else:
                         # Standard Detection from video processing
                         for (
@@ -215,22 +223,17 @@ class TestModelMode(OperationMode):
             if self.is_video(self.file_path):
                 if self.tunnel_mode:
                     # Process video for tunnel mode
-                    obj_counter = ObjectCounter(
-                        show=True,  # display the output
-                        region=TrackingRegion.DOWN,  # pass region points
-                        model=Path(
+                    self.process_video_in_tunnel_mode(
+                        Path(
                             module_dir_path,
                             "..",
                             "..",
                             "model",
                             "detection",
                             "MDV6b-yolov9c_openvino_model",
-                        ).resolve(),  # model for object counting.
-                        classes=[0],  # count specific classes
+                        ).resolve(),
+                        self.file_path,
                     )
-                    for detected_img_path in obj_counter.process_video_demo(self.file_path, True):
-                        self.update_image.emit(detected_img_path)
-                        self.update_info.emit()
                 else:
                     # Standard Detection processing from video
                     for (
