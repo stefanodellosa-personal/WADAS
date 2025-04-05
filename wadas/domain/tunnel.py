@@ -19,7 +19,7 @@
 
 import logging
 
-# from wadas.domain.camera import cameras
+from wadas.ai.object_counter import TrackingRegion
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +30,20 @@ class Tunnel:
     # List of Tunnel objects
     tunnels = []
 
-    def __init__(self, id, camera_entrance_1, camera_entrance_2, enabled=True):
+    def __init__(
+        self,
+        id,
+        camera_entrance_1,
+        camera_entrance_2,
+        entrance_1_direction=TrackingRegion.DOWN,
+        entrance_2_direction=TrackingRegion.DOWN,
+        enabled=True,
+    ):
         self.id = id
         self.camera_entrance_1 = camera_entrance_1
+        self.entrance_1_direction = entrance_1_direction
         self.camera_entrance_2 = camera_entrance_2
+        self.entrance_2_direction = entrance_2_direction
         self.enabled = enabled
 
     @classmethod

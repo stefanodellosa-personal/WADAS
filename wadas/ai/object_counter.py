@@ -13,13 +13,15 @@ logger = logging.getLogger(__name__)
 
 
 class TrackingRegion(Enum):
+    """Class to define tunnel entrance tracking region"""
+
     UP = "up"
     DOWN = "down"
     LEFT = "left"
     RIGHT = "right"
 
     def to_region(self, width: int, height: int) -> list[tuple[int, int]]:
-
+        """Method returning entrance tracking region coordinates"""
         margin = 1 / 6  # 1/6 of the width or height
         if self == TrackingRegion.UP:
             region = [(0, height * margin), (width, height * margin)]
@@ -31,6 +33,11 @@ class TrackingRegion(Enum):
             region = [(width * (1 - margin), 0), (width * (1 - margin), height)]
 
         return [(int(dim[0]), int(dim[1])) for dim in region]
+
+    @classmethod
+    def get_tracking_region(cls, value: str):
+        """Method returning tracking region from corresponding value"""
+        return cls.__members__.get(value.upper())
 
 
 class ObjectCounter(solutions.ObjectCounter):

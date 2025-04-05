@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
 )
 
+from wadas.ai.object_counter import TrackingRegion
 from wadas.domain.tunnel import Tunnel
 from wadas.ui.configure_camera_for_tunnel_mode import DialogConfigureCameraForTunnelMode
 from wadas.ui.qt.ui_configure_tunnel import Ui_DialogConfigureTunnel
@@ -41,7 +42,7 @@ class DialogConfigureTunnel(QDialog, Ui_DialogConfigureTunnel):
 
         # UI
         self.ui.setupUi(self)
-        title = f"Edit tunnel {tunnel}" if tunnel else "New tunnel"
+        title = f"Edit tunnel {tunnel.id}" if tunnel else "New tunnel"
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(str(module_dir_path.parent / "img" / "mainwindow_icon.jpg")))
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
@@ -65,7 +66,9 @@ class DialogConfigureTunnel(QDialog, Ui_DialogConfigureTunnel):
         if self.tunnel:
             self.ui.lineEdit_tunnel_name.setText(tunnel.id)
             self.ui.comboBox_camera_1.setCurrentText(tunnel.camera_entrance_1)
+            self.ui.label_direction_camera_1.setText(tunnel.entrance_1_direction.value)
             self.ui.comboBox_camera_2.setCurrentText(tunnel.camera_entrance_2)
+            self.ui.label_direction_camera_2.setText(tunnel.entrance_2_direction.value)
 
     def initialize_camera1_combobox(self):
         """Method to initialize camera list dropdown with available cameras."""
@@ -124,9 +127,16 @@ class DialogConfigureTunnel(QDialog, Ui_DialogConfigureTunnel):
             # Edit existing tunnel
             self.tunnel.id = self.ui.lineEdit_tunnel_name.text()
             self.tunnel.camera_entrance_1 = self.ui.comboBox_camera_1.currentText()
+            self.tunnel.entrance_1_direction = TrackingRegion.get_tracking_region(
+                self.ui.label_direction_camera_1.text())
             self.tunnel.camera_entrance_2 = self.ui.comboBox_camera_2.currentText()
+            self.tunnel.entrance_2_direction = TrackingRegion.get_tracking_region(
+                self.ui.label_direction_camera_2.text())
         else:
             self.tunnel = Tunnel(self.ui.lineEdit_tunnel_name.text(),
                                  self.ui.comboBox_camera_1.currentText(),
-                                 self.ui.comboBox_camera_2.currentText())
+                                 self.ui.comboBox_camera_2.currentText(),
+                                 TrackingRegion.get_tracking_region(self.ui.label_direction_camera_1.text()),
+                                 TrackingRegion.get_tracking_region(self.ui.label_direction_camera_2.text())
+                                 )
         self.accept()
