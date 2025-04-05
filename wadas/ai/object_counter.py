@@ -93,6 +93,7 @@ class ObjectCounter(solutions.ObjectCounter):
         return results.classwise_count
 
     def get_video_frames(self, video_path):
+        """Method to get frames from a video file"""
 
         try:
             video = cv2.VideoCapture(video_path)
@@ -116,7 +117,8 @@ class ObjectCounter(solutions.ObjectCounter):
         return frames
 
     def process_video_demo(self, video_path, save_detection_image: bool):
-        """Process video in tunnel mode updating animals counter"""
+        """Method to process video in tunnel mode updating animals counter with frames feedback
+        to UI for Test Model Mode."""
 
         logger.info("Running tunnel mode detection on video %s ...", video_path)
 

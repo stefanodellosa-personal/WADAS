@@ -25,7 +25,7 @@ from pathlib import Path
 import requests
 from PIL import Image
 
-from wadas.ai.object_counter import ObjectCounter, TrackingRegion
+from wadas.ai.object_counter import ObjectCounter
 from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.utils import get_timestamp
@@ -41,6 +41,7 @@ class TestModelMode(OperationMode):
         self.url = ""
         self.file_path = ""
         self.tunnel_mode = False
+        self.tunnel_mode_direction = None
         self.last_classified_animals_str = ""
         self.type = OperationMode.OperationModeTypes.TestModelMode
 
@@ -155,12 +156,12 @@ class TestModelMode(OperationMode):
         # Send notification
         self.send_notification(detection_event, message)
 
-    def process_video_in_tunnel_mode(self, model_path, video_path):
+    def process_video_in_tunnel_mode(self, model_path, video_path, tunnel_entrance_direction):
         """ "Method containing logic to trigger tunnel mode video processing"""
 
         obj_counter = ObjectCounter(
             show=False,  # display the output
-            region=TrackingRegion.DOWN,  # pass region points
+            region=tunnel_entrance_direction,  # pass region points
             model=model_path,  # model for object counting.
             classes=[0],  # count specific classes
         )
@@ -173,6 +174,13 @@ class TestModelMode(OperationMode):
 
         if not self.url and not self.file_path:
             logger.error("Missing required input. Aborting test model mode.")
+            self.execution_completed()
+            return
+
+        if self.tunnel_mode and not self.tunnel_mode_direction:
+            logger.error(
+                "Unable to proceed with video processing without tunnel entrance direction."
+            )
             self.execution_completed()
             return
 
@@ -198,6 +206,7 @@ class TestModelMode(OperationMode):
                                 "MDV6b-yolov9c_openvino_model",
                             ).resolve(),
                             video_path,
+                            self.tunnel_mode_direction,
                         )
                     else:
                         # Standard Detection from video processing
@@ -233,6 +242,7 @@ class TestModelMode(OperationMode):
                             "MDV6b-yolov9c_openvino_model",
                         ).resolve(),
                         self.file_path,
+                        self.tunnel_mode_direction,
                     )
                 else:
                     # Standard Detection processing from video

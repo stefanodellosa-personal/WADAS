@@ -64,6 +64,7 @@ from wadas.ui.configure_camera_actuator_associations_dialog import (
     DialogConfigureCameraToActuatorAssociations,
 )
 from wadas.ui.configure_db_dialog import ConfigureDBDialog
+from wadas.ui.configure_camera_for_tunnel_mode import DialogConfigureCameraForTunnelMode
 from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
@@ -289,6 +290,12 @@ class MainWindow(QMainWindow):
                     OperationMode.cur_operation_mode.tunnel_mode = tunnel_mode
                     if not OperationMode.cur_operation_mode.url and not OperationMode.cur_operation_mode.file_path:
                         logger.error("Cannot proceed without a valid input. Please run again.")
+                        return
+                    if (dlg := DialogConfigureCameraForTunnelMode()).exec():
+                        OperationMode.cur_operation_mode.tunnel_mode_direction = dlg.direction
+                        logger.info("Tunnel entrance direction: %s", dlg.direction.value)
+                    else:
+                        logger.error("Unable to proceed with video processing without tunnel entrance direction.")
                         return
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
                     if not OperationMode.cur_custom_classification_species:
