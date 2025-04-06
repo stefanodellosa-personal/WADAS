@@ -56,14 +56,26 @@ class Tunnel:
         return False
 
     def serialize(self):
-        """Method to serialize Camera object into file."""
+        """Method to serialize Tunnel object into file."""
 
-        # TODO: implement logic
-        pass
+        return {
+            "id": self.id,
+            "camera_entrance_1": self.camera_entrance_1,
+            "camera_entrance_2": self.camera_entrance_2,
+            "entrance_1_direction": self.entrance_1_direction.value,
+            "entrance_2_direction": self.entrance_2_direction.value,
+            "enabled": self.enabled,
+        }
 
     @staticmethod
     def deserialize(data):
-        """Method to deserialize Camera object from file."""
+        """Method to deserialize Tunnel object from file."""
 
-        # TODO: implement logic
-        pass
+        return Tunnel(
+            data["id"],
+            data["camera_entrance_1"],
+            data["camera_entrance_2"],
+            TrackingRegion.get_tracking_region(data["entrance_1_direction"]),
+            TrackingRegion.get_tracking_region(data["entrance_2_direction"]),
+            data["enabled"],
+        )

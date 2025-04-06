@@ -119,8 +119,6 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
                             self.cameras_not_in_tunnels.append(orig_camera_1)
                         if (orig_camera_2 != tunnel.camera_entrance_1 and orig_camera_1 != tunnel.camera_entrance_2):
                             self.cameras_not_in_tunnels.append(orig_camera_2)
-                            #TODO: remove newly edited cameras
-
                     break
             self.update_tunnels_list()
 

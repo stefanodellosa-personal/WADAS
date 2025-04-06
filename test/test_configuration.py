@@ -20,6 +20,7 @@ from wadas.domain.ftps_server import DummyAuthorizer, FTPsServer, TLS_FTP_WADAS_
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.roadsign_actuator import RoadSignActuator
+from wadas.domain.tunnel import Tunnel
 from wadas.domain.usb_camera import USBCamera
 
 
@@ -40,6 +41,7 @@ def init():
     AiModel.classification_device = "auto"
     AiModel.video_fps = 1
     OperationMode.cur_operation_mode = None
+    Tunnel.tunnels = None
 
 
 @patch(
@@ -63,6 +65,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+tunnels: []
 version: v0.1.0
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 """,
@@ -94,6 +97,7 @@ def test_load_incompatible_older_version_config(mock_file, init):
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -117,6 +121,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+tunnels: []
 version: {__version__}
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 """,
@@ -147,6 +152,7 @@ def test_load_empty_config(mock_file, init):
     assert AiModel.language == ""
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
@@ -171,6 +177,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -198,6 +205,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 """,
 )
@@ -227,6 +235,7 @@ def test_load_wrong_format_config(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -255,6 +264,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -294,6 +304,7 @@ def test_load_actuator_server_config(mock_file, init):
     assert AiModel.classification_device == "auto"
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
@@ -326,6 +337,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -365,6 +377,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -405,6 +418,7 @@ def test_load_actuators_config(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
@@ -445,6 +459,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -472,6 +487,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -503,6 +519,7 @@ def test_load_ai_model_config(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
@@ -535,6 +552,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -566,6 +584,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -602,6 +621,7 @@ def test_load_camera_detection_params_config(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
@@ -636,6 +656,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -695,6 +716,7 @@ database: ''
 ftps_server: []
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {}
 """.format(
@@ -806,6 +828,7 @@ def test_load_cameras_config(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -842,6 +865,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -888,6 +912,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_no_credentials(mock_file, i
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -924,6 +949,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -970,6 +996,7 @@ def test_load_cameras_config_with_ftp_and_no_folder_and_no_credentials(mock_file
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -1006,6 +1033,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1052,6 +1080,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_same_credentials(mock_file,
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -1088,6 +1117,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1134,6 +1164,7 @@ def test_load_cameras_config_with_ftp_and_folder_and_different_credentials(mock_
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
@@ -1222,6 +1253,7 @@ database: ''
 ftps_server: ''
 notification: ''
 operation_mode: ''
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {}
 """.format(
@@ -1263,6 +1295,7 @@ ftps_server:
 database: ''
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1305,6 +1338,7 @@ def test_load_ftps_server_config(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -1336,6 +1370,7 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: []
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1383,6 +1418,7 @@ def test_load_ftps_server_config_with_existing_server(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
@@ -1427,6 +1463,7 @@ ftps_server:
   ssl_key: /Documents/ssl/eshare_key.pem
 notification: ''
 operation_mode: ''
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -1462,6 +1499,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1504,6 +1542,7 @@ def test_load_notification_config_with_no_credentials(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -1535,6 +1574,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1577,6 +1617,7 @@ def test_load_notification_config_with_same_credentials(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -1608,6 +1649,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1650,6 +1692,7 @@ def test_load_notification_config_with_different_credentials(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type is None
+    assert Tunnel.tunnels is None
 
 
 @patch(
@@ -1681,6 +1724,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode:
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1737,6 +1781,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode: ''
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -1776,6 +1821,7 @@ notification:
     smtp_hostname: smtp.wadas.org
     smtp_port: 123
 operation_mode: ''
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -1804,6 +1850,7 @@ ftps_server: []
 notification: []
 operation_mode:
     type: Test Model Mode
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1835,6 +1882,7 @@ def test_load_test_model_mode_config(mock_file, init):
     assert AiModel.video_fps == 1
     assert OperationMode.cur_operation_mode is None
     assert OperationMode.cur_operation_mode_type == OperationMode.OperationModeTypes.TestModelMode
+    assert Tunnel.tunnels is None
 
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
@@ -1861,6 +1909,7 @@ ftps_server: ''
 notification: ''
 operation_mode:
   type: Test Model Mode
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -1889,6 +1938,7 @@ ftps_server: []
 notification: []
 operation_mode:
     type: Animal Detection Mode
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -1935,6 +1985,7 @@ ftps_server: ''
 notification: ''
 operation_mode:
   type: Animal Detection Mode
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -1963,6 +2014,7 @@ ftps_server: []
 notification: []
 operation_mode:
     type: Animal Detection and Classification Mode
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -2011,6 +2063,7 @@ ftps_server: ''
 notification: ''
 operation_mode:
   type: Animal Detection and Classification Mode
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
@@ -2042,6 +2095,7 @@ notification: []
 operation_mode:
     type: Custom Species Classification Mode
     custom_target_species: chamois
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """,
@@ -2093,6 +2147,7 @@ notification: ''
 operation_mode:
   custom_target_species: chamois
   type: Custom Species Classification Mode
+tunnels: []
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """

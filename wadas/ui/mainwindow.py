@@ -54,6 +54,7 @@ from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.test_model_mode import TestModelMode
+from wadas.domain.tunnel import Tunnel
 from wadas.domain.tunnel_mode import TunnelMode
 from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.about_dialog import AboutDialog
@@ -304,8 +305,8 @@ class MainWindow(QMainWindow):
                         OperationMode.cur_operation_mode.custom_target_species = (
                             OperationMode.cur_custom_classification_species)
                 case OperationMode.OperationModeTypes.TunnelMode:
-                    #TODO: check tunnels are configured
-                    pass
+                    if not Tunnel.tunnels:
+                        logger.error("No tunnel configured. Aborting.")
 
             db_status_log = "Database not configured."
             if (db := DataBase.get_instance()):

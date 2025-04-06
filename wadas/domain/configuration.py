@@ -40,6 +40,7 @@ from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.roadsign_actuator import RoadSignActuator
 from wadas.domain.telegram_notifier import TelegramNotifier
+from wadas.domain.tunnel import Tunnel
 from wadas.domain.usb_camera import USBCamera
 from wadas.domain.whatsapp_notifier import WhatsAppNotifier
 
@@ -266,6 +267,11 @@ def load_configuration_from_file(file_path):
                 load_status["errors_log"] = "Unrecognized Database Type"
                 return load_status
 
+        # Tunnels
+        for data in wadas_config["tunnels"]:
+            tunnel = Tunnel.deserialize(data)
+            Tunnel.tunnels.append(tunnel)
+
     except Exception as e:
         load_status["errors_on_load"] = True
         load_status["errors_log"] = e
@@ -308,6 +314,8 @@ def save_configuration_to_file(file_, project_uuid):
         else:
             operation_mode = {"type": OperationMode.cur_operation_mode_type.value}
 
+    tunnels_to_dict = [tunnel.serialize() for tunnel in Tunnel.tunnels]
+
     # Build data structure to serialize
     data = {
         "uuid": str(project_uuid),
@@ -334,6 +342,7 @@ def save_configuration_to_file(file_, project_uuid):
             else ""
         ),
         "database": db.serialize() if (db := DataBase.get_instance()) else "",
+        "tunnels": tunnels_to_dict,
     }
 
     with open(file_, "w") as yaml_file:
