@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+from ai.object_counter import TrackingRegion
 from mocks import OpenStringMock
 from packaging.version import Version
 
@@ -2077,8 +2078,6 @@ version: {__version__}
 actuator_server:
 actuators: []
 ai_model:
-
-
   ai_class_threshold: 0
   ai_classification_device: auto
   ai_classification_model_version: DFv1.2
@@ -2148,6 +2147,106 @@ operation_mode:
   custom_target_species: chamois
   type: Custom Species Classification Mode
 tunnels: []
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
+version: {__version__}
+"""
+    )
+
+
+@patch(
+    "builtins.open",
+    new_callable=OpenStringMock,
+    read_data=f"""
+actuator_server:
+actuators: []
+ai_model:
+  ai_class_threshold: 0
+  ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
+  ai_detect_threshold: 0
+  ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
+  ai_language: ''
+  ai_video_fps: 1
+cameras: []
+camera_detection_params: {{}}
+database: ''
+ftps_server: []
+notification: []
+operation_mode: ''
+tunnels:
+- camera_entrance_1: camera_entrance1
+  camera_entrance_2: camera_entrance2
+  enabled: true
+  entrance_1_direction: down
+  entrance_2_direction: up
+  id: Tunnel1
+uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
+version: {__version__}
+""",
+)
+def test_load_tunnel_config(mock_file, init):
+    Tunnel.tunnels = []
+    assert load_configuration_from_file("") == {
+        "errors_on_load": False,
+        "errors_log": "",
+        "config_version": Version(__version__),
+        "compatible_config": True,
+        "uuid": "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede",
+        "valid_ftp_keyring": True,
+        "valid_email_keyring": True,
+        "valid_whatsapp_keyring": True,
+    }
+    tunnel = Tunnel.tunnels[0]
+    assert tunnel.id == "Tunnel1"
+    assert tunnel.camera_entrance_1 == "camera_entrance1"
+    assert tunnel.camera_entrance_2 == "camera_entrance2"
+    assert tunnel.entrance_1_direction.value == "down"
+    assert tunnel.entrance_2_direction.value == "up"
+    assert tunnel.enabled is True
+
+
+@patch("builtins.open", new_callable=OpenStringMock, create=True)
+def test_save_tunnel_config(mock_file, init):
+    Tunnel.tunnels = []
+    Tunnel.tunnels.extend(
+        [
+            Tunnel(
+                "Tunnel1",
+                "camera_entrance1",
+                "camera_entrance2",
+                TrackingRegion.DOWN,
+                TrackingRegion.UP,
+            )
+        ]
+    )
+    save_configuration_to_file("", "39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede")
+    assert (
+        mock_file.dump()
+        == f"""actuator_server: ''
+actuators: []
+ai_model:
+  ai_class_threshold: 0
+  ai_classification_device: auto
+  ai_classification_model_version: DFv1.2
+  ai_detect_threshold: 0
+  ai_detection_device: auto
+  ai_detection_model_version: MDV5-yolov5
+  ai_language: ''
+  ai_video_fps: 1
+camera_detection_params: {{}}
+cameras: []
+database: ''
+ftps_server: ''
+notification: ''
+operation_mode: ''
+tunnels:
+- camera_entrance_1: camera_entrance1
+  camera_entrance_2: camera_entrance2
+  enabled: true
+  entrance_1_direction: down
+  entrance_2_direction: up
+  id: Tunnel1
 uuid: 39f89e5c-56bb-4ab3-8cb0-dd8450cc8ede
 version: {__version__}
 """
