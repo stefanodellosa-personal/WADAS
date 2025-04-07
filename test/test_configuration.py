@@ -2208,6 +2208,10 @@ def test_load_tunnel_config(mock_file, init):
 
 @patch("builtins.open", new_callable=OpenStringMock, create=True)
 def test_save_tunnel_config(mock_file, init):
+    OperationMode.cur_operation_mode_type = (
+        OperationMode.OperationModeTypes.CustomSpeciesClassificationMode
+    )
+    OperationMode.cur_custom_classification_species = "chamois"
     Tunnel.tunnels = []
     Tunnel.tunnels.extend(
         [
@@ -2239,7 +2243,9 @@ cameras: []
 database: ''
 ftps_server: ''
 notification: ''
-operation_mode: ''
+operation_mode:
+  custom_target_species: chamois
+  type: Custom Species Classification Mode
 tunnels:
 - camera_entrance_1: camera_entrance1
   camera_entrance_2: camera_entrance2
