@@ -1,11 +1,11 @@
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from ai.object_counter import TrackingRegion
 from mocks import OpenStringMock
 from packaging.version import Version
 
 from wadas._version import __version__
+from wadas.ai.object_counter import TrackingRegion
 from wadas.domain.actuator import Actuator
 from wadas.domain.ai_model import AiModel
 from wadas.domain.camera import Camera, cameras
