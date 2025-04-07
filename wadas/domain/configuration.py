@@ -314,7 +314,7 @@ def save_configuration_to_file(file_, project_uuid):
         else:
             operation_mode = {"type": OperationMode.cur_operation_mode_type.value}
 
-    tunnels_to_dict = [tunnel.serialize() for tunnel in Tunnel.tunnels]
+    tunnels_to_dict = [tunnel.serialize() for tunnel in Tunnel.tunnels] if Tunnel.tunnels else []
 
     # Build data structure to serialize
     data = {
