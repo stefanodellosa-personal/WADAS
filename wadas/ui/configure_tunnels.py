@@ -88,10 +88,9 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
     def on_remove_tunnel_clicked(self):
         """Method to remove a tunnel"""
 
-        selected_item = self.ui.listWidget.currentItem()
-        if selected_item:
+        if selected_item := self.ui.listWidget.currentItem():
             selected_tunnel_id = selected_item.text()
-            for tunnel in list(self.local_tunnels):
+            for tunnel in tuple(self.local_tunnels):
                 if tunnel.id == selected_tunnel_id:
                     self.cameras_not_in_tunnels.append(tunnel.camera_entrance_1)
                     self.cameras_not_in_tunnels.append(tunnel.camera_entrance_2)
@@ -102,8 +101,7 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
     def on_edit_tunnel_clicked(self):
         """Method to handle tunnel editing"""
 
-        selected_item = self.ui.listWidget.currentItem()
-        if selected_item:
+        if selected_item := self.ui.listWidget.currentItem():
             selected_tunnel_id = selected_item.text()
             for tunnel in self.local_tunnels:
                 if tunnel.id == selected_tunnel_id:

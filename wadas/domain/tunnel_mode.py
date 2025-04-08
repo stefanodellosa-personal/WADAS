@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 class TunnelMode(OperationMode):
     def __init__(self):
-        super(TunnelMode, self).__init__()
+        super().init()
         self.type = OperationMode.OperationModeTypes.TunnelMode
 
     def run(self):
@@ -34,4 +34,6 @@ class TunnelMode(OperationMode):
         logger.info("Starting Tunnel Mode...")
 
         # TODO: implement logic
-        pass
+        logger.info("Tunnel Mode not yet implemented.")
+        self.execution_completed()
+        return

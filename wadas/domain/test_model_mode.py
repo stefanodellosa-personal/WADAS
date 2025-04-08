@@ -160,10 +160,10 @@ class TestModelMode(OperationMode):
         """ "Method containing logic to trigger tunnel mode video processing"""
 
         obj_counter = ObjectCounter(
-            show=False,  # display the output
-            region=tunnel_entrance_direction,  # pass region points
-            model=model_path,  # model for object counting.
-            classes=[0],  # count specific classes
+            show=False,
+            region=tunnel_entrance_direction,
+            model=model_path,
+            classes=[0],
         )
         for detected_img_path in obj_counter.process_video_demo(video_path, True):
             self.update_image.emit(detected_img_path)
@@ -197,13 +197,11 @@ class TestModelMode(OperationMode):
                     if self.tunnel_mode:
                         # Tunnel mode processing
                         self.process_video_in_tunnel_mode(
-                            Path(
-                                module_dir_path,
-                                "..",
-                                "..",
-                                "model",
-                                "detection",
-                                "MDV6b-yolov9c_openvino_model",
+                            (
+                                module_dir_path.parent.parent
+                                / "model"
+                                / "detection"
+                                / "MDV6b-yolov9c_openvino_model"
                             ).resolve(),
                             video_path,
                             self.tunnel_mode_direction,

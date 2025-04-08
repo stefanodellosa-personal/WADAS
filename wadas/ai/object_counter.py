@@ -93,7 +93,7 @@ class ObjectCounter(solutions.ObjectCounter):
                 self.region = self.region.to_region(frames[0].shape[1], frames[0].shape[0])
 
         for frame in frames:
-            results = self.__call__(frame)
+            results = self(frame)
 
         # It will track the objects and count them at the end of the video
         # Result is in the form of a dictionary of classwise counts
@@ -103,15 +103,13 @@ class ObjectCounter(solutions.ObjectCounter):
         """Method to get frames from a video file"""
 
         try:
-            video = cv2.VideoCapture(video_path)
-            if not video.isOpened():
+            if not (video := cv2.VideoCapture(video_path)).isOpened():
                 logger.error("Error opening video file %s. Aborting.", video_path)
                 return None, None
         except FileNotFoundError:
             logger.error("%s is not a valid video path. Aborting.", video_path)
             return None, None
 
-        # Process video
         frames = []
         while video.isOpened():
             success, im0 = video.read()
@@ -136,9 +134,8 @@ class ObjectCounter(solutions.ObjectCounter):
             if isinstance(self.region, TrackingRegion):
                 self.region = self.region.to_region(frames[0].shape[1], frames[0].shape[0])
 
-        i = 1
-        for frame in frames:
-            results = self.__call__(frame)
+        for i, frame in enumerate(frames, 1):
+            results = self(frame)
             if save_detection_image:
                 # Saving the detection results
                 logger.debug("Saving detection results for frame %s...", i)
@@ -146,9 +143,7 @@ class ObjectCounter(solutions.ObjectCounter):
                 # Needs to be saved first as save_detection_images expects a path inside results
 
                 # Convert the NumPy array to a PIL Image and save it
-                image = Image.fromarray(frame)
-                image.save(detected_img_path)
-                i = i + 1
+                Image.fromarray(frame).save(detected_img_path)
 
                 yield detected_img_path
             else:

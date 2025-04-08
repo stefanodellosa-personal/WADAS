@@ -50,10 +50,7 @@ class Tunnel:
     def tunnel_exists(cls, tunnel):
         """Method to check whether a tunnel is already in the list"""
 
-        for cur_tunnel in cls.tunnels:
-            if cur_tunnel.id == tunnel.id:
-                return True
-        return False
+        return any(cur_tunnel.id == tunnel.id for cur_tunnel in cls.tunnels)
 
     def serialize(self):
         """Method to serialize Tunnel object into file."""

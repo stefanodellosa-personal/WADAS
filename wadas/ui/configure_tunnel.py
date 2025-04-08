@@ -113,11 +113,11 @@ class DialogConfigureTunnel(QDialog, Ui_DialogConfigureTunnel):
     def validate(self):
         """Method to make sure all input are provided before clicking OK button"""
 
-        valid = (bool(self.ui.lineEdit_tunnel_name.text()) and
-                 bool(self.ui.comboBox_camera_1.currentText()) and
-                 bool(self.ui.comboBox_camera_2.currentText()) and
-                 bool(self.ui.label_direction_camera_1.text()) and
-                 bool(self.ui.label_direction_camera_2.text()))
+        valid = bool(self.ui.lineEdit_tunnel_name.text() and
+                     self.ui.comboBox_camera_1.currentText() and
+                     self.ui.comboBox_camera_2.currentText() and
+                     self.ui.label_direction_camera_1.text() and
+                     self.ui.label_direction_camera_2.text())
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(valid)
 
     def accept_and_close(self):
