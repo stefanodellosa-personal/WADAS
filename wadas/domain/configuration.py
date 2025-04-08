@@ -268,6 +268,7 @@ def load_configuration_from_file(file_path):
                 return load_status
 
         # Tunnels
+        Tunnel.tunnels.clear()
         for data in wadas_config["tunnels"]:
             tunnel = Tunnel.deserialize(data)
             Tunnel.tunnels.append(tunnel)

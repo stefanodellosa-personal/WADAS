@@ -44,14 +44,12 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
         self.ui.setupUi(self)
         self.setWindowIcon(QIcon(str(module_dir_path.parent / "img" / "mainwindow_icon.jpg")))
 
-        self.ui.pushButton_edit_tunnel.setEnabled(False)
-        self.ui.pushButton_remove_tunnel.setEnabled(False)
-
         # Tunnel modifications status
-        self.local_tunnels = Tunnel.tunnels
+        self.local_tunnels = Tunnel.tunnels.copy()
         self.cameras_not_in_tunnels = [camera.id for camera in cameras]
 
         # Signals
+        self.ui.buttonBox.accepted.connect(self.accept_and_close)
         self.ui.pushButton_add_tunnel.clicked.connect(self.on_add_tunnel_clicked)
         self.ui.pushButton_remove_tunnel.clicked.connect(self.on_remove_tunnel_clicked)
         self.ui.pushButton_edit_tunnel.clicked.connect(self.on_edit_tunnel_clicked)
@@ -59,6 +57,9 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
 
         #Init dialog
         self.update_tunnels_list()
+        self.update_cameras_not_in_tunnel()
+        self.ui.listWidget.clearSelection()
+        self.on_tunnel_selection_changed()
 
     def update_cameras_not_in_tunnel(self):
         """Method to build the list of available cameras not already associated with a tunnel"""
@@ -97,6 +98,8 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
                     self.local_tunnels.remove(tunnel)
                     break
             self.update_tunnels_list()
+            self.ui.listWidget.clearSelection()
+            self.on_tunnel_selection_changed()
 
     def on_edit_tunnel_clicked(self):
         """Method to handle tunnel editing"""
@@ -107,6 +110,10 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
                 if tunnel.id == selected_tunnel_id:
                     orig_camera_1 = tunnel.camera_entrance_1
                     orig_camera_2 = tunnel.camera_entrance_2
+                    if orig_camera_1 not in self.cameras_not_in_tunnels:
+                        self.cameras_not_in_tunnels.append(orig_camera_1)
+                    if orig_camera_2 not in self.cameras_not_in_tunnels:
+                        self.cameras_not_in_tunnels.append(orig_camera_2)
                     if (dlg := DialogConfigureTunnel(self.cameras_not_in_tunnels, tunnel)).exec():
                         tunnel.id = dlg.tunnel.id
                         tunnel.camera_entrance_1 = dlg.tunnel.camera_entrance_1
@@ -115,20 +122,20 @@ class DialogConfigureTunnels(QDialog, Ui_DialogTunnels):
                         tunnel.camera_entrance_2 = dlg.tunnel.camera_entrance_2
                         if (orig_camera_1 != tunnel.camera_entrance_1 and orig_camera_1 != tunnel.camera_entrance_2):
                             self.cameras_not_in_tunnels.append(orig_camera_1)
-                        if (orig_camera_2 != tunnel.camera_entrance_1 and orig_camera_1 != tunnel.camera_entrance_2):
+                        if (orig_camera_2 != tunnel.camera_entrance_2 and orig_camera_2 != tunnel.camera_entrance_1):
                             self.cameras_not_in_tunnels.append(orig_camera_2)
                     break
+            self.update_cameras_not_in_tunnel()
             self.update_tunnels_list()
+            self.ui.listWidget.clearSelection()
+            self.on_tunnel_selection_changed()
 
     def on_tunnel_selection_changed(self):
         """Method to handle list item selection"""
 
-        if self.ui.listWidget.currentItem():
-            self.ui.pushButton_edit_tunnel.setEnabled(True)
-            self.ui.pushButton_remove_tunnel.setEnabled(True)
-        else:
-            self.ui.pushButton_edit_tunnel.setEnabled(False)
-            self.ui.pushButton_remove_tunnel.setEnabled(False)
+        selected = bool(self.ui.listWidget.currentItem())
+        self.ui.pushButton_edit_tunnel.setEnabled(selected)
+        self.ui.pushButton_remove_tunnel.setEnabled(selected)
 
     def accept_and_close(self):
         """Method to apply changed before closing dialog."""
