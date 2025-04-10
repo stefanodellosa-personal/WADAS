@@ -54,6 +54,8 @@ from wadas.domain.ftps_server import initialize_fpts_logger
 from wadas.domain.notifier import Notifier
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.test_model_mode import TestModelMode
+from wadas.domain.tunnel import Tunnel
+from wadas.domain.tunnel_mode import TunnelMode
 from wadas.domain.utils import initialize_asyncio_logger
 from wadas.ui.about_dialog import AboutDialog
 from wadas.ui.ai_model_download_dialog import AiModelDownloadDialog
@@ -63,9 +65,11 @@ from wadas.ui.configure_camera_actuator_associations_dialog import (
     DialogConfigureCameraToActuatorAssociations,
 )
 from wadas.ui.configure_db_dialog import ConfigureDBDialog
+from wadas.ui.configure_camera_for_tunnel_mode import DialogConfigureCameraForTunnelMode
 from wadas.ui.configure_email_dialog import DialogInsertEmail
 from wadas.ui.configure_ftp_cameras_dialog import DialogFTPCameras
 from wadas.ui.configure_telegram_dialog import DialogConfigureTelegram
+from wadas.ui.configure_tunnels import DialogConfigureTunnels
 from wadas.ui.configure_whatsapp_dialog import DialogConfigureWhatsApp
 from wadas.ui.configure_web_interface import DialogConfigureWebInterface
 from wadas.ui.error_message_dialog import WADASErrorMessage
@@ -168,6 +172,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_camera_to_actuator_associations.triggered.connect(
             self.configure_camera_to_actuators_associations
         )
+        self.ui.actionconfigure_Tunnel.triggered.connect(self.configure_tunnel)
         self.ui.actionLicense.triggered.connect(self.show_license)
         self.ui.actionAbout.triggered.connect(self.show_about)
         self.ui.actionConfigure_WA.triggered.connect(self.configure_whatsapp)
@@ -280,18 +285,29 @@ class MainWindow(QMainWindow):
         if OperationMode.cur_operation_mode:
             match OperationMode.cur_operation_mode.type:
                 case OperationMode.OperationModeTypes.TestModelMode:
-                    url, file_path = self.test_model_mode_input_dialog()
+                    url, file_path, tunnel_mode = self.test_model_mode_input_dialog()
                     OperationMode.cur_operation_mode.url = url
                     OperationMode.cur_operation_mode.file_path = file_path
+                    OperationMode.cur_operation_mode.tunnel_mode = tunnel_mode
                     if not OperationMode.cur_operation_mode.url and not OperationMode.cur_operation_mode.file_path:
                         logger.error("Cannot proceed without a valid input. Please run again.")
                         return
+                    if tunnel_mode:
+                        if (dlg := DialogConfigureCameraForTunnelMode()).exec():
+                            OperationMode.cur_operation_mode.tunnel_mode_direction = dlg.direction
+                            logger.info("Tunnel entrance direction: %s", dlg.direction.value)
+                        else:
+                            logger.error("Unable to proceed with video processing without tunnel entrance direction.")
+                            return
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
                     if not OperationMode.cur_custom_classification_species:
                         return
                     else:
                         OperationMode.cur_operation_mode.custom_target_species = (
                             OperationMode.cur_custom_classification_species)
+                case OperationMode.OperationModeTypes.TunnelMode:
+                    if not Tunnel.tunnels:
+                        logger.error("No tunnel configured. Aborting.")
 
             db_status_log = "Database not configured."
             if (db := DataBase.get_instance()):
@@ -344,6 +360,8 @@ class MainWindow(QMainWindow):
                     OperationMode.cur_operation_mode = BearDetectionMode()
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
                     OperationMode.cur_operation_mode = CustomClassificationMode()
+                case OperationMode.OperationModeTypes.TunnelMode:
+                    OperationMode.cur_operation_mode = TunnelMode()
                 # add case for new operation modes
 
     def on_run_completion(self):
@@ -492,7 +510,8 @@ class MainWindow(QMainWindow):
             else:
                 logger.error("Invalid input provided. Aborting Test Model Mode...")
 
-            return select_test_mode_input_dlg.url, select_test_mode_input_dlg.file_path
+            return (select_test_mode_input_dlg.url, select_test_mode_input_dlg.file_path,
+                    select_test_mode_input_dlg.tunnel_mode)
         else:
             logger.info("Test model mode input selection aborted.")
             return "", ""
@@ -612,6 +631,12 @@ class MainWindow(QMainWindow):
             )
             self.setWindowModified(True)
             self.update_toolbar_status()
+
+    def configure_tunnel(self):
+        """Method to configure tunnel list"""
+
+        if (DialogConfigureTunnels()).exec():
+            logger.info("Tunnel configured.")
 
     def check_models(self):
         """Method to initialize classification model."""

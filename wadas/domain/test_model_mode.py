@@ -15,20 +15,23 @@
 #
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
 # Date: 2024-08-16
-# Description: Module containing MainWindow class and methods.
+# Description: Module containing Test Model mode class and methods.
 
 import logging
 import os
 import re
+from pathlib import Path
 
 import requests
 from PIL import Image
 
+from wadas.ai.object_counter import ObjectCounter
 from wadas.domain.detection_event import DetectionEvent
 from wadas.domain.operation_mode import OperationMode
 from wadas.domain.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
+module_dir_path = Path(__file__).parent
 
 
 class TestModelMode(OperationMode):
@@ -37,6 +40,8 @@ class TestModelMode(OperationMode):
         self.modename = "test_model_mode"
         self.url = ""
         self.file_path = ""
+        self.tunnel_mode = False
+        self.tunnel_mode_direction = None
         self.last_classified_animals_str = ""
         self.type = OperationMode.OperationModeTypes.TestModelMode
 
@@ -151,6 +156,19 @@ class TestModelMode(OperationMode):
         # Send notification
         self.send_notification(detection_event, message)
 
+    def process_video_in_tunnel_mode(self, model_path, video_path, tunnel_entrance_direction):
+        """ "Method containing logic to trigger tunnel mode video processing"""
+
+        obj_counter = ObjectCounter(
+            show=False,
+            region=tunnel_entrance_direction,
+            model=model_path,
+            classes=[0],
+        )
+        for detected_img_path in obj_counter.process_video_demo(video_path, True):
+            self.update_image.emit(detected_img_path)
+            self.update_info.emit()
+
     def run(self):
         """WADAS test model operation mode"""
 
@@ -159,8 +177,17 @@ class TestModelMode(OperationMode):
             self.execution_completed()
             return
 
+        if self.tunnel_mode and not self.tunnel_mode_direction:
+            logger.error(
+                "Unable to proceed with video processing without tunnel entrance direction."
+            )
+            self.execution_completed()
+            return
+
         # Initialize ai model
-        self.init_model()
+        # NOTE: tunnel mode has his own model initialization
+        if not self.tunnel_mode:
+            self.init_model()
 
         self.check_for_termination_requests()
         self.run_progress.emit(10)
@@ -169,14 +196,28 @@ class TestModelMode(OperationMode):
         if url := self.url:
             if self.is_video(url):
                 if video_path := self._get_video_from_url(url):
-                    for (
-                        det_results,
-                        detected_img_path,
-                        video_frame_path,
-                    ) in self.ai_model.process_video(video_path, True):
-                        self.process_detected_results(
-                            video_frame_path, det_results, detected_img_path
+                    if self.tunnel_mode:
+                        # Tunnel mode processing
+                        self.process_video_in_tunnel_mode(
+                            (
+                                module_dir_path.parent.parent
+                                / "model"
+                                / "detection"
+                                / "MDV6b-yolov9c_openvino_model"
+                            ).resolve(),
+                            video_path,
+                            self.tunnel_mode_direction,
                         )
+                    else:
+                        # Standard Detection from video processing
+                        for (
+                            det_results,
+                            detected_img_path,
+                            video_frame_path,
+                        ) in self.ai_model.process_video(video_path, True):
+                            self.process_detected_results(
+                                video_frame_path, det_results, detected_img_path
+                            )
                 else:
                     logger.error("No video file provided. Aborting.")
             else:
@@ -189,10 +230,30 @@ class TestModelMode(OperationMode):
                     logger.error("No image file provided. Aborting.")
         else:
             if self.is_video(self.file_path):
-                for det_results, detected_img_path, video_frame_path in self.ai_model.process_video(
-                    self.file_path, True
-                ):
-                    self.process_detected_results(video_frame_path, det_results, detected_img_path)
+                if self.tunnel_mode:
+                    # Process video for tunnel mode
+                    self.process_video_in_tunnel_mode(
+                        Path(
+                            module_dir_path,
+                            "..",
+                            "..",
+                            "model",
+                            "detection",
+                            "MDV6b-yolov9c_openvino_model",
+                        ).resolve(),
+                        self.file_path,
+                        self.tunnel_mode_direction,
+                    )
+                else:
+                    # Standard Detection processing from video
+                    for (
+                        det_results,
+                        detected_img_path,
+                        video_frame_path,
+                    ) in self.ai_model.process_video(self.file_path, True):
+                        self.process_detected_results(
+                            video_frame_path, det_results, detected_img_path
+                        )
             else:
                 # Image-based detection
                 img_path = self.image_to_rgb(self.file_path)

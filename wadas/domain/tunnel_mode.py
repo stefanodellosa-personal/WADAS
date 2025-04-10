@@ -14,8 +14,26 @@
 # along with WADAS. If not, see <https://www.gnu.org/licenses/>.
 #
 # Author(s): Stefano Dell'Osa, Alessandro Palla, Cesare Di Mauro, Antonio Farina
-# Date: 2024-08-14
-# Description: module to keep track of WADAS version
+# Date: 2024-08-16
+# Description: Module containing Tunnel mode methods.
 
-__version__ = "v0.8.0"
-__dbversion__ = __version__
+import logging
+
+from wadas.domain.operation_mode import OperationMode
+
+logger = logging.getLogger(__name__)
+
+
+class TunnelMode(OperationMode):
+    def __init__(self):
+        super().init()
+        self.type = OperationMode.OperationModeTypes.TunnelMode
+
+    def run(self):
+        """Method to run Tunnel Mode."""
+        logger.info("Starting Tunnel Mode...")
+
+        # TODO: implement logic
+        logger.info("Tunnel Mode not yet implemented.")
+        self.execution_completed()
+        return
