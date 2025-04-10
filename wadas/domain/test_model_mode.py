@@ -185,7 +185,9 @@ class TestModelMode(OperationMode):
             return
 
         # Initialize ai model
-        self.init_model()
+        # NOTE: tunnel mode has his own model initialization
+        if not self.tunnel_mode:
+            self.init_model()
 
         self.check_for_termination_requests()
         self.run_progress.emit(10)

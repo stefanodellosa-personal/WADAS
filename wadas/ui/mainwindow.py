@@ -292,12 +292,13 @@ class MainWindow(QMainWindow):
                     if not OperationMode.cur_operation_mode.url and not OperationMode.cur_operation_mode.file_path:
                         logger.error("Cannot proceed without a valid input. Please run again.")
                         return
-                    if (dlg := DialogConfigureCameraForTunnelMode()).exec():
-                        OperationMode.cur_operation_mode.tunnel_mode_direction = dlg.direction
-                        logger.info("Tunnel entrance direction: %s", dlg.direction.value)
-                    else:
-                        logger.error("Unable to proceed with video processing without tunnel entrance direction.")
-                        return
+                    if tunnel_mode:
+                        if (dlg := DialogConfigureCameraForTunnelMode()).exec():
+                            OperationMode.cur_operation_mode.tunnel_mode_direction = dlg.direction
+                            logger.info("Tunnel entrance direction: %s", dlg.direction.value)
+                        else:
+                            logger.error("Unable to proceed with video processing without tunnel entrance direction.")
+                            return
                 case OperationMode.OperationModeTypes.CustomSpeciesClassificationMode:
                     if not OperationMode.cur_custom_classification_species:
                         return

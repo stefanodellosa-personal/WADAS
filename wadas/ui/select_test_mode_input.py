@@ -47,13 +47,12 @@ class DialogSelectTestModeInput(QDialog, Ui_DialogSelectTestModeInput):
         # Slots
         self.ui.radioButton_image.clicked.connect(self.validate)
         self.ui.radioButton_video.clicked.connect(self.validate)
-        self.ui.radioButton_url.clicked.connect(self.validate)
-        self.ui.radioButton_file.clicked.connect(self.validate)
         self.ui.radioButton_url.clicked.connect(self.on_input_radio_button_clicked)
         self.ui.radioButton_file.clicked.connect(self.on_input_radio_button_clicked)
         self.ui.lineEdit_url.textChanged.connect(self.validate)
         self.ui.lineEdit_file.textChanged.connect(self.validate)
         self.ui.pushButton_select_file.clicked.connect(self.on_select_file_button_clicked)
+        self.ui.checkBox_tunnel_mode.clicked.connect(self.on_tunnel_mode_clicked)
         self.ui.buttonBox.accepted.connect(self.accept_and_close)
 
         self.on_input_radio_button_clicked()
@@ -70,6 +69,7 @@ class DialogSelectTestModeInput(QDialog, Ui_DialogSelectTestModeInput):
         self.ui.lineEdit_url.setEnabled(url_checked)
         self.ui.lineEdit_file.setEnabled(not url_checked)
         self.ui.pushButton_select_file.setEnabled(not url_checked)
+        self.validate()
 
     def on_select_file_button_clicked(self):
         """Method to select input from file"""
@@ -126,4 +126,13 @@ class DialogSelectTestModeInput(QDialog, Ui_DialogSelectTestModeInput):
 
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(is_valid)
         self.ui.label_error.setText(error_message)
+
+    def on_tunnel_mode_clicked(self):
+        """Method to allow video input only when in tunnel mode"""
+
+        tunnel_selected = self.ui.checkBox_tunnel_mode.isChecked()
+        self.ui.radioButton_image.setEnabled(not tunnel_selected)
+        if tunnel_selected:
+            self.ui.radioButton_video.setChecked(tunnel_selected)
+            self.ui.radioButton_image.setChecked(not tunnel_selected)
 
