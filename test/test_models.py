@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import requests
 import torch
+import wadas_runtime as wadas
 from PIL import Image
 
 from wadas.ai.models import Classifier, OVMegaDetectorV5
@@ -186,8 +187,7 @@ def test_get_available_device(ov_model):
 
 def test_compile_model_MDV5(ov_model):
     model_name = NAME_TO_PATH.get("MDV5-yolov5")
-    model = ov_model.load_model(model_name)
-    compiled_model = ov_model.compile_model(model)
+    compiled_model = wadas.load_and_compile_model(model_name, device_name="CPU")
     assert compiled_model is not None
 
 
