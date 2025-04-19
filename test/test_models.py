@@ -187,7 +187,7 @@ def test_get_available_device(ov_model):
 
 def test_compile_model_MDV5(ov_model):
     model_name = NAME_TO_PATH.get("MDV5-yolov5")
-    compiled_model = wadas.load_and_compile_model(model_name, device_name="CPU")
+    compiled_model = wadas.load_and_compile_model(str(model_name), device_name="CPU")
     assert compiled_model is not None
 
 
