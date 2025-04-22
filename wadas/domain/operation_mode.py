@@ -18,6 +18,7 @@
 # Description: Module containing class to handle WADAS operation modes.
 
 import logging
+import re
 import threading
 import time
 from abc import abstractmethod
@@ -109,27 +110,58 @@ class OperationMode(QObject):
                     self.ftp_thread = FTPsServer.ftps_server.run()
         logger.info("Ready for video stream from Camera(s)...")
 
-    def _detect(self, cur_img):
+    @staticmethod
+    def is_video(file):
+        """Method to validate if given file is a valid and supported video format"""
+
+        video_formats = r"\.(mp4|avi|mov|mkv|wmv)$"
+
+        if re.search(video_formats, file, re.IGNORECASE):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def is_image(file):
+        """Method to validate if given file is a valid and supported image format"""
+
+        image_formats = r"\.(jpg|jpeg|png|bmp|tiff|tif)$"
+
+        if re.search(image_formats, file, re.IGNORECASE):
+            return True
+        else:
+            return False
+
+    def _detect(self, cur_media, classify=False):
         """Method to run the animal detection process on a specific image"""
 
-        results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
+        if OperationMode.is_image(cur_media["img"]):
+            results, detected_img_path = self.ai_model.process_image(cur_media["img"], True)
 
-        if results and detected_img_path:
-            detection_event = DetectionEvent(
-                cur_img["camera_id"],
-                get_precise_timestamp(),
-                cur_img["img"],
-                detected_img_path,
-                results,
-                self.en_classification,
-            )
-            self.last_detection = detected_img_path
-            # Insert detection event into db, if enabled
-            if db := DataBase.get_enabled_db():
-                db.insert_into_db(detection_event)
-            return detection_event
+            if results and detected_img_path:
+                detection_event = DetectionEvent(
+                    cur_media["camera_id"],
+                    get_precise_timestamp(),
+                    cur_media["img"],
+                    detected_img_path,
+                    results,
+                    self.en_classification,
+                )
+                self.last_detection = detected_img_path
+                # Insert detection event into db, if enabled
+                if db := DataBase.get_enabled_db():
+                    db.insert_into_db(detection_event)
+
+                if self.en_classification:
+                    # Classify animal
+                    self._classify(detection_event)
+
+                return detection_event
+            else:
+                return None
         else:
-            return None
+            # Video processing
+            self.ai_model.process_video_offline(cur_media["img"])
 
     def _format_classified_animals_string(self, classified_animals):
         # Prepare a list of classified animals to print in UI

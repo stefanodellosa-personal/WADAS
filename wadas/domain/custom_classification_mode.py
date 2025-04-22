@@ -23,7 +23,7 @@ from queue import Empty
 from wadas.ai.models import txt_animalclasses
 from wadas.domain.ai_model import AiModel
 from wadas.domain.animal_detection_mode import AnimalDetectionAndClassificationMode
-from wadas.domain.camera import img_queue
+from wadas.domain.camera import media_queue
 from wadas.domain.operation_mode import OperationMode
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
             # Get image from motion detection notification
             # Timeout is set to 1 second to avoid blocking the thread
             try:
-                cur_img = img_queue.get(timeout=1)
+                cur_img = media_queue.get(timeout=1)
             except Empty:
                 cur_img = None
 

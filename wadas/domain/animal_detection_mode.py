@@ -20,7 +20,7 @@
 import logging
 from queue import Empty
 
-from wadas.domain.camera import img_queue
+from wadas.domain.camera import media_queue
 from wadas.domain.operation_mode import OperationMode
 
 logger = logging.getLogger(__name__)
@@ -48,40 +48,40 @@ class AnimalDetectionAndClassificationMode(OperationMode):
         # Run detection model
         while self.process_queue:
             self.check_for_termination_requests()
-            # Get image from motion detection notification
+            # Get media (images or videos) from motion detection notification
             # Timeout is set to 1 second to avoid blocking the thread
             try:
-                cur_img = img_queue.get(timeout=1)
+                cur_media = media_queue.get(timeout=1)
             except Empty:
-                cur_img = None
+                cur_media = None
 
-            if cur_img:
-                logger.debug("Processing image from motion detection notification...")
+            # Media processing
+            if cur_media and (
+                OperationMode.is_image(cur_media["img"]) or OperationMode.is_video(cur_media["img"])
+            ):
+                logger.debug("Processing media from motion detection notification...")
 
-                detection_event = self._detect(cur_img)
+                detection_event = self._detect(cur_media, self.en_classification)
                 self.check_for_termination_requests()
 
                 if detection_event:
-
-                    # Trigger image update in WADAS mainwindow
-                    self.update_image.emit(detection_event.detection_img_path)
-                    self.update_info.emit()
-
                     if self.en_classification:
-                        self._classify(detection_event)
+                        # Classification is enabled
                         if detection_event.classification_img_path:
-                            # Trigger image update in WADAS mainwindow
+                            # Trigger image update in WADAS mainwindow with classification result
                             self.update_image.emit(detection_event.classification_img_path)
-                            self.update_info.emit()
                             message = (
                                 f"WADAS has classified '{self.last_classified_animals_str}' "
-                                f"animal from camera {cur_img['img_id']}!"
+                                f"animal from camera {cur_media['img_id']}!"
                             )
                         else:
                             logger.info("No animal classified.")
                             message = ""
                     else:
+                        # Trigger image update in WADAS mainwindow with detection result
+                        self.update_image.emit(detection_event.detection_img_path)
                         message = "WADAS has detected an animal from camera %s!" % id
+                    self.update_info.emit()
 
                     # Actuation
                     if detection_event:

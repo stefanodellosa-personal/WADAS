@@ -170,7 +170,7 @@ class AiModel:
             yield frame, frame_count
             frame_count += 1
 
-    def process_video_offline(self, video_path):
+    def process_video_offline(self, video_path, classification=True):
         """Method to run detection model on provided video."""
 
         logger.debug("Selected detection device: %s", AiModel.detection_device)
@@ -184,15 +184,16 @@ class AiModel:
         # Run the detection model on the video frames
         detection_lists = self.detection_pipeline.run_detection(frames, AiModel.detection_threshold)
 
-        # Classify detected animals on all frames
-        classification_lists = self.detection_pipeline.classify(
-            frames, detection_lists, AiModel.classification_threshold
-        )
+        if classification:
+            # Classify detected animals on all frames
+            classification_lists = self.detection_pipeline.classify(
+                frames, detection_lists, AiModel.classification_threshold
+            )
 
-        for frame, classified_animals in zip(frames, classification_lists):
-            array = np.array(frame)
-            tracked_animal = tracker.update(classified_animals, array.shape[:2])
-            tracked_animals.append(tracked_animal)
+            for frame, classified_animals in zip(frames, classification_lists):
+                array = np.array(frame)
+                tracked_animal = tracker.update(classified_animals, array.shape[:2])
+                tracked_animals.append(tracked_animal)
 
         return tracked_animals
 
