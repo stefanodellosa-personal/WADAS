@@ -2,8 +2,8 @@ import logging
 import os
 from pathlib import Path
 
-import openvino as ov
 import torch
+import wadas_runtime as wadas
 from ultralytics.models.yolo.detect import DetectionPredictor
 from ultralytics.nn.autobackend import AutoBackend
 from ultralytics.utils.torch_utils import select_device
@@ -15,17 +15,12 @@ logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
 
 def load_ov_model(weights, device, inference_mode="LATENCY"):
-    core = ov.Core()
     w = str(weights[0] if isinstance(weights, list) else weights)
     w = Path(w)
     if not w.is_file():  # if not *.xml
         w = next(w.glob("*.xml"))  # get *.xml file from *_openvino_model dir
-    ov_model = core.read_model(model=str(w), weights=w.with_suffix(".bin"))
-    return core.compile_model(
-        ov_model,
-        device_name=str(device).upper(),
-        config={"PERFORMANCE_HINT": inference_mode},
-    )
+    config = {"PERFORMANCE_HINT": inference_mode}
+    return wadas.load_and_compile_model(str(w), str(w.with_suffix(".bin")), device, config)
 
 
 class OVBackend(AutoBackend):

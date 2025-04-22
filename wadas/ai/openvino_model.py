@@ -23,6 +23,7 @@ import os
 import openvino as ov
 import openvino.properties as props
 import torch
+import wadas_runtime as wadas
 from huggingface_hub import snapshot_download
 
 core = ov.Core()
@@ -35,22 +36,14 @@ class OVModel:
     def __init__(self, model_name, device):
         """Base class for OpenVino models"""
         self.device = device
-        self.model = self.compile_model(self.load_model(model_name))
-
-    def load_model(self, model_name):
-        """Load model from file"""
-        return core.read_model(os.path.join(__model_folder__, model_name))
+        self.model = wadas.load_and_compile_model(
+            os.path.join(__model_folder__, model_name),
+            device_name=device.upper(),
+        )
 
     def get_available_device(self):
         """Get available devices"""
         return core.available_devices
-
-    def compile_model(self, model):
-        """Compile model"""
-        return ov.compile_model(
-            model,
-            device_name=self.device.upper(),
-        )
 
     def __call__(self, input: torch.Tensor) -> torch.Tensor | list[torch.Tensor]:
         """Run model"""
