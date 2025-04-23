@@ -111,23 +111,23 @@ class OperationMode(QObject):
         logger.info("Ready for video stream from Camera(s)...")
 
     @staticmethod
-    def is_video(file):
+    def is_video(media):
         """Method to validate if given file is a valid and supported video format"""
 
         video_formats = r"\.(mp4|avi|mov|mkv|wmv)$"
 
-        if re.search(video_formats, file, re.IGNORECASE):
+        if re.search(video_formats, media["media_path"], re.IGNORECASE):
             return True
         else:
             return False
 
     @staticmethod
-    def is_image(file):
+    def is_image(media):
         """Method to validate if given file is a valid and supported image format"""
 
-        image_formats = r"\.(jpg|jpeg|png|bmp|tiff|tif)$"
+        image_formats = r"\.(jpg|jpeg|png)$"
 
-        if re.search(image_formats, file, re.IGNORECASE):
+        if re.search(image_formats, media["media_path"], re.IGNORECASE):
             return True
         else:
             return False
@@ -135,14 +135,14 @@ class OperationMode(QObject):
     def _detect(self, cur_media, classify=False):
         """Method to run the animal detection process on a specific image"""
 
-        if OperationMode.is_image(cur_media["img"]):
-            results, detected_img_path = self.ai_model.process_image(cur_media["img"], True)
+        if OperationMode.is_image(cur_media):
+            results, detected_img_path = self.ai_model.process_image(cur_media["media_path"], True)
 
             if results and detected_img_path:
                 detection_event = DetectionEvent(
                     cur_media["camera_id"],
                     get_precise_timestamp(),
-                    cur_media["img"],
+                    cur_media["media_path"],
                     detected_img_path,
                     results,
                     self.en_classification,
@@ -161,7 +161,29 @@ class OperationMode(QObject):
                 return None
         else:
             # Video processing
-            self.ai_model.process_video_offline(cur_media["img"])
+            tracked, max_classified, frame_path = self.ai_model.process_video_offline(
+                cur_media["media_path"], classification=True, save_detection_image=True
+            )
+            if max_classified and frame_path:
+                detection_event = DetectionEvent(
+                    cur_media["camera_id"],
+                    get_precise_timestamp(),
+                    cur_media["media_path"],
+                    "",  # TODO: add detection img path
+                    [],  # TODO: add detection results
+                    self.en_classification,
+                    frame_path,
+                    max_classified,
+                )
+                self.last_detection = frame_path
+                self._format_classified_animals_string(max_classified)
+
+                # Insert detection event into db, if enabled
+                # TODO: implement db insertion
+
+                return detection_event
+            else:
+                return None
 
     def _format_classified_animals_string(self, classified_animals):
         # Prepare a list of classified animals to print in UI

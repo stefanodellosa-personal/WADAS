@@ -155,8 +155,8 @@ class USBCamera(Camera):
                     cv2.imwrite(img_path, frame_out)
                     media_queue.put(
                         {
-                            "img": img_path,
-                            "img_id": f"camera_{self.id}_{get_timestamp()}.jpg",
+                            "media_path": img_path,
+                            "media_id": f"camera_{self.id}_{get_timestamp()}.jpg",
                             "camera_id": self.id,
                         }
                     )

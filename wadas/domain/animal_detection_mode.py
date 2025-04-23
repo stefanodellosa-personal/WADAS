@@ -57,7 +57,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
 
             # Media processing
             if cur_media and (
-                OperationMode.is_image(cur_media["img"]) or OperationMode.is_video(cur_media["img"])
+                OperationMode.is_image(cur_media) or OperationMode.is_video(cur_media)
             ):
                 logger.debug("Processing media from motion detection notification...")
 
@@ -72,7 +72,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
                             self.update_image.emit(detection_event.classification_img_path)
                             message = (
                                 f"WADAS has classified '{self.last_classified_animals_str}' "
-                                f"animal from camera {cur_media['img_id']}!"
+                                f"animal from camera {cur_media['media_id']}!"
                             )
                         else:
                             logger.info("No animal classified.")

@@ -25,6 +25,12 @@ from queue import Queue
 logger = logging.getLogger(__name__)
 # Queue containing all the images received by Cameras to be processed by AiModel
 media_queue = Queue()
+# Media dictionary structure to be inserted in the media_queue:
+# {
+#    "media_path": <media_file_path>,
+#    "media_id": <media_id>,
+#    "camera_id": <camera_id>,
+# }
 # List of Cameras selected by user for image processing
 cameras = []
 

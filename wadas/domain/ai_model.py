@@ -19,6 +19,7 @@
 
 import logging
 import os
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -30,6 +31,7 @@ from wadas.ai.object_tracker import ObjectTracker
 
 logger = logging.getLogger(__name__)
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+module_dir_path = Path(__file__).resolve().parent
 
 
 class AiModel:
@@ -170,7 +172,7 @@ class AiModel:
             yield frame, frame_count
             frame_count += 1
 
-    def process_video_offline(self, video_path, classification=True):
+    def process_video_offline(self, video_path, classification=True, save_detection_image=False):
         """Method to run detection model on provided video."""
 
         logger.debug("Selected detection device: %s", AiModel.detection_device)
@@ -184,18 +186,33 @@ class AiModel:
         # Run the detection model on the video frames
         detection_lists = self.detection_pipeline.run_detection(frames, AiModel.detection_threshold)
 
+        classified_image_path = ""
+        max_classified = []
         if classification:
             # Classify detected animals on all frames
             classification_lists = self.detection_pipeline.classify(
                 frames, detection_lists, AiModel.classification_threshold
             )
 
+            preview_frame = None
             for frame, classified_animals in zip(frames, classification_lists):
                 array = np.array(frame)
                 tracked_animal = tracker.update(classified_animals, array.shape[:2])
                 tracked_animals.append(tracked_animal)
 
-        return tracked_animals
+                # Store classification results and preview frame
+                if len(max_classified) < len(classified_animals):
+                    max_classified = classified_animals
+                    preview_frame = frame
+
+            if save_detection_image and max_classified:
+                logger.debug("Saving video frame...")
+                frame_name = Path(video_path).stem
+                classified_image_path = self.build_classification_square(
+                    preview_frame, max_classified, frame_name, True
+                )
+
+        return tracked_animals, max_classified, str(classified_image_path)
 
     def process_video(self, video_path, save_detection_image: bool):
         """Method to run detection model on provided video."""
@@ -274,11 +291,11 @@ class AiModel:
                 logger.debug("Saved crop of image at %s.", cropped_image_path)
 
             classified_img_path = self.build_classification_square(
-                img, classified_animals, img_path
+                img, classified_animals, Path(img_path).stem
             )
         return classified_img_path, classified_animals
 
-    def build_classification_square(self, img, classified_animals, img_path):
+    def build_classification_square(self, img, classified_animals, img_name, video_frame=False):
         """Build square on classified animals."""
 
         classified_image_path = ""
@@ -341,8 +358,17 @@ class AiModel:
             cimg = Image.fromarray(classified_image)
 
             # Save classified image
-            detected_img_name = os.path.basename(img_path)
-            classified_img_name = "classified_" + detected_img_name
-            classified_image_path = os.path.join("classification_output", classified_img_name)
+            if video_frame:
+                classified_image_path = (
+                    module_dir_path / ".." / ".." / "video_frames" / f"{img_name}_frame.jpg"
+                ).resolve()
+            else:
+                classified_image_path = (
+                    module_dir_path
+                    / ".."
+                    / ".."
+                    / "classification_output"
+                    / f"classified_{img_name}.jpg"
+                ).resolve()
             cimg.save(classified_image_path)
-        return classified_image_path
+        return str(classified_image_path)
