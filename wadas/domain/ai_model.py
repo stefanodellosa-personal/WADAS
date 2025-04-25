@@ -276,7 +276,7 @@ class AiModel:
             else:
                 logger.info("No detected animals for frame %s. Skipping image.", frame_count)
 
-    def classify(self, img_path, results):
+    def classify(self, img_path, results, save_classification_crop=False):
         """Method to perform classification on detection result(s)."""
 
         logger.debug("Selected classification device: %s", AiModel.classification_device)
@@ -311,14 +311,16 @@ class AiModel:
         ):
             logger.debug("No classified animals, skipping img crops saving.")
         else:
-            for classified_animal in classified_animals:
-                # Cropping detection result(s) from original image leveraging detected boxes
-                cropped_image = img.crop(classified_animal["xyxy"])
-                cropped_image_path = os.path.join(
-                    "classification_output", f"{classified_animal['id']}_cropped_image.jpg"
-                )
-                cropped_image.save(cropped_image_path)
-                logger.debug("Saved crop of image at %s.", cropped_image_path)
+            if save_classification_crop:
+                # Save classification image crops for debug purposes
+                for classified_animal in classified_animals:
+                    # Cropping detection result(s) from original image leveraging detected boxes
+                    cropped_image = img.crop(classified_animal["xyxy"])
+                    cropped_image_path = os.path.join(
+                        "classification_output", f"{classified_animal['id']}_cropped_image.jpg"
+                    )
+                    cropped_image.save(cropped_image_path)
+                    logger.debug("Saved crop of image at %s.", cropped_image_path)
 
             classified_img_path = self.build_classification_square(
                 img, classified_animals, Path(img_path).stem
