@@ -155,7 +155,6 @@ class AiModel:
         # Initialize frame counter
         frame_count = 0
         while True:
-
             ret, frame = video.read()
             if not ret:
                 break

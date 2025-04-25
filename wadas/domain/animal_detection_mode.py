@@ -57,39 +57,37 @@ class AnimalDetectionAndClassificationMode(OperationMode):
 
             # Media processing
             if cur_media and (
-                OperationMode.is_image(cur_media) or OperationMode.is_video(cur_media)
+                OperationMode.is_image(cur_media["media_path"])
+                or OperationMode.is_video(cur_media["media_path"])
             ):
                 logger.debug("Processing media from motion detection notification...")
 
                 detection_event = self._detect(cur_media, self.en_classification)
                 self.check_for_termination_requests()
 
+                self._show_processed_results(detection_event)
+
                 if detection_event:
                     if self.en_classification:
                         # Classification is enabled
-                        if detection_event.classification_img_path:
-                            # Trigger image update in WADAS mainwindow with classification result
-                            self.update_image.emit(detection_event.classification_img_path)
-                            message = (
+                        message = (
+                            (
                                 f"WADAS has classified '{self.last_classified_animals_str}' "
                                 f"animal from camera {cur_media['media_id']}!"
                             )
-                        else:
-                            logger.info("No animal classified.")
-                            message = ""
+                            if detection_event.classification_img_path
+                            else ""
+                        )
                     else:
-                        # Trigger image update in WADAS mainwindow with detection result
-                        self.update_image.emit(detection_event.detection_img_path)
                         message = "WADAS has detected an animal from camera %s!" % id
-                    self.update_info.emit()
-
-                    # Actuation
-                    if detection_event:
-                        self.actuate(detection_event)
 
                     # Notification
                     if message:
                         self.send_notification(detection_event, message)
+
+                    # Actuation
+                    if detection_event:
+                        self.actuate(detection_event)
                 else:
                     logger.debug("No animal detected.")
 

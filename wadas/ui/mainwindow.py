@@ -19,11 +19,14 @@
 
 
 import datetime
+import io
 import logging
 import os
 import sys
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
+
+from PIL.Image import Image
 from packaging.version import Version
 from pathlib import Path
 import uuid
@@ -229,17 +232,40 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(window_title)
 
     def set_image(self, img):
-        """Set image to show in WADAS. This is used for startup, detected and
-        classified images."""
+        """
+        Set image to show in WADAS.
+        Accepts either a path to an image file or a PIL.Image.Image object.
+        """
 
-        if os.path.isfile(img):
-            image_widget = self.ui.label_image
-            image_widget.setPixmap(QtGui.QPixmap(img))
+        image_widget = self.ui.label_image
+
+        try:
+            if isinstance(img, str) and os.path.isfile(img):
+                # Case 1: image is a valid file path
+                image_widget.setPixmap(QtGui.QPixmap(img))
+            elif isinstance(img, Image):
+                # Case 2: image is a PIL image in memory
+
+                if img.mode != "RGBA":
+                    img = img.convert("RGBA")
+
+                buffer = io.BytesIO()
+                img.save(buffer, format="PNG")
+                buffer.seek(0)
+
+                qt_image = QtGui.QImage()
+                qt_image.loadFromData(buffer.read(), "PNG")
+                image_widget.setPixmap(QtGui.QPixmap.fromImage(qt_image))
+            else:
+                logger.error("Provided image is neither a valid path nor a PIL image: %s", img)
+                return
+
             image_widget.setMinimumSize(1, 1)
             image_widget.setScaledContents(True)
             image_widget.show()
-        else:
-            logger.error("Provided image path is not valid. %s", img)
+
+        except Exception as e:
+            logger.error("Failed to set image: %s", e)
 
     def select_mode(self):
         """Slot for mode selection (toolbar button)"""

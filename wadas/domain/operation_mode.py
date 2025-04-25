@@ -24,6 +24,8 @@ import time
 from abc import abstractmethod
 from enum import Enum
 
+import cv2
+from PIL import Image
 from PySide6.QtCore import QObject, Signal
 
 from wadas.domain.actuation_event import ActuationEvent
@@ -60,7 +62,7 @@ class OperationMode(QObject):
     cur_custom_classification_species = None
 
     # Signals
-    update_image = Signal(str)
+    update_image = Signal(object)
     update_actuator_status = Signal()
     update_info = Signal()
     run_finished = Signal()
@@ -111,23 +113,21 @@ class OperationMode(QObject):
         logger.info("Ready for video stream from Camera(s)...")
 
     @staticmethod
-    def is_video(media):
+    def is_video(media_path):
         """Method to validate if given file is a valid and supported video format"""
 
         video_formats = r"\.(mp4|avi|mov|mkv|wmv)$"
-
-        if re.search(video_formats, media["media_path"], re.IGNORECASE):
+        if re.search(video_formats, str(media_path), re.IGNORECASE):
             return True
         else:
             return False
 
     @staticmethod
-    def is_image(media):
+    def is_image(media_path):
         """Method to validate if given file is a valid and supported image format"""
 
         image_formats = r"\.(jpg|jpeg|png)$"
-
-        if re.search(image_formats, media["media_path"], re.IGNORECASE):
+        if re.search(image_formats, str(media_path), re.IGNORECASE):
             return True
         else:
             return False
@@ -135,7 +135,7 @@ class OperationMode(QObject):
     def _detect(self, cur_media, classify=False):
         """Method to run the animal detection process on a specific image"""
 
-        if OperationMode.is_image(cur_media):
+        if OperationMode.is_image(cur_media["media_path"]):
             results, detected_img_path = self.ai_model.process_image(cur_media["media_path"], True)
 
             if results and detected_img_path:
@@ -164,7 +164,7 @@ class OperationMode(QObject):
             tracked, max_classified, video_path = self.ai_model.process_video_offline(
                 cur_media["media_path"], classification=True, save_processed_video=True
             )
-            if max_classified and video_path:
+            if video_path:  # max_classified and video_path
                 detection_event = DetectionEvent(
                     cur_media["camera_id"],
                     get_precise_timestamp(),
@@ -214,6 +214,75 @@ class OperationMode(QObject):
                     db.update_detection_event(detection_event)
             else:
                 logger.debug("No classified animals or classification results below threshold.")
+
+    def get_video_frames(self, video_path):
+        """Extract frames from a video file as PIL Images along with their frame number."""
+
+        video = cv2.VideoCapture(video_path)
+        if not video.isOpened():
+            logger.error("Error opening video file %s. Aborting.", video_path)
+            return
+
+        fps = video.get(cv2.CAP_PROP_FPS)
+        if fps == 0:
+            logger.error("Error reading video FPS. Aborting.")
+            video.release()
+            return
+
+        frame_count = 0
+        try:
+            while True:
+                ret, frame = video.read()
+                if not ret:
+                    break
+
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame = Image.fromarray(frame)
+
+                yield frame, frame_count
+                frame_count += 1
+        finally:
+            video.release()
+
+    def _show_processed_results(self, detection_event):
+        """Method to show Ai inference results in WADAS UI"""
+
+        if detection_event:
+            if self.en_classification:
+                # Classification is enabled
+                if detection_event.classification_img_path:
+                    # Trigger image update in WADAS mainwindow with classification result
+                    if self.is_image(detection_event.classification_img_path):
+                        self.update_image.emit(detection_event.classification_img_path)
+                    else:
+                        frame_delay = 1 / AiModel.video_fps
+                        for frame in tuple(
+                            frame
+                            for frame, _ in self.get_video_frames(
+                                detection_event.classification_img_path
+                            )
+                        ):
+                            self.update_image.emit(frame)
+                            # Delay to simulate Video FPS while showing images on UI
+                            time.sleep(frame_delay)
+                else:
+                    logger.info("No animal classified.")
+            else:
+                # Trigger image update in WADAS mainwindow with detection result
+                if self.is_image(detection_event.detection_img_path):
+                    self.update_image.emit(detection_event.detection_img_path)
+                else:
+                    frame_delay = 1 / AiModel.video_fps
+                    for frame in tuple(
+                        frame
+                        for frame, _ in self.get_video_frames(detection_event.detection_img_path)
+                    ):
+                        self.update_image.emit(frame)
+                        # Delay to simulate Video FPS while showing images on UI
+                        time.sleep(frame_delay)
+            self.update_info.emit()
+        else:
+            logger.info("No animal detected.")
 
     def ftp_camera_exist(self):
         """Method that returns True if at least an FTP camera exists, False otherwise."""
