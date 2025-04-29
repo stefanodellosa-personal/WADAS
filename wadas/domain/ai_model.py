@@ -189,6 +189,29 @@ class AiModel:
 
         out.release()
 
+    def classification_from_video_tracking(self, tracked_animals):
+        """This method returns classification results from animal tracking out of video framing"""
+
+        tracked_animal_set = set()
+        for frame_tracked_animals in tracked_animals:
+            for frame_tracked_animal in frame_tracked_animals:
+                tracked_animal_set.add(
+                    (frame_tracked_animal["classification"][0], frame_tracked_animal["id"])
+                )
+
+        # TODO: insert average accuracy per classified animal
+        classified_animals = []
+        for tracked_animal in tracked_animal_set:
+            classified_animals.append(
+                {
+                    "class_probs": {},
+                    "classification": [tracked_animal[0], 0.0],
+                    "id": tracked_animal[1],
+                    "xyxy": [],
+                }
+            )
+        return classified_animals
+
     def process_video_offline(self, video_path, classification=True, save_processed_video=False):
         """Method to run detection model on provided video."""
 
@@ -204,7 +227,6 @@ class AiModel:
         detection_lists = self.detection_pipeline.run_detection(frames, AiModel.detection_threshold)
 
         preview_frames = []
-        max_classified = []
         output_video_path = ""
         if classification:
             # Classify detected animals on all frames
@@ -241,7 +263,7 @@ class AiModel:
                 logger.info("Saving detection results...")
                 # TODO: implement video construction with detection images
 
-        return tracked_animals, max_classified, str(output_video_path)
+        return tracked_animals, str(output_video_path)
 
     def process_video(self, video_path, save_detection_image: bool):
         """Method to run detection model on provided video."""

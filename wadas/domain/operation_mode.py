@@ -155,10 +155,13 @@ class OperationMode(QObject):
                 return None
         else:
             # Video processing
-            tracked, max_classified, video_path = self.ai_model.process_video_offline(
+            tracked_animals, video_path = self.ai_model.process_video_offline(
                 cur_media["media_path"], classification=True, save_processed_video=True
             )
-            if video_path:  # max_classified and video_path
+            if tracked_animals and video_path:
+                classified_animals = self.ai_model.classification_from_video_tracking(
+                    tracked_animals
+                )
                 detection_event = DetectionEvent(
                     cur_media["camera_id"],
                     get_precise_timestamp(),
@@ -167,10 +170,10 @@ class OperationMode(QObject):
                     [],  # TODO: add detection results
                     self.enable_classification,
                     video_path,
-                    max_classified,
+                    classified_animals,
                 )
                 self.last_detection = video_path
-                self._format_classified_animals_string(max_classified)
+                self._format_classified_animals_string(classified_animals)
 
                 # Insert detection event into db, if enabled
                 # TODO: implement db insertion
