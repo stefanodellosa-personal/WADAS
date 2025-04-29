@@ -32,7 +32,7 @@ class AnimalDetectionAndClassificationMode(OperationMode):
     def __init__(self, classification=True):
         super(AnimalDetectionAndClassificationMode, self).__init__()
         self.process_queue = True
-        self.en_classification = classification
+        self.enable_classification = classification
         self.type = (
             OperationMode.OperationModeTypes.AnimalDetectionAndClassificationMode
             if classification
@@ -62,13 +62,13 @@ class AnimalDetectionAndClassificationMode(OperationMode):
             ):
                 logger.debug("Processing media from motion detection notification...")
 
-                detection_event = self._detect(cur_media, self.en_classification)
+                detection_event = self._detect(cur_media, self.enable_classification)
                 self.check_for_termination_requests()
 
                 self._show_processed_results(detection_event)
 
                 if detection_event:
-                    if self.en_classification:
+                    if self.enable_classification:
                         # Classification is enabled
                         message = (
                             (

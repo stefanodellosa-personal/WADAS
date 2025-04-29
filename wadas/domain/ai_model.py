@@ -237,7 +237,7 @@ class AiModel:
 
         else:
             # Save detection frames
-            if len(detection_lists["detections"].xyxy) > 0 and save_processed_video:
+            if len(detection_lists["detections"].xyxy) and save_processed_video:
                 logger.info("Saving detection results...")
                 # TODO: implement video construction with detection images
 
@@ -315,8 +315,10 @@ class AiModel:
                 for classified_animal in classified_animals:
                     # Cropping detection result(s) from original image leveraging detected boxes
                     cropped_image = img.crop(classified_animal["xyxy"])
-                    cropped_image_path = os.path.join(
-                        "classification_output", f"{classified_animal['id']}_cropped_image.jpg"
+                    cropped_image_path = (
+                        module_dir_path.parent.parent
+                        / "classification_output"
+                        / f"{classified_animal['id']}_cropped_image.jpg"
                     )
                     cropped_image.save(cropped_image_path)
                     logger.debug("Saved crop of image at %s.", cropped_image_path)
@@ -330,7 +332,7 @@ class AiModel:
         """Build square on classified animals."""
 
         classified_image_path = ""
-        cimg = None
+        classified_image = None
 
         # Build classification square
         orig_image = np.array(img)
@@ -341,7 +343,7 @@ class AiModel:
             x2 = int(animal["xyxy"][2])
             y2 = int(animal["xyxy"][3])
             color = (255, 0, 0)
-            classified_image = cv2.rectangle(orig_image, (x1, y1), (x2, y2), color, 2)
+            classified_image_array = cv2.rectangle(orig_image, (x1, y1), (x2, y2), color, 2)
 
             # Round precision on classification score
             animal["classification"][1] = round(animal["classification"][1].item(), 2)
@@ -369,8 +371,8 @@ class AiModel:
             text_background_x2 = x1 + 2 * text_padding + text_width
             text_background_y2 = y1
 
-            classified_image = cv2.rectangle(
-                classified_image,
+            classified_image_array = cv2.rectangle(
+                classified_image_array,
                 (text_background_x1, text_background_y1),
                 (text_background_x2, text_background_y2),
                 color,
@@ -379,7 +381,7 @@ class AiModel:
 
             # Add label to classification rectangle
             cv2.putText(
-                classified_image,
+                classified_image_array,
                 text,
                 (text_x, text_y),
                 font,
@@ -388,11 +390,11 @@ class AiModel:
                 text_thickness,
                 cv2.LINE_AA,
             )
-            cimg = Image.fromarray(classified_image)
+            classified_image = Image.fromarray(classified_image_array)
 
         # Save classified image
         if video_frame:
-            return cimg
+            return classified_image
         else:
             classified_image_path = (
                 module_dir_path
@@ -401,5 +403,5 @@ class AiModel:
                 / "classification_output"
                 / f"classified_{img_name}.jpg"
             ).resolve()
-            cimg.save(classified_image_path)
+            classified_image.save(classified_image_path)
             return str(classified_image_path)

@@ -80,7 +80,7 @@ class OperationMode(QObject):
         self.ftp_thread = None
         self.actuators_server_thread = None
         self.actuators_view_thread = None
-        self.en_classification = False
+        self.enable_classification = False
 
     def init_model(self):
         """Method to run the selected WADAS operation mode"""
@@ -116,21 +116,15 @@ class OperationMode(QObject):
     def is_video(media_path):
         """Method to validate if given file is a valid and supported video format"""
 
-        video_formats = r"\.(mp4|avi|mov|mkv|wmv)$"
-        if re.search(video_formats, str(media_path), re.IGNORECASE):
-            return True
-        else:
-            return False
+        video_formats = r"\.(avi|mov|mp4|mkv|wmv)$"
+        return bool(re.search(video_formats, str(media_path), re.IGNORECASE))
 
     @staticmethod
     def is_image(media_path):
         """Method to validate if given file is a valid and supported image format"""
 
-        image_formats = r"\.(jpg|jpeg|png)$"
-        if re.search(image_formats, str(media_path), re.IGNORECASE):
-            return True
-        else:
-            return False
+        image_formats = r"\.(png|jpg|jpeg)$"
+        return bool(re.search(image_formats, str(media_path), re.IGNORECASE))
 
     def _detect(self, cur_media, classify=False):
         """Method to run the animal detection process on a specific image"""
@@ -145,14 +139,14 @@ class OperationMode(QObject):
                     cur_media["media_path"],
                     detected_img_path,
                     results,
-                    self.en_classification,
+                    self.enable_classification,
                 )
                 self.last_detection = detected_img_path
                 # Insert detection event into db, if enabled
                 if db := DataBase.get_enabled_db():
                     db.insert_into_db(detection_event)
 
-                if self.en_classification:
+                if self.enable_classification:
                     # Classify animal
                     self._classify(detection_event)
 
@@ -171,7 +165,7 @@ class OperationMode(QObject):
                     cur_media["media_path"],
                     "",  # TODO: add detection img path
                     [],  # TODO: add detection results
-                    self.en_classification,
+                    self.enable_classification,
                     video_path,
                     max_classified,
                 )
@@ -223,8 +217,7 @@ class OperationMode(QObject):
             logger.error("Error opening video file %s. Aborting.", video_path)
             return
 
-        fps = video.get(cv2.CAP_PROP_FPS)
-        if fps == 0:
+        if not video.get(cv2.CAP_PROP_FPS):
             logger.error("Error reading video FPS. Aborting.")
             video.release()
             return
@@ -248,7 +241,7 @@ class OperationMode(QObject):
         """Method to show Ai inference results in WADAS UI"""
 
         if detection_event:
-            if self.en_classification:
+            if self.enable_classification:
                 # Classification is enabled
                 if detection_event.classification_img_path:
                     # Trigger image update in WADAS mainwindow with classification result
@@ -256,7 +249,7 @@ class OperationMode(QObject):
                         self.update_image.emit(detection_event.classification_img_path)
                     else:
                         frame_delay = 1 / AiModel.video_fps
-                        for frame in tuple(
+                        for frame in (
                             frame
                             for frame, _ in self.get_video_frames(
                                 detection_event.classification_img_path
@@ -273,7 +266,7 @@ class OperationMode(QObject):
                     self.update_image.emit(detection_event.detection_img_path)
                 else:
                     frame_delay = 1 / AiModel.video_fps
-                    for frame in tuple(
+                    for frame in (
                         frame
                         for frame, _ in self.get_video_frames(detection_event.detection_img_path)
                     ):

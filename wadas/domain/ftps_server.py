@@ -52,7 +52,7 @@ class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
 
     # .txt is allowed for testing purpose by Reolink cameras
     ALLOWED_EXTS = frozenset(
-        (".mp4", ".avi", ".mov", ".mkv", ".wmv", ".png", ".jpg", ".jpeg", ".txt")
+        (".avi", ".jpg", ".jpeg", ".mov", ".mp4", ".png", ".txt", ".mkv", ".wmv")
     )
 
     def ftp_STOR(self, file, mode="w"):
@@ -87,8 +87,7 @@ class TLS_FTP_WADAS_Handler(TLS_FTPHandler):
 
         # check if the received file match one of the allowed extensions
         # (the check relies on an inspection of the file content)
-        ftype = filetype.guess(file)
-        if ftype and f".{ftype.extension}" in self.ALLOWED_EXTS:
+        if (ftype := filetype.guess(file)) and f".{ftype.extension}" in self.ALLOWED_EXTS:
             media_queue.put(
                 {
                     "media_path": file,

@@ -26,9 +26,9 @@ import sys
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 
-from PIL.Image import Image
 from packaging.version import Version
 from pathlib import Path
+from PIL.Image import Image
 import uuid
 
 import keyring
