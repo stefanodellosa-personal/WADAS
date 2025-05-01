@@ -193,7 +193,6 @@ class DataBase(ABC):
         :return: The current database instance.
         """
         if DataBase.wadas_db is None:
-            logger.debug("The database has not been initialized. Call 'initialize' first.")
             return None
         return DataBase.wadas_db
 

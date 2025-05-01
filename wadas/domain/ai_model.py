@@ -171,7 +171,7 @@ class AiModel:
             yield frame, frame_count
             frame_count += 1
 
-    def save_preview_video(self, frames, output_path, fps=video_fps):
+    def save_preview_video(self, frames, output_path):
         """Save a sequence of PIL.Image frames as a video using OpenCV."""
 
         if not frames:
@@ -180,7 +180,7 @@ class AiModel:
         first = np.array(frames[0].convert("RGB"))
         height, width = first.shape[:2]
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        out = cv2.VideoWriter(str(output_path), fourcc, fps, (width, height))
+        out = cv2.VideoWriter(str(output_path), fourcc, self.video_fps, (width, height))
 
         for frame in frames:
             rgb_array = np.array(frame.convert("RGB"))
@@ -229,6 +229,7 @@ class AiModel:
         preview_frames = []
         output_video_path = ""
         if classification:
+            logger.info("Running classification on video %s ...", video_path)
             # Classify detected animals on all frames
             classification_lists = self.detection_pipeline.classify(
                 frames, detection_lists, AiModel.classification_threshold

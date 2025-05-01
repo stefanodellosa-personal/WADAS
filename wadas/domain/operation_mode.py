@@ -24,8 +24,6 @@ import time
 from abc import abstractmethod
 from enum import Enum
 
-import cv2
-from PIL import Image
 from PySide6.QtCore import QObject, Signal
 
 from wadas.domain.actuation_event import ActuationEvent
@@ -67,6 +65,7 @@ class OperationMode(QObject):
     update_info = Signal()
     run_finished = Signal()
     run_progress = Signal(int)
+    play_video = Signal(str)  # frames, fps
 
     flag_stop_update_actuators_thread = False
 
@@ -183,9 +182,10 @@ class OperationMode(QObject):
                 return None
 
     def _format_classified_animals_string(self, classified_animals):
-        # Prepare a list of classified animals to print in UI
-        self.last_classified_animals_str = ", ".join(
-            animal["classification"][0] for animal in classified_animals
+        """Prepare a list of classified animals to print in UI"""
+        full_str = ", ".join(animal["classification"][0] for animal in classified_animals)
+        self.last_classified_animals_str = (
+            full_str[:100] + "..." if len(full_str) > 100 else full_str
         )
 
     def _classify(self, detection_event: DetectionEvent):
@@ -212,34 +212,6 @@ class OperationMode(QObject):
             else:
                 logger.debug("No classified animals or classification results below threshold.")
 
-    def get_video_frames(self, video_path):
-        """Extract frames from a video file as PIL Images along with their frame number."""
-
-        video = cv2.VideoCapture(video_path)
-        if not video.isOpened():
-            logger.error("Error opening video file %s. Aborting.", video_path)
-            return
-
-        if not video.get(cv2.CAP_PROP_FPS):
-            logger.error("Error reading video FPS. Aborting.")
-            video.release()
-            return
-
-        frame_count = 0
-        try:
-            while True:
-                ret, frame = video.read()
-                if not ret:
-                    break
-
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                frame = Image.fromarray(frame)
-
-                yield frame, frame_count
-                frame_count += 1
-        finally:
-            video.release()
-
     def _show_processed_results(self, detection_event):
         """Method to show Ai inference results in WADAS UI"""
 
@@ -251,16 +223,7 @@ class OperationMode(QObject):
                     if self.is_image(detection_event.classification_img_path):
                         self.update_image.emit(detection_event.classification_img_path)
                     else:
-                        frame_delay = 1 / AiModel.video_fps
-                        for frame in (
-                            frame
-                            for frame, _ in self.get_video_frames(
-                                detection_event.classification_img_path
-                            )
-                        ):
-                            self.update_image.emit(frame)
-                            # Delay to simulate Video FPS while showing images on UI
-                            time.sleep(frame_delay)
+                        self.play_video.emit(detection_event.classification_img_path)
                 else:
                     logger.info("No animal classified.")
             else:
@@ -268,14 +231,7 @@ class OperationMode(QObject):
                 if self.is_image(detection_event.detection_img_path):
                     self.update_image.emit(detection_event.detection_img_path)
                 else:
-                    frame_delay = 1 / AiModel.video_fps
-                    for frame in (
-                        frame
-                        for frame, _ in self.get_video_frames(detection_event.detection_img_path)
-                    ):
-                        self.update_image.emit(frame)
-                        # Delay to simulate Video FPS while showing images on UI
-                        time.sleep(frame_delay)
+                    self.play_video.emit(detection_event.detection_img_path)
             self.update_info.emit()
         else:
             logger.info("No animal detected.")
