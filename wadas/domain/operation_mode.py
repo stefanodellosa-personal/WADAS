@@ -175,7 +175,8 @@ class OperationMode(QObject):
                 self._format_classified_animals_string(classified_animals)
 
                 # Insert detection event into db, if enabled
-                # TODO: implement db insertion
+                if db := DataBase.get_enabled_db():
+                    db.insert_into_db(detection_event)
 
                 return detection_event
             else:

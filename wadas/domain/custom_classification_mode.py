@@ -67,10 +67,8 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
             if cur_img:
                 logger.debug("Processing image from motion detection notification...")
                 detection_event = self._detect(cur_img)
+
                 self.check_for_termination_requests()
-
-                self._show_processed_results(detection_event)
-
                 if detection_event and self.enable_classification:
                     if detection_event.classification_img_path:
                         # Send notification and trigger actuators if the target animal is found
@@ -95,6 +93,9 @@ class CustomClassificationMode(AnimalDetectionAndClassificationMode):
                                 self.custom_target_species,
                                 self.last_classified_animals_str,
                             )
+
+                        # Show processing results in UI
+                        self._show_processed_results(detection_event)
                     else:
                         logger.info("No animal classified.")
 
