@@ -43,6 +43,8 @@ const EventDetails = (props: {
                     setError(`Generic Error - ${e.message}. Please contact the administrator.`);
                 }
             } finally {
+                // Small delay to ensure ImageUrl is set
+                await new Promise(resolve => setTimeout(resolve, 50));
                 setLoading(false);
             }
         };

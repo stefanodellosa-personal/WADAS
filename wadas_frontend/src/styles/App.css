@@ -248,6 +248,10 @@ td {
     list-style: none;
 }
 
+.page-link, .page-link:active {
+    z-index: unset !important;
+}
+
 .col-separator {
     background-color: var(--custom-border-color);
     margin-right: 20px;
