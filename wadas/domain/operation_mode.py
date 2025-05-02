@@ -65,7 +65,7 @@ class OperationMode(QObject):
     update_info = Signal()
     run_finished = Signal()
     run_progress = Signal(int)
-    play_video = Signal(str)  # frames, fps
+    play_video = Signal(str)
 
     flag_stop_update_actuators_thread = False
 
@@ -155,20 +155,25 @@ class OperationMode(QObject):
         else:
             # Video processing
             tracked_animals, video_path = self.ai_model.process_video_offline(
-                cur_media["media_path"], classification=True, save_processed_video=True
+                cur_media["media_path"], self.enable_classification, save_processed_video=True
             )
-            if tracked_animals and video_path:
-                classified_animals = self.ai_model.classification_from_video_tracking(
-                    tracked_animals
+            if video_path:
+                detection_path = video_path if not self.enable_classification else ""
+                classification_path = video_path if self.enable_classification else ""
+                classified_animals = (
+                    self.ai_model.classification_from_video_tracking(tracked_animals)
+                    if tracked_animals
+                    else ""
                 )
+
                 detection_event = DetectionEvent(
                     cur_media["camera_id"],
                     get_precise_timestamp(),
                     cur_media["media_path"],
-                    "",  # TODO: add detection img path
-                    [],  # TODO: add detection results
+                    detection_path,
+                    [],  # TODO: evaluate if store detection results in video processing
                     self.enable_classification,
-                    video_path,
+                    classification_path,
                     classified_animals,
                 )
                 self.last_detection = video_path

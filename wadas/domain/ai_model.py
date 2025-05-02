@@ -23,6 +23,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import supervision as sv
 from PIL import Image, ImageFile, UnidentifiedImageError
 from PytorchWildlife import utils as pw_utils
 
@@ -251,18 +252,31 @@ class AiModel:
                         # to build output video
                         preview_frames.append(frame)
 
-            if preview_frames and save_processed_video:
-                logger.debug("Saving preview frames as video...")
+            if preview_frames:
+                logger.info("Saving classification video...")
                 output_video_path = (
                     Path("classification_output") / f"{Path(video_path).stem}_classified.mp4"
                 )
-                self.save_preview_video(preview_frames, output_video_path)
-
         else:
             # Save detection frames
-            if len(detection_lists["detections"].xyxy) and save_processed_video:
-                logger.info("Saving detection results...")
-                # TODO: implement video construction with detection images
+            if len(detection_lists) and save_processed_video:
+                for frame, detection_results in zip(frames, detection_lists):
+                    detection_frame = self.build_detection_square(frame, detection_results)
+                    if detection_frame is not None:
+                        preview_frames.append(detection_frame)
+                    else:
+                        # If frame does not contain classification keep original frame
+                        # to build output video
+                        preview_frames.append(frame)
+
+                if preview_frames:
+                    logger.info("Saving detection video...")
+                    output_video_path = (
+                        Path("detection_output") / f"{Path(video_path).stem}_detected.mp4"
+                    )
+
+        if preview_frames and save_processed_video:
+            self.save_preview_video(preview_frames, output_video_path)
 
         return tracked_animals, str(output_video_path)
 
@@ -428,3 +442,34 @@ class AiModel:
             ).resolve()
             classified_image.save(classified_image_path)
             return str(classified_image_path)
+
+    def build_detection_square(self, frame, detection_results):
+        """
+        Return detected images with bounding boxes and labels annotated.
+        """
+        box_annotator = sv.BoxAnnotator(thickness=4)
+        lab_annotator = sv.LabelAnnotator(text_color=sv.Color.BLACK, text_thickness=4, text_scale=2)
+
+        image_np = np.array(frame)
+
+        if isinstance(detection_results, list):
+            for entry in detection_results:
+                image_np = lab_annotator.annotate(
+                    scene=box_annotator.annotate(
+                        scene=image_np,
+                        detections=entry["detections"],
+                    ),
+                    detections=entry["detections"],
+                    labels=entry["labels"],
+                )
+        else:
+            image_np = lab_annotator.annotate(
+                scene=box_annotator.annotate(
+                    scene=image_np,
+                    detections=detection_results["detections"],
+                ),
+                detections=detection_results["detections"],
+                labels=detection_results["labels"],
+            )
+
+        return Image.fromarray(image_np)
