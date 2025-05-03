@@ -19,6 +19,7 @@
 
 import logging
 import os
+from collections import defaultdict
 from pathlib import Path
 
 import cv2
@@ -193,21 +194,24 @@ class AiModel:
     def classification_from_video_tracking(self, tracked_animals):
         """This method returns classification results from animal tracking out of video framing"""
 
-        tracked_animal_set = set()
+        # Compute average accuracy per animal id (class_name, id)
+        accuracy_data = defaultdict(list)
+
         for frame_tracked_animals in tracked_animals:
             for frame_tracked_animal in frame_tracked_animals:
-                tracked_animal_set.add(
-                    (frame_tracked_animal["classification"][0], frame_tracked_animal["id"])
-                )
+                class_name, accuracy = frame_tracked_animal["classification"]
+                animal_id = frame_tracked_animal["id"]
+                key = (class_name, animal_id)
+                accuracy_data[key].append(accuracy)
 
-        # TODO: insert average accuracy per classified animal
         classified_animals = []
-        for tracked_animal in tracked_animal_set:
+        for (class_name, animal_id), accuracies in accuracy_data.items():
+            mean_accuracy = sum(accuracies) / len(accuracies)
             classified_animals.append(
                 {
                     "class_probs": {},
-                    "classification": [tracked_animal[0], 0.0],
-                    "id": tracked_animal[1],
+                    "classification": [class_name, mean_accuracy],
+                    "id": animal_id,
                     "xyxy": [],
                 }
             )

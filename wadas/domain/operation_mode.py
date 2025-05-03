@@ -163,7 +163,12 @@ class OperationMode(QObject):
                 classified_animals = (
                     self.ai_model.classification_from_video_tracking(tracked_animals)
                     if tracked_animals
-                    else ""
+                    else {
+                        "class_probs": {},
+                        "classification": [],
+                        "id": 0,
+                        "xyxy": [],
+                    }
                 )
 
                 detection_event = DetectionEvent(
@@ -171,7 +176,11 @@ class OperationMode(QObject):
                     get_precise_timestamp(),
                     cur_media["media_path"],
                     detection_path,
-                    [],  # TODO: evaluate if store detection results in video processing
+                    {
+                        "detections": None,
+                        "img_id": "",
+                        "labels": [],
+                    },  # TODO: evaluate if store actual detection results in video processing
                     self.enable_classification,
                     classification_path,
                     classified_animals,
