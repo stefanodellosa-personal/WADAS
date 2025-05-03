@@ -140,6 +140,8 @@ const DetectionEvents = () => {
         if (cameraId && cameraName && prevClickedCamera === null) {
             setPrevClickedCamera({ id: Number(cameraId), name: cameraName });
             setSelectedCameras([{ value: cameraId, label: cameraName }]);
+            // setPrevClickedCamera will trigger useEffect again to correctly build the page
+            return;
         }
 
         const loadFiltersData = async () => {
