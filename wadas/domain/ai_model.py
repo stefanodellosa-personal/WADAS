@@ -204,17 +204,15 @@ class AiModel:
                 key = (class_name, animal_id)
                 accuracy_data[key].append(accuracy)
 
-        classified_animals = []
-        for (class_name, animal_id), accuracies in accuracy_data.items():
-            mean_accuracy = sum(accuracies) / len(accuracies)
-            classified_animals.append(
-                {
-                    "class_probs": {},
-                    "classification": [class_name, mean_accuracy],
-                    "id": animal_id,
-                    "xyxy": [],
-                }
-            )
+        classified_animals = [
+            {
+                "class_probs": {},
+                "classification": [class_name, sum(accuracies) / len(accuracies)],
+                "id": animal_id,
+                "xyxy": [],
+            }
+            for (class_name, animal_id), accuracies in accuracy_data.items()
+        ]
         return classified_animals
 
     def process_video_offline(self, video_path, classification=True, save_processed_video=False):
@@ -249,12 +247,9 @@ class AiModel:
                     classified_frame = self.build_classification_square(
                         frame, classified_animals, "", True
                     )
-                    if classified_frame:
-                        preview_frames.append(classified_frame)
-                    else:
-                        # If frame does not contain classification keep original frame
-                        # to build output video
-                        preview_frames.append(frame)
+                    # If frame does not contain classification keep original frame
+                    # to build output video
+                    preview_frames.append(classified_frame if classified_frame else frame)
 
             if preview_frames:
                 logger.info("Saving classification video...")
@@ -266,12 +261,9 @@ class AiModel:
             if len(detection_lists) and save_processed_video:
                 for frame, detection_results in zip(frames, detection_lists):
                     detection_frame = self.build_detection_square(frame, detection_results)
-                    if detection_frame is not None:
-                        preview_frames.append(detection_frame)
-                    else:
-                        # If frame does not contain classification keep original frame
-                        # to build output video
-                        preview_frames.append(frame)
+                    # If frame does not contain classification keep original frame
+                    # to build output video
+                    preview_frames.append(detection_frame if detection_frame is not None else frame)
 
                 if preview_frames:
                     logger.info("Saving detection video...")
@@ -438,9 +430,7 @@ class AiModel:
             return classified_image
         else:
             classified_image_path = (
-                module_dir_path
-                / ".."
-                / ".."
+                module_dir_path.parent.parent
                 / "classification_output"
                 / f"classified_{img_name}.jpg"
             ).resolve()

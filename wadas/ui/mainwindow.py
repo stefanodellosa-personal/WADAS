@@ -19,25 +19,22 @@
 
 
 import datetime
-import io
 import logging
 import os
 import sys
+from collections import deque
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
-
-from collections import deque
+from pathlib import Path
+import uuid
 
 import cv2
 from packaging.version import Version
-from pathlib import Path
-from PIL import Image
-import uuid
-
 import keyring
+
 from PySide6 import QtCore, QtGui
-from PySide6.QtCore import QSettings, QThread, QTimer
-from PySide6.QtGui import QBrush, QPixmap, QImage
+from PySide6.QtCore import QThread, QTimer, QSettings
+from PySide6.QtGui import QBrush, QImage, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
@@ -265,13 +262,13 @@ class MainWindow(QMainWindow):
     def get_video_frames(self, video_path):
         """Extract frames from a video file as QPixmaps and return them with the video's FPS."""
 
-        video = cv2.VideoCapture(video_path)
-        if not video.isOpened():
+
+        if not (video := cv2.VideoCapture(video_path)).isOpened():
             logger.error("Error opening video file %s. Aborting.", video_path)
             return deque(), 0
 
-        fps = video.get(cv2.CAP_PROP_FPS)
-        if not fps:
+
+        if not (fps := video.get(cv2.CAP_PROP_FPS)):
             logger.error("Error reading video FPS. Aborting.")
             video.release()
             return deque(), 0
@@ -299,7 +296,7 @@ class MainWindow(QMainWindow):
         logger.debug("Playing video at %s FPS...", fps)
         self.video_timer = QTimer(self)
         self.video_timer.timeout.connect(self.show_next_frame)
-        self.video_timer.start(int(1000 / fps))
+        self.video_timer.start(1000 // fps)
 
     def show_next_frame(self):
         if self.video_frames:
@@ -534,6 +531,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_WA.setEnabled(not running)
         self.ui.actionConfigure_Telegram.setEnabled(not running)
         self.ui.actionConfigure_database.setEnabled(not running)
+        self.ui.actionconfigure_Tunnel.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""

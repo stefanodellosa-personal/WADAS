@@ -163,12 +163,14 @@ class OperationMode(QObject):
                 classified_animals = (
                     self.ai_model.classification_from_video_tracking(tracked_animals)
                     if tracked_animals
-                    else {
-                        "class_probs": {},
-                        "classification": [],
-                        "id": 0,
-                        "xyxy": [],
-                    }
+                    else [
+                        {
+                            "class_probs": {},
+                            "classification": [],
+                            "id": 0,
+                            "xyxy": [],
+                        }
+                    ]
                 )
 
                 detection_event = DetectionEvent(
@@ -198,7 +200,12 @@ class OperationMode(QObject):
 
     def _format_classified_animals_string(self, classified_animals):
         """Prepare a list of classified animals to print in UI"""
-        full_str = ", ".join(animal["classification"][0] for animal in classified_animals)
+
+        full_str = ", ".join(
+            animal["classification"][0]
+            for animal in classified_animals
+            if animal.get("classification")
+        )
         self.last_classified_animals_str = (
             full_str[:100] + "..." if len(full_str) > 100 else full_str
         )
