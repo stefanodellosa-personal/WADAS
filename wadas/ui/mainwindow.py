@@ -22,16 +22,19 @@ import datetime
 import logging
 import os
 import sys
+from collections import deque
 from datetime import timedelta
 from logging.handlers import RotatingFileHandler
-from packaging.version import Version
 from pathlib import Path
 import uuid
 
+import cv2
+from packaging.version import Version
 import keyring
+
 from PySide6 import QtCore, QtGui
-from PySide6.QtCore import QSettings, QThread
-from PySide6.QtGui import QBrush
+from PySide6.QtCore import QThread, QTimer, QSettings
+from PySide6.QtGui import QBrush, QImage, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
@@ -123,6 +126,8 @@ class MainWindow(QMainWindow):
         self.default_window_title = f"{self.windowTitle()}  {__version__}"
         self.set_mainwindow_title()
 
+        self.video_frames = deque()
+
         # Connect Actions
         self._connect_actions()
 
@@ -189,6 +194,8 @@ class MainWindow(QMainWindow):
         OperationMode.cur_operation_mode.update_image.connect(self.set_image)
         OperationMode.cur_operation_mode.update_image.connect(self.update_info_widget)
         OperationMode.cur_operation_mode.run_finished.connect(self.on_run_completion)
+        OperationMode.cur_operation_mode.play_video.connect(self.play_video)
+        OperationMode.cur_operation_mode.play_video.connect(self.update_info_widget)
 
         # Connect Signal to update actuator list in widget.
         OperationMode.cur_operation_mode.update_actuator_status.connect(self.update_en_actuator_list)
@@ -229,16 +236,75 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(window_title)
 
     def set_image(self, img):
-        """Set image to show in WADAS. This is used for startup, detected and
-        classified images."""
-        if os.path.isfile(img):
-            image_widget = self.ui.label_image
-            image_widget.setPixmap(QtGui.QPixmap(img))
+        """
+        Set image to show in WADAS.
+        Accepts either a QPixmap or a path to an image file.
+        """
+        image_widget = self.ui.label_image
+
+        try:
+            if isinstance(img, str) and os.path.isfile(img):
+                pixmap = QPixmap(img)
+            elif isinstance(img, QPixmap):
+                pixmap = img
+            else:
+                logger.error("Provided image is neither a valid path nor a QPixmap: %s", img)
+                return
+
+            image_widget.setPixmap(pixmap)
             image_widget.setMinimumSize(1, 1)
             image_widget.setScaledContents(True)
             image_widget.show()
+
+        except Exception as e:
+            logger.error("Failed to set image: %s", e)
+
+    def get_video_frames(self, video_path):
+        """Extract frames from a video file as QPixmaps and return them with the video's FPS."""
+
+
+        if not (video := cv2.VideoCapture(video_path)).isOpened():
+            logger.error("Error opening video file %s. Aborting.", video_path)
+            return deque(), 0
+
+
+        if not (fps := video.get(cv2.CAP_PROP_FPS)):
+            logger.error("Error reading video FPS. Aborting.")
+            video.release()
+            return deque(), 0
+
+        frames = deque()
+        try:
+            while True:
+                ret, frame = video.read()
+                if not ret:
+                    break
+
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                h, w, ch = frame.shape
+                bytes_per_line = ch * w
+                qimage = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+                pixmap = QPixmap.fromImage(qimage)
+                frames.append(pixmap)
+        finally:
+            video.release()
+
+        return frames, fps
+
+    def play_video(self, video_path):
+        self.video_frames, fps  = self.get_video_frames(video_path)
+        logger.debug("Playing video at %s FPS...", fps)
+        self.video_timer = QTimer(self)
+        self.video_timer.timeout.connect(self.show_next_frame)
+        self.video_timer.start(1000 // fps)
+
+    def show_next_frame(self):
+        if self.video_frames:
+            frame = self.video_frames.popleft()
+            self.set_image(frame)
         else:
-            logger.error("Provided image path is not valid. %s", img)
+            self.video_timer.stop()
+            self.video_timer.deleteLater()
 
     def select_mode(self):
         """Slot for mode selection (toolbar button)"""
@@ -377,6 +443,9 @@ class MainWindow(QMainWindow):
         if self.thread:
             self.thread.requestInterruption()
 
+        if self.video_frames:
+            self.video_frames = deque()
+
     def update_toolbar_status(self):
         """Update status of toolbar and related buttons (actions)."""
 
@@ -462,6 +531,7 @@ class MainWindow(QMainWindow):
         self.ui.actionConfigure_WA.setEnabled(not running)
         self.ui.actionConfigure_Telegram.setEnabled(not running)
         self.ui.actionConfigure_database.setEnabled(not running)
+        self.ui.actionconfigure_Tunnel.setEnabled(not running)
 
     def update_info_widget(self):
         """Update information widget."""

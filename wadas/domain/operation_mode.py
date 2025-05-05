@@ -18,6 +18,7 @@
 # Description: Module containing class to handle WADAS operation modes.
 
 import logging
+import re
 import threading
 import time
 from abc import abstractmethod
@@ -59,11 +60,12 @@ class OperationMode(QObject):
     cur_custom_classification_species = None
 
     # Signals
-    update_image = Signal(str)
+    update_image = Signal(object)
     update_actuator_status = Signal()
     update_info = Signal()
     run_finished = Signal()
     run_progress = Signal(int)
+    play_video = Signal(str)
 
     flag_stop_update_actuators_thread = False
 
@@ -77,7 +79,7 @@ class OperationMode(QObject):
         self.ftp_thread = None
         self.actuators_server_thread = None
         self.actuators_view_thread = None
-        self.en_classification = False
+        self.enable_classification = False
 
     def init_model(self):
         """Method to run the selected WADAS operation mode"""
@@ -109,32 +111,103 @@ class OperationMode(QObject):
                     self.ftp_thread = FTPsServer.ftps_server.run()
         logger.info("Ready for video stream from Camera(s)...")
 
-    def _detect(self, cur_img):
+    @staticmethod
+    def is_video(media_path):
+        """Method to validate if given file is a valid and supported video format"""
+
+        video_formats = r"\.(avi|mov|mp4|mkv|wmv)$"
+        return bool(re.search(video_formats, str(media_path), re.IGNORECASE))
+
+    @staticmethod
+    def is_image(media_path):
+        """Method to validate if given file is a valid and supported image format"""
+
+        image_formats = r"\.(png|jpg|jpeg)$"
+        return bool(re.search(image_formats, str(media_path), re.IGNORECASE))
+
+    def _detect(self, cur_media, classify=False):
         """Method to run the animal detection process on a specific image"""
 
-        results, detected_img_path = self.ai_model.process_image(cur_img["img"], True)
+        if OperationMode.is_image(cur_media["media_path"]):
+            results, detected_img_path = self.ai_model.process_image(cur_media["media_path"], True)
 
-        if results and detected_img_path:
-            detection_event = DetectionEvent(
-                cur_img["camera_id"],
-                get_precise_timestamp(),
-                cur_img["img"],
-                detected_img_path,
-                results,
-                self.en_classification,
-            )
-            self.last_detection = detected_img_path
-            # Insert detection event into db, if enabled
-            if db := DataBase.get_enabled_db():
-                db.insert_into_db(detection_event)
-            return detection_event
+            if results and detected_img_path:
+                detection_event = DetectionEvent(
+                    cur_media["camera_id"],
+                    get_precise_timestamp(),
+                    cur_media["media_path"],
+                    detected_img_path,
+                    results,
+                    self.enable_classification,
+                )
+                self.last_detection = detected_img_path
+                # Insert detection event into db, if enabled
+                if db := DataBase.get_enabled_db():
+                    db.insert_into_db(detection_event)
+
+                if self.enable_classification:
+                    # Classify animal
+                    self._classify(detection_event)
+
+                return detection_event
+            else:
+                return None
         else:
-            return None
+            # Video processing
+            tracked_animals, video_path = self.ai_model.process_video_offline(
+                cur_media["media_path"], self.enable_classification, save_processed_video=True
+            )
+            if video_path:
+                detection_path = video_path if not self.enable_classification else ""
+                classification_path = video_path if self.enable_classification else ""
+                classified_animals = (
+                    self.ai_model.classification_from_video_tracking(tracked_animals)
+                    if tracked_animals
+                    else [
+                        {
+                            "class_probs": {},
+                            "classification": [],
+                            "id": 0,
+                            "xyxy": [],
+                        }
+                    ]
+                )
+
+                detection_event = DetectionEvent(
+                    cur_media["camera_id"],
+                    get_precise_timestamp(),
+                    cur_media["media_path"],
+                    detection_path,
+                    {
+                        "detections": None,
+                        "img_id": "",
+                        "labels": [],
+                    },  # TODO: evaluate if store actual detection results in video processing
+                    self.enable_classification,
+                    classification_path,
+                    classified_animals,
+                )
+                self.last_detection = video_path
+                self._format_classified_animals_string(classified_animals)
+
+                # Insert detection event into db, if enabled
+                if db := DataBase.get_enabled_db():
+                    db.insert_into_db(detection_event)
+
+                return detection_event
+            else:
+                return None
 
     def _format_classified_animals_string(self, classified_animals):
-        # Prepare a list of classified animals to print in UI
-        self.last_classified_animals_str = ", ".join(
-            animal["classification"][0] for animal in classified_animals
+        """Prepare a list of classified animals to print in UI"""
+
+        full_str = ", ".join(
+            animal["classification"][0]
+            for animal in classified_animals
+            if animal.get("classification")
+        )
+        self.last_classified_animals_str = (
+            full_str[:100] + "..." if len(full_str) > 100 else full_str
         )
 
     def _classify(self, detection_event: DetectionEvent):
@@ -160,6 +233,30 @@ class OperationMode(QObject):
                     db.update_detection_event(detection_event)
             else:
                 logger.debug("No classified animals or classification results below threshold.")
+
+    def _show_processed_results(self, detection_event):
+        """Method to show Ai inference results in WADAS UI"""
+
+        if detection_event:
+            if self.enable_classification:
+                # Classification is enabled
+                if detection_event.classification_img_path:
+                    # Trigger image update in WADAS mainwindow with classification result
+                    if self.is_image(detection_event.classification_img_path):
+                        self.update_image.emit(detection_event.classification_img_path)
+                    else:
+                        self.play_video.emit(detection_event.classification_img_path)
+                else:
+                    logger.info("No animal classified.")
+            else:
+                # Trigger image update in WADAS mainwindow with detection result
+                if self.is_image(detection_event.detection_img_path):
+                    self.update_image.emit(detection_event.detection_img_path)
+                else:
+                    self.play_video.emit(detection_event.detection_img_path)
+            self.update_info.emit()
+        else:
+            logger.info("No animal detected.")
 
     def ftp_camera_exist(self):
         """Method that returns True if at least an FTP camera exists, False otherwise."""
